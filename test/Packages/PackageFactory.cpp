@@ -1,5 +1,5 @@
+﻿#include "Packages.h"
 #include <Spark/Network/Protocol/PackageFactory.h>
-#include "Packages.h"
 
 
 Package* PackageFactory::CreatePackage(UShortType packageID)

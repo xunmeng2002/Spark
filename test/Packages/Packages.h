@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Fields.h"
 #include <Spark/Network/Protocol/Package.h>
 
