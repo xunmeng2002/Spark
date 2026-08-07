@@ -1,5 +1,5 @@
-﻿#pragma once
-#include "TestCommon/Packages/Fields.h"
+#pragma once
+#include "Fields.h"
 #include <Spark/Network/Protocol/Package.h>
 
 

@@ -2,7 +2,7 @@
 #include <Spark/Network/Protocol/PackageReader.h>
 #include <Spark/Network/Protocol/PackageFactory.h>
 #include <Spark/Network/Protocol/StepUtility.h>
-#include <TestCommon/Packages/Packages.h>
+#include "Packages.h"
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 
 #include <cstring>

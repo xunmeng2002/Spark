@@ -1,8 +1,8 @@
-﻿#include "TestShmClient.h"
+#include "TestShmClient.h"
 #include "TestTcpClient.h"
 #include "TestXtpClient.h"
 #include "TestStepClient.h"
-#include "TestCommon/TestUtility/TestUtility.h"
+#include "TestUtility/TestUtility.h"
 #include <Spark/Core/Logger/Logger.h>
 #include <thread>
 

@@ -142,3 +142,8 @@ private:
     std::atomic<FreeNode*> m_FreeList = nullptr;
 };
 
+template<typename T>
+T* Allocate()
+{
+    return ObjectPool<T>::GetInstance().Allocate();
+}

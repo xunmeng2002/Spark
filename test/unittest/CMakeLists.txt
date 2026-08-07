@@ -15,4 +15,5 @@ target_link_libraries(UnitTests PRIVATE
     Serialization
     Network
     TestCommonStatic
+    PackagesStatic
 )

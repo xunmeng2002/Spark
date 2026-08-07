@@ -1,4 +1,4 @@
-﻿#include "TestCommon/Packages/Packages.h"
+#include "Packages.h"
 #include "Spark/Network/Protocol/Items.h"
 #include "Spark/Network/Protocol/StepUtility.h"
 #include "Spark/Core/Logger/Logger.h"

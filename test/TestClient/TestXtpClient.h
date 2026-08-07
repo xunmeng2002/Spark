@@ -1,5 +1,5 @@
-﻿#pragma once
-#include "TestCommon/Packages/Packages.h"
+#pragma once
+#include "Packages.h"
 #include <Spark/Network/Protocol/Protocol.h>
 #include <chrono>
 

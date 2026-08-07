@@ -1,10 +1,10 @@
-﻿#include "TestStepClient.h"
+#include "TestStepClient.h"
 #include <Spark/Core/Utility/Utility.h>
 #include <Spark/Core/Utility/TimeUtility.h>
 #include <Spark/Core/Logger/Logger.h>
-#include "TestCommon/TestUtility/TestUtility.h"
+#include "TestUtility/TestUtility.h"
 #include <Spark/Network/Protocol/PackageFactory.h>
-#include "TestCommon/Packages/Packages.h"
+#include "Packages.h"
 #include <Spark/Network/IO/IOThread.h>
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 

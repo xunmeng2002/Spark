@@ -1,6 +1,6 @@
-﻿#include "TestShmServer.h"
+#include "TestShmServer.h"
 #include "ServerIOSubscriberImpl.h"
-#include "TestCommon/TestUtility/TestUtility.h"
+#include "TestUtility/TestUtility.h"
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Network/Network.h>
 

@@ -1,7 +1,7 @@
-﻿#include "TestStepServer.h"
+#include "TestStepServer.h"
 #include <Spark/Core/Utility/Utility.h>
 #include <Spark/Core/Logger/Logger.h>
-#include "TestCommon/TestUtility/TestUtility.h"
+#include "TestUtility/TestUtility.h"
 #include <Spark/Network/Protocol/PackageFactory.h>
 
 using namespace std;

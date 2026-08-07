@@ -1,5 +1,5 @@
-﻿#include "TestCommon/ShmSubscriber/ShmSubscriberImpl.h"
-#include "TestCommon/TestUtility/TestUtility.h"
+#include "ShmSubscriber/ShmSubscriberImpl.h"
+#include "TestUtility/TestUtility.h"
 #include <Spark/Core/Logger/Logger.h>
 #include <string.h>
 #include <assert.h>

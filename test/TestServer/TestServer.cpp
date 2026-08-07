@@ -1,8 +1,8 @@
-﻿#include "TestShmServer.h"
+#include "TestShmServer.h"
 #include "TestTcpServer.h"
 #include "TestXtpServer.h"
 #include "TestStepServer.h"
-#include "TestCommon/TestUtility/TestUtility.h"
+#include "TestUtility/TestUtility.h"
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Network/IO/IOFactory.h>
 
