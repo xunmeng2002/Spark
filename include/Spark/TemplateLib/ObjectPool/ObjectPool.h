@@ -147,3 +147,8 @@ T* Allocate()
 {
     return ObjectPool<T>::GetInstance().Allocate();
 }
+template<typename T>
+void Deallocate(T* ptr)
+{
+    ObjectPool<T>::GetInstance().Deallocate(ptr);
+}
