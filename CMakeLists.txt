@@ -97,7 +97,8 @@ string(TIMESTAMP BUILD_TIMESTAMP "%Y%m%d-%H%M%S")
 message("Build timestamp is ${BUILD_TIMESTAMP}")
 
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(TARGETS 
+install(TARGETS
+    TemplateLib
     Core Network Serialization
     CoreStatic NetworkStatic SerializationStatic
     EXPORT ${PROJECT_NAME}Targets
