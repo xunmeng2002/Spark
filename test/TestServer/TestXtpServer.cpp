@@ -2,7 +2,7 @@
 #include <Spark/Core/Utility/Utility.h>
 #include <Spark/Core/Logger/Logger.h>
 #include "TestUtility/TestUtility.h"
-#include <Spark/Network/Protocol/PackageFactory.h>
+#include "PackageFactory.h"
 
 using namespace std;
 

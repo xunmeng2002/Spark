@@ -1,10 +1,10 @@
 #include "TestXtpClient.h"
+#include "TestUtility/TestUtility.h"
+#include "PackageFactory.h"
+#include "Packages.h"
 #include <Spark/Core/Utility/Utility.h>
 #include <Spark/Core/Logger/Logger.h>
-#include "TestUtility/TestUtility.h"
-#include <Spark/Network/Protocol/PackageFactory.h>
 #include <Spark/Core/Utility/TimeUtility.h>
-#include "Packages.h"
 #include <Spark/Network/IO/IOThread.h>
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 

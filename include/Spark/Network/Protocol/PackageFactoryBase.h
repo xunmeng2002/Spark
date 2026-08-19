@@ -4,9 +4,9 @@
 
 namespace spark::network
 {
-class PackageFactory
+class PackageFactoryBase
 {
 public:
-	virtual Package* CreatePackage(UShortType packageID);
+	virtual Package* CreatePackage(UShortType packageID) = 0;
 };
 }

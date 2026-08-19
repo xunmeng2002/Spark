@@ -1,7 +1,7 @@
 #pragma once
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Network/Protocol/PackageReader.h>
-#include <Spark/Network/Protocol/PackageFactory.h>
+#include <Spark/Network/Protocol/PackageFactoryBase.h>
 #include <Spark/Network/Protocol/ProtocolSubscriber.h>
 #include <Spark/Network/IO/IOBase.h>
 #include <Spark/Network/IO/IOThread.h>
@@ -12,7 +12,7 @@ namespace spark::network
 class NETWORK_EXPORTS Protocol : public IOSubscriber
 {
 public:
-	Protocol(ProtocolTypeType protocolType, ServerTypeType serverType, IOModelType ioModel, int milliSeconds, PackageFactory* packageFactory);
+	Protocol(ProtocolTypeType protocolType, ServerTypeType serverType, IOModelType ioModel, int milliSeconds, PackageFactoryBase* packageFactory);
 	~Protocol();
 	void Subscribe(ProtocolSubscriber* subscriber);
 	void UnSubscribe();
@@ -40,7 +40,7 @@ protected:
 	int m_MilliSeconds;
 	IOBase* m_IOBase;
 	IOThread* m_IOThread;
-	PackageFactory* m_PackageFactory;
+    PackageFactoryBase* m_PackageFactory;
 	ProtocolSubscriber* m_Subscriber;
 	std::map<SessionIDType, PackageReader*> m_SessionPackageReaders;
 };

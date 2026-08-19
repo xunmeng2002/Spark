@@ -10,7 +10,7 @@
 using namespace spark::core;
 namespace spark::network
 {
-PackageReader::PackageReader(ProtocolTypeType protocolType, PackageFactory* packageFactory, SessionIDType sessionID, const char* ipAddress)
+PackageReader::PackageReader(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIDType sessionID, const char* ipAddress)
 	:m_Buff{ 0 }
 {
 	m_Data = m_Buff;
@@ -28,7 +28,7 @@ PackageReader::~PackageReader()
 	m_Data = nullptr;
 	m_Length = 0;
 }
-PackageReader* PackageReader::Allocate(ProtocolTypeType protocolType, PackageFactory* packageFactory, SessionIDType sessionID, const char* ipAddress)
+PackageReader* PackageReader::Allocate(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIDType sessionID, const char* ipAddress)
 {
 	return ObjectPool<PackageReader>::GetInstance().Allocate(protocolType, packageFactory, sessionID, ipAddress);
 }

@@ -1,9 +1,9 @@
-#include <gtest/gtest.h>
-#include <Spark/Network/Protocol/PackageReader.h>
-#include <Spark/Network/Protocol/PackageFactory.h>
-#include <Spark/Network/Protocol/StepUtility.h>
+#include "PackageFactory.h"
 #include "Packages.h"
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
+#include <Spark/Network/Protocol/PackageReader.h>
+#include <Spark/Network/Protocol/StepUtility.h>
+#include <gtest/gtest.h>
 
 #include <cstring>
 using namespace spark;

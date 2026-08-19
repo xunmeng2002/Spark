@@ -1,7 +1,7 @@
 #pragma once
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Network/Protocol/Package.h>
-#include <Spark/Network/Protocol/PackageFactory.h>
+#include <Spark/Network/Protocol/PackageFactoryBase.h>
 
 
 namespace spark::network
@@ -9,9 +9,9 @@ namespace spark::network
 class NETWORK_EXPORTS PackageReader
 {
 public:
-	PackageReader(ProtocolTypeType protocolType, PackageFactory* packageFactory, SessionIDType sessionID, const char* ipAddress);
+	PackageReader(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIDType sessionID, const char* ipAddress);
 	~PackageReader();
-	static PackageReader* Allocate(ProtocolTypeType protocolType, PackageFactory* packageFactory, SessionIDType sessionID, const char* ipAddress);
+	static PackageReader* Allocate(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIDType sessionID, const char* ipAddress);
 	void Deallocate();
 
 	void Reset();
@@ -31,7 +31,7 @@ protected:
 
 protected:
 	ProtocolTypeType m_ProtocolType;
-	PackageFactory* m_PackageFactory;
+    PackageFactoryBase* m_PackageFactory;
 	SessionIDType m_SessionID;
 	IPAddressType m_IPAddress;
 	HeadField m_Head;
