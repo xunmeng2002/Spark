@@ -1,11 +1,10 @@
 #pragma once
 #include <Spark/Network/Protocol/PackageFactoryBase.h>
 
-namespace spark::network
-{
-class PackageFactory : public PackageFactoryBase
+
+class PackageFactory : public spark::network::PackageFactoryBase
 {
 public:
-	virtual Package* CreatePackage(UShortType packageID) override;
+	virtual spark::network::Package* CreatePackage(UShortType packageID) override;
 };
-}
+

@@ -2,8 +2,8 @@
 #include "Packages.h"
 
 
-namespace spark::network
-{
+using namespace spark::network;
+
 Package* PackageFactory::CreatePackage(UShortType packageID)
 {
 	switch (packageID)
@@ -765,4 +765,4 @@ Package* PackageFactory::CreatePackage(UShortType packageID)
 	}
 	return nullptr;
 }
-}
+

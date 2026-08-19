@@ -1,7 +1,5 @@
 #pragma once
 
-namespace spark::network
-{
 class Items
 {
 public:
@@ -302,4 +300,4 @@ public:
 	static constexpr unsigned int Param1 = 0xA00D;
 	static constexpr unsigned int Param2 = 0xA00E;
 };
-}
+

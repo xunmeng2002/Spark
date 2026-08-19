@@ -5,9 +5,10 @@
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 #include <cstring>
 
+using namespace spark;
 using namespace spark::core;
-namespace spark::network
-{
+using namespace spark::network;
+
 thread_local char t_DataStringBuffer[10240];
  
 NotifyComponentConnectStatusPackage::NotifyComponentConnectStatusPackage()
@@ -39989,4 +39990,4 @@ const char* RtnOfferPositionPackage::GetDebugString() const
 	}
 	return t_DataStringBuffer;
 }
-}
+
