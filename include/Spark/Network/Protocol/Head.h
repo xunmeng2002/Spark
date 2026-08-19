@@ -1,8 +1,9 @@
-#pragma once
+﻿#pragma once
 #include <Spark/Types.h>
 
 namespace spark::network
 {
+//报文头
 class HeadField
 {
 public:
@@ -12,6 +13,7 @@ public:
 	BoolType MessageChain;		//报文链标记
 	IntType MsgSeqNum;		//请求编号
 };
+//报文尾
 class TailField
 {
 public:
