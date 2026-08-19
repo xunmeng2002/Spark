@@ -1,5 +1,6 @@
 <pumplist>
 	<pump dest="./include/Spark/Types.h" tpl="../Templates/Cpp/Spark/Types.h.tpl" model="../Model/Types.xml"/>
+    <pump dest="./include/Spark/EnumString.h" tpl="../Templates/Cpp/Spark/EnumString.h.tpl" model="../Model/Types.xml"/>
 	<pump dest="./include/Spark/Network/Protocol/Items.h" tpl="../Templates/Cpp/Spark/Network/Protocol/Items.h.tpl" model="../Model/Items.xml"/>
 	<pump dest="./include/Spark/Network/Protocol/Head.h" tpl="../Templates/Cpp/Spark/Network/Protocol/Head.h.tpl" model="./Model/Head.xml"/>
 </pumplist>

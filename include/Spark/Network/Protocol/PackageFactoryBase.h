@@ -7,6 +7,8 @@ namespace spark::network
 class PackageFactoryBase
 {
 public:
+    PackageFactoryBase() = default;
+    virtual ~PackageFactoryBase() = default;
 	virtual Package* CreatePackage(UShortType packageID) = 0;
 };
 }

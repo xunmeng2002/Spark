@@ -13,6 +13,7 @@
 #include "Shm/ShmClient.h"
 #include "Shm/ShmServer.h"
 #include <Spark/Core/Core.h>
+#include <Spark/EnumString.h>
 #include <format>
 #include <stdexcept>
 
