@@ -1,11 +1,14 @@
-﻿#include "Tcp/TcpIocp/TcpIocpServer.h"
+#include "Tcp/TcpIocp/TcpIocpServer.h"
 #include "Tcp/TcpIocp/TcpIocpSockApi.h"
 #include "Tcp/TcpIocp/TcpIocpCompletePort.h"
 #include <Spark/Core/Logger/Logger.h>
 #include "Tcp/TcpUtility.h"
 
 #ifdef WINDOWS
+using namespace spark::core;
 
+namespace spark::network
+{
 TcpIocpServer::TcpIocpServer(const char* addressName, int milliSeconds, int backlog)
 	:TcpIocpBase(ServerTypeType::Server, addressName, milliSeconds, backlog)
 {
@@ -94,5 +97,6 @@ SOCKET TcpIocpServer::PrepareAcceptSocket()
         return INVALID_SOCKET;
     }
     return socketID;
+}
 }
 #endif // WINDOWS

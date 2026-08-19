@@ -1,4 +1,4 @@
-﻿#include <Spark/Core/Utility/TimeUtility.h>
+#include <Spark/Core/Utility/TimeUtility.h>
 #include <format>
 #include <iostream>
 #include <sstream>
@@ -7,10 +7,12 @@
 #include <cstring>
 #include <sys/timeb.h>
 
-thread_local char t_DateTimeBuff[32];
 using namespace std;
 using namespace std::chrono;
 
+namespace spark::core
+{
+thread_local char t_DateTimeBuff[32];
 time_t TimeUtility::GetTime()
 {
 	std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
@@ -537,4 +539,5 @@ void TimeUtility::CalculateRealMinuteBarTime(const char* exchangeID, const char*
 			realUpdateTs = calculateBarTime;
 		}
 	}
+}
 }

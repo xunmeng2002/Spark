@@ -1,6 +1,8 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Serialization/SerializationExport.h>
 
+namespace spark::serialization
+{
 const int TOKEN_MAX_LEN = 64 * 1024; 
 
 enum CSV_PARSER_ERROR
@@ -38,4 +40,4 @@ inline CSV_PARSER_ERROR CSVParser::GetErrorCode()
 {
 	return m_nErrorCode;
 }
-
+}

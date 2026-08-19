@@ -4,6 +4,8 @@
 #include <memory>
 
 
+namespace spark
+{
 template <typename T>
 class ObjectPool
 {
@@ -152,3 +154,5 @@ void Deallocate(T* ptr)
 {
     ObjectPool<T>::GetInstance().Deallocate(ptr);
 }
+}
+

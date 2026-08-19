@@ -5,7 +5,7 @@
 #include <numeric>
 #include <string>
 #include <vector>
-
+using namespace spark;
 // ============================================================
 // RingBuffer 测试 — 环形缓冲区（Write / Read / Peek / Skip）
 // ============================================================

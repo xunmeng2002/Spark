@@ -4,6 +4,8 @@
 #include <Spark/Core/Aspect/AspectAfter.h>
 #include <iostream>
 
+namespace spark::core
+{
 void CoreFunc()
 {
     std::cout << "core function called" << std::endl;
@@ -15,4 +17,4 @@ void TestAspect()
     //InvokeBefore<AA, BB, CC>(CoreFunc, "core_func");
     //InvokeAfter<AA, BB, CC>(CoreFunc, "core_func");
 }
-
+}

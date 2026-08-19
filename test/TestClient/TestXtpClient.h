@@ -3,6 +3,7 @@
 #include <Spark/Network/Protocol/Protocol.h>
 #include <chrono>
 
+using namespace spark::network;
 class XtpClient : public Protocol, public ProtocolSubscriber
 {
 public:

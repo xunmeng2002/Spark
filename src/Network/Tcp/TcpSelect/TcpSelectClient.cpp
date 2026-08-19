@@ -1,10 +1,13 @@
-﻿#include "Tcp/TcpSelect/TcpSelectClient.h"
+#include "Tcp/TcpSelect/TcpSelectClient.h"
 #include "Tcp/TcpUtility.h"
 #include <Spark/Core/Logger/Logger.h>
 #include <cstring>
 
 using namespace std;
+using namespace spark::core;
 
+namespace spark::network
+{
 TcpSelectClient::TcpSelectClient(const char* addressName, int milliSeconds)
 	:TcpSelectBase(ServerTypeType::Client, addressName, milliSeconds)
 {
@@ -101,5 +104,5 @@ void TcpSelectClient::CheckConnect()
 	}
 	m_ConnectFailedSessions.clear();
 }
-
+}
 

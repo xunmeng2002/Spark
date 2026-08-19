@@ -2,6 +2,9 @@
 #include <functional>
 #include <string>
 
+
+namespace spark::core
+{
 template <typename Func, typename... Args>
 struct AspectBefore
 {
@@ -36,3 +39,5 @@ void InvokeBefore(Func&& f, const std::string& funcName, Args&&... args)
     AspectBefore<Func, Args...> asp(std::forward<Func>(f), funcName);
     asp.InvokeBefore(std::forward<Args>(args)..., AP()...);
 }
+}
+

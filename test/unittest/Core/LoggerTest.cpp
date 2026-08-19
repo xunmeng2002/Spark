@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <string>
 #include <cstring>
-
+using namespace spark::core;
 // ============================================================
 // Logger 测试
 // 测试日志单例、级别设置、外部日志回调

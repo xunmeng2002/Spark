@@ -1,8 +1,12 @@
-﻿#include "Tcp/SocketNotify.h"
+#include "Tcp/SocketNotify.h"
 #include "Tcp/TcpUtility.h"
 #include "Tcp/TcpConnect.h"
 #include <Spark/Core/Logger/Logger.h>
 
+using namespace spark::core;
+
+namespace spark::network
+{
 SocketNotify::SocketNotify()
 	:m_Sockets{ INVALID_SOCKET, INVALID_SOCKET }, m_TcpConnect(nullptr), m_IP("127.0.0.1"), m_AddressInfo(nullptr), m_ReceiveBuffer{0}
 {
@@ -110,5 +114,5 @@ bool SocketNotify::CreateSocketPair()
 #endif
 	return true;
 }
-
+}
 

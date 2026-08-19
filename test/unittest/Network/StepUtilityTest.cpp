@@ -5,7 +5,7 @@
 
 #include <cstring>
 #include <string>
-
+using namespace spark::network;
 // ============================================================
 // StepUtility 测试
 // STEP 协议缓冲解析/序列化：字段定位、报文头/尾流式转换

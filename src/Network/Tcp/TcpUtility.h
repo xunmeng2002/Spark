@@ -1,8 +1,11 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Network/NetworkExport.h>
 #include "Tcp/SocketInit.h"
 #include <string>
 
+
+namespace spark::network
+{
 class NETWORK_EXPORTS TcpUtility
 {
 public:
@@ -22,4 +25,4 @@ public:
 	static bool InitSocket(SOCKET socketID);
 	static SOCKET PrepareSocket(int family);
 };
-
+}

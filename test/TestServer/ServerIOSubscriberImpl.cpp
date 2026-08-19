@@ -1,9 +1,11 @@
-﻿#include "ServerIOSubscriberImpl.h"
+#include "ServerIOSubscriberImpl.h"
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Core/Platform/Platform.h>
 #include <string.h>
 #include <iostream>
 
+using namespace spark::core;
+using namespace spark::network;
 
 ServerIOSubscriberImpl::ServerIOSubscriberImpl(IOBase* io, IOThread* ioThread)
     :m_IO(io), m_IOThread(ioThread)

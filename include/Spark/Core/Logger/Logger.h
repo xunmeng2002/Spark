@@ -8,6 +8,8 @@
 #include <condition_variable>
 
 
+namespace spark::core
+{
 enum class LogLevel : int
 {
 	Ignore = 0,
@@ -69,3 +71,4 @@ private:
 #define WriteErrorLog(errorID, errorMsg)\
 	if (Logger::GetWriteLogFunc() != nullptr)\
 		Logger::GetWriteLogFunc()(LogLevel::Error, __FILE__, __LINE__, __func__, "ErrorID:[%d], ErrorMsg:[%s].", errorID, errorMsg);
+}

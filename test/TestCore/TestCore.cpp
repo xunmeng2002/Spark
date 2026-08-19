@@ -1,10 +1,11 @@
-﻿#include <Spark/Core/MD5/MD5.h>
+#include <Spark/Core/MD5/MD5.h>
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Core/Aspect/Aspect.h>
 #include <Spark/Core/Aspect/AspectLogger.h>
 #include <Spark/Core/Aspect/AspectPerformance.h>
 #include <iostream>
 using namespace std;
+using namespace spark::core;
 
 void CalcalateMD5(const char* src, int len)
 {

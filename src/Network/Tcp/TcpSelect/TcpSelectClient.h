@@ -1,7 +1,9 @@
-﻿#pragma once
+#pragma once
 #include "Tcp/TcpSelect/TcpSelectBase.h"
 
 
+namespace spark::network
+{
 class TcpSelectClient : public TcpSelectBase
 {
 public:
@@ -18,4 +20,4 @@ protected:
 	std::list<SessionIDType> m_ConnectSuccessedSessions;
 	std::list<SessionIDType> m_ConnectFailedSessions;
 };
-
+}

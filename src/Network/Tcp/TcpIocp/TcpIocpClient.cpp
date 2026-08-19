@@ -1,4 +1,4 @@
-﻿#include "Tcp/TcpIocp/TcpIocpClient.h"
+#include "Tcp/TcpIocp/TcpIocpClient.h"
 #include "Tcp/TcpIocp/TcpIocpCompletePort.h"
 #include "Tcp/TcpIocp/TcpIocpConnect.h"
 #include "Tcp/TcpIocp/TcpIocpSockApi.h"
@@ -7,7 +7,10 @@
 #include <Spark/Core/Logger/Logger.h>
 
 #ifdef WINDOWS
+using namespace spark::core;
 
+namespace spark::network
+{
 TcpIocpClient::TcpIocpClient(const char* addressName, int milliSeconds, int backlog)
 	:TcpIocpBase(ServerTypeType::Client, addressName, milliSeconds, backlog)
 {
@@ -102,6 +105,7 @@ SOCKET TcpIocpClient::PrepareConnectSocket()
         return INVALID_SOCKET;
     }
     return socketID;
+}
 }
 
 #endif // WINDOWS

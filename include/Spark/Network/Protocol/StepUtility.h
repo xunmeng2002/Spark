@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Network/Protocol/Head.h>
 #include <string>
@@ -9,6 +9,8 @@ constexpr unsigned int StepHeaderLen = 36u;
 constexpr unsigned int StepTailLen = 9u;
 constexpr unsigned int SOH = 1u;
 
+namespace spark::network
+{
 class NETWORK_EXPORTS StepUtility
 {
 public:
@@ -44,3 +46,4 @@ public:
 	static bool TailFromStream(char* buff, int startIndex, int endIndex, TailField* tail);
 
 };
+}

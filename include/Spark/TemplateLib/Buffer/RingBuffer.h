@@ -1,8 +1,11 @@
-﻿#pragma once
+#pragma once
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 #include <string.h>
 #include <assert.h>
 
+
+namespace spark
+{
 template<unsigned SIZE>
 class RingBuffer
 {
@@ -117,3 +120,4 @@ private:
 	char m_Buffer[SIZE];
 	unsigned m_Length;
 };
+}

@@ -1,7 +1,8 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Network/Protocol/Protocol.h>
 
 
+using namespace spark::network;
 class StepServer : public Protocol, public ProtocolSubscriber
 {
 public:

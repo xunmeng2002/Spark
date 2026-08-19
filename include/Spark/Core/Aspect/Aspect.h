@@ -2,6 +2,8 @@
 #include <functional>
 #include <string>
 
+namespace spark::core
+{
 template <typename Func, typename... Args>
 struct Aspect
 {
@@ -32,3 +34,5 @@ void Invoke(Func&& f, const std::string& funcName, Args&&... args)
     Aspect<Func, Args...> asp(std::forward<Func>(f), funcName);
     asp.Invoke(std::forward<Args>(args)..., AP()...);
 }
+}
+

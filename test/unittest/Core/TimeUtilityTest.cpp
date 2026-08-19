@@ -3,7 +3,7 @@
 
 #include <cstring>
 #include <ctime>
-
+using namespace spark::core;
 // ============================================================
 // TimeUtility 测试
 // 涵盖日期解析、交易日计算、K线周期、时间戳格式转换等功能

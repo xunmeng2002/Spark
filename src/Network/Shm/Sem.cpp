@@ -1,4 +1,4 @@
-﻿#include "Shm/Sem.h"
+#include "Shm/Sem.h"
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Core/Utility/TimeUtility.h>
 #include <thread>
@@ -12,7 +12,10 @@
 #endif
 
 using namespace std;
+using namespace spark::core;
 
+namespace spark::network
+{
 Sem::Sem(const char* name, ServerTypeType serverType, unsigned timeOutMilliSecond)
 	:m_SemName(name), m_Sem(nullptr), m_ServerType(serverType)
 {
@@ -139,4 +142,4 @@ bool Sem::LinuxInit()
 	return false;
 #endif
 }
-
+}

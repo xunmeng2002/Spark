@@ -1,10 +1,12 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Types.h>
 #include <Spark/TemplateLib/Buffer/Buffer.h>
 #include <list>
 #include <mutex>
 
+namespace spark::network
+{
 class NETWORK_EXPORTS Connect
 {
 public:
@@ -27,5 +29,5 @@ public:
 	std::list<Buffer<BuffSize>*> Buffers;
 	std::mutex BuffersMutex;
 };
-
+}
 

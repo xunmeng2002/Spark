@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Types.h>
 #include <Spark/Network/IO/Connect.h>
@@ -6,6 +6,8 @@
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 
 
+namespace spark::network
+{
 template<unsigned SIZE>
 class ShmConnect : public Connect
 {
@@ -33,3 +35,5 @@ public:
 public:
 	ShmBuffer<SIZE>* m_ShmBuffer;
 };
+}
+

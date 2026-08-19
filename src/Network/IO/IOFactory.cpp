@@ -1,4 +1,4 @@
-﻿#include <Spark/Network/IO/IOFactory.h>
+#include <Spark/Network/IO/IOFactory.h>
 #include "Tcp/SocketInit.h"
 #ifdef LINUX
 #include "Tcp/TcpEpoll/TcpEpollClient.h"
@@ -16,8 +16,10 @@
 #include <format>
 #include <stdexcept>
 
+using namespace spark::core;
 
-
+namespace spark::network
+{
 IOBase* IOFactory::CreateIO(ServerTypeType serverType, const char* address, IOModelType ioModel, int milliSeconds)
 {
 	IOTypeType ioType;
@@ -102,3 +104,5 @@ IOBase* IOFactory::CreateIO(ServerTypeType serverType, const char* address, IOMo
 	}
 	return nullptr;
 }
+}
+

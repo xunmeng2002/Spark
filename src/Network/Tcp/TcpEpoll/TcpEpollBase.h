@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Tcp/TcpBase.h"
 #include "Tcp/TcpConnect.h"
 #include <list>
@@ -8,6 +8,8 @@
 #endif
 
 
+namespace spark::network
+{
 #define EpollEventNumber 1024
 
 class TcpEpollBase : public TcpBase
@@ -20,8 +22,8 @@ public:
 protected:
 	virtual void HandleTcpEvent() override;
 
-	virtual void AddConnect(::Connect* connect) override;
-	virtual void RemoveConnect(::Connect* connect) override;
+	virtual void AddConnect(Connect* connect) override;
+	virtual void RemoveConnect(Connect* connect) override;
 	
 
 	void AddEpollEvent(TcpConnect* connect);
@@ -35,4 +37,5 @@ protected:
 	epoll_event m_EpollEvents[EpollEventNumber];
 #endif
 };
+}
 

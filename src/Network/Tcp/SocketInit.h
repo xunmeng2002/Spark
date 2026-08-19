@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Core/Platform/Platform.h>
 #include <mutex>
@@ -20,6 +20,8 @@ typedef int SOCKET;
 #define closesocket close
 #endif // LINUX
 
+namespace spark::network
+{
 class NETWORK_EXPORTS SocketInit
 {
 public:
@@ -32,4 +34,4 @@ private:
 	std::once_flag SocketInitFlag;
 	static SocketInit _SOCKET_INIT;
 };
-
+}

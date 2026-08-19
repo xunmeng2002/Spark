@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Serialization/SerializationExport.h>
 #include <vector>
 #include <map>
@@ -6,6 +6,8 @@
 #include <stdint.h>
 
 
+namespace spark::serialization
+{
 const int CSV_RECORD_MAX_HEAD_SIZE = 1024;
 const int CSV_RECORD_MAX_CONTENT_SIZE = 64 * 1024;
 
@@ -69,4 +71,5 @@ inline const char * CSVRecord::GetFieldName(int nIndex)
 inline const char * CSVRecord::GetFieldContent(int nIndex)
 {
 	return m_CSVFields[nIndex-1].pFieldContent;
+}
 }

@@ -5,7 +5,7 @@
 #include <string>
 #include <thread>
 #include <vector>
-
+using namespace spark;
 // ============================================================
 // LockFreeQueue 测试 — 无锁队列（PushBack / PopFront）
 // ============================================================

@@ -1,8 +1,10 @@
-﻿#pragma once
+#pragma once
 #include "Shm/ShmBase.h"
 #include <chrono>
 
 
+namespace spark::network
+{
 class ShmServer : public ShmBase
 {
 public:
@@ -20,5 +22,5 @@ protected:
 	unsigned m_ConnectCount;
 	std::chrono::system_clock::time_point m_LastWriteTimePoint;
 };
-
+}
 

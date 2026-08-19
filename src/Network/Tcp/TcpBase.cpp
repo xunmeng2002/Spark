@@ -1,4 +1,4 @@
-﻿#include "Tcp/TcpBase.h"
+#include "Tcp/TcpBase.h"
 #include <Spark/Core/Platform/Platform.h>
 #include <Spark/Core/Logger/Logger.h>
 #include "Tcp/TcpUtility.h"
@@ -8,7 +8,10 @@
 #include <chrono>
 
 using namespace std;
+using namespace spark::core;
 
+namespace spark::network
+{
 TcpBase::TcpBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
 	:IOBase(serverType, addressName, milliSeconds), m_AddressInfo(nullptr), m_Socket(INVALID_SOCKET), m_SocketNotify(nullptr), m_RemoteAddressLen(sizeof(m_RemoteAddress))
 {
@@ -155,4 +158,4 @@ void TcpBase::DoAccept()
 		AddConnect(connect);
 	}
 }
-
+}

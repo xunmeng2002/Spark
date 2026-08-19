@@ -4,6 +4,10 @@
 #include <string.h>
 #include <assert.h>
 
+using namespace spark;
+using namespace spark::core;
+using namespace spark::network;
+
 static int g_Count = 0;
 ShmSubscriberImpl::ShmSubscriberImpl(IOBase* io, ServerTypeType serverType)
 	:m_IO(io), m_ServerType(serverType), m_Connected(false), m_SessionID(0LL)

@@ -1,8 +1,10 @@
-﻿#include <Spark/Core/MD5/MD5.h>
+#include <Spark/Core/MD5/MD5.h>
 #include<string>
 using namespace std;
 
 
+namespace spark::core
+{
 #define shift(x, n) (((x) << (n)) | ((x) >> (32-(n))))//右移的时候，高位一定要补零，而不是补充符号位
 #define F(x, y, z) (((x) & (y)) | ((~x) & (z)))    
 #define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
@@ -136,3 +138,5 @@ string getMD5(const unsigned char* data, int len)
     delete[] strByte;
     return changeHex(atemp).append(changeHex(btemp)).append(changeHex(ctemp)).append(changeHex(dtemp));
 }
+}
+

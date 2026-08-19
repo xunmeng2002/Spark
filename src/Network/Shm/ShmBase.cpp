@@ -1,4 +1,4 @@
-﻿#include "Shm/ShmBase.h"
+#include "Shm/ShmBase.h"
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Core/Utility/TimeUtility.h>
 #ifdef WINDOWS
@@ -11,7 +11,10 @@
 #endif
 
 using namespace std;
+using namespace spark::core;
 
+namespace spark::network
+{
 ShmBase::ShmBase(ServerTypeType serverType, const char* shmName, int milliSeconds)
 	:IOBase(serverType, shmName, milliSeconds), m_CommonShmHeader(nullptr), m_ShmAddr(nullptr)
 {
@@ -238,5 +241,6 @@ bool ShmBase::LinuxInit()
 	}
 #endif
 	return true;
+}
 }
 

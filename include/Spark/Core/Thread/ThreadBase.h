@@ -1,9 +1,11 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Core/CoreExport.h>
 #include <thread>
 #include <string>
 #include <chrono>
 
+namespace spark::core
+{
 class CORE_EXPORTS ThreadBase
 {
 public:
@@ -31,4 +33,5 @@ protected:
 	volatile bool m_ShouldRun;
 	std::chrono::milliseconds m_TimeOut;
 };
+}
 

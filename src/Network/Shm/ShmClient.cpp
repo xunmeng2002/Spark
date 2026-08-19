@@ -1,9 +1,12 @@
-﻿#include "Shm/ShmClient.h"
+#include "Shm/ShmClient.h"
 #include <Spark/Core/Logger/Logger.h>
 #include <string.h>
 
 using namespace std;
 
+using namespace spark::core;
+namespace spark::network
+{
 ShmClient::ShmClient(const char* shmName, int milliSeconds)
 	:ShmBase(ServerTypeType::Client, shmName, milliSeconds), m_Connected(false), m_HasSendConnect(false), m_ShmConnect(nullptr)
 {
@@ -131,10 +134,11 @@ void ShmClient::CheckConnectResult()
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 }
-void ShmClient::RemoveConnect(::Connect* connect)
+void ShmClient::RemoveConnect(Connect* connect)
 {
 	ShmBase::RemoveConnect(connect);
 	m_Connected = false;
 	m_HasSendConnect = false;
 	m_ShmConnect = nullptr;
+}
 }

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Core/Thread/ThreadBase.h>
 #include <Spark/Network/IO/IOBase.h>
 #include <Spark/Network/IO/IOThread.h>
@@ -6,7 +6,7 @@
 #include <map>
 #include <chrono>
 
-
+using namespace spark::network;
 class ClientIOSubscriberImpl : public IOSubscriber
 {
 public:
@@ -17,7 +17,7 @@ public:
 
 	virtual void OnConnect(SessionIDType sessionID, const char* ip, int port) override;
 	virtual void OnDisConnect(SessionIDType sessionID, const char* ip, int port) override;
-	virtual void OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer) override;
+	virtual void OnRecv(SessionIDType sessionID, spark::Buffer<spark::BuffSize>* buffer) override;
 
 	void Send(SessionIDType sessionID);
 	void SendCommand(SessionIDType sessionID, const char* cmd);

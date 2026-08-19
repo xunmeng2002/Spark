@@ -12,7 +12,8 @@
 //  behaviour is broken on MSVC for UTF-8, so it is not a drop-in replacement).
 //  Revisit for C++26 — expected alternatives: <text_encoding> or <unicode>.
 // ============================================================================
-
+namespace spark::serialization
+{
 std::wstring SERIALIZATION_EXPORTS GbkToUnicode(const std::string& str);
 std::string SERIALIZATION_EXPORTS UnicodeToGbk(const std::wstring& str);
 std::wstring SERIALIZATION_EXPORTS Utf8ToUnicode(const std::string& str);
@@ -33,4 +34,5 @@ void TrunsferGbkToUtf8(char (&src)[N])
     std::string utf8 = GbkToUtf8(src);
     memset(src, 0, N);
     memcpy(src, utf8.c_str(), (std::min)(utf8.length(), N-1));
+}
 }

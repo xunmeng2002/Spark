@@ -1,8 +1,10 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Network/NetworkExport.h>
 #include "Tcp/SocketInit.h"
 #include <string>
 
+namespace spark::network
+{
 class TcpConnect;
 class NETWORK_EXPORTS SocketNotify
 {
@@ -27,5 +29,5 @@ private:
 	addrinfo* m_AddressInfo;
 	char m_ReceiveBuffer[16];
 };
-
+}
 

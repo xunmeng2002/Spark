@@ -1,8 +1,9 @@
-﻿#pragma once
+#pragma once
 #include "Shm/ShmBase.h"
 
 
-
+namespace spark::network
+{
 class ShmClient : public ShmBase
 {
 public:
@@ -19,9 +20,10 @@ protected:
 
 	void SendConnect();
 	void CheckConnectResult();
-	virtual void RemoveConnect(::Connect* connect) override;
+	virtual void RemoveConnect(Connect* connect) override;
 protected:
 	bool m_Connected;
 	bool m_HasSendConnect;
 	ShmConnect<ShmBuffSize>* m_ShmConnect;
 };
+}

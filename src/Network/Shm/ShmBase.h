@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Shm/Sem.h"
 #include "Shm/ShmConnect.h"
 #include <Spark/Types.h>
@@ -11,7 +11,8 @@
 #include <chrono>
 
 
-
+namespace spark::network
+{
 class ShmBase : public IOBase
 {
 public:
@@ -51,3 +52,5 @@ protected:
 	void* m_FileMap;
 #endif // WINDOWS
 };
+}
+

@@ -1,4 +1,4 @@
-﻿#include <Spark/Network/Protocol/PackageReader.h>
+#include <Spark/Network/Protocol/PackageReader.h>
 #include <Spark/Network/Protocol/ProtocolUtility.h>
 #include <Spark/Network/Protocol/StepUtility.h>
 #include <Spark/Core/Logger/Logger.h>
@@ -7,7 +7,9 @@
 #include <cstring>
 #include <algorithm>
 
-
+using namespace spark::core;
+namespace spark::network
+{
 PackageReader::PackageReader(ProtocolTypeType protocolType, PackageFactory* packageFactory, SessionIDType sessionID, const char* ipAddress)
 	:m_Buff{ 0 }
 {
@@ -174,3 +176,5 @@ bool PackageReader::ParseStepPackage(Package*& package)
 	PopFront(packageStartIndex + StepHeaderLen + m_Head.BodyLen + StepTailLen);
 	return ret;
 }
+}
+

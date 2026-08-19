@@ -1,10 +1,12 @@
-﻿#include <Spark/Network/Protocol/StepUtility.h>
+#include <Spark/Network/Protocol/StepUtility.h>
 #include <Spark/Network/Protocol/Items.h>
 #include <Spark/Core/Logger/Logger.h>
 
 using namespace std;
+using namespace spark::core;
 
-
+namespace spark::network
+{
 bool StepUtility::GetNextSoh(char* buff, int startIndex, int endIndex, int& sohIndex)
 {
 	for (int i = startIndex; i < endIndex; ++i)
@@ -240,5 +242,6 @@ bool StepUtility::TailFromStream(char* buff, int startIndex, int endIndex, TailF
 		}
 	}
 	return true;
+}
 }
 

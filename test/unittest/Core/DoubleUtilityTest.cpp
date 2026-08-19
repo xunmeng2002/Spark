@@ -3,7 +3,7 @@
 
 #include <limits>
 #include <cmath>
-
+using namespace spark::core;
 // ============================================================
 // DoubleUtility 测试
 // 浮点数比较：epsilon = DBL_EPSILON ≈ 2.22e-16

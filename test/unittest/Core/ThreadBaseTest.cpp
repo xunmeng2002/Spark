@@ -4,7 +4,7 @@
 #include <thread>
 #include <chrono>
 #include <atomic>
-
+using namespace spark::core;
 // ============================================================
 // ThreadBase 测试
 // 使用 TestWorker 子类验证线程生命周期

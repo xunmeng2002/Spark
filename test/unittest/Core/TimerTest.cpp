@@ -3,7 +3,7 @@
 
 #include <thread>
 #include <chrono>
-
+using namespace spark::core;
 // ============================================================
 // Timer 测试
 // 使用 TestTimer 子类验证定时器触发逻辑

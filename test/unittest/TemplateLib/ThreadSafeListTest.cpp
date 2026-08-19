@@ -5,7 +5,7 @@
 #include <numeric>
 #include <thread>
 #include <vector>
-
+using namespace spark;
 // ============================================================
 // ThreadSafeList 测试 — 线程安全阻塞队列（PushBack / PopFront）
 //

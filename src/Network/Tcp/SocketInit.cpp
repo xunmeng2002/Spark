@@ -1,6 +1,9 @@
-﻿#include "Tcp/SocketInit.h"
+#include "Tcp/SocketInit.h"
 #include <iostream>
 
+
+namespace spark::network
+{
 SocketInit SocketInit::_SOCKET_INIT;
 
 
@@ -43,4 +46,4 @@ void SocketInit::WsaStart()
 	std::cout << "ON LINUX" << std::endl;
 #endif
 }
-
+}

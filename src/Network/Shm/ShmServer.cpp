@@ -1,9 +1,11 @@
-﻿#include "Shm/ShmServer.h"
+#include "Shm/ShmServer.h"
 #include <Spark/Core/Utility/TimeUtility.h>
 #include <string.h>
 
 using namespace std;
 
+namespace spark::network
+{
 ShmServer::ShmServer(const char* shmName, int milliSeconds)
 	:ShmBase(ServerTypeType::Server, shmName, milliSeconds), m_ConnectCount(0)
 {
@@ -126,4 +128,4 @@ void ShmServer::RemoveConnect(Connect* connect)
 	ShmBase::RemoveConnect(connect);
 	--m_ConnectCount;
 }
-
+}

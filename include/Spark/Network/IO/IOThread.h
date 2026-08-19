@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Types.h>
 #include <Spark/Core/Thread/ThreadBase.h>
@@ -11,8 +11,9 @@
 #include <map>
 
 
-
-class NETWORK_EXPORTS IOThread : public ThreadBase
+namespace spark::network
+{
+class NETWORK_EXPORTS IOThread : public spark::core::ThreadBase
 {
 public:
 	IOThread(const char* threadName);
@@ -26,4 +27,4 @@ protected:
 private:
 	IOBase* m_IO;
 };
-
+}

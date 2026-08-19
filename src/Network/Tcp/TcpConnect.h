@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Types.h>
 #include "Tcp/SocketInit.h"
@@ -8,6 +8,8 @@
 #include <chrono>
 #include <atomic>
 
+namespace spark::network
+{
 class NETWORK_EXPORTS TcpConnect : public Connect
 {
 public:
@@ -24,3 +26,4 @@ public:
 	SOCKET SocketID;
 	std::chrono::steady_clock::time_point LastSendTimePoint;
 };
+}

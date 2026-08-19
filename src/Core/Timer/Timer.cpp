@@ -1,7 +1,10 @@
-﻿#include <Spark/Core/Timer/Timer.h>
+#include <Spark/Core/Timer/Timer.h>
 
 using namespace std::chrono;
 
+
+namespace spark::core
+{
 Timer::Timer()
 	:m_TimeInterval(60000), m_EventCount(600), m_CurrentEventCount(0)
 {
@@ -24,4 +27,5 @@ void Timer::CheckTimer()
 			OnTimer();
 		}
 	}
+}
 }

@@ -1,8 +1,10 @@
-﻿#pragma once
+#pragma once
 #ifdef WINDOWS
 #include "Tcp/TcpIocp/TcpIocpBase.h"
 
 
+namespace spark::network
+{
 class TcpIocpClient : public TcpIocpBase
 {
 public:
@@ -19,5 +21,6 @@ protected:
 private:
 	addrinfo* m_ClientLocalAddressInfo;
 };
+}
 #endif // WINDOWS
 

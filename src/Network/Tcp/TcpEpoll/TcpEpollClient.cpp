@@ -1,7 +1,11 @@
-﻿#include "Tcp/TcpEpoll/TcpEpollClient.h"
+#include "Tcp/TcpEpoll/TcpEpollClient.h"
 #include <Spark/Core/Logger/Logger.h>
 #include "Tcp/TcpUtility.h"
 
+using namespace spark::core;
+
+namespace spark::network
+{
 TcpEpollClient::TcpEpollClient(const char* addressName, int milliSeconds)
 	:TcpEpollBase(ServerTypeType::Client, addressName, milliSeconds)
 {
@@ -53,4 +57,4 @@ void TcpEpollClient::AddEpollConnectEvent(TcpConnect* connect)
 	epoll_ctl(m_EpollFd, EPOLL_CTL_ADD, connect->SocketID, &epollEvent);
 #endif
 }
-
+}

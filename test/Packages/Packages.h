@@ -1,8 +1,9 @@
-﻿#pragma once
+#pragma once
 #include "Fields.h"
 #include <Spark/Network/Protocol/Package.h>
 
-
+namespace spark::network
+{
 class NotifyComponentConnectStatusPackage : public Package
 {
 public:
@@ -3275,3 +3276,5 @@ public:
 	static constexpr UShortType PackageID = 0x5014;
 	OfferPositionField* OfferPosition = nullptr;
 };
+}
+

@@ -4,7 +4,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
-
+using namespace spark;
 // ============================================================
 // ShmBuffer 测试 — 共享内存缓冲区
 // 使用 malloc 模拟共享内存，验证数据写入/读取路径

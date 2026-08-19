@@ -1,7 +1,9 @@
-﻿#pragma once
+#pragma once
 #include "Tcp/TcpEpoll/TcpEpollBase.h"
 
 
+namespace spark::network
+{
 class TcpEpollServer : public TcpEpollBase
 {
 public:
@@ -11,3 +13,4 @@ public:
 	virtual bool Init() override;
 
 };
+}

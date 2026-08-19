@@ -6,7 +6,8 @@
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 
 #include <cstring>
-
+using namespace spark;
+using namespace spark::network;
 // ============================================================
 // Package 序列化测试
 // 端到端测试 MakePackage → PackageReader::ParsePackage 往返

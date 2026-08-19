@@ -1,9 +1,12 @@
-﻿#include "Tcp/TcpIocp/TcpIocpConnect.h"
+#include "Tcp/TcpIocp/TcpIocpConnect.h"
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 #include <Spark/Core/Logger/Logger.h>
 
 #ifdef WINDOWS
+using namespace spark::core;
 
+namespace spark::network
+{
 TcpIocpConnect::TcpIocpConnect(SessionIDType sessionID, const SOCKET& socketID, const std::string& remoteIP, const std::string& remotePort)
 	:TcpConnect(sessionID, socketID, remoteIP, remotePort)
 {
@@ -97,5 +100,6 @@ void MyOverlapped::Reset()
 		WsaBuffer.len = 0;
 	}
 	Connect = nullptr;
+}
 }
 #endif // WINDOWS

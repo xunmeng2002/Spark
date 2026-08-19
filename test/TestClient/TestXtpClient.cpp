@@ -10,6 +10,9 @@
 
 using namespace std;
 
+using namespace spark;
+using namespace spark::core;
+using namespace spark::network;
 
 XtpClient::XtpClient()
 	:Protocol(ProtocolTypeType::Xtp, ServerTypeType::Client, g_IOModel, 0, new PackageFactory()), m_Connected(false), m_SessionID(0LL), m_RecvCount(0)

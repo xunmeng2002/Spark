@@ -1,14 +1,14 @@
-﻿#include "Packages.h"
+#include "Packages.h"
 #include <Spark/Network/Protocol/Items.h>
 #include <Spark/Network/Protocol/StepUtility.h>
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 #include <cstring>
 
+using namespace spark::core;
+namespace spark::network
+{
 thread_local char t_DataStringBuffer[10240];
-
-
-
  
 NotifyComponentConnectStatusPackage::NotifyComponentConnectStatusPackage()
 	:NotifyComponentConnectStatus(nullptr)
@@ -39988,4 +39988,5 @@ const char* RtnOfferPositionPackage::GetDebugString() const
 		offset += sprintf(t_DataStringBuffer + offset, "OfferPosition:TradingDay:[%s], PrimaryAccountID:[%s], ExchangeID:[%s], InstrumentID:[%s], PosiDirection:[%d], TotalPosition:[%lld], PositionFrozen:[%lld], TotalCostPrice:[%f], Margin:[%f], MarketValue:[%f]", OfferPosition->TradingDay, OfferPosition->PrimaryAccountID, OfferPosition->ExchangeID, OfferPosition->InstrumentID, (int)OfferPosition->PosiDirection, OfferPosition->TotalPosition, OfferPosition->PositionFrozen, OfferPosition->TotalCostPrice, OfferPosition->Margin, OfferPosition->MarketValue);
 	}
 	return t_DataStringBuffer;
+}
 }

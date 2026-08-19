@@ -3,6 +3,8 @@
 #include <codecvt>
 
 
+namespace spark::serialization
+{
 class codecvt_gbk : public std::codecvt_byname<wchar_t, char, std::mbstate_t>
 {
 public:
@@ -43,4 +45,5 @@ std::string GbkToUtf8(const std::string& str)
 std::string Utf8ToGbk(const std::string& str)
 {
     return s_GbkConvert.to_bytes(s_Utf8Convert.from_bytes(str));
+}
 }

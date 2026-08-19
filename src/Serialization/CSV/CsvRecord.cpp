@@ -1,8 +1,10 @@
-﻿#include <Spark/Serialization/Csv/CsvRecord.h>
+#include <Spark/Serialization/Csv/CsvRecord.h>
 #include <Spark/Serialization/Csv/CsvParser.h>
 #include <limits>
 #include <stdlib.h>
 
+namespace spark::serialization
+{
 CSVRecord::CSVRecord()
 {
 	m_nNameBufferLen = 0;
@@ -141,8 +143,10 @@ double CSVRecord::GetFieldAsDouble(const char *pszFieldName)
 	
 	return atof(pszFieldContent);
 }
+}
 
 #if 0
+using namespace spark::serialization;
 int main()
 {
 

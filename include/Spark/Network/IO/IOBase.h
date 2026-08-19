@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Types.h>
 #include <Spark/TemplateLib/Buffer/Buffer.h>
@@ -11,6 +11,9 @@
 #include <map>
 #include <condition_variable>
 
+
+namespace spark::network
+{
 class IOSubscriber
 {
 public:
@@ -64,3 +67,5 @@ protected:
 
 	std::mutex m_Mutex;
 };
+}
+

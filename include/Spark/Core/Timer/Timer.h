@@ -1,8 +1,10 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Core/CoreExport.h>
 #include <chrono>
 
 
+namespace spark::core
+{
 class CORE_EXPORTS Timer
 {
 public:
@@ -19,3 +21,4 @@ protected:
 	int m_CurrentEventCount;
 	std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds> m_LastTimePoint;
 };
+}

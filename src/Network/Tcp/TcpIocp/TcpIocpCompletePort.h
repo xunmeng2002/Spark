@@ -1,8 +1,10 @@
-﻿#pragma once
+#pragma once
 #ifdef WINDOWS
 #include <Windows.h>
 
 
+namespace spark::network
+{
 class IOCompletePort
 {
 public:
@@ -21,4 +23,5 @@ public:
 private:
 	HANDLE m_Handle;
 };
+}
 #endif // WINDOWS

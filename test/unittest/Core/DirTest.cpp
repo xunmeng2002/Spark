@@ -3,7 +3,7 @@
 
 #include <string>
 #include <cstdio>
-
+using namespace spark::core;
 // ============================================================
 // Dir 测试
 // 目录存在检查和创建操作

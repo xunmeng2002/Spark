@@ -1,8 +1,11 @@
-﻿#include <Spark/Network/Protocol/Protocol.h>
+#include <Spark/Network/Protocol/Protocol.h>
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Network/IO/IOFactory.h>
 #include <stdexcept>
 
+using namespace spark::core;
+namespace spark::network
+{
 Protocol::Protocol(ProtocolTypeType protocolType, ServerTypeType serverType, IOModelType ioModel, int milliSeconds, PackageFactory* packageFactory)
 	:m_ProtocolType(protocolType), m_ServerType(serverType), m_IOModel(ioModel), m_MilliSeconds(milliSeconds), m_Subscriber(nullptr), m_PackageFactory(packageFactory), m_IOBase(nullptr), m_IOThread(nullptr)
 {
@@ -162,5 +165,6 @@ void Protocol::OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer)
 			m_Subscriber->OnMessage(package);
 		}
 	}
+}
 }
 

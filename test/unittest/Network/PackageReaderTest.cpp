@@ -2,7 +2,7 @@
 #include <Spark/Network/Protocol/PackageReader.h>
 
 #include <cstring>
-
+using namespace spark::network;
 // ============================================================
 // PackageReader 缓冲管理测试
 // 仅测试缓冲操作方法（Append/PopFront/Shift/Reset 等），

@@ -1,7 +1,9 @@
-﻿#include "Tcp/TcpIocp/TcpIocpCompletePort.h"
+#include "Tcp/TcpIocp/TcpIocpCompletePort.h"
 
 #ifdef WINDOWS
 
+namespace spark::network
+{
 IOCompletePort::IOCompletePort()
 {
 	m_Handle = NULL;
@@ -37,5 +39,6 @@ bool IOCompletePort::PostStatus(DWORD dwNumBytes, ULONG_PTR completeKey, OVERLAP
 bool IOCompletePort::GetStatus(PDWORD pdwNumBytes, ULONG_PTR* pCompKey, OVERLAPPED** ppo, DWORD dwMilliseconds)
 {
 	return GetQueuedCompletionStatus(m_Handle, pdwNumBytes, pCompKey, ppo, dwMilliseconds);
+}
 }
 #endif // WINDOWS

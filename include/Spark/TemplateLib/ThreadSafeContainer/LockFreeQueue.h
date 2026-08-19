@@ -1,7 +1,10 @@
-﻿#pragma once
+#pragma once
 #include <atomic>
 #include <memory>
 
+
+namespace spark
+{
 template <typename T>
 class LockFreeQueue
 {
@@ -64,4 +67,5 @@ public:
         return m_Head.load(std::memory_order_acquire) == m_Tail.load(std::memory_order_acquire);
     }
 };
+}
 

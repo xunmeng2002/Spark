@@ -2,6 +2,8 @@
 #include <iostream>
 
 
+namespace spark::core
+{
 struct AA
 {
     void Before(const char* funcName) { std::cout << funcName << ": AA Before" << std::endl; }
@@ -21,3 +23,4 @@ struct CC
 
 void CoreFunc();
 void TestAspect();
+}

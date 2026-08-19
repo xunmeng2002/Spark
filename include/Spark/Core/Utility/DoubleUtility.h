@@ -1,7 +1,9 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Core/CoreExport.h>
 #include <limits>
 
+namespace spark::core
+{
 class CORE_EXPORTS DoubleUtility
 {
 public:
@@ -14,3 +16,5 @@ public:
 
 	static double GetDoubleValue(const double& value);
 };
+}
+

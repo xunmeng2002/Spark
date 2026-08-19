@@ -1,7 +1,9 @@
-﻿#pragma once
+#pragma once
 #ifdef WINDOWS
 #include "Tcp/TcpIocp/TcpIocpBase.h"
 
+namespace spark::network
+{
 class TcpIocpServer : public TcpIocpBase
 {
 public:
@@ -14,5 +16,6 @@ protected:
 
 	SOCKET PrepareAcceptSocket();
 };
+}
 #endif // WINDOWS
 

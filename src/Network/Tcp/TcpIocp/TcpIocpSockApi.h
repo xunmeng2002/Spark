@@ -1,8 +1,10 @@
-﻿#pragma once
+#pragma once
 #ifdef WINDOWS
 #include "Tcp/SocketInit.h"
 #include <MSWSock.h>
 
+namespace spark::network
+{
 class SocketApi
 {
 private:
@@ -24,4 +26,5 @@ public:
 private:
 	static SocketApi m_Instance;
 };
+}
 #endif // WINDOWS

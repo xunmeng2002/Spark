@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Shm/ShmConnect.h"
 #include <Spark/Types.h>
 #include <Spark/TemplateLib/Buffer/Buffer.h>
@@ -6,6 +6,8 @@
 #include <string>
 
 
+namespace spark::network
+{
 class SingleShm : public IOBase
 {
 public:
@@ -34,6 +36,6 @@ protected:
 	void* m_FileMap;
 #endif // WINDOWS
 };
-
+}
 
 

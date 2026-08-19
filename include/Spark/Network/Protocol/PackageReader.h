@@ -1,9 +1,11 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Network/Protocol/Package.h>
 #include <Spark/Network/Protocol/PackageFactory.h>
 
 
+namespace spark::network
+{
 class NETWORK_EXPORTS PackageReader
 {
 public:
@@ -39,4 +41,5 @@ protected:
 	char* m_Data;
 	unsigned int m_Length;
 };
+}
 

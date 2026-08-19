@@ -1,4 +1,4 @@
-﻿#include <Spark/Core/Platform/Dir.h>
+#include <Spark/Core/Platform/Dir.h>
 #ifdef WINDOWS
 #include <direct.h>
 #include <io.h>
@@ -12,7 +12,8 @@
 
 
 
-
+namespace spark::core
+{
 bool Dir::IsDir(const char* path)
 {
 #ifdef WINDOWS
@@ -33,3 +34,5 @@ bool Dir::Create(const char* path, int mode)
 	return false;
 #endif
 }
+}
+

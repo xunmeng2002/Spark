@@ -1,4 +1,4 @@
-﻿#include <Spark/Core/Logger/Logger.h>
+#include <Spark/Core/Logger/Logger.h>
 #include <Spark/TemplateLib/Buffer/Buffer.h>
 #include <Spark/Core/Utility/Utility.h>
 #include <Spark/Core/Utility/TimeUtility.h>
@@ -13,6 +13,9 @@
 #include <Windows.h>
 #endif
 
+
+namespace spark::core
+{
 constexpr unsigned int LogLineLength = 64 * 1024;
 constexpr unsigned int MaxLogFormatLength = 1024;
 constexpr unsigned int MaxLogLineContentLength = (LogLineLength - MaxLogFormatLength);
@@ -206,3 +209,6 @@ long long Logger::GetCurrentThreadID()
 	static thread_local long long tid = GetCurrentThreadIdSysCall();
 	return tid;
 }
+}
+
+

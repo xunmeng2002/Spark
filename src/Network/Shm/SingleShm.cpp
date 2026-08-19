@@ -1,4 +1,4 @@
-﻿#include "Shm/SingleShm.h"
+#include "Shm/SingleShm.h"
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Core/Utility/TimeUtility.h>
 #include <string.h>
@@ -13,7 +13,10 @@
 #endif
 
 using namespace std;
+using namespace spark::core;
 
+namespace spark::network
+{
 SingleShm::SingleShm(ServerTypeType shmType, const char* shmName)
 	:IOBase(shmType, shmName, 0), m_ShmName(shmName), m_Connected(false), m_SessionID(0LL),
 	m_ShmAddr(nullptr)
@@ -184,4 +187,4 @@ void SingleShm::HandleEvent()
 		}
 	}
 }
-
+}

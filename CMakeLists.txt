@@ -88,7 +88,7 @@ endif()
 target_link_libraries(Network PUBLIC Core)
 
 
-option(BUILD_TESTS "Build test projects" ON)
+option(BUILD_TESTS "Build test projects" OFF)
 if(BUILD_TESTS)
     add_subdirectory(test)
 endif()

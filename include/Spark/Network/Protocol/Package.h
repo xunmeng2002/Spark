@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Types.h>
 #include <Spark/Network/Protocol/Head.h>
@@ -7,7 +7,8 @@
 
 #define MaxPackageSize 2 * 64 * 1024
 
-
+namespace spark::network
+{
 class NETWORK_EXPORTS Package
 {
 public:
@@ -32,4 +33,4 @@ public:
 	HeadField Head;
 	TailField Tail;
 };
-
+}

@@ -1,8 +1,9 @@
-﻿#include <Spark/Network/IO/Connect.h>
+#include <Spark/Network/IO/Connect.h>
 
 using namespace std;
 
-
+namespace spark::network
+{
 void Connect::PushBack(Buffer<BuffSize>* buffer)
 {
 	lock_guard<mutex> guard(BuffersMutex);
@@ -22,4 +23,4 @@ Buffer<BuffSize>* Connect::GetNextBuffer()
 	Buffers.pop_front();
 	return buffer;
 }
-
+}

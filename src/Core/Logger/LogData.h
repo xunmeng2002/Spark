@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <Spark/TemplateLib/Buffer/Buffer.h>
 #include <stdio.h>
 #include <list>
@@ -6,8 +6,10 @@
 #include <condition_variable>
 
 
+namespace spark::core
+{
 template<unsigned SIZE>
-class Buffer;
+class spark::Buffer;
 struct LogData
 {
 	LogData();
@@ -16,10 +18,11 @@ struct LogData
 	void PushBuffer();
 
 	FILE* LogFile;
-	Buffer<LogBuffSize>* CurrBuffer;
-	std::list<Buffer<LogBuffSize>*> LogBuffers;
-	std::list<Buffer<LogBuffSize>*> InnerLogBuffers;
+    spark::Buffer<LogBuffSize>* CurrBuffer;
+	std::list<spark::Buffer<LogBuffSize>*> LogBuffers;
+	std::list<spark::Buffer<LogBuffSize>*> InnerLogBuffers;
 
 	std::mutex Mutex;
 	std::condition_variable ConditionVariable;
 };
+}

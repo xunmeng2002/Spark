@@ -6,7 +6,8 @@
 #include <fstream>
 
 
-
+namespace spark::core
+{
 void Utility::ParseProcessName(const char* fullProcessName, char* processName, int len)
 {
 #if WINDOWS
@@ -78,4 +79,4 @@ ProtocolTypeType Utility::GetConfigProtocolType(const std::string& configProtoco
 	}
 	return ProtocolTypeType::Xtp;
 }
-
+}

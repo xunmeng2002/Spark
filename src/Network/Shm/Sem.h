@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Types.h>
 #include <string>
 #ifdef LINUX
@@ -6,6 +6,8 @@
 #endif
 
 
+namespace spark::network
+{
 class Sem
 {
 public:
@@ -30,4 +32,5 @@ private:
 	void* m_Sem;
 #endif
 };
+}
 

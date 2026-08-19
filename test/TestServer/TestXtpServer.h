@@ -1,7 +1,9 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Network/Protocol/Protocol.h>
 
 
+
+using namespace spark::network;
 class XtpServer : public Protocol, public ProtocolSubscriber
 {
 public:

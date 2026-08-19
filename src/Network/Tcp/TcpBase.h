@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Network/NetworkExport.h>
 #include "Tcp/SocketInit.h"
 #include "Tcp/TcpConnect.h"
@@ -10,7 +10,8 @@
 #include <mutex>
 #include <string>
 
-
+namespace spark::network
+{
 class NETWORK_EXPORTS TcpBase : public IOBase
 {
 public:
@@ -46,5 +47,5 @@ protected:
 	unsigned int m_RemoteAddressLen;
 #endif
 };
-
+}
 

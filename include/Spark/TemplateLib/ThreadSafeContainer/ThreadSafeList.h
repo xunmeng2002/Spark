@@ -1,8 +1,11 @@
-﻿#pragma once
+#pragma once
 #include <list>
 #include <mutex>
 #include <condition_variable>
 
+
+namespace spark
+{
 template <typename T>
 class ThreadSafeList
 {
@@ -37,4 +40,4 @@ private:
 	std::condition_variable m_ConditionVariable;
 	std::list<T*> m_Items;
 };
-
+}

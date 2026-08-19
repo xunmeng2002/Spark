@@ -1,10 +1,12 @@
-﻿#pragma once
+#pragma once
 #include "Tcp/SocketInit.h"
 #include "Tcp/TcpBase.h"
 #include <list>
 #include <map>
 
 
+namespace spark::network
+{
 class TcpSelectBase : public TcpBase
 {
 public:
@@ -22,3 +24,4 @@ protected:
 	timeval m_SelectSocketTimeOut;
 	timeval m_SelectSocketTimeOutTemp;
 };
+}

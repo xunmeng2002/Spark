@@ -1,6 +1,9 @@
-﻿#pragma once
+#pragma once
 #include <string>
 
+
+namespace spark::core
+{
 struct TimeZone
 {
 	std::string StartTime;
@@ -20,3 +23,4 @@ struct SubscribeInstrument
 	std::string ExchangeID;
 	std::string InstrumentID;
 };
+}

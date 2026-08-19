@@ -1,7 +1,9 @@
-﻿#pragma once
+#pragma once
 #include "Tcp/TcpEpoll/TcpEpollBase.h"
 
 
+namespace spark::network
+{
 class TcpEpollClient : public TcpEpollBase
 {
 public:
@@ -13,3 +15,4 @@ public:
 protected:
 	void AddEpollConnectEvent(TcpConnect* connect);
 };
+}

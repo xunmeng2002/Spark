@@ -1,8 +1,11 @@
-﻿#include "Tcp/TcpEpoll/TcpEpollBase.h"
+#include "Tcp/TcpEpoll/TcpEpollBase.h"
 #include <Spark/Core/Logger/Logger.h>
 #include "Tcp/TcpUtility.h"
 #include <string.h>
 
+
+namespace spark::network
+{
 TcpEpollBase::TcpEpollBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
 	:TcpBase(serverType, addressName, milliSeconds), m_EpollFd(0)
 {
@@ -97,12 +100,12 @@ void TcpEpollBase::HandleTcpEvent()
 	}
 #endif
 }
-void TcpEpollBase::AddConnect(::Connect* connect)
+void TcpEpollBase::AddConnect(Connect* connect)
 {
 	TcpBase::AddConnect(connect);
 	AddEpollEvent((TcpConnect*)connect);
 }
-void TcpEpollBase::RemoveConnect(::Connect* connect)
+void TcpEpollBase::RemoveConnect(Connect* connect)
 {
 	RemoveEpollEvent((TcpConnect*)connect);
 	TcpBase::RemoveConnect(connect);
@@ -141,3 +144,5 @@ void TcpEpollBase::RemoveWriteEpollEvent(TcpConnect* connect)
 	epoll_ctl(m_EpollFd, EPOLL_CTL_MOD, connect->SocketID, &epollEvent);
 #endif
 }
+}
+

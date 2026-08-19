@@ -1,10 +1,12 @@
-﻿#pragma once
+#pragma once
 #ifdef WINDOWS
 #include <Spark/Types.h>
 #include "Tcp/SocketInit.h"
 #include "Tcp/TcpConnect.h"
 #include <Spark/TemplateLib/Buffer/Buffer.h>
 
+namespace spark::network
+{
 enum class IocpEvent : int
 {
 	EventNone = 0,			//请求连接
@@ -46,6 +48,7 @@ public:
 	Buffer<BuffSize>* MyBuffer;
 	TcpIocpConnect* Connect;
 };
+}
 #endif // WINDOWS
 
 

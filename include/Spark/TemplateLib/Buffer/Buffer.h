@@ -1,8 +1,11 @@
-﻿#pragma once
+#pragma once
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 #include <cstring>
 #include <assert.h>
 
+
+namespace spark
+{
 constexpr unsigned int BuffSize = 64 * 1024;
 constexpr unsigned int ShmBuffSize = 1024 * 1024;
 constexpr unsigned int LogBuffSize = 1024 * 1024;
@@ -83,3 +86,4 @@ private:
 	unsigned m_Length;
 	char* m_ReadPos;
 };
+}

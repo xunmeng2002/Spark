@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Network/Protocol/PackageReader.h>
 #include <Spark/Network/Protocol/PackageFactory.h>
@@ -7,6 +7,8 @@
 #include <Spark/Network/IO/IOThread.h>
 #include <map>
 
+namespace spark::network
+{
 class NETWORK_EXPORTS Protocol : public IOSubscriber
 {
 public:
@@ -42,4 +44,4 @@ protected:
 	ProtocolSubscriber* m_Subscriber;
 	std::map<SessionIDType, PackageReader*> m_SessionPackageReaders;
 };
-
+}

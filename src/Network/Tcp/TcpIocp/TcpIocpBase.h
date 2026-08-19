@@ -1,9 +1,11 @@
-﻿#pragma once
+#pragma once
 #ifdef WINDOWS
 #include "Tcp/TcpBase.h"
 #include "Tcp/TcpIocp/TcpIocpConnect.h"
 #include "Tcp/TcpIocp/TcpIocpCompletePort.h"
 
+namespace spark::network
+{
 class TcpIocpBase : public TcpBase
 {
 public:
@@ -32,5 +34,6 @@ protected:
 	int m_BackLog;
 	IOCompletePort* m_IOCompletePort;
 };
+}
 #endif // WINDOWS
 

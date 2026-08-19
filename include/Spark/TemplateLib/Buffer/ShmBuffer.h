@@ -1,11 +1,12 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Types.h>
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 #include <algorithm>
 #include <atomic>
 #include <cstring>
 
-
+namespace spark
+{
 struct SingleShmHeader
 {
 	volatile ConnectStatusType Status;
@@ -221,5 +222,5 @@ private:
 		return currLen;
 	}
 };
-
+}
 

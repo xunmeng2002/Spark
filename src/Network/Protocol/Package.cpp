@@ -1,10 +1,11 @@
-﻿#include <Spark/Network/Protocol/Package.h>
+#include <Spark/Network/Protocol/Package.h>
 #include <Spark/Network/Protocol/StepUtility.h>
 #include <Spark/Network/Protocol/ProtocolUtility.h>
 #include <string.h>
 
 
-
+namespace spark::network
+{
 Package::~Package() {
 	SessionID = 0;
 	memset(IPAddress, 0, sizeof(IPAddressType));
@@ -39,3 +40,5 @@ int Package::MakePackage(ProtocolTypeType protocolType, char* buff, int size)
 	}
 	return 0;
 }
+}
+

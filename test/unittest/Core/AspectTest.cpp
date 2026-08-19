@@ -9,7 +9,7 @@
 #include <vector>
 #include <chrono>
 #include <thread>
-
+using namespace spark::core;
 // ============================================================
 // Aspect 测试
 // AOP 切面模板：Before/After 调用顺序、多切面链式调用

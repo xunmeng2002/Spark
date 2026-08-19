@@ -1,6 +1,8 @@
-﻿#include "Logger/LogData.h"
+#include "Logger/LogData.h"
 
-
+using namespace spark;
+namespace spark::core
+{
 LogData::LogData()
 {
 	LogFile = nullptr;
@@ -30,4 +32,5 @@ void LogData::PushBuffer()
 {
 	LogBuffers.push_back(CurrBuffer);
 	CurrBuffer = Buffer<LogBuffSize>::Allocate();
+}
 }

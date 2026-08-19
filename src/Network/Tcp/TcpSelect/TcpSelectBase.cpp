@@ -1,9 +1,11 @@
-﻿#include "Tcp/TcpSelect/TcpSelectBase.h"
+#include "Tcp/TcpSelect/TcpSelectBase.h"
 #include <Spark/Core/Logger/Logger.h>
 #include "Tcp/TcpUtility.h"
 #include <string.h>
 
 
+namespace spark::network
+{
 TcpSelectBase::TcpSelectBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
 	:TcpBase(serverType, addressName, milliSeconds)
 {
@@ -90,4 +92,5 @@ void TcpSelectBase::HandleTcpEvent()
 			DoAccept();
 		}
 	}
+}
 }

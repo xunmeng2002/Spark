@@ -3,6 +3,8 @@
 
 using namespace std;
 
+namespace spark::core
+{
 constexpr double epsilon = std::numeric_limits<double>::epsilon();
 bool DoubleUtility::DoubleEqual(const double& left, const double& right)
 {
@@ -36,4 +38,5 @@ double DoubleUtility::GetDoubleValue(const double& value)
 		return 0.0;
 	}
 	return value;
+}
 }

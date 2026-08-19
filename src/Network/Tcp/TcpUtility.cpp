@@ -1,12 +1,14 @@
-﻿#include "Tcp/TcpUtility.h"
+#include "Tcp/TcpUtility.h"
 #include <Spark/Core/Platform/Platform.h>
 #include <Spark/Core/Logger/Logger.h>
 #include <string.h>
 #include <mutex>
 
 using namespace std;
+using namespace spark::core;
 
-
+namespace spark::network
+{
 void TcpUtility::ParseIPAddress(const std::string& addressName, std::string& ip, std::string& port)
 {
 	auto index = addressName.find(':', 0);
@@ -141,5 +143,5 @@ SOCKET TcpUtility::PrepareSocket(int family)
 	}
 	return socketID;
 }
-
+}
 

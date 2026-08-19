@@ -1,10 +1,12 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Core/CoreExport.h>
 #include <Spark/Types.h>
 #include <chrono>
 #include <string>
 
 
+namespace spark::core
+{
 class CORE_EXPORTS TimeUtility
 {
 public:
@@ -73,3 +75,5 @@ public:
 		return std::chrono::duration_cast<T>(end - start).count();
 	}
 };
+}
+

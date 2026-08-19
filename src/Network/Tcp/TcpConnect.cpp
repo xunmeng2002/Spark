@@ -4,7 +4,9 @@
 #include <Spark/Core/Utility/TimeUtility.h>
 #include "Tcp/TcpUtility.h"
 
-
+using namespace spark::core;
+namespace spark::network
+{
 TcpConnect::TcpConnect(SessionIDType sessionID, const SOCKET& socketID, const std::string& remoteIP, const std::string& remotePort)
 	:Connect(sessionID, remoteIP.c_str(), atoi(remotePort.c_str()), ConnectStatusType::Connected), SocketID(socketID)
 {
@@ -42,4 +44,5 @@ void TcpConnect::Set(SessionIDType sessionID, const SOCKET& socketID, const std:
 void TcpConnect::UpdateLastSendTime()
 {
 	LastSendTimePoint = std::chrono::steady_clock::now();
+}
 }

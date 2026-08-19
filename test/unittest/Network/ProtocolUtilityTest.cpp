@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <Spark/Network/Protocol/ProtocolUtility.h>
-
+using namespace spark::network;
 // ============================================================
 // CalculateSum 测试
 // 校验和计算：所有字节和 % 256

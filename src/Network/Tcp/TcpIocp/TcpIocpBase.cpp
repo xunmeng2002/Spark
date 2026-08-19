@@ -1,4 +1,4 @@
-﻿#include "Tcp/TcpIocp/TcpIocpBase.h"
+#include "Tcp/TcpIocp/TcpIocpBase.h"
 #include "Tcp/TcpIocp/TcpIocpConnect.h"
 #include "Tcp/TcpIocp/TcpIocpSockApi.h"
 #include "Tcp/TcpIocp/TcpIocpCompletePort.h"
@@ -8,7 +8,10 @@
 #ifdef WINDOWS
 
 using namespace std;
+using namespace spark::core;
 
+namespace spark::network
+{
 TcpIocpBase::TcpIocpBase(ServerTypeType serverType, const char* addressName, int milliSeconds, int backlog)
 	:TcpBase(serverType, addressName, milliSeconds), m_BackLog(backlog)
 {
@@ -292,5 +295,5 @@ void TcpIocpBase::OnRecvComplete(MyOverlapped* overlapped, int bytesTransferred)
     }
     PostRecv(overlapped);
 }
-
+}
 #endif // WINDOWS

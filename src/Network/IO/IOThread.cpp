@@ -1,10 +1,13 @@
-﻿#include <Spark/Network/IO/IOThread.h>
+#include <Spark/Network/IO/IOThread.h>
 #include <Spark/Network/IO/IOUtility.h>
 #include <Spark/Core/Utility/TimeUtility.h>
 #include <Spark/Core/Logger/Logger.h>
 
 using namespace std;
 
+using namespace spark::core;
+namespace spark::network
+{
 IOThread::IOThread(const char* threadName)
 	:ThreadBase(threadName), m_IO(nullptr)
 {
@@ -28,5 +31,6 @@ void IOThread::ThreadExit()
 {
 	ThreadBase::ThreadExit();
 	m_IO->DisConnectAll();
+}
 }
 

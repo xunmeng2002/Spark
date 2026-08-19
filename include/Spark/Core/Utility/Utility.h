@@ -1,10 +1,12 @@
-﻿#pragma once
+#pragma once
 #include <Spark/Core/CoreExport.h>
 #include <Spark/Types.h>
 #include <string>
 #include <cstring>
 
 
+namespace spark::core
+{
 class CORE_EXPORTS Utility
 {
 public:
@@ -27,3 +29,4 @@ public:
 
     static ProtocolTypeType GetConfigProtocolType(const std::string& configProtocolType);
 };
+}

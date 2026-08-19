@@ -3,6 +3,8 @@
 #include <Spark/Network/Protocol/Protocol.h>
 #include <chrono>
 
+
+using namespace spark::network;
 class StepClient : public Protocol, public ProtocolSubscriber
 {
 public:

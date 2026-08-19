@@ -1,7 +1,9 @@
-﻿#include <Spark/Serialization/Csv/CsvParser.h>
+#include <Spark/Serialization/Csv/CsvParser.h>
 #include <cstring>
 
 
+namespace spark::serialization
+{
 CSVParser::CSVParser()
 {
 	m_pszData = nullptr;
@@ -112,4 +114,5 @@ char *CSVParser::GetNextToken()
 
 	m_nErrorCode = CPE_TOKEN_TOO_LONG;
 	return nullptr;
+}
 }

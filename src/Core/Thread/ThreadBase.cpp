@@ -1,8 +1,11 @@
-﻿#include <Spark/Core/Thread/ThreadBase.h>
+#include <Spark/Core/Thread/ThreadBase.h>
 #include <Spark/Core/Logger/Logger.h>
 #include <functional>
 #include <assert.h>
 
+
+namespace spark::core
+{
 ThreadBase::ThreadBase(const char* name, int milliSeconds)
 	:m_ThreadName(name), m_ShouldRun(false), m_TimeOut(milliSeconds)
 {
@@ -61,4 +64,4 @@ void ThreadBase::ThreadExit()
 {
 	WriteLog(LogLevel::Info, "Thread:%s Exit", m_ThreadName.c_str());
 }
-
+}

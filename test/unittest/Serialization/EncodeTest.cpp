@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <Spark/Serialization/Encode/Encode.h>
-
+using namespace spark::serialization;
 // ============================================================
 // Encode 测试 — GBK/UTF-8/Unicode 互转（仅 ASCII 范围可跨平台断言）
 // ============================================================

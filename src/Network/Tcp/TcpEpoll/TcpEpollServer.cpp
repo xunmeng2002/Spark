@@ -1,9 +1,11 @@
-﻿#include "Tcp/TcpEpoll/TcpEpollServer.h"
+#include "Tcp/TcpEpoll/TcpEpollServer.h"
 #include <Spark/Core/Logger/Logger.h>
 #include "Tcp/TcpUtility.h"
 #include <string.h>
 
 
+namespace spark::network
+{
 TcpEpollServer::TcpEpollServer(const char* addressName, int milliSeconds)
 	:TcpEpollBase(ServerTypeType::Server, addressName, milliSeconds)
 {
@@ -21,6 +23,6 @@ bool TcpEpollServer::Init()
 	AddEpollEvent(connect);
 	return true;
 }
-
+}
 
 

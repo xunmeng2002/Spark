@@ -3,7 +3,7 @@
 
 #include <cstring>
 #include <string>
-
+using namespace spark;
 // ============================================================
 // Buffer 测试 — 固定大小缓冲区（Append / Shift / Reset / MemMove）
 // ============================================================

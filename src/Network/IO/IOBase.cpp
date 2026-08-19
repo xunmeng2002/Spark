@@ -1,10 +1,13 @@
-﻿#include <Spark/Network/IO/IOBase.h>
+#include <Spark/Network/IO/IOBase.h>
 #include <Spark/Network/IO/IOUtility.h>
 #include <Spark/Core/Utility/TimeUtility.h>
 #include <Spark/Core/Logger/Logger.h>
 
 using namespace std;
+using namespace spark::core;
 
+namespace spark::network
+{
 IOBase::IOBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
 	:m_ServerType(serverType), m_AddressName(addressName), m_TimeOut(chrono::milliseconds(milliSeconds)), m_IOSubscriber(nullptr), m_LastSessionIndex(0LL)
 {
@@ -103,5 +106,5 @@ SessionIDType IOBase::GetSessionID()
 {
 	return TimeUtility::GetMilliSecondTimeStamp() * 100LL + (++m_LastSessionIndex) % 100LL;
 }
-
+}
 

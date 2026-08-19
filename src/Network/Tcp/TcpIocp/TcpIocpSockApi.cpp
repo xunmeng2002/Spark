@@ -1,8 +1,11 @@
-﻿#include "Tcp/TcpIocp/TcpIocpSockApi.h"
+#include "Tcp/TcpIocp/TcpIocpSockApi.h"
 #include <Spark/Core/Logger/Logger.h>
 
 #ifdef WINDOWS
+using namespace spark::core;
 
+namespace spark::network
+{
 SocketApi SocketApi::m_Instance;
 
 SocketApi::SocketApi()
@@ -57,5 +60,6 @@ bool SocketApi::Init(SOCKET sock)
 		return false;
 	}
 	return true;
+}
 }
 #endif // WINDOWS
