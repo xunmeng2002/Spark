@@ -17,6 +17,7 @@
 #include <format>
 #include <stdexcept>
 
+using namespace spark;
 using namespace spark::core;
 
 namespace spark::network

@@ -1,8 +1,9 @@
 ﻿#pragma once
-#include <stdint.h>
 #include <Spark/Types.h>
 
 
+namespace spark
+{
 inline const char* GetAccountClassString(AccountClassType value)
 {
 	switch (value)
@@ -1161,4 +1162,4 @@ inline const char* GetVolumeConditionString(VolumeConditionType value)
 	return "";
 }
 
-
+}
