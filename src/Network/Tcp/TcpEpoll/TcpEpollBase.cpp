@@ -3,7 +3,7 @@
 #include "Tcp/TcpUtility.h"
 #include <string.h>
 
-
+using namespace spark::core;
 namespace spark::network
 {
 TcpEpollBase::TcpEpollBase(ServerTypeType serverType, const char* addressName, int milliSeconds)

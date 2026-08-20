@@ -8,8 +8,6 @@
 
 namespace spark::core
 {
-template<unsigned SIZE>
-class spark::Buffer;
 struct LogData
 {
 	LogData();

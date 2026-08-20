@@ -64,11 +64,11 @@ private:
 
 
 #define WriteLog(level, formatStr, ...)\
-	if (Logger::GetWriteLogFunc() != nullptr)\
-		Logger::GetWriteLogFunc()(level, __FILE__, __LINE__, __func__, formatStr, ##__VA_ARGS__);
+	if (spark::core::Logger::GetWriteLogFunc() != nullptr)\
+		spark::core::Logger::GetWriteLogFunc()(level, __FILE__, __LINE__, __func__, formatStr, ##__VA_ARGS__);
 
 
 #define WriteErrorLog(errorID, errorMsg)\
-	if (Logger::GetWriteLogFunc() != nullptr)\
-		Logger::GetWriteLogFunc()(LogLevel::Error, __FILE__, __LINE__, __func__, "ErrorID:[%d], ErrorMsg:[%s].", errorID, errorMsg);
+	if (spark::core::Logger::GetWriteLogFunc() != nullptr)\
+		spark::core::Logger::GetWriteLogFunc()(spark::core::LogLevel::Error, __FILE__, __LINE__, __func__, "ErrorID:[%d], ErrorMsg:[%s].", errorID, errorMsg);
 }
