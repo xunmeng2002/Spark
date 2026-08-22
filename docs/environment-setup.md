@@ -53,7 +53,7 @@
 D:/Program Files/Microsoft Visual Studio/2022/Enterprise/
 ```
 
-> 如果变更了安装路径，请同步更新项目 CMake 中 vcpkg 的回退路径。
+> 如果 vcpkg 安装在其他位置，请同步更新 `VCPKG_ROOT` 系统环境变量，使其指向实际安装目录。
 
 ### 1.3 Git
 
@@ -100,17 +100,15 @@ cd vcpkg
 .\bootstrap-vcpkg.bat
 ```
 
-设置环境变量：
+**设置 `VCPKG_ROOT` 系统环境变量（必需）：**
 
 ```bash
 setx VCPKG_ROOT "D:/path/to/vcpkg"
 ```
 
-将 `%VCPKG_ROOT%` 添加到 `PATH`。
+将 `%VCPKG_ROOT%` 添加到 `PATH`，并**重启终端 / Visual Studio** 使环境变量生效。
 
-**方案二：使用项目 CMake 回退路径**
-
-项目默认回退路径为 `D:/Github/vcpkg/`。如果 vcpkg 在此位置，无需额外配置。
+> **注意**：项目 CMake 通过 `$ENV{VCPKG_ROOT}` 定位 vcpkg（`CMakeLists.txt` 中 `set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")`），Windows 下由 `restore_vcpkg_root()` 自动读取**系统环境变量**（优先 User 级，其次 Machine 级）。因此 `VCPKG_ROOT` 必须以系统环境变量形式设置，**不再支持固定的回退路径**。
 
 ### 1.6 验证
 
@@ -208,6 +206,8 @@ vcpkg --version
 echo $VCPKG_ROOT  # 应输出 /home/xxx/Github/vcpkg
 ```
 
+> **注意**：WSL / Linux 构建时，CMake 直接读取 shell 环境变量 `VCPKG_ROOT`（`restore_vcpkg_root()` 仅在 Windows 生效），请确保上述 `export` 已写入 `~/.bashrc` 并 `source` 生效。
+
 ### 2.5 代理配置（可选）
 
 如果未启用镜像网络模式，需在 WSL 中手动配置代理：
@@ -246,13 +246,14 @@ cmake -S . -B out/build/WSL-GCC-Debug \
 
 - 确认代理工具已开启
 - 检查 `git config --global http.proxy` 是否设置正确
-- 检查 `http_proxy` / `https_proxy` 环境变量
+- vcpkg 下载器只读取 `HTTP_PROXY` / `HTTPS_PROXY` 环境变量；项目 CMake 已通过 `reuse_git_proxy_for_vcpkg()` 在未设置环境变量时自动复用 git 代理配置，通常无需额外处理
+- 若仍未生效，请手动设置 `http_proxy` / `https_proxy` 环境变量
 
 ### 3.2 VS 提示 "Could not find GTest"
 
-- 确认 vcpkg 已安装且 `VCPKG_ROOT` 环境变量已设置
-- 确认 `CMakeSettings.json` 中 WSL 配置已添加 `CMAKE_TOOLCHAIN_FILE` 变量
-- 在 VS 中选择 **项目 → 清除缓存**，重新生成
+- 确认 vcpkg 已安装，且 `VCPKG_ROOT` 已设置为**系统环境变量**（`restore_vcpkg_root()` 会从 User / Machine 级环境变量读取）
+- 设置 `VCPKG_ROOT` 后请**重启终端或 Visual Studio** 再执行 CMake 配置（VS 不会自动刷新旧的环境变量）
+- 在 VS 中选择 **项目 → 清除缓存并重新生成**，或删除 `out/` 目录后重新配置
 
 ### 3.3 WSL 中 cmake 找不到 Ninja
 

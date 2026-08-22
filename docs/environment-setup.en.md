@@ -53,7 +53,7 @@ Reference installation path:
 D:/Program Files/Microsoft Visual Studio/2022/Enterprise/
 ```
 
-> If you choose a different path, update the vcpkg fallback path in the project's CMake configuration accordingly.
+> If vcpkg is installed elsewhere, update the `VCPKG_ROOT` system environment variable to point to the actual installation directory.
 
 ### 1.3 Git
 
@@ -100,17 +100,15 @@ cd vcpkg
 .\bootstrap-vcpkg.bat
 ```
 
-Set environment variable:
+**Set the `VCPKG_ROOT` system environment variable (required):**
 
 ```bash
 setx VCPKG_ROOT "D:/path/to/vcpkg"
 ```
 
-Add `%VCPKG_ROOT%` to `PATH`.
+Add `%VCPKG_ROOT%` to `PATH`, then **restart your terminal / Visual Studio** for the change to take effect.
 
-**Option B: Use the project's CMake fallback path**
-
-The project defaults to `D:/Github/vcpkg/` as a fallback. If vcpkg is installed there, no extra configuration is needed.
+> **Note**: The project's CMake locates vcpkg via `$ENV{VCPKG_ROOT}` (`set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")` in `CMakeLists.txt`). On Windows, `restore_vcpkg_root()` reads the **system environment variable** (User-level first, then Machine-level). So `VCPKG_ROOT` must be set as a system environment variable — **there is no longer a fixed fallback path**.
 
 ### 1.6 Verification
 
@@ -208,6 +206,8 @@ vcpkg --version
 echo $VCPKG_ROOT  # Should output /home/xxx/Github/vcpkg
 ```
 
+> **Note**: For WSL / Linux builds, CMake reads the `VCPKG_ROOT` shell environment variable directly (`restore_vcpkg_root()` only runs on Windows). Make sure the `export` above is in `~/.bashrc` and has been sourced.
+
 ### 2.5 Proxy Configuration (Optional)
 
 If mirrored networking mode is not enabled, configure the proxy manually inside WSL:
@@ -246,13 +246,14 @@ Alternatively, use **Visual Studio**'s CMake integration — select the `WSL-GCC
 
 - Make sure your proxy tool is running
 - Check `git config --global http.proxy` is set correctly
-- Check `http_proxy` / `https_proxy` environment variables
+- The vcpkg downloader only reads the `HTTP_PROXY` / `HTTPS_PROXY` environment variables; the project's CMake calls `reuse_git_proxy_for_vcpkg()` to automatically reuse your git proxy config when those variables are unset, so no extra action is usually needed
+- If it still fails, set `http_proxy` / `https_proxy` manually
 
 ### 3.2 VS Says "Could not find GTest"
 
-- Verify vcpkg is installed and `VCPKG_ROOT` is set
-- Verify `CMakeSettings.json` includes `CMAKE_TOOLCHAIN_FILE` for WSL configurations
-- In VS, select **Project → Delete Cache and Regenerate**
+- Verify vcpkg is installed and `VCPKG_ROOT` is set as a **system environment variable** (`restore_vcpkg_root()` reads the User/Machine level variable)
+- After setting `VCPKG_ROOT`, **restart your terminal or Visual Studio** before re-running CMake configuration (VS does not pick up new environment variables automatically)
+- In VS, select **Project → Delete Cache and Regenerate**, or delete the `out/` directory and reconfigure
 
 ### 3.3 cmake cannot find Ninja in WSL
 

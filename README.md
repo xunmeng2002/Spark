@@ -1,7 +1,7 @@
 # Spark
 [![License](https://img.shields.io/badge/License-BSD--4--Clause-blue.svg)](LICENSE)
 [![Language](https://img.shields.io/badge/Language-C++20+-orange.svg)]()
-[![Build](https://img.shields.io/badge/Build-CMake3.10+-green.svg)]()
+[![Build](https://img.shields.io/badge/Build-CMake3.20+-green.svg)]()
 
 **Spark** 是一套面向**金融交易系统、风险管理系统**设计的跨平台 C++ 通用基础库，集成高性能日志、多模型网络通信、协议序列化、高性能数据结构与工具组件等常用能力，适配 Linux / Windows 双平台，可快速落地金融后端服务开发。
 
@@ -25,6 +25,7 @@ Created by [Fireseeker](https://fireseeker.cn/)
 - **Timer**：通用定时器组件
 - **Utility**：通用工具函数集合（含 Double 精度比较、时间工具等）
 - **Aspect**：AOP 面向切面编程，支持日志切面、性能监控切面
+- **ConfigStructs**：通用配置结构体（时区、IP 地址、订阅合约等）
 
 ### 2. 网络通信模块（Network）
 
@@ -76,16 +77,23 @@ Spark/
 │   │   ├── Serialization/      # Serialization 模块单元测试（4 文件）
 │   │   ├── TemplateLib/        # TemplateLib 模块单元测试（6 文件）
 │   │   └── CMakeLists.txt      # 单元测试构建配置
-│   ├── src/TestCommon/         # 测试公共库（Package 工厂、订阅器等）
+│   ├── TestCommon/             # 测试公共库（Package 工厂、订阅器等）
+│   ├── Packages/               # 测试用包模型定义与生成
 │   ├── TestClient/             # 网络客户端测试（旧版）
 │   ├── TestServer/             # 网络服务端测试（旧版）
-│   └── TestCore/               # 核心组件测试（旧版）
-├── model/                      # 数据模型定义文件
+│   ├── TestCore/               # 核心组件测试（旧版）
+│   └── TestMD5/                # MD5 验证程序
+├── model/                      # 数据模型定义文件（Head.xml / XtpHead.xml 等）
 ├── submodules/                 # 子模块依赖（CMakeCommon）
+├── bin/                        # 构建产物：动态库 / 可执行文件（按配置分目录）
+├── lib/                        # 构建产物：静态库 / 导入库（按配置分目录）
+├── out/                        # CMake Presets 构建目录
+├── .workflow/                  # CI 流水线配置（GCC 构建）
 ├── CMakeLists.txt              # CMake 主构建配置
-├── CMakeSettings.json          # VS CMake 配置
+├── CMakePresets.json           # CMake 预设配置（VS / 命令行）
 ├── *.py                        # Python 自动化脚本
 ├── UpdateSubmodule.bat/sh      # 子模块更新脚本
+├── Install.sh                  # Linux 安装脚本（cmake --install）
 ├── .gitmodules                 # Git 子模块配置
 ├── .gitignore                  # Git 忽略规则
 └── LICENSE                     # BSD-4-Clause 开源许可证
@@ -96,7 +104,7 @@ Spark/
 ### 基础要求
 
 - C++ 编译器：支持 **C++20 及以上**（GCC、Clang、MSVC）
-- 构建工具：**CMake 3.10+**
+- 构建工具：**CMake 3.20+**
 - 脚本环境：**Python 3.6+**（仅用于代码生成类脚本，非运行依赖）
 - 测试框架：**Google Test**（CMake 自动查找，需已安装或由 vcpkg / 系统包管理器提供）
 - 平台：Linux、Windows
@@ -134,15 +142,24 @@ cmake ..
 cmake --build . --config Release
 ```
 
-编译完成后，库文件（Core / Network / Serialization / TemplateLib）和测试程序（UnitTests）会输出至 `build` 目录对应路径。
+> **提示**：项目内置 `CMakePresets.json`，也可使用 Presets 构建（推荐）：
+>
+> ```bash
+> cmake --preset x64-Release          # Windows（MSVC）
+> cmake --build out/build/x64-Release
+> ```
+>
+> Linux / WSL 可改用 `WSL-GCC-Debug` / `WSL-GCC-Release` 预设。
+
+编译完成后，库文件（Core / Network / Serialization / TemplateLib）输出至 `lib/<Config>` 目录，可执行文件（UnitTests、Test* 等）输出至 `bin/<Config>` 目录（例如 Release 配置对应 `bin/Release`）。
 
 ### 4. 运行单元测试
 
 ```bash
 cd build
 ctest --output-on-failure
-# 或直接运行
-./test/unittest/UnitTests
+# 或直接运行编译产物
+./bin/Release/UnitTests
 ```
 
 ## 六、基础使用示例
@@ -150,20 +167,24 @@ ctest --output-on-failure
 ### 示例 1：高性能日志组件
 
 ```cpp
-#include "Spark/Core/Logger/Logger.h"
+#include <Spark/Core/Logger/Logger.h>
 
-int main()
+using namespace spark::core;
+
+int main(int argc, const char* argv[])
 {
-    // 初始化日志器，指定应用名称
-    Logger::GetInstance().Init("FinancialDemo");
-    // 设置日志输出级别
-    Logger::GetInstance().SetLogLevel(LogLevel::Info);
+    // 初始化日志器（传入进程名），设置输出级别并启动日志线程
+    Logger::GetInstance().Init(argv[0]);
+    Logger::GetInstance().SetLogLevel(LogLevel::Info, LogLevel::Info);
+    Logger::GetInstance().Start();
 
-    // 分级日志输出
-    LOG_INFO("Application started successfully");
-    LOG_DEBUG("Debug message: system init done");
-    LOG_ERROR("Demo running");
+    // 分级日志输出（printf 风格格式化）
+    WriteLog(LogLevel::Info, "Application started successfully");
+    WriteLog(LogLevel::Debug, "Debug message: system init done");
+    WriteLog(LogLevel::Error, "Demo running, error code:[%d]", 1001);
 
+    Logger::GetInstance().Stop();
+    Logger::GetInstance().Join();
     return 0;
 }
 ```
@@ -171,21 +192,35 @@ int main()
 ### 示例 2：JSON 序列化与解析
 
 ```cpp
-#include "Spark/Serialization/json/json.h"
+#include <Spark/Serialization/json/json.h>
 #include <iostream>
+#include <memory>
+#include <string>
 
 int main()
 {
+    // 构造 JSON 对象
     Json::Value root;
     root["order_id"] = "20260615001";
     root["price"] = 123.45;
     root["volume"] = 1000;
     root["is_buy"] = true;
 
-    // JSON 对象转字符串
-    Json::StreamWriterBuilder builder;
-    std::string json_str = Json::writeString(builder, root);
-    std::cout << "JSON String: " << json_str << std::endl;
+    // 序列化：JSON 对象 → 字符串
+    Json::StreamWriterBuilder writerBuilder;
+    std::string jsonStr = Json::writeString(writerBuilder, root);
+    std::cout << "JSON String: " << jsonStr << std::endl;
+
+    // 反序列化：字符串 → JSON 对象
+    Json::CharReaderBuilder readerBuilder;
+    std::unique_ptr<Json::CharReader> reader(readerBuilder.newCharReader());
+    Json::Value parsed;
+    std::string errs;
+    bool ok = reader->parse(jsonStr.c_str(), jsonStr.c_str() + jsonStr.size(), &parsed, &errs);
+    if (ok)
+    {
+        std::cout << "Parsed price: " << parsed["price"].asDouble() << std::endl;
+    }
 
     return 0;
 }
@@ -194,19 +229,36 @@ int main()
 ### 示例 3：网络通信（Step 协议客户端）
 
 ```cpp
-#include <Spark/Network/Protocol/Protocol.h>
-#include <Spark/Network/Protocol/PackageFactory.h>
-#include <Spark/Network/IO/IOThread.h>
 #include <Spark/Core/Logger/Logger.h>
+#include <Spark/Core/Utility/Utility.h>
+#include <Spark/Network/IO/IOThread.h>
+#include <Spark/Network/Protocol/Protocol.h>
+#include <Spark/Network/Protocol/ProtocolSubscriber.h>
+#include <Spark/Network/Protocol/PackageFactoryBase.h>
+#include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 
-// 自定义客户端：继承 Protocol 并实现 ProtocolSubscriber 回调
+#include <cstring>
+
+using namespace spark;
+using namespace spark::core;
+using namespace spark::network;
+
+// 包工厂：按包 ID 创建对应包对象（本示例省略实现，详见 test/Packages/PackageFactory.cpp）
+class MyPackageFactory : public PackageFactoryBase
+{
+public:
+    virtual Package* CreatePackage(UShortType packageID) override;
+};
+
+// Step 协议客户端：继承 Protocol 并实现 ProtocolSubscriber 回调
 class MyStepClient : public Protocol, public ProtocolSubscriber
 {
 public:
     MyStepClient()
         : Protocol(ProtocolTypeType::Step, ServerTypeType::Client,
-                   IOModelType::Epoll, 0, new PackageFactory())
+                   IOModelType::Select, 0, new MyPackageFactory())
     {
+        m_ReqInsertOrder = new ReqInsertOrderPackage(); // 由模型自动生成（见 test/Packages）
         Subscribe(this);                        // 注册自身为消息订阅者
         RegisterFront("tcp://127.0.0.1:20001"); // 连接服务端地址
         // 共享内存地址格式：RegisterFront("shm://TestShm:4");  // "shm://" + 服务名 + ":" + 最大连接数
@@ -215,36 +267,53 @@ public:
     // 连接建立回调
     void OnProtocolConnect(SessionIDType sessionID, const char* ip, int port) override
     {
-        LOG_INFO("Connected SessionID:[{}], IP:[{}], port:[{}]", sessionID, ip, port);
+        WriteLog(LogLevel::Info, "OnConnect SessionID:[%lld], IP:[%s], port:[%d]", sessionID, ip, port);
+        SendReqInsertOrder();
     }
 
     // 连接断开回调
     void OnProtocolDisConnect(SessionIDType sessionID, const char* ip, int port) override
     {
-        LOG_INFO("DisConnected SessionID:[{}]", sessionID);
+        WriteLog(LogLevel::Info, "OnDisConnect SessionID:[%lld]", sessionID);
     }
 
     // 消息到达回调
     void OnMessage(Package* package) override
     {
-        LOG_INFO("Recv Package: {}", package->GetDebugString());
-
-        // 构造回复并发送
-        ReqInsertOrderPackage* resp = new ReqInsertOrderPackage();
-        resp->Prepare(package->SessionID, false, package->Head.MsgSeqNum);
-        resp->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
-        resp->ReqInsertOrder->Price = 100.5;
-        resp->ReqInsertOrder->Volume = 1000;
-        Send(resp);
-        resp->Deallocate();
+        WriteLog(LogLevel::Info, "OnMessage: %s", package->GetDebugString());
+        SendReqInsertOrder(); // 收到消息后回送一笔委托
     }
+
+    // 构造并发送一笔买入开仓委托
+    void SendReqInsertOrder()
+    {
+        m_ReqInsertOrder->Prepare(m_SessionID, false, ++m_MessageSeqNum);
+        m_ReqInsertOrder->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
+        memset(m_ReqInsertOrder->ReqInsertOrder, 0, sizeof(ReqInsertOrderField));
+        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->AccountID, "Xunmeng001");
+        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->ExchangeID, "SHSE");
+        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->InstrumentID, "600036");
+        m_ReqInsertOrder->ReqInsertOrder->Direction = DirectionType::Buy;
+        m_ReqInsertOrder->ReqInsertOrder->OffsetFlag = OffsetFlagType::Open;
+        m_ReqInsertOrder->ReqInsertOrder->OrderPriceType = OrderPriceTypeType::LimitPrice;
+        m_ReqInsertOrder->ReqInsertOrder->Price = 100.5;
+        m_ReqInsertOrder->ReqInsertOrder->Volume = 1000;
+        Send(m_ReqInsertOrder);
+        m_ReqInsertOrder->Deallocate();
+    }
+
+private:
+    SessionIDType m_SessionID = 0LL;
+    int m_MessageSeqNum = 0;
+    ReqInsertOrderPackage* m_ReqInsertOrder;
 };
 
-int main()
+int main(int argc, const char* argv[])
 {
     // 初始化日志
-    Logger::GetInstance().Init("StepClient");
-    Logger::GetInstance().SetLogLevel(LogLevel::Info);
+    Logger::GetInstance().Init(argv[0]);
+    Logger::GetInstance().SetLogLevel(LogLevel::Info, LogLevel::Info);
+    Logger::GetInstance().Start();
 
     // 创建 IO 线程并启动客户端
     IOThread* ioThread = new IOThread("StepClient");
@@ -256,9 +325,13 @@ int main()
     ioThread->Start();      // 启动事件循环（阻塞当前线程）
     ioThread->Join();
 
+    Logger::GetInstance().Stop();
+    Logger::GetInstance().Join();
     return 0;
 }
 ```
+
+> **说明**：示例中的 `ReqInsertOrderPackage` / `ReqInsertOrderField` 等包模型类由模型自动生成（完整实现参见 `test/Packages/`），回调与包工厂的完整用法参见 `test/TestClient/TestStepClient.cpp`。
 
 ## 七、单元测试
 
@@ -275,9 +348,9 @@ int main()
 | | `TimerTest` | 定时器触发、取消 |
 | | `TimeUtilityTest` | 时间格式化、转换 |
 | | `UtilityTest` | 通用工具函数 |
-| **Network** | `StepUtilityTest` | Step 协议字段解析、Head/Tail 流式转换（15 用例） |
-| | `ProtocolUtilityTest` | CHECKSUM 校验和计算（7 用例） |
-| | `PackageReaderTest` | 缓冲管理：Append/PopFront/Shift/Reset（15 用例） |
+| **Network** | `StepUtilityTest` | Step 协议字段解析、Head/Tail 流式转换（36 用例） |
+| | `ProtocolUtilityTest` | CHECKSUM 校验和计算（8 用例） |
+| | `PackageReaderTest` | 缓冲管理：Append/PopFront/Shift/Reset（14 用例） |
 | | `PackageSerializationTest` | MakePackage ↔ ParsePackage 端到端往返（6 用例） |
 | **Serialization** | `Base64Test` | Base64 编解码 |
 | | `CSVParserTest` | CSV 解析行、列、引号转义 |
@@ -297,7 +370,7 @@ cd build
 ctest
 ```
 
-亦可直接运行 `test/unittest/UnitTests` 可执行文件查看详细输出。
+亦可直接运行 `bin/<Config>/UnitTests` 可执行文件查看详细输出（例如 Release 为 `bin/Release/UnitTests`）。
 
 ## 八、脚本说明
 
@@ -305,10 +378,12 @@ ctest
 
 | 脚本 | 说明 |
 | ---- | ---- |
-| Parse*.py | 数据模型、数据表、字段解析脚本 |
-| pump.py / pumpall.py | 批量数据处理脚本 |
-| geninc.py | 头文件自动生成 |
-| copyheader.py / copymodel.py | 文件、模型批量复制 |
+| pump.py / pumpall.py | 模板代码生成引擎（由 pumplist.xml / parselist.xml 驱动） |
+| pumptemp.py | 特定模板生成（如 Types.h / EnumString.h） |
+| ParsePackageModel.py / ParseTableModel.py | 包模型 / 数据表模型解析 |
+| ParseShortField.py / ParseShortItem.py | 短字段 / 短条目解析 |
+| parseall.py | 批量解析入口 |
+| ConvertToUtf8Bom.py | 文件编码统一转换为 UTF-8 BOM |
 | clearall.py | 临时文件清理 |
 
 ## 九、许可证 & 声明

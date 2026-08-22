@@ -1,7 +1,7 @@
 # Spark
 [![License](https://img.shields.io/badge/License-BSD--4--Clause-blue.svg)](LICENSE)
 [![Language](https://img.shields.io/badge/Language-C++20+-orange.svg)]()
-[![Build](https://img.shields.io/badge/Build-CMake3.10+-green.svg)]()
+[![Build](https://img.shields.io/badge/Build-CMake3.20+-green.svg)]()
 
 **Spark** is a cross-platform C++ general-purpose foundational library designed for **financial trading systems and risk management systems**. It integrates high-performance logging, multi-model network communication, protocol serialization, high-performance data structures, and utility components. It supports Linux / Windows platforms and can accelerate financial backend service development.
 
@@ -25,6 +25,7 @@ Provides low-level system capabilities with cross-platform compatibility:
 - **Timer**: General-purpose timer component
 - **Utility**: Collection of common utility functions (Double precision comparison, time utilities, etc.)
 - **Aspect**: AOP (Aspect-Oriented Programming) support for logging aspects and performance monitoring
+- **ConfigStructs**: Common configuration structs (time zone, IP address, subscribed instruments, etc.)
 
 ### 2.2 Network Module
 
@@ -76,16 +77,23 @@ Spark/
 │   │   ├── Serialization/      # Serialization module tests (4 files)
 │   │   ├── TemplateLib/        # TemplateLib module tests (6 files)
 │   │   └── CMakeLists.txt      # Unit test build configuration
-│   ├── src/TestCommon/         # Shared test library (Package factory, subscribers, etc.)
+│   ├── TestCommon/             # Shared test library (Package factory, subscribers, etc.)
+│   ├── Packages/               # Test package model definitions & generation
 │   ├── TestClient/             # Network client tests (legacy)
 │   ├── TestServer/             # Network server tests (legacy)
-│   └── TestCore/               # Core component tests (legacy)
-├── model/                      # Data model definitions
+│   ├── TestCore/               # Core component tests (legacy)
+│   └── TestMD5/                # MD5 verification program
+├── model/                      # Data model definitions (Head.xml / XtpHead.xml, etc.)
 ├── submodules/                 # Submodule dependencies (CMakeCommon)
+├── bin/                        # Build outputs: dynamic libraries / executables (per config)
+├── lib/                        # Build outputs: static libraries / import libraries (per config)
+├── out/                        # CMake Presets build directory
+├── .workflow/                  # CI pipeline configuration (GCC build)
 ├── CMakeLists.txt              # CMake main build configuration
-├── CMakeSettings.json          # VS CMake configuration
+├── CMakePresets.json           # CMake presets (VS / CLI)
 ├── *.py                        # Python automation scripts
 ├── UpdateSubmodule.bat/sh      # Submodule update scripts
+├── Install.sh                  # Linux install script (cmake --install)
 ├── .gitmodules                 # Git submodule configuration
 ├── .gitignore                  # Git ignore rules
 └── LICENSE                     # BSD-4-Clause license
@@ -96,7 +104,7 @@ Spark/
 ### Prerequisites
 
 - C++ compiler supporting **C++20 or later** (GCC, Clang, MSVC)
-- Build tool: **CMake 3.10+**
+- Build tool: **CMake 3.20+**
 - Script runtime: **Python 3.6+** (only for code generation scripts, not a runtime dependency)
 - Test framework: **Google Test** (auto-detected by CMake; must be installed via vcpkg or system package manager)
 - Platform: Linux, Windows
@@ -134,15 +142,24 @@ cmake ..
 cmake --build . --config Release
 ```
 
-After compilation, library files (Core / Network / Serialization / TemplateLib) and the test executable (UnitTests) will be output to the `build` directory.
+> **Tip**: The project ships `CMakePresets.json`. You can also build via presets (recommended):
+>
+> ```bash
+> cmake --preset x64-Release          # Windows (MSVC)
+> cmake --build out/build/x64-Release
+> ```
+>
+> On Linux / WSL, use the `WSL-GCC-Debug` / `WSL-GCC-Release` presets instead.
+
+After compilation, library files (Core / Network / Serialization / TemplateLib) are output to `lib/<Config>`, and executables (UnitTests, Test*, etc.) are output to `bin/<Config>` (e.g., Release configuration produces `bin/Release`).
 
 ### 5.4 Run Unit Tests
 
 ```bash
 cd build
 ctest --output-on-failure
-# or directly
-./test/unittest/UnitTests
+# or run the built executable directly
+./bin/Release/UnitTests
 ```
 
 ## 6. Basic Usage Examples
@@ -150,20 +167,24 @@ ctest --output-on-failure
 ### 6.1 High-Performance Logging
 
 ```cpp
-#include "Spark/Core/Logger/Logger.h"
+#include <Spark/Core/Logger/Logger.h>
 
-int main()
+using namespace spark::core;
+
+int main(int argc, const char* argv[])
 {
-    // Initialize the logger with an application name
-    Logger::GetInstance().Init("FinancialDemo");
-    // Set the log output level
-    Logger::GetInstance().SetLogLevel(LogLevel::Info);
+    // Initialize the logger with the process name, set levels, and start the logging thread
+    Logger::GetInstance().Init(argv[0]);
+    Logger::GetInstance().SetLogLevel(LogLevel::Info, LogLevel::Info);
+    Logger::GetInstance().Start();
 
-    // Level-based logging
-    LOG_INFO("Application started successfully");
-    LOG_DEBUG("Debug message: system init done");
-    LOG_ERROR("Demo running");
+    // Level-based logging (printf-style formatting)
+    WriteLog(LogLevel::Info, "Application started successfully");
+    WriteLog(LogLevel::Debug, "Debug message: system init done");
+    WriteLog(LogLevel::Error, "Demo running, error code:[%d]", 1001);
 
+    Logger::GetInstance().Stop();
+    Logger::GetInstance().Join();
     return 0;
 }
 ```
@@ -171,21 +192,35 @@ int main()
 ### 6.2 JSON Serialization & Parsing
 
 ```cpp
-#include "Spark/Serialization/json/json.h"
+#include <Spark/Serialization/json/json.h>
 #include <iostream>
+#include <memory>
+#include <string>
 
 int main()
 {
+    // Build a JSON object
     Json::Value root;
     root["order_id"] = "20260615001";
     root["price"] = 123.45;
     root["volume"] = 1000;
     root["is_buy"] = true;
 
-    // Serialize JSON object to string
-    Json::StreamWriterBuilder builder;
-    std::string json_str = Json::writeString(builder, root);
-    std::cout << "JSON String: " << json_str << std::endl;
+    // Serialize: JSON object -> string
+    Json::StreamWriterBuilder writerBuilder;
+    std::string jsonStr = Json::writeString(writerBuilder, root);
+    std::cout << "JSON String: " << jsonStr << std::endl;
+
+    // Deserialize: string -> JSON object
+    Json::CharReaderBuilder readerBuilder;
+    std::unique_ptr<Json::CharReader> reader(readerBuilder.newCharReader());
+    Json::Value parsed;
+    std::string errs;
+    bool ok = reader->parse(jsonStr.c_str(), jsonStr.c_str() + jsonStr.size(), &parsed, &errs);
+    if (ok)
+    {
+        std::cout << "Parsed price: " << parsed["price"].asDouble() << std::endl;
+    }
 
     return 0;
 }
@@ -194,19 +229,37 @@ int main()
 ### 6.3 Network Communication (Step Protocol Client)
 
 ```cpp
-#include <Spark/Network/Protocol/Protocol.h>
-#include <Spark/Network/Protocol/PackageFactory.h>
-#include <Spark/Network/IO/IOThread.h>
 #include <Spark/Core/Logger/Logger.h>
+#include <Spark/Core/Utility/Utility.h>
+#include <Spark/Network/IO/IOThread.h>
+#include <Spark/Network/Protocol/Protocol.h>
+#include <Spark/Network/Protocol/ProtocolSubscriber.h>
+#include <Spark/Network/Protocol/PackageFactoryBase.h>
+#include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 
-// Custom client: inherit Protocol and implement ProtocolSubscriber callbacks
+#include <cstring>
+
+using namespace spark;
+using namespace spark::core;
+using namespace spark::network;
+
+// Package factory: creates the corresponding package object by package ID
+// (implementation omitted here; see test/Packages/PackageFactory.cpp)
+class MyPackageFactory : public PackageFactoryBase
+{
+public:
+    virtual Package* CreatePackage(UShortType packageID) override;
+};
+
+// Step protocol client: inherit Protocol and implement ProtocolSubscriber callbacks
 class MyStepClient : public Protocol, public ProtocolSubscriber
 {
 public:
     MyStepClient()
         : Protocol(ProtocolTypeType::Step, ServerTypeType::Client,
-                   IOModelType::Epoll, 0, new PackageFactory())
+                   IOModelType::Select, 0, new MyPackageFactory())
     {
+        m_ReqInsertOrder = new ReqInsertOrderPackage(); // auto-generated from the model (see test/Packages)
         Subscribe(this);                        // Register self as message subscriber
         RegisterFront("tcp://127.0.0.1:20001"); // Connect to server address
         // Shared memory format: RegisterFront("shm://TestShm:4");  // "shm://" + serviceName + ":" + maxConnections
@@ -215,36 +268,53 @@ public:
     // Connection established callback
     void OnProtocolConnect(SessionIDType sessionID, const char* ip, int port) override
     {
-        LOG_INFO("Connected SessionID:[{}], IP:[{}], port:[{}]", sessionID, ip, port);
+        WriteLog(LogLevel::Info, "OnConnect SessionID:[%lld], IP:[%s], port:[%d]", sessionID, ip, port);
+        SendReqInsertOrder();
     }
 
     // Connection disconnected callback
     void OnProtocolDisConnect(SessionIDType sessionID, const char* ip, int port) override
     {
-        LOG_INFO("DisConnected SessionID:[{}]", sessionID);
+        WriteLog(LogLevel::Info, "OnDisConnect SessionID:[%lld]", sessionID);
     }
 
     // Incoming message callback
     void OnMessage(Package* package) override
     {
-        LOG_INFO("Recv Package: {}", package->GetDebugString());
-
-        // Build and send a response
-        ReqInsertOrderPackage* resp = new ReqInsertOrderPackage();
-        resp->Prepare(package->SessionID, false, package->Head.MsgSeqNum);
-        resp->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
-        resp->ReqInsertOrder->Price = 100.5;
-        resp->ReqInsertOrder->Volume = 1000;
-        Send(resp);
-        resp->Deallocate();
+        WriteLog(LogLevel::Info, "OnMessage: %s", package->GetDebugString());
+        SendReqInsertOrder(); // Send an order after receiving a message
     }
+
+    // Build and send a buy-to-open order
+    void SendReqInsertOrder()
+    {
+        m_ReqInsertOrder->Prepare(m_SessionID, false, ++m_MessageSeqNum);
+        m_ReqInsertOrder->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
+        memset(m_ReqInsertOrder->ReqInsertOrder, 0, sizeof(ReqInsertOrderField));
+        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->AccountID, "Xunmeng001");
+        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->ExchangeID, "SHSE");
+        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->InstrumentID, "600036");
+        m_ReqInsertOrder->ReqInsertOrder->Direction = DirectionType::Buy;
+        m_ReqInsertOrder->ReqInsertOrder->OffsetFlag = OffsetFlagType::Open;
+        m_ReqInsertOrder->ReqInsertOrder->OrderPriceType = OrderPriceTypeType::LimitPrice;
+        m_ReqInsertOrder->ReqInsertOrder->Price = 100.5;
+        m_ReqInsertOrder->ReqInsertOrder->Volume = 1000;
+        Send(m_ReqInsertOrder);
+        m_ReqInsertOrder->Deallocate();
+    }
+
+private:
+    SessionIDType m_SessionID = 0LL;
+    int m_MessageSeqNum = 0;
+    ReqInsertOrderPackage* m_ReqInsertOrder;
 };
 
-int main()
+int main(int argc, const char* argv[])
 {
     // Initialize logger
-    Logger::GetInstance().Init("StepClient");
-    Logger::GetInstance().SetLogLevel(LogLevel::Info);
+    Logger::GetInstance().Init(argv[0]);
+    Logger::GetInstance().SetLogLevel(LogLevel::Info, LogLevel::Info);
+    Logger::GetInstance().Start();
 
     // Create IO thread and start the client
     IOThread* ioThread = new IOThread("StepClient");
@@ -256,9 +326,13 @@ int main()
     ioThread->Start();      // Start the event loop (blocks current thread)
     ioThread->Join();
 
+    Logger::GetInstance().Stop();
+    Logger::GetInstance().Join();
     return 0;
 }
 ```
+
+> **Note**: Package model classes such as `ReqInsertOrderPackage` / `ReqInsertOrderField` are auto-generated from the model (see `test/Packages/`). For the complete usage of callbacks and the package factory, see `test/TestClient/TestStepClient.cpp`.
 
 ## 7. Unit Tests
 
@@ -275,9 +349,9 @@ The project includes a comprehensive **Google Test**-based unit test suite with 
 | | `TimerTest` | Timer firing and cancellation |
 | | `TimeUtilityTest` | Time formatting and conversion |
 | | `UtilityTest` | General utility functions |
-| **Network** | `StepUtilityTest` | Step protocol field parsing, Head/Tail stream conversion (15 cases) |
-| | `ProtocolUtilityTest` | CHECKSUM calculation (7 cases) |
-| | `PackageReaderTest` | Buffer management: Append/PopFront/Shift/Reset (15 cases) |
+| **Network** | `StepUtilityTest` | Step protocol field parsing, Head/Tail stream conversion (36 cases) |
+| | `ProtocolUtilityTest` | CHECKSUM calculation (8 cases) |
+| | `PackageReaderTest` | Buffer management: Append/PopFront/Shift/Reset (14 cases) |
 | | `PackageSerializationTest` | End-to-end MakePackage ↔ ParsePackage round-trip (6 cases) |
 | **Serialization** | `Base64Test` | Base64 encoding/decoding |
 | | `CSVParserTest` | CSV row/column parsing, quote escaping |
@@ -297,7 +371,7 @@ cd build
 ctest
 ```
 
-Or run `test/unittest/UnitTests` directly for detailed console output.
+Or run `bin/<Config>/UnitTests` directly for detailed console output (e.g., `bin/Release/UnitTests` for Release builds).
 
 ## 8. Script Reference
 
@@ -305,10 +379,12 @@ Python scripts in the root directory are used for automated code processing:
 
 | Script | Description |
 |--------|-------------|
-| Parse*.py | Data model, table, and field parsing scripts |
-| pump.py / pumpall.py | Batch data processing scripts |
-| geninc.py | Automatic header file generation |
-| copyheader.py / copymodel.py | Batch file/model copying |
+| pump.py / pumpall.py | Template-based code generation engine (driven by pumplist.xml / parselist.xml) |
+| pumptemp.py | Generation for specific templates (e.g., Types.h / EnumString.h) |
+| ParsePackageModel.py / ParseTableModel.py | Package model / table model parsing |
+| ParseShortField.py / ParseShortItem.py | Short field / short item parsing |
+| parseall.py | Batch parsing entry point |
+| ConvertToUtf8Bom.py | Normalize file encoding to UTF-8 BOM |
 | clearall.py | Temporary file cleanup |
 
 ## 9. License & Disclaimer
