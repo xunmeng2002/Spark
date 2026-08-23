@@ -8,6 +8,7 @@ using namespace std;
 
 using namespace spark::core;
 using namespace spark::network;
+using namespace spark::packages;
 
 XtpServer::XtpServer()
 	:Protocol(ProtocolTypeType::Xtp, ServerTypeType::Server, g_IOModel, 0, new PackageFactory()), m_Connected(false), m_SessionID(0LL), m_RecvCount(0)

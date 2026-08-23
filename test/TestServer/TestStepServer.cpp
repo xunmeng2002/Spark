@@ -5,9 +5,9 @@
 #include "PackageFactory.h"
 
 using namespace std;
-
 using namespace spark::core;
 using namespace spark::network;
+using namespace spark::packages;
 
 StepServer::StepServer()
 	:Protocol(ProtocolTypeType::Step, ServerTypeType::Server, g_IOModel, 0, new PackageFactory()), m_Connected(false), m_SessionID(0LL), m_RecvCount(0)

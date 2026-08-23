@@ -4,8 +4,7 @@
 #include <chrono>
 
 
-using namespace spark::network;
-class StepClient : public Protocol, public ProtocolSubscriber
+class StepClient : public spark::network::Protocol, public spark::network::ProtocolSubscriber
 {
 public:
 	StepClient();
@@ -22,7 +21,7 @@ public:
 
 	std::chrono::steady_clock::time_point m_StartTime;
 	int m_RecvCount;
-	ReqInsertOrderPackage* m_ReqInsertOrder;
+	spark::packages::ReqInsertOrderPackage* m_ReqInsertOrder;
 };
 
 

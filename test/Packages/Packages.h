@@ -4,6 +4,8 @@
 
 using spark::network::Package;
 
+namespace spark::packages
+{
 class NotifyComponentConnectStatusPackage : public Package
 {
 public:
@@ -3276,3 +3278,4 @@ public:
 	static constexpr UShortType PackageID = 0x5014;
 	OfferPositionField* OfferPosition = nullptr;
 };
+}

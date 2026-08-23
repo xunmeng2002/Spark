@@ -9,6 +9,8 @@ using namespace spark;
 using namespace spark::core;
 using namespace spark::network;
 
+namespace spark::packages
+{
 thread_local char t_DataStringBuffer[10240];
  
 NotifyComponentConnectStatusPackage::NotifyComponentConnectStatusPackage()
@@ -39990,4 +39992,4 @@ const char* RtnOfferPositionPackage::GetDebugString() const
 	}
 	return t_DataStringBuffer;
 }
-
+}

@@ -4,6 +4,8 @@
 
 using namespace spark::network;
 
+namespace spark::packages
+{
 Package* PackageFactory::CreatePackage(UShortType packageID)
 {
 	switch (packageID)
@@ -765,4 +767,4 @@ Package* PackageFactory::CreatePackage(UShortType packageID)
 	}
 	return nullptr;
 }
-
+}

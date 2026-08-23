@@ -8,6 +8,7 @@
 #include <cstring>
 using namespace spark;
 using namespace spark::network;
+using namespace spark::packages;
 // ============================================================
 // Package 序列化测试
 // 端到端测试 MakePackage → PackageReader::ParsePackage 往返
