@@ -55,10 +55,10 @@ def GetFields(fieldFile, items, fields):
             field.Items.append(items[itemName])
         fields[field.Name] = field
 
-def GetPackages(packageFile, fields, packages, destFields) -> str:
+def GetPackages(packageFile, fields, packages, destFields):
     dom = xml.dom.minidom.parse(packageFile)
     root = dom.documentElement
-    rootName = root.getAttribute("name")
+    packagesName = root.getAttribute("name")
     lastID = 0
     for packageNode in root.getElementsByTagName("package"):
         package = Package()
@@ -76,7 +76,7 @@ def GetPackages(packageFile, fields, packages, destFields) -> str:
             package.Fields.append(fields[fieldName])
             destFields[fieldName] = fields[fieldName]
         packages.append(package)
-    return rootName
+    return packagesName
 	
 def AddItemNode(dom, parentNode, item):
     itemNode = dom.createElement('item')
@@ -111,24 +111,25 @@ def ReadXml(packageFile, fieldFile, itemFile):
     destFields = {}
     GetItems(itemFile, items)
     GetFields(fieldFile, items, fields)
-    rootName = GetPackages(packageFile, fields, packages, destFields)
-    return rootName, packages, destFields
+    packagesName = GetPackages(packageFile, fields, packages, destFields)
+    return packagesName, packages, destFields
 
-def WritePackagesFile(destPackageFile, rootName, packages):
+def WritePackagesFile(destPackageFile, packagesName, packages):
     impl = xml.dom.minidom.getDOMImplementation()
     dom = impl.createDocument(None, 'packages', None)
     root = dom.documentElement
-    root.setAttribute("name", rootName)
+    root.setAttribute("name", packagesName)
     for package in packages:
         AddPackageNode(dom, root, package)
     f = open(destPackageFile, 'w', encoding="UTF-8")
     dom.writexml(f, indent="", addindent='\t', newl='\n', encoding="UTF-8")
     f.close()
     
-def WriteFullApiPackagesFile(fullApiPackageFile, packages):
+def WriteFullApiPackagesFile(fullApiPackageFile, packagesName, packages):
     impl = xml.dom.minidom.getDOMImplementation()
     dom = impl.createDocument(None, 'apipackages', None)
     root = dom.documentElement
+    root.setAttribute("project", packagesName)
     for package in packages:
         packageNode = dom.createElement('package')
         packageNode.setAttribute("name", package.Name)
@@ -150,7 +151,7 @@ def WriteFieldsFile(destFieldFile, fields):
 	
 if __name__ == "__main__":
     if len(sys.argv) < 5:
-        print("Usage: ParsePackageModel.py destPackage.xml fullApiPackage.xml destField.xml srcPackage.xml srcField.xml srcItem.xml")
+        print("Usage: ParseModel.py destPackage.xml fullApiPackage.xml destField.xml srcPackage.xml srcField.xml srcItem.xml")
         exit(-1) 
     destPackageFile = sys.argv[1]
     fullApiPackageFile = sys.argv[2]
@@ -159,7 +160,7 @@ if __name__ == "__main__":
     srcFieldFile = sys.argv[5]
     srcItemFile = sys.argv[6]
 
-    rootName, packages, fields = ReadXml(srcPackageFile, srcFieldFile, srcItemFile)
-    WritePackagesFile(destPackageFile, rootName, packages)
-    WriteFullApiPackagesFile(fullApiPackageFile, packages)
+    packagesName, packages, fields = ReadXml(srcPackageFile, srcFieldFile, srcItemFile)
+    WritePackagesFile(destPackageFile, packagesName, packages)
+    WriteFullApiPackagesFile(fullApiPackageFile, packagesName, packages)
     WriteFieldsFile(destFieldFile, fields)

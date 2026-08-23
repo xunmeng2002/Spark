@@ -54,7 +54,7 @@ def WriteItemsFile(destItemFile, items):
 	
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("Usage: ParseShortItem.py destItems.xml srcShortItem.xml")
+        print("Usage: ParseModel.py destItems.xml srcShortItem.xml")
         exit(-1) 
     destItemFile = sys.argv[1]
     srcItemFile = sys.argv[2]
