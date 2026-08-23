@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Fields.h"
+#include "Spark/Fields.h"
 #include <Spark/Network/Protocol/Package.h>
 
 using spark::network::Package;

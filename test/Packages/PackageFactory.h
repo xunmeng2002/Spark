@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <Spark/Network/Protocol/PackageFactoryBase.h>
 
 
