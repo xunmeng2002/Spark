@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<packages name="Spark">
+<packages project="Spark">
 	<package name="NotifyComponentConnectStatus" id="0x0001" desc="组件连接状态通知">
 		<field name="NotifyComponentConnectStatus" id="0x0004" desc="组件连接状态通知">
 			<item name="SessionID" id="0x101E" type="SessionID" desc="会话编号"/>
