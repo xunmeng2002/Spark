@@ -1,5 +1,5 @@
 #pragma once
-#ifdef WINDOWS
+#ifdef _WIN32
 #include "Tcp/TcpIocp/TcpIocpBase.h"
 
 namespace spark::network
@@ -17,5 +17,5 @@ protected:
 	SOCKET PrepareAcceptSocket();
 };
 }
-#endif // WINDOWS
+#endif // _WIN32
 

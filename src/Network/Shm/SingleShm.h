@@ -31,10 +31,10 @@ protected:
 	SessionIDType m_SessionID;
 	void* m_ShmAddr;
 	ShmBuffer<ShmBuffSize>* m_ShmBuffer;
-#ifdef WINDOWS
+#ifdef _WIN32
 	void* m_File;
 	void* m_FileMap;
-#endif // WINDOWS
+#endif // _WIN32
 };
 }
 

@@ -9,7 +9,7 @@ class codecvt_gbk : public std::codecvt_byname<wchar_t, char, std::mbstate_t>
 {
 public:
     codecvt_gbk()
-#ifdef WINDOWS
+#ifdef _WIN32
         :codecvt_byname("zh_CN")
 #else
         : codecvt_byname("zh_CN.GB18030")

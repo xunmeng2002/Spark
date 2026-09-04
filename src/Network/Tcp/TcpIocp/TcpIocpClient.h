@@ -1,5 +1,5 @@
 #pragma once
-#ifdef WINDOWS
+#ifdef _WIN32
 #include "Tcp/TcpIocp/TcpIocpBase.h"
 
 
@@ -22,5 +22,5 @@ private:
 	addrinfo* m_ClientLocalAddressInfo;
 };
 }
-#endif // WINDOWS
+#endif // _WIN32
 

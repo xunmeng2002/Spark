@@ -50,7 +50,7 @@ bool TcpEpollClient::ConnectToServer(const char* ip, unsigned short port)
 }
 void TcpEpollClient::AddEpollConnectEvent(TcpConnect* connect)
 {
-#ifdef LINUX
+#ifdef __linux__
 	epoll_event epollEvent;
 	epollEvent.data.ptr = connect;
 	epollEvent.events = EPOLLOUT;

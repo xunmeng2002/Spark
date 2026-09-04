@@ -1,9 +1,9 @@
 #include <Spark/Network/IO/IOFactory.h>
 #include "Tcp/SocketInit.h"
-#ifdef LINUX
+#ifdef __linux__
 #include "Tcp/TcpEpoll/TcpEpollClient.h"
 #include "Tcp/TcpEpoll/TcpEpollServer.h"
-#elif defined WINDOWS
+#elif defined _WIN32
 #include "Tcp/TcpIocp/TcpIocpClient.h"
 #include "Tcp/TcpIocp/TcpIocpServer.h"
 #endif
@@ -54,11 +54,11 @@ IOBase* IOFactory::CreateIO(ServerTypeType serverType, const char* address, IOMo
 			{
 			case IOModelType::Select:
 				return new TcpSelectClient(addressName, milliSeconds);
-#ifdef LINUX
+#ifdef __linux__
 			case IOModelType::Epoll:
 				return new TcpEpollClient(addressName, milliSeconds);
 #endif
-#if defined WINDOWS
+#if defined _WIN32
 			case IOModelType::Iocp:
 				return new TcpIocpClient(addressName, milliSeconds);
 #endif
@@ -84,11 +84,11 @@ IOBase* IOFactory::CreateIO(ServerTypeType serverType, const char* address, IOMo
 			{
 			case IOModelType::Select:
 				return new TcpSelectServer(addressName, milliSeconds);
-#ifdef LINUX
+#ifdef __linux__
 			case IOModelType::Epoll:
 				return new TcpEpollServer(addressName, milliSeconds);
 #endif
-#if defined WINDOWS
+#if defined _WIN32
 			case IOModelType::Iocp:
 				return new TcpIocpServer(addressName, milliSeconds);
 #endif

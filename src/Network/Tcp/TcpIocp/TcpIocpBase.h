@@ -1,5 +1,5 @@
 #pragma once
-#ifdef WINDOWS
+#ifdef _WIN32
 #include "Tcp/TcpBase.h"
 #include "Tcp/TcpIocp/TcpIocpConnect.h"
 #include "Tcp/TcpIocp/TcpIocpCompletePort.h"
@@ -35,5 +35,5 @@ protected:
 	IOCompletePort* m_IOCompletePort;
 };
 }
-#endif // WINDOWS
+#endif // _WIN32
 

@@ -47,10 +47,10 @@ protected:
 
 	std::chrono::steady_clock::time_point m_LastSendTime;
 
-#ifdef WINDOWS
+#ifdef _WIN32
 	void* m_File;
 	void* m_FileMap;
-#endif // WINDOWS
+#endif // _WIN32
 };
 }
 

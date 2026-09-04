@@ -2,11 +2,11 @@
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Core/Platform/Platform.h>
 #include <mutex>
-#ifdef WINDOWS
+#ifdef _WIN32
 #include <Ws2tcpip.h>
 #pragma comment(lib,"ws2_32.lib")
-#endif // WINDOWS
-#ifdef LINUX
+#endif // _WIN32
+#ifdef __linux__
 #include <arpa/inet.h>
 #include <netdb.h>
 #include<unistd.h>
@@ -18,7 +18,7 @@ typedef int SOCKET;
 #define SOCKET_ERROR            (-1)
 
 #define closesocket close
-#endif // LINUX
+#endif // __linux__
 
 namespace spark::network
 {

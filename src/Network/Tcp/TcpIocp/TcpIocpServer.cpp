@@ -4,7 +4,7 @@
 #include <Spark/Core/Logger/Logger.h>
 #include "Tcp/TcpUtility.h"
 
-#ifdef WINDOWS
+#ifdef _WIN32
 using namespace spark::core;
 
 namespace spark::network
@@ -99,4 +99,4 @@ SOCKET TcpIocpServer::PrepareAcceptSocket()
     return socketID;
 }
 }
-#endif // WINDOWS
+#endif // _WIN32

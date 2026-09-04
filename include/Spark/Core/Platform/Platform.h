@@ -1,6 +1,6 @@
 #pragma once
 #include <Spark/Core/CoreExport.h>
-#ifdef LINUX
+#ifdef __linux__
 #include <errno.h>
 
 namespace spark::core

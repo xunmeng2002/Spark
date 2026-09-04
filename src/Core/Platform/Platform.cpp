@@ -1,5 +1,5 @@
 #include <Spark/Core/Platform/Platform.h>
-#ifdef LINUX
+#ifdef __linux__
 #include <unistd.h>
 
 

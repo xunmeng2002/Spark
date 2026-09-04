@@ -3,7 +3,7 @@
 #include "Tcp/TcpConnect.h"
 #include <list>
 #include <map>
-#ifdef LINUX
+#ifdef __linux__
 #include <sys/epoll.h>
 #endif
 
@@ -33,7 +33,7 @@ protected:
 	
 protected:
 	int m_EpollFd;
-#ifdef LINUX
+#ifdef __linux__
 	epoll_event m_EpollEvents[EpollEventNumber];
 #endif
 };

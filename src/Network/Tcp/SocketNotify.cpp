@@ -55,7 +55,7 @@ TcpConnect* SocketNotify::GetConnect()
 
 bool SocketNotify::CreateSocketPair()
 {
-#ifdef WIN32
+#ifdef _WIN32
 	auto ret = TcpUtility::GetAddrinfo(m_IP.c_str(), 0, m_AddressInfo);
 	if (ret < 0)
 	{
@@ -105,7 +105,7 @@ bool SocketNotify::CreateSocketPair()
 		return false;
 	}
 #endif
-#ifdef LINUX
+#ifdef __linux__
 	auto ret = socketpair(AF_UNIX, SOCK_STREAM, 0, m_Sockets);
 	if (ret != 0)
 	{

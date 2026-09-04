@@ -40,10 +40,10 @@ protected:
 	std::mutex m_ConnectDataMutex;
 	
 	sockaddr_storage m_RemoteAddress;
-#ifdef WINDOWS
+#ifdef _WIN32
 	int m_RemoteAddressLen;
 #endif
-#ifdef LINUX
+#ifdef __linux__
 	unsigned int m_RemoteAddressLen;
 #endif
 };

@@ -3,10 +3,10 @@
 #include <Spark/Core/Utility/TimeUtility.h>
 #include <thread>
 #include <chrono>
-#ifdef WINDOWS
+#ifdef _WIN32
 #include <Windows.h>
 #endif
-#ifdef LINUX
+#ifdef __linux__
 #include <unistd.h>
 #include <fcntl.h>
 #endif
@@ -25,10 +25,10 @@ Sem::~Sem()
 {
 	if (m_Sem != nullptr)
 	{
-#ifdef WINDOWS
+#ifdef _WIN32
 		CloseHandle(m_Sem);
 #endif
-#ifdef LINUX
+#ifdef __linux__
 		sem_close(m_Sem);
 		if (m_ServerType == ServerTypeType::Server)
 		{
@@ -40,20 +40,20 @@ Sem::~Sem()
 }
 bool Sem::Init()
 {
-#ifdef WINDOWS
+#ifdef _WIN32
 	return WindowsInit();
 #endif
-#ifdef LINUX
+#ifdef __linux__
 	return LinuxInit();
 #endif
 }
 bool Sem::Lock()
 {
-#ifdef WINDOWS
+#ifdef _WIN32
 	return WaitForSingleObject(m_Sem, m_TimeOutMilliSecond) == WAIT_OBJECT_0;
 #endif
 	
-#ifdef LINUX
+#ifdef __linux__
 	struct timespec ts;
 	clock_gettime(CLOCK_REALTIME, &ts);
 	ts.tv_sec += m_TimeOutMilliSecond / 1000;
@@ -69,10 +69,10 @@ bool Sem::Lock()
 bool Sem::UnLock()
 {
 	bool result;
-#ifdef WINDOWS
+#ifdef _WIN32
 	result = ReleaseSemaphore(m_Sem, 1, NULL);
 #endif
-#ifdef LINUX
+#ifdef __linux__
 	result = sem_post(m_Sem) == 0;
 #endif
 	if (!result)
@@ -84,7 +84,7 @@ bool Sem::UnLock()
 
 bool Sem::WindowsInit()
 {
-#ifdef WINDOWS
+#ifdef _WIN32
 	m_Sem = CreateSemaphoreA(NULL, 1, 1, m_SemName.c_str());
 	if (m_Sem == nullptr)
 	{
@@ -109,7 +109,7 @@ bool Sem::WindowsInit()
 }
 bool Sem::LinuxInit()
 {
-#ifdef LINUX
+#ifdef __linux__
 	m_Sem = sem_open(m_SemName.c_str(), O_CREAT | O_EXCL, 0666, 1);
 	if (m_Sem == SEM_FAILED)
 	{

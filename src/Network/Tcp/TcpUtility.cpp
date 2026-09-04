@@ -57,22 +57,22 @@ SOCKET TcpUtility::CreateSocket(int family)
 }
 bool TcpUtility::SetSockUnblock(SOCKET socketID, unsigned long unblock)
 {
-#ifdef  WINDOWS
+#ifdef  _WIN32
 	if (::ioctlsocket(socketID, FIONBIO, &unblock) == SOCKET_ERROR)
 	{
 		WriteLog(LogLevel::Error, "ioctlsocket FIONBIO:%d, Failed. ErrorID:%d", unblock, WSAGetLastError());
 		return false;
 	}
 	WriteLog(LogLevel::Info, "ioctlsocket FIONBIO:%d Success.", unblock);
-#endif //  WINDOWS
-#ifdef LINUX
+#endif //  _WIN32
+#ifdef __linux__
 	if (ioctl(socketID, FIONBIO, &unblock) == SOCKET_ERROR)
 	{
 		WriteLog(LogLevel::Error, "ioctl FIONBIO:%d Failed. ErrorID:%d", unblock, WSAGetLastError());
 		return false;
 	}
 	WriteLog(LogLevel::Info, "ioctl FIONBIO:%d Success.", unblock);
-#endif // LINUX
+#endif // __linux__
 	return true;
 }
 bool TcpUtility::SetSockReuse(SOCKET socketID, int resue)

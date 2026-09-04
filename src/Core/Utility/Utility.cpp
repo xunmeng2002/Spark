@@ -10,7 +10,7 @@ namespace spark::core
 {
 void Utility::ParseProcessName(const char* fullProcessName, char* processName, int len)
 {
-#if WINDOWS
+#if _WIN32
 	const char* temp = strrchr(fullProcessName, '\\');
 	temp = temp == nullptr ? fullProcessName : temp + 1;
 	// 用 strchr 找扩展名分隔符，避免 strtok 修改只读字符串
@@ -23,7 +23,7 @@ void Utility::ParseProcessName(const char* fullProcessName, char* processName, i
 		processName[copy_len] = '\0';
 		return;
 	}
-#elif LINUX
+#elif __linux__
 	const char* temp = strrchr(fullProcessName, '/');
 	temp = temp == nullptr ? fullProcessName : temp + 1;
 #endif

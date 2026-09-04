@@ -1,6 +1,6 @@
 #include "Tcp/TcpIocp/TcpIocpCompletePort.h"
 
-#ifdef WINDOWS
+#ifdef _WIN32
 
 namespace spark::network
 {
@@ -41,4 +41,4 @@ bool IOCompletePort::GetStatus(PDWORD pdwNumBytes, ULONG_PTR* pCompKey, OVERLAPP
 	return GetQueuedCompletionStatus(m_Handle, pdwNumBytes, pCompKey, ppo, dwMilliseconds);
 }
 }
-#endif // WINDOWS
+#endif // _WIN32

@@ -1,5 +1,5 @@
 #pragma once
-#ifdef WINDOWS
+#ifdef _WIN32
 #include "Tcp/SocketInit.h"
 #include <MSWSock.h>
 
@@ -27,4 +27,4 @@ private:
 	static SocketApi m_Instance;
 };
 }
-#endif // WINDOWS
+#endif // _WIN32

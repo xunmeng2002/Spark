@@ -9,13 +9,13 @@ namespace spark::network
 TcpEpollBase::TcpEpollBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
 	:TcpBase(serverType, addressName, milliSeconds), m_EpollFd(0)
 {
-#ifdef LINUX
+#ifdef __linux__
 	m_EpollFd = epoll_create(5);
 #endif
 }
 TcpEpollBase::~TcpEpollBase()
 {
-#ifdef LINUX
+#ifdef __linux__
 	close(m_EpollFd);
 #endif
 }
@@ -28,7 +28,7 @@ bool TcpEpollBase::Init()
 }
 void TcpEpollBase::HandleTcpEvent()
 {
-#ifdef LINUX
+#ifdef __linux__
 	int number = epoll_wait(m_EpollFd, m_EpollEvents, EpollEventNumber, m_TimeOut.count());
 	if (number < 0 && errno != EINTR)
 	{
@@ -113,7 +113,7 @@ void TcpEpollBase::RemoveConnect(Connect* connect)
 
 void TcpEpollBase::AddEpollEvent(TcpConnect* connect)
 {
-#ifdef LINUX
+#ifdef __linux__
 	epoll_event epollEvent;
 	epollEvent.data.ptr = connect;
 	epollEvent.events = EPOLLIN;
@@ -122,13 +122,13 @@ void TcpEpollBase::AddEpollEvent(TcpConnect* connect)
 }
 void TcpEpollBase::RemoveEpollEvent(TcpConnect* connect)
 {
-#ifdef LINUX
+#ifdef __linux__
 	epoll_ctl(m_EpollFd, EPOLL_CTL_DEL, connect->SocketID, NULL);
 #endif
 }
 void TcpEpollBase::AddWriteEpollEvent(TcpConnect* connect)
 {
-#ifdef LINUX
+#ifdef __linux__
 	epoll_event epollEvent;
 	epollEvent.data.ptr = connect;
 	epollEvent.events = EPOLLIN | EPOLLOUT;
@@ -137,7 +137,7 @@ void TcpEpollBase::AddWriteEpollEvent(TcpConnect* connect)
 }
 void TcpEpollBase::RemoveWriteEpollEvent(TcpConnect* connect)
 {
-#ifdef LINUX
+#ifdef __linux__
 	epoll_event epollEvent;
 	epollEvent.data.ptr = connect;
 	epollEvent.events = EPOLLIN;

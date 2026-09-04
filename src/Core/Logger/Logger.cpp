@@ -9,7 +9,7 @@
 #include <stdarg.h>
 #include <filesystem>
 #include <format>
-#ifdef WINDOWS
+#ifdef _WIN32
 #include <Windows.h>
 #endif
 
@@ -195,10 +195,10 @@ void Logger::CreateLogFile()
 	assert(m_LogData->LogFile != nullptr);
 }
 static int64_t GetCurrentThreadIdSysCall() noexcept {
-#ifdef WINDOWS
+#ifdef _WIN32
 	// Windows: 直接调用API
 	return static_cast<int64_t>(::GetCurrentThreadId());
-#elif defined(LINUX)
+#elif defined(__linux__)
 	return static_cast<int64_t>(syscall(SYS_gettid));
 #else
 	return static_cast<int64_t>(pthread_self());

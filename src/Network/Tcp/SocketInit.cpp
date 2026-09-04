@@ -9,7 +9,7 @@ SocketInit SocketInit::_SOCKET_INIT;
 
 SocketInit::~SocketInit()
 {
-#ifdef WINDOWS
+#ifdef _WIN32
 	WSACleanup();
 #endif
 }
@@ -23,7 +23,7 @@ void SocketInit::Init()
 }
 void SocketInit::WsaStart()
 {
-#ifdef WINDOWS
+#ifdef _WIN32
 	std::cout << "ON WINDOWS" << std::endl;
 	WSADATA initData;
 	initData.wVersion = 0;
@@ -42,7 +42,7 @@ void SocketInit::WsaStart()
 	//	std::cout << "SocketInit Failed!" << std::endl;
 	//}
 #endif
-#ifdef LINUX
+#ifdef __linux__
 	std::cout << "ON LINUX" << std::endl;
 #endif
 }

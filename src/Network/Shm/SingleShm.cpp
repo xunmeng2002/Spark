@@ -3,12 +3,12 @@
 #include <Spark/Core/Utility/TimeUtility.h>
 #include <string.h>
 #include <assert.h>
-#ifdef LINUX
+#ifdef __linux__
 #include <sys/mman.h>
 #include <unistd.h>
 #include <fcntl.h>
 #endif
-#ifdef WINDOWS
+#ifdef _WIN32
 #include <Windows.h>
 #endif
 
@@ -22,10 +22,10 @@ SingleShm::SingleShm(ServerTypeType shmType, const char* shmName)
 	m_ShmAddr(nullptr)
 {
 	m_ShmBuffer = new ShmBuffer<ShmBuffSize>();
-#ifdef WINDOWS
+#ifdef _WIN32
 	m_File = nullptr;
 	m_FileMap = nullptr;
-#endif // WINDOWS
+#endif // _WIN32
 }
 SingleShm::~SingleShm()
 {
@@ -38,7 +38,7 @@ SingleShm::~SingleShm()
 	{
 		m_ShmBuffer->m_ShmHeader->Status = ConnectStatusType::DisConnected;
 	}
-#ifdef WINDOWS
+#ifdef _WIN32
 	UnmapViewOfFile(m_ShmAddr);
 	CloseHandle(m_FileMap);
 	if (m_File != nullptr)
@@ -51,7 +51,7 @@ SingleShm::~SingleShm()
 		DeleteFileA(m_ShmName.c_str());
 	}
 #endif
-#ifdef LINUX
+#ifdef __linux__
 	if (munmap(m_ShmAddr, sizeof(SingleShmHeader) + 2 * ShmBuffSize) < 0)
 	{
 		perror("shm_unlink");
@@ -70,7 +70,7 @@ SingleShm::~SingleShm()
 bool SingleShm::Init()
 {
 	bool firstOpen = true;
-#ifdef WINDOWS
+#ifdef _WIN32
 	m_File = CreateFileA(m_ShmName.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (m_File == INVALID_HANDLE_VALUE)
 	{
@@ -93,7 +93,7 @@ bool SingleShm::Init()
 		return false;
 	}
 #endif
-#ifdef LINUX
+#ifdef __linux__
 	int fd = shm_open(m_ShmName.c_str(), O_CREAT | O_EXCL | O_RDWR, 0666);
 	if (fd < 0)
 	{

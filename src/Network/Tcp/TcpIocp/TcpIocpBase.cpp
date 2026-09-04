@@ -5,7 +5,7 @@
 #include "Tcp/TcpUtility.h"
 #include <Spark/Core/Logger/Logger.h>
 
-#ifdef WINDOWS
+#ifdef _WIN32
 
 using namespace std;
 using namespace spark::core;
@@ -296,4 +296,4 @@ void TcpIocpBase::OnRecvComplete(MyOverlapped* overlapped, int bytesTransferred)
     PostRecv(overlapped);
 }
 }
-#endif // WINDOWS
+#endif // _WIN32

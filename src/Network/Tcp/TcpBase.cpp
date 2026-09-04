@@ -102,10 +102,10 @@ void TcpBase::DoSend(Connect* connect)
 		else
 		{
 			auto errorID = WSAGetLastError();
-#ifdef WIN32
+#ifdef _WIN32
 			if (errorID == WSAEWOULDBLOCK || errorID == WSAENOBUFS)
 #endif
-#ifdef LINUX
+#ifdef __linux__
 			if (errorID == EWOULDBLOCK || errorID == ENOBUFS || errorID == ENOMEM)
 #endif
 			{

@@ -1,5 +1,5 @@
 #pragma once
-#ifdef WINDOWS
+#ifdef _WIN32
 #include <Spark/Types.h>
 #include "Tcp/SocketInit.h"
 #include "Tcp/TcpConnect.h"
@@ -49,6 +49,6 @@ public:
 	TcpIocpConnect* Connect;
 };
 }
-#endif // WINDOWS
+#endif // _WIN32
 
 

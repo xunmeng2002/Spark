@@ -1,10 +1,10 @@
 #include "Shm/ShmBase.h"
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Core/Utility/TimeUtility.h>
-#ifdef WINDOWS
+#ifdef _WIN32
 #include <Windows.h>
 #endif
-#ifdef LINUX
+#ifdef __linux__
 #include <sys/mman.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -18,10 +18,10 @@ namespace spark::network
 ShmBase::ShmBase(ServerTypeType serverType, const char* shmName, int milliSeconds)
 	:IOBase(serverType, shmName, milliSeconds), m_CommonShmHeader(nullptr), m_ShmAddr(nullptr)
 {
-#ifdef WINDOWS
+#ifdef _WIN32
 	m_File = nullptr;
 	m_FileMap = nullptr;
-#endif // WINDOWS
+#endif // _WIN32
 
 	m_ShmName = m_Address;
 	m_MaxConnectSize = atoi(m_Port.c_str());
@@ -43,7 +43,7 @@ ShmBase::~ShmBase()
 		delete sem;
 	}
 	m_Sems.clear();
-#ifdef WINDOWS
+#ifdef _WIN32
 	UnmapViewOfFile(m_ShmAddr);
 	CloseHandle(m_FileMap);
 	if (m_File != nullptr)
@@ -56,7 +56,7 @@ ShmBase::~ShmBase()
 		DeleteFileA(m_ShmName.c_str());
 	}
 #endif
-#ifdef LINUX
+#ifdef __linux__
 	if (munmap(m_ShmAddr, ShmBuffSize * m_MaxConnectSize * 2) < 0)
 	{
 		perror("shm_unlink");
@@ -81,11 +81,11 @@ bool ShmBase::Init()
 		if (!m_Sems[i]->Init())
 			return false;
 	}
-#ifdef WINDOWS
+#ifdef _WIN32
 	if (!WindowsInit())
 		return false;
 #endif
-#ifdef LINUX
+#ifdef __linux__
 	if (!LinuxInit())
 		return false;
 #endif
@@ -182,7 +182,7 @@ void ShmBase::DoRecv(Connect* connect)
 
 bool ShmBase::WindowsInit()
 {
-#ifdef WINDOWS
+#ifdef _WIN32
 	if (m_ServerType == ServerTypeType::Server)
 	{
 		m_File = CreateFileA(m_ShmName.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -213,7 +213,7 @@ bool ShmBase::WindowsInit()
 }
 bool ShmBase::LinuxInit()
 {
-#ifdef LINUX
+#ifdef __linux__
 	int fd;
 	if (m_ServerType == ServerTypeType::Server)
 	{

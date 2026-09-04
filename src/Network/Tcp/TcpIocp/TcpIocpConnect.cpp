@@ -2,7 +2,7 @@
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 #include <Spark/Core/Logger/Logger.h>
 
-#ifdef WINDOWS
+#ifdef _WIN32
 using namespace spark::core;
 
 namespace spark::network
@@ -13,10 +13,10 @@ TcpIocpConnect::TcpIocpConnect(SessionIDType sessionID, const SOCKET& socketID, 
 }
 TcpIocpConnect::~TcpIocpConnect()
 {
-#ifdef WINDOWS
+#ifdef _WIN32
 	shutdown(SocketID, SD_BOTH);
 #endif
-#ifdef LINUX
+#ifdef __linux__
 	shutdown(SocketID, SHUT_RDWR);
 #endif
 	closesocket(SocketID);
@@ -102,4 +102,4 @@ void MyOverlapped::Reset()
 	Connect = nullptr;
 }
 }
-#endif // WINDOWS
+#endif // _WIN32

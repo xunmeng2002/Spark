@@ -1,5 +1,5 @@
 #pragma once
-#ifdef WINDOWS
+#ifdef _WIN32
 #include <Windows.h>
 
 
@@ -24,4 +24,4 @@ private:
 	HANDLE m_Handle;
 };
 }
-#endif // WINDOWS
+#endif // _WIN32

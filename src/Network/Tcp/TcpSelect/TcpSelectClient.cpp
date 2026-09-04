@@ -30,7 +30,7 @@ bool TcpSelectClient::ConnectToServer(const char* ip, unsigned short port)
 	}
 	auto socketID = TcpUtility::PrepareSocket(m_AddressInfo->ai_family);
 	ret = connect(socketID, m_AddressInfo->ai_addr, int(m_AddressInfo->ai_addrlen));
-#ifdef WINDOWS
+#ifdef _WIN32
 	auto error = WSAGetLastError();
 	if (ret == -1 && error != WSAEWOULDBLOCK && error != WSAEINPROGRESS)
 	{
@@ -39,7 +39,7 @@ bool TcpSelectClient::ConnectToServer(const char* ip, unsigned short port)
 		return false;
 	}
 #endif
-#ifdef LINUX
+#ifdef __linux__
 	if (ret == -1 && errno != EINPROGRESS)
 	{
 		WriteLog(LogLevel::Warning, "ConnectToServer Failed. ip:%s, port:%d, errno:%d", ip, port, errno);

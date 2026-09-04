@@ -1,7 +1,7 @@
 #pragma once
 #include <Spark/Types.h>
 #include <string>
-#ifdef LINUX
+#ifdef __linux__
 #include <semaphore.h>
 #endif
 
@@ -25,10 +25,10 @@ private:
 	std::string m_SemName;
 	ServerTypeType m_ServerType;
 	unsigned m_TimeOutMilliSecond;
-#ifdef LINUX
+#ifdef __linux__
 	sem_t* m_Sem;
 #endif
-#ifdef WINDOWS
+#ifdef _WIN32
 	void* m_Sem;
 #endif
 };

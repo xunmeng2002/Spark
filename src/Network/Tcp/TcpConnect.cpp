@@ -14,10 +14,10 @@ TcpConnect::TcpConnect(SessionIDType sessionID, const SOCKET& socketID, const st
 }
 TcpConnect::~TcpConnect()
 {
-#ifdef WINDOWS
+#ifdef _WIN32
 	shutdown(SocketID, SD_BOTH);
 #endif
-#ifdef LINUX
+#ifdef __linux__
 	shutdown(SocketID, SHUT_RDWR);
 #endif
 	closesocket(SocketID);
