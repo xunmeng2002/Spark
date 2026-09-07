@@ -657,11 +657,11 @@ enum class OrderPriceTypeType : int
 	LimitPrice = 0,
 	//市价立即成交剩余撤销
 	AnyPriceFAK = 1,
-	//市价立即成全部交否者撤销
+	//市价立即成全部交否则撤销
 	AnyPriceFOK = 2,
 	//限价立即成交剩余撤销
 	LimitPriceFAK = 3,
-	//限价立即成全部交否者撤销
+	//限价立即成全部交否则撤销
 	LimitPriceFOK = 4,
 	//本方最优价
 	BestOwnPrice = 5,
