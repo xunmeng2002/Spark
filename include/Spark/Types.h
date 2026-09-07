@@ -641,31 +641,6 @@ enum class OptionIndicatorTypeType : int
 	Vega = 4,
 };
 
-//期权委托价格类型
-enum class OptionOrderPriceTypeType : int
-{
-	//限价
-	LimitPrice = 0,
-	//市价剩余转限价
-	FAL = 1,
-	//市价剩余撤销
-	FAK = 2,
-	//限价FOK，全部成交否则撤销
-	FOKXJ = 3,
-	//市价FOK，全部成交否则撤销
-	FOK = 4,
-	//对方最优价
-	DBestPrice = 5,
-	//本方最优价
-	WBestPrice = 6,
-	//即时成交剩余撤销
-	FAKSZ = 7,
-	//最优五档即时成交剩余撤销
-	FAK5SZ = 8,
-	//全额成交否则撤销-深圳
-	FOKSZ = 9,
-};
-
 //期权类型
 enum class OptionTypeType : int
 {
@@ -680,38 +655,18 @@ enum class OrderPriceTypeType : int
 {
 	//限价
 	LimitPrice = 0,
-	//市价 暂废
-	AnyPrice = 1,
-	//最优五档即时成交剩余撤销
-	StockFAK5 = 2,
-	//最优五档即时成交剩余转限价
-	StockFAL5 = 3,
-	//即时成交剩余撤销
-	StockFAK = 4,
-	//全额成交或撤销
-	StockFOK = 5,
-	//对方最优价
-	StockDBestPrice = 6,
+	//市价立即成交剩余撤销
+	AnyPriceFAK = 1,
+	//市价立即成全部交否者撤销
+	AnyPriceFOK = 2,
+	//限价立即成交剩余撤销
+	LimitPriceFAK = 3,
+	//限价立即成全部交否者撤销
+	LimitPriceFOK = 4,
 	//本方最优价
-	StockWBestPrice = 7,
-	//市价剩余转限价
-	OptFAL = 8,
-	//市价剩余撤销
-	OptFAK = 9,
-	//限价FOK，全部成交否则撤销
-	OptFOKXJ = 10,
-	//市价FOK，全部成交否则撤销
-	OptFOK = 11,
+	BestOwnPrice = 5,
 	//对方最优价
-	OptDBestPrice = 12,
-	//本方最优价
-	OptWBestPrice = 13,
-	//即时成交剩余撤销
-	OptFAKSZ = 14,
-	//最优五档即时成交剩余撤销
-	OptFAK5SZ = 15,
-	//全额成交否则撤销-深圳
-	OptFOKSZ = 16,
+	BestOppoPrice = 6,
 };
 
 //委托状态

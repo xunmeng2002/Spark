@@ -560,36 +560,6 @@ inline const char* GetOptionIndicatorTypeString(OptionIndicatorTypeType value)
 	return "";
 }
 
-inline const char* GetOptionOrderPriceTypeString(OptionOrderPriceTypeType value)
-{
-	switch (value)
-	{
-		case OptionOrderPriceTypeType::LimitPrice:
-			return "LimitPrice";
-		case OptionOrderPriceTypeType::FAL:
-			return "FAL";
-		case OptionOrderPriceTypeType::FAK:
-			return "FAK";
-		case OptionOrderPriceTypeType::FOKXJ:
-			return "FOKXJ";
-		case OptionOrderPriceTypeType::FOK:
-			return "FOK";
-		case OptionOrderPriceTypeType::DBestPrice:
-			return "DBestPrice";
-		case OptionOrderPriceTypeType::WBestPrice:
-			return "WBestPrice";
-		case OptionOrderPriceTypeType::FAKSZ:
-			return "FAKSZ";
-		case OptionOrderPriceTypeType::FAK5SZ:
-			return "FAK5SZ";
-		case OptionOrderPriceTypeType::FOKSZ:
-			return "FOKSZ";
-		default:
-			return "Unknown";
-	}
-	return "";
-}
-
 inline const char* GetOptionTypeString(OptionTypeType value)
 {
 	switch (value)
@@ -610,38 +580,18 @@ inline const char* GetOrderPriceTypeString(OrderPriceTypeType value)
 	{
 		case OrderPriceTypeType::LimitPrice:
 			return "LimitPrice";
-		case OrderPriceTypeType::AnyPrice:
-			return "AnyPrice";
-		case OrderPriceTypeType::StockFAK5:
-			return "StockFAK5";
-		case OrderPriceTypeType::StockFAL5:
-			return "StockFAL5";
-		case OrderPriceTypeType::StockFAK:
-			return "StockFAK";
-		case OrderPriceTypeType::StockFOK:
-			return "StockFOK";
-		case OrderPriceTypeType::StockDBestPrice:
-			return "StockDBestPrice";
-		case OrderPriceTypeType::StockWBestPrice:
-			return "StockWBestPrice";
-		case OrderPriceTypeType::OptFAL:
-			return "OptFAL";
-		case OrderPriceTypeType::OptFAK:
-			return "OptFAK";
-		case OrderPriceTypeType::OptFOKXJ:
-			return "OptFOKXJ";
-		case OrderPriceTypeType::OptFOK:
-			return "OptFOK";
-		case OrderPriceTypeType::OptDBestPrice:
-			return "OptDBestPrice";
-		case OrderPriceTypeType::OptWBestPrice:
-			return "OptWBestPrice";
-		case OrderPriceTypeType::OptFAKSZ:
-			return "OptFAKSZ";
-		case OrderPriceTypeType::OptFAK5SZ:
-			return "OptFAK5SZ";
-		case OrderPriceTypeType::OptFOKSZ:
-			return "OptFOKSZ";
+		case OrderPriceTypeType::AnyPriceFAK:
+			return "AnyPriceFAK";
+		case OrderPriceTypeType::AnyPriceFOK:
+			return "AnyPriceFOK";
+		case OrderPriceTypeType::LimitPriceFAK:
+			return "LimitPriceFAK";
+		case OrderPriceTypeType::LimitPriceFOK:
+			return "LimitPriceFOK";
+		case OrderPriceTypeType::BestOwnPrice:
+			return "BestOwnPrice";
+		case OrderPriceTypeType::BestOppoPrice:
+			return "BestOppoPrice";
 		default:
 			return "Unknown";
 	}
