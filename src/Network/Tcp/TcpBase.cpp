@@ -12,8 +12,15 @@ using namespace spark::core;
 
 namespace spark::network
 {
+namespace
+{
+	// Client 断线自动重连的固定重试间隔
+	constexpr int kAutoReconnectIntervalMs = 3000;
+}
+
 TcpBase::TcpBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
-	:IOBase(serverType, addressName, milliSeconds), m_AddressInfo(nullptr), m_Socket(INVALID_SOCKET), m_SocketNotify(nullptr), m_RemoteAddressLen(sizeof(m_RemoteAddress))
+	:IOBase(serverType, addressName, milliSeconds), m_AddressInfo(nullptr), m_Socket(INVALID_SOCKET), m_SocketNotify(nullptr), m_RemoteAddressLen(sizeof(m_RemoteAddress)),
+	m_AutoConnectPending(false), m_LastConnectAttemptTime{}
 {
 	SocketInit::GetInstance().Init();
 	memset(&m_RemoteAddress, 0, sizeof(m_RemoteAddress));
@@ -38,7 +45,12 @@ bool TcpBase::Init()
 	}
 	if (m_ServerType == ServerTypeType::Client)
 	{
-		ConnectToServer(m_Address.c_str(), atoi(m_Port.c_str()));
+		// 首连同步失败时复位,交由 IO 循环的自动重连兜底(修复首连失败后永久失联)
+		m_AutoConnectPending = true;
+		if (!ConnectToServer(m_Address.c_str(), atoi(m_Port.c_str())))
+		{
+			m_AutoConnectPending = false;
+		}
 	}
 	else if (m_ServerType == ServerTypeType::Server)
 	{
@@ -75,9 +87,40 @@ bool TcpBase::ConnectToServer(const char* address)
 void TcpBase::HandleIOEvent()
 {
 	if (m_ServerType == ServerTypeType::Client)
+	{
 		CheckConnect();
+		TryAutoReconnect();
+	}
 	DoDisConnect();
 	HandleTcpEvent();
+}
+void TcpBase::AddConnect(Connect* connect)
+{
+	m_AutoConnectPending = false;
+	IOBase::AddConnect(connect);
+}
+void TcpBase::RemoveConnect(Connect* connect)
+{
+	m_AutoConnectPending = false;
+	IOBase::RemoveConnect(connect);
+}
+void TcpBase::TryAutoReconnect()
+{
+	if (m_AutoConnectPending || !m_Connects.empty())
+	{
+		return;
+	}
+	auto now = std::chrono::steady_clock::now();
+	if (now - m_LastConnectAttemptTime < std::chrono::milliseconds(kAutoReconnectIntervalMs))
+	{
+		return;
+	}
+	m_LastConnectAttemptTime = now;
+	WriteLog(LogLevel::Info, "TcpAutoReconnect: Attempt. Address:%s, Port:%s", m_Address.c_str(), m_Port.c_str());
+	if (ConnectToServer(m_Address.c_str(), atoi(m_Port.c_str())))
+	{
+		m_AutoConnectPending = true;
+	}
 }
 void TcpBase::DoSend(Connect* connect)
 {

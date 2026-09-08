@@ -24,6 +24,8 @@ public:
 	virtual bool ConnectToServer(const char* address) override;
 	virtual bool ConnectToServer(const char* ip, unsigned short port) { return false; }
 	virtual void HandleIOEvent() override;
+	virtual void AddConnect(Connect* connect) override;
+	virtual void RemoveConnect(Connect* connect) override;
 protected:
 	virtual void DoSend(Connect* connect) override;
 	virtual void DoRecv(Connect* connect) override;
@@ -31,10 +33,17 @@ protected:
 	virtual void HandleTcpEvent() = 0;
 	virtual void CheckConnect() {}
 
+	// Client 断线自动重连:IO 循环内检测无连接且无在途连接时按固定间隔重试
+	void TryAutoReconnect();
+
 protected:
 	addrinfo* m_AddressInfo;
 	SOCKET m_Socket;
 	SocketNotify* m_SocketNotify;
+
+	// 已发起未落定的连接(首连与重连共用):AddConnect/RemoveConnect 落定时复位
+	bool m_AutoConnectPending;
+	std::chrono::steady_clock::time_point m_LastConnectAttemptTime;
 
 
 	std::mutex m_ConnectDataMutex;
