@@ -76,6 +76,12 @@ bool TcpBase::Init()
 void TcpBase::Send(SessionIDType sessionID, Buffer<BuffSize>* buffer)
 {
 	auto connect = (TcpConnect*)GetConnect(sessionID);
+	if (connect == nullptr)
+	{
+		WriteLog(LogLevel::Warning, "Send Connect Not Exist, Drop Buffer. SessionID:%lld, Len:%d", sessionID, buffer->GetLength());
+		buffer->Deallocate();
+		return;
+	}
 	connect->PushBack(buffer);
 	m_SocketNotify->Notify();
 }

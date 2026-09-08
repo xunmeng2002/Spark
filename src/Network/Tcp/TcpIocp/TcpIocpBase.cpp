@@ -69,6 +69,12 @@ void TcpIocpBase::Send(SessionIDType sessionID, Buffer<BuffSize>* buffer)
         return;
     }
     auto connect = (TcpIocpConnect*)GetConnect(sessionID);
+    if (connect == nullptr)
+    {
+        WriteLog(LogLevel::Warning, "Send Connect Not Exist, Drop Buffer. SessionID:%lld, Len:%d", sessionID, buffer->GetLength());
+        buffer->Deallocate();
+        return;
+    }
     {
         lock_guard<mutex> guard(connect->BuffersMutex);
         if (connect->HasPendingSend || !connect->Buffers.empty())
