@@ -3,12 +3,15 @@
 #include <Spark/Core/Utility/Utility.h>
 #include <Spark/Core/Utility/TimeUtility.h>
 #include "Logger/LogData.h"
-#include <assert.h>
+#include <algorithm>
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <sstream>
 #include <stdarg.h>
 #include <filesystem>
 #include <format>
+#include <system_error>
 #ifdef _WIN32
 #include <Windows.h>
 #endif
@@ -65,7 +68,21 @@ bool Logger::Init(const char* fullProcessName)
 {
 	Utility::ParseProcessName(fullProcessName, m_ProcessName, 128);
 	m_LogData = new LogData();
-	CreateLogDir("log");
+	// 日志目录建不出来、或日志文件打不开，等于整个进程"无日志运行"：早失败并把原因说到能照着排查，
+	// 不让宿主带着看不见的故障跑起来。此处在 Start() 之前，没有已建立的状态需要收尾
+	if (!CreateLogDir("log"))
+	{
+		fprintf(stderr, "Logger: create log directory failed, process exit. Path:log, check that it is not occupied by a file and is writable.\n");
+		std::exit(EXIT_FAILURE);
+	}
+	// 启动期就把日志文件打开（而非留到线程里的 ThreadInit）：能否写日志只有在这一刻判定才叫"启动失败"
+	m_CreateLogFileTime = *TimeUtility::GetLocalTm();
+	CreateLogFile();
+	if (m_LogData->LogFile == nullptr)
+	{
+		fprintf(stderr, "Logger: cannot write log file, process exit. Check the log directory free space and write permission.\n");
+		std::exit(EXIT_FAILURE);
+	}
 
 	GetWriteLogFunc() = Logger::Write;
 	return true;
@@ -94,8 +111,13 @@ void Logger::Write(LogLevel level, const char* file, int line, const char* func,
 }
 void Logger::ThreadInit()
 {
-	m_CreateLogFileTime = *TimeUtility::GetLocalTm();
-	CreateLogFile();
+	if (m_LogData == nullptr)
+	{
+		// 未调用 Init() 时既无日志文件也无缓冲区，Run() 无处可写：直接停车，让线程不进入循环体
+		Stop();
+		return;
+	}
+	// 日志文件已由 Init() 打开：能否写日志在启动期就判定过了，这里不再重复打开
 	ThreadBase::ThreadInit();
 }
 void Logger::ThreadExit()
@@ -122,13 +144,23 @@ void Logger::Run()
 		{
 			m_CreateLogFileTime = currTime;
 			CreateLogFile();
+			if (m_LogData->LogFile == nullptr)
+			{
+				// 运行期换日志文件失败：此时让进程退出造成的损失大于"暂时无日志文件"，
+				// 记 ERROR 继续跑（控制台仍可见），下个跨日或下次重启会重试
+				WriteLog(LogLevel::Error, "Logger: reopen log file for the new day failed, log will not be written to file until a later reopen succeeds.");
+			}
 		}
 	}
 }
 
 bool Logger::CreateLogDir(const std::string& path)
 {
-	return std::filesystem::create_directories(path);
+	// 返回值不能当成功判据：目录已存在时该重载同样返回 false（且不置 error_code），只有 error_code 才表示失败。
+	// 不用无 error_code 的重载是因为"同名文件已存在"时它会抛 filesystem_error，而调用点（Init）无人接
+	std::error_code errorCode;
+	std::filesystem::create_directories(path, errorCode);
+	return !errorCode;
 }
 void Logger::SwapInnerLogBuffers()
 {
@@ -145,13 +177,20 @@ void Logger::SwapInnerLogBuffers()
 }
 void Logger::FlushBuffers()
 {
+	bool isLogFileOpened = (m_LogData->LogFile != nullptr);
 	for (auto& buffer : m_LogData->InnerLogBuffers)
 	{
-		fwrite(buffer->GetData(), buffer->GetLength(), 1, m_LogData->LogFile);
+		if (isLogFileOpened)
+		{
+			fwrite(buffer->GetData(), buffer->GetLength(), 1, m_LogData->LogFile);
+		}
 		buffer->Deallocate();
 	}
 	m_LogData->InnerLogBuffers.clear();
-	fflush(m_LogData->LogFile);
+	if (isLogFileOpened)
+	{
+		fflush(m_LogData->LogFile);
+	}
 }
 // 退出路径专用：SwapInnerLogBuffers 在没有待落盘数据时会等满一个超时周期（最长 1s），
 // 而这里只求把 Logger 线程最后一次 Run() 之后写下的日志（含各线程的 ThreadExit）落盘，不该再等
@@ -181,7 +220,10 @@ void Logger::WriteToLog(LogLevel level, const char* file, int line, const char* 
 		if (*p == '\\' || *p == '/')
 			file = p + 1;
 	unsigned len1 = std::format_to_n(t_LogBuffer, MaxLogFormatLength, "{} {} {} ", TimeUtility::GetLocalDateTimeWithMilliSecond(), GetCurrentThreadID(), s_LogLevelName[level]).out - t_LogBuffer;
-	unsigned len2 = vsnprintf(t_LogBuffer + len1, MaxLogLineContentLength, format, va);
+	// vsnprintf 返回的是"本该写入"的长度（负数表示编码错误），内容被截断时该值不会随之变小，
+	// 不收敛到可写区间会让下一行计算剩余空间 LogLineLength - len1 - len2 - 1 发生无符号回绕
+	int formattedContentLength = vsnprintf(t_LogBuffer + len1, MaxLogLineContentLength, format, va);
+	unsigned len2 = static_cast<unsigned>(std::clamp(formattedContentLength, 0, static_cast<int>(MaxLogLineContentLength) - 1));
 	unsigned len3 = std::format_to_n(t_LogBuffer + len1 + len2, LogLineLength - len1 - len2 - 1, "\t\t---{}:{}[{}]\n", file, line, func).out - (t_LogBuffer + len1 + len2);
 	unsigned len = len1 + len2 + len3;
 	std::lock_guard<std::mutex> guard(m_LogData->Mutex);
@@ -212,7 +254,13 @@ void Logger::CreateLogFile()
 	char fileName[256]{};
 	std::format_to_n(fileName, sizeof(fileName) - 1, "log/{}.{}.log", m_ProcessName, timeBuff);
 	m_LogData->LogFile = fopen(fileName, "a+");
-	assert(m_LogData->LogFile != nullptr);
+	if (m_LogData->LogFile == nullptr)
+	{
+		// 打不开日志文件时不能只靠断言（Release 下断言会被去掉，空的 FILE* 会流进 fwrite/fflush）。
+		// 本函数只如实报告失败，由调用方决定语义：启动期（Init）判失败即退出，
+		// 运行期（跨日换文件）由 Run 记 ERROR 继续；FlushBuffers 按 LogFile 是否为空决定是否落盘
+		fprintf(stderr, "Logger: open log file failed. Path:%s\n", fileName);
+	}
 }
 static int64_t GetCurrentThreadIdSysCall() noexcept {
 #ifdef _WIN32
