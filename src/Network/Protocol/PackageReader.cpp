@@ -108,6 +108,12 @@ bool PackageReader::ParseXtpPackage(Package*& package)
 		Reset();
 		return false;
 	}
+	if (!m_PackageFactory->IsInboundPackageAccepted(m_Head.PackageID))
+	{
+		WriteLog(LogLevel::Error, "Inbound Package Not Accepted. PackageID:%d, SessionID:%lld, IP:%s", m_Head.PackageID, m_SessionID, m_IPAddress);
+		Reset();
+		return false;
+	}
 	package = m_PackageFactory->CreatePackage(m_Head.PackageID);
 	if (package == nullptr)
 	{
@@ -158,6 +164,12 @@ bool PackageReader::ParseStepPackage(Package*& package)
 	if (checkSum != m_Tail.CheckSum)
 	{
 		WriteLog(LogLevel::Warning, "CheckSum not Match. Tail.CheckSum:%d, CalculateSum:%d", m_Tail.CheckSum, checkSum);
+		Reset();
+		return false;
+	}
+	if (!m_PackageFactory->IsInboundPackageAccepted(m_Head.PackageID))
+	{
+		WriteLog(LogLevel::Error, "Inbound Package Not Accepted. PackageID:%d, SessionID:%lld, IP:%s", m_Head.PackageID, m_SessionID, m_IPAddress);
 		Reset();
 		return false;
 	}
