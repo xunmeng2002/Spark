@@ -50,6 +50,7 @@ protected:
 	bool CreateLogDir(const std::string& path);
 	void SwapInnerLogBuffers();
 	void FlushBuffers();
+	void FlushRemainingBuffers();
     static void Write(LogLevel level, const char* file, int line, const char* func, const char* formatStr, ...);
 	void WriteToLog(LogLevel level, const char* file, int line, const char* func, const char* format, va_list va);
 	void WriteToConsole(LogLevel level, const char* formatStr, va_list va);

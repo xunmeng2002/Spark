@@ -103,6 +103,7 @@ void Logger::ThreadExit()
 	ThreadBase::ThreadExit();
 	if (m_LogData)
 	{
+		FlushRemainingBuffers();
 		delete m_LogData;
 	}
 	m_LogData = nullptr;
@@ -152,9 +153,28 @@ void Logger::FlushBuffers()
 	m_LogData->InnerLogBuffers.clear();
 	fflush(m_LogData->LogFile);
 }
+// 退出路径专用：SwapInnerLogBuffers 在没有待落盘数据时会等满一个超时周期（最长 1s），
+// 而这里只求把 Logger 线程最后一次 Run() 之后写下的日志（含各线程的 ThreadExit）落盘，不该再等
+void Logger::FlushRemainingBuffers()
+{
+	{
+		std::lock_guard<std::mutex> guard(m_LogData->Mutex);
+		if (m_LogData->CurrBuffer->GetLength() > 0)
+		{
+			m_LogData->PushBuffer();
+		}
+		m_LogData->InnerLogBuffers.swap(m_LogData->LogBuffers);
+	}
+	FlushBuffers();
+}
 
 void Logger::WriteToLog(LogLevel level, const char* file, int line, const char* func, const char* format, va_list va)
 {
+	if (m_LogData == nullptr)
+	{
+		// Logger 已停止（未 Init 的写入由 WriteLog 宏的 nullptr 检查拦下），停止后的写入静默丢弃
+		return;
+	}
 	if (level < GetLogLevel())
 		return;
 	for (auto p = file; *p != '\0'; p++)
