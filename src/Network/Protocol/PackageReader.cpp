@@ -70,11 +70,6 @@ unsigned int PackageReader::TailSize()
 {
 	return unsigned((m_Buff + MaxPackageSize) - (m_Data + m_Length));
 }
-void PackageReader::Shift(unsigned int len)
-{
-	m_Data += len;
-	m_Length -= len;
-}
 unsigned int PackageReader::Append(char* data, unsigned int len)
 {
 	len = std::min(len, TailSize());

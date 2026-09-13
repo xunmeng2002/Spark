@@ -83,7 +83,7 @@ Spark/
 │   ├── TestServer/             # 网络服务端测试（旧版）
 │   ├── TestCore/               # 核心组件测试（旧版）
 │   └── TestMD5/                # MD5 验证程序
-├── model/                      # 数据模型定义文件（Head.xml / XtpHead.xml 等）
+├── model/                      # 数据模型定义文件（Head.xml / parselist.xml 等）
 ├── submodules/                 # 子模块依赖（CMakeCommon）
 ├── bin/                        # 构建产物：动态库 / 可执行文件（按配置分目录）
 ├── lib/                        # 构建产物：静态库 / 导入库（按配置分目录）
@@ -348,9 +348,9 @@ int main(int argc, const char* argv[])
 | | `TimerTest` | 定时器触发、取消 |
 | | `TimeUtilityTest` | 时间格式化、转换 |
 | | `UtilityTest` | 通用工具函数 |
-| **Network** | `StepUtilityTest` | Step 协议字段解析、Head/Tail 流式转换（51 用例） |
+| **Network** | `StepUtilityTest` | Step 协议字段解析、Head/Tail 流式转换（47 用例） |
 | | `ProtocolUtilityTest` | CRC32C 校验和与字节模式查找（9 + 7 用例） |
-| | `PackageReaderTest` | 缓冲管理：Append/PopFront/Shift/Reset（14 用例） |
+| | `PackageReaderTest` | 缓冲管理：Append/PopFront/Reset（12 用例） |
 | | `PackageSerializationTest` | MakePackage ↔ ParsePackage 端到端往返、重同步与版本校验（15 用例） |
 | **Serialization** | `Base64Test` | Base64 编解码 |
 | | `CSVParserTest` | CSV 解析行、列、引号转义 |

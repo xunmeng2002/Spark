@@ -168,7 +168,7 @@ TEST(StepUtilityTest, GetNext_NoEqual)
 }
 
 // ============================================================
-// 报文起始锚点（SOH + "0=SPK2" + SOH）与 GetPackageStart
+// 报文起始锚点（SOH + "0=SPK2" + SOH）
 // ============================================================
 
 TEST(StepUtilityTest, PackageStartAnchor_Format)
@@ -198,44 +198,6 @@ TEST(StepUtilityTest, PackageStartAnchor_MatchesHeadToStream)
     std::string headStream = MakeStepHeadStream(0x1001, 0, 1, 0);
     const std::string& anchor = StepUtility::GetPackageStartAnchor();
     EXPECT_EQ(headStream.compare(0, anchor.size(), anchor), 0) << headStream;
-}
-
-TEST(StepUtilityTest, GetPackageStart_Found)
-{
-    std::string data = std::string("skip") + StepUtility::GetPackageStartAnchor()
-                     + MakeStepField(1, "0001");
-    int startIdx = -1;
-
-    EXPECT_TRUE(StepUtility::GetPackageStart(&data[0], 0, (int)data.size(), startIdx));
-    EXPECT_EQ(startIdx, 4);
-}
-
-TEST(StepUtilityTest, GetPackageStart_AtBeginning)
-{
-    std::string data = StepUtility::GetPackageStartAnchor() + MakeStepField(1, "0001");
-    int startIdx = -1;
-
-    EXPECT_TRUE(StepUtility::GetPackageStart(&data[0], 0, (int)data.size(), startIdx));
-    EXPECT_EQ(startIdx, 0);
-}
-
-TEST(StepUtilityTest, GetPackageStart_NotFound)
-{
-    // 只有 SOH 和一个普通字段，没有魔术字
-    std::string data = std::string(1, kSOH) + MakeStepField(2, "0005");
-    int startIdx = -1;
-
-    EXPECT_FALSE(StepUtility::GetPackageStart(&data[0], 0, (int)data.size(), startIdx));
-}
-
-TEST(StepUtilityTest, GetPackageStart_TruncatedAnchorNotFound)
-{
-    // 缓冲只到魔术字的一半，不能算命中
-    std::string anchor = StepUtility::GetPackageStartAnchor();
-    std::string data = anchor.substr(0, anchor.size() - 1);
-    int startIdx = -1;
-
-    EXPECT_FALSE(StepUtility::GetPackageStart(&data[0], 0, (int)data.size(), startIdx));
 }
 
 // ============================================================
@@ -686,5 +648,4 @@ TEST(StepUtilityTest, EmptyBuffer_AllFunctionsReturnFalse)
 
     EXPECT_FALSE(StepUtility::GetNextSoh(buff, 0, 0, sohIdx));
     EXPECT_FALSE(StepUtility::GetNextEqual(buff, 0, 0, equalIdx));
-    EXPECT_FALSE(StepUtility::GetPackageStart(buff, 0, 0, sohIdx));
 }

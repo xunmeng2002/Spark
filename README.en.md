@@ -83,7 +83,7 @@ Spark/
 │   ├── TestServer/             # Network server tests (legacy)
 │   ├── TestCore/               # Core component tests (legacy)
 │   └── TestMD5/                # MD5 verification program
-├── model/                      # Data model definitions (Head.xml / XtpHead.xml, etc.)
+├── model/                      # Data model definitions (Head.xml / parselist.xml, etc.)
 ├── submodules/                 # Submodule dependencies (CMakeCommon)
 ├── bin/                        # Build outputs: dynamic libraries / executables (per config)
 ├── lib/                        # Build outputs: static libraries / import libraries (per config)
@@ -349,9 +349,9 @@ The project includes a comprehensive **Google Test**-based unit test suite with 
 | | `TimerTest` | Timer firing and cancellation |
 | | `TimeUtilityTest` | Time formatting and conversion |
 | | `UtilityTest` | General utility functions |
-| **Network** | `StepUtilityTest` | Step protocol field parsing, Head/Tail stream conversion (51 cases) |
+| **Network** | `StepUtilityTest` | Step protocol field parsing, Head/Tail stream conversion (47 cases) |
 | | `ProtocolUtilityTest` | CRC32C calculation and byte pattern search (9 + 7 cases) |
-| | `PackageReaderTest` | Buffer management: Append/PopFront/Shift/Reset (14 cases) |
+| | `PackageReaderTest` | Buffer management: Append/PopFront/Reset (12 cases) |
 | | `PackageSerializationTest` | End-to-end MakePackage ↔ ParsePackage round-trip, resync and version check (15 cases) |
 | **Serialization** | `Base64Test` | Base64 encoding/decoding |
 | | `CSVParserTest` | CSV row/column parsing, quote escaping |

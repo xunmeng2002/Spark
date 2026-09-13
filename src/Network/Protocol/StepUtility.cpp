@@ -149,21 +149,6 @@ bool StepUtility::GetNextFieldZone(char* buff, int startIndex, int endIndex, uns
 	}
 	return true;
 }
-bool StepUtility::GetPackageStart(char* buff, int startIndex, int endIndex, int& packageStartIndex)
-{
-	if (endIndex <= startIndex)
-	{
-		return false;
-	}
-	const std::string& anchor = GetPackageStartAnchor();
-	unsigned int offset = 0;
-	if (!FindBytes(buff + startIndex, static_cast<unsigned int>(endIndex - startIndex), anchor.c_str(), static_cast<unsigned int>(anchor.size()), offset))
-	{
-		return false;
-	}
-	packageStartIndex = startIndex + static_cast<int>(offset);
-	return true;
-}
 const std::string& StepUtility::GetPackageStartAnchor()
 {
 	static const std::string anchor = []()

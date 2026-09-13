@@ -122,36 +122,6 @@ TEST(PackageReaderTest, PopFrontMovesDataToBufferStart)
     EXPECT_EQ(memcmp(reader.Data(), "CDEFGH", 6), 0);
 }
 
-TEST(PackageReaderTest, ShiftMovesPointer)
-{
-    PackageReader reader = MakeReader();
-    const char testData[] = "LongerTestData";
-    reader.Append(const_cast<char*>(testData), (unsigned int)strlen(testData));
-
-    char* before = reader.Data();
-    int beforeLen = reader.Length();
-
-    reader.Shift(6);
-
-    // Shift 仅移动指针，不改缓冲
-    EXPECT_EQ(reader.Data(), before + 6);
-    EXPECT_EQ(reader.Length(), beforeLen - 6);
-}
-
-TEST(PackageReaderTest, ShiftAndAppend)
-{
-    PackageReader reader = MakeReader();
-
-    const char data[] = "ABCDEFGH";
-    reader.Append(const_cast<char*>(data), (unsigned int)strlen(data));
-    reader.Shift(4);  // now pointer at "EFGH"
-
-    // 追加在新位置之后
-    const char more[] = "IJK";
-    reader.Append(const_cast<char*>(more), (unsigned int)strlen(more));
-    EXPECT_EQ(memcmp(reader.Data(), "EFGHIJK", 7), 0);
-}
-
 TEST(PackageReaderTest, TailSizeDecreasesAsDataGrows)
 {
     PackageReader reader = MakeReader();
@@ -185,7 +155,7 @@ TEST(PackageReaderTest, ResetRestoresState)
 
     const char data[] = "SomeData";
     reader.Append(const_cast<char*>(data), (unsigned int)strlen(data));
-    reader.Shift(2);
+    reader.PopFront(2);
     EXPECT_GT(reader.Length(), 0);
 
     reader.Reset();

@@ -20,7 +20,6 @@ public:
 	int Length();
 	char* Tail();
 	unsigned int TailSize();
-	void Shift(unsigned int len);
 	unsigned int Append(char* data, unsigned  int len);
 
 	bool ParsePackage(Package*& package);
