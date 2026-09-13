@@ -2,6 +2,8 @@
 #include <Spark/Network/Protocol/StepUtility.h>
 #include <Spark/Network/Protocol/Head.h>
 #include <Spark/Network/Protocol/Items.h>
+#include <Spark/Network/Protocol/ProtocolUtility.h>
+#include <Spark/Network/Protocol/ProtocolVersion.h>
 
 #include <cstring>
 #include <string>
@@ -16,14 +18,57 @@ namespace
     constexpr char kSOH = 1;
 
     // 构造 "key=value\SOH"（无前导 SOH，用于 GetNext 直接解析）
-    std::string MakeStepField(unsigned short key, const std::string& value)
+    // 只留一个重载：Items 里的字段 ID 是 unsigned int，另外两个重载会让调用变成二义
+    std::string MakeStepField(unsigned int key, const std::string& value)
     {
         return std::to_string(key) + "=" + value + std::string(1, kSOH);
     }
 
-    std::string MakeStepField(int key, const std::string& value)
+    // 按 HeadToStream 的写法造一个完整包头，返回实际写出的字节
+    std::string MakeStepHeadStream(unsigned short packageID, unsigned short bodyLen, int msgSeqNum, int messageChain)
     {
-        return std::to_string(key) + "=" + value + std::string(1, kSOH);
+        HeadField head = {};
+        head.Magic = ProtocolMagicValue;
+        head.Version = ProtocolVersionValue;
+        head.PackageID = packageID;
+        head.BodyLen = bodyLen;
+        head.MsgSeqNum = msgSeqNum;
+        head.MessageChain = messageChain;
+
+        char buff[StepMaxHeaderLen] = {};
+        int len = StepUtility::HeadToStream(&head, buff, StepMaxHeaderLen);
+        return std::string(buff, buff + len);
+    }
+
+    // 手工拼包头，只留出字段值可控的口子，便于构造坏值用例
+    std::string MakeRawStepHeadStream(
+        const std::string& magic = ProtocolMagicText,
+        const std::string& version = std::to_string(ProtocolVersionValue),
+        const std::string& packageID = "1001",
+        const std::string& bodyLen = "00008",
+        const std::string& msgSeqNum = "7",
+        const std::string& messageChain = "0",
+        const std::string& trailing = "")
+    {
+        return std::string(1, kSOH)
+            + MakeStepField(Items::Magic, magic)
+            + MakeStepField(Items::Version, version)
+            + MakeStepField(Items::PackageID, packageID)
+            + MakeStepField(Items::BodyLen, bodyLen)
+            + MakeStepField(Items::MsgSeqNum, msgSeqNum)
+            + MakeStepField(Items::MessageChain, messageChain)
+            + trailing;
+    }
+
+    // 按 TailToStream 的写法造一个完整报尾，返回实际写出的字节
+    std::string MakeStepTailStream(unsigned int checkSum)
+    {
+        TailField tail = {};
+        tail.CheckSum = static_cast<IntType>(checkSum);
+
+        char buff[StepTailLen + 1] = {};
+        StepUtility::TailToStream(&tail, buff, StepTailLen);
+        return std::string(buff, buff + StepTailLen);
     }
 }
 
@@ -123,13 +168,42 @@ TEST(StepUtilityTest, GetNext_NoEqual)
 }
 
 // ============================================================
-// GetPackageStart（需要前导 SOH 后跟 "1="）
+// 报文起始锚点（SOH + "0=SPK2" + SOH）与 GetPackageStart
 // ============================================================
+
+TEST(StepUtilityTest, PackageStartAnchor_Format)
+{
+    const std::string& anchor = StepUtility::GetPackageStartAnchor();
+    // SOH + "0" + "=" + "SPK2" + SOH，共 8 字节
+    ASSERT_EQ(anchor.size(), 8u);
+    EXPECT_EQ(anchor[0], kSOH);
+    EXPECT_EQ(anchor[1], '0');
+    EXPECT_EQ(anchor[2], '=');
+    EXPECT_EQ(anchor.substr(3, 4), "SPK2");
+    EXPECT_EQ(anchor[7], kSOH);
+}
+
+TEST(StepUtilityTest, PackageStartAnchor_MatchesMagicValueBytes)
+{
+    // 锚点里的 "SPK2" 必须与 ProtocolMagicValue 是小端的同一串字节
+    const std::string& anchor = StepUtility::GetPackageStartAnchor();
+    unsigned int magic = 0;
+    memcpy(&magic, anchor.data() + 3, 4);
+    EXPECT_EQ(magic, static_cast<unsigned int>(ProtocolMagicValue));
+}
+
+TEST(StepUtilityTest, PackageStartAnchor_MatchesHeadToStream)
+{
+    // 序列化出来的包头必须以锚点开头，否则接收端永远对不上
+    std::string headStream = MakeStepHeadStream(0x1001, 0, 1, 0);
+    const std::string& anchor = StepUtility::GetPackageStartAnchor();
+    EXPECT_EQ(headStream.compare(0, anchor.size(), anchor), 0) << headStream;
+}
 
 TEST(StepUtilityTest, GetPackageStart_Found)
 {
-    // SOH + "1=" is the package start marker
-    std::string data = std::string("skip") + std::string(1, kSOH) + MakeStepField(1, "0001");
+    std::string data = std::string("skip") + StepUtility::GetPackageStartAnchor()
+                     + MakeStepField(1, "0001");
     int startIdx = -1;
 
     EXPECT_TRUE(StepUtility::GetPackageStart(&data[0], 0, (int)data.size(), startIdx));
@@ -138,7 +212,7 @@ TEST(StepUtilityTest, GetPackageStart_Found)
 
 TEST(StepUtilityTest, GetPackageStart_AtBeginning)
 {
-    std::string data = std::string(1, kSOH) + MakeStepField(1, "0001");
+    std::string data = StepUtility::GetPackageStartAnchor() + MakeStepField(1, "0001");
     int startIdx = -1;
 
     EXPECT_TRUE(StepUtility::GetPackageStart(&data[0], 0, (int)data.size(), startIdx));
@@ -147,7 +221,18 @@ TEST(StepUtilityTest, GetPackageStart_AtBeginning)
 
 TEST(StepUtilityTest, GetPackageStart_NotFound)
 {
+    // 只有 SOH 和一个普通字段，没有魔术字
     std::string data = std::string(1, kSOH) + MakeStepField(2, "0005");
+    int startIdx = -1;
+
+    EXPECT_FALSE(StepUtility::GetPackageStart(&data[0], 0, (int)data.size(), startIdx));
+}
+
+TEST(StepUtilityTest, GetPackageStart_TruncatedAnchorNotFound)
+{
+    // 缓冲只到魔术字的一半，不能算命中
+    std::string anchor = StepUtility::GetPackageStartAnchor();
+    std::string data = anchor.substr(0, anchor.size() - 1);
     int startIdx = -1;
 
     EXPECT_FALSE(StepUtility::GetPackageStart(&data[0], 0, (int)data.size(), startIdx));
@@ -329,45 +414,43 @@ TEST(StepUtilityTest, WriteHexString)
 // HeadToStream / HeadFromStream 往返测试
 // ============================================================
 
-TEST(StepUtilityTest, HeadStreamRoundTrip)
+TEST(StepUtilityTest, HeadToStream_InsufficientBuffer)
 {
     HeadField head = {};
-    head.PackageID = 0x1001;
-    head.BodyLen = 128;
-    head.MsgSeqNum = 42;
-    head.MessageChain = 0;
+    head.Version = ProtocolVersionValue;
 
-    char buff[StepHeaderLen + 1] = {};
-    StepUtility::HeadToStream(&head, buff, StepHeaderLen);
+    char buff[StepMaxHeaderLen - 1] = {};
+    EXPECT_EQ(StepUtility::HeadToStream(&head, buff, StepMaxHeaderLen - 1), 0);
+}
 
-    // 验证头流长度
-    int headLen = (int)strlen(buff);
+TEST(StepUtilityTest, HeadStreamRoundTrip)
+{
+    std::string stream = MakeStepHeadStream(0x1001, 128, 42, 0);
+
+    int headLen = (int)stream.size();
     EXPECT_GT(headLen, 0);
-    EXPECT_LE(headLen, StepHeaderLen);
+    EXPECT_LT(headLen, (int)StepMaxHeaderLen);
 
-    // 反向解析
     HeadField parsed = {};
-    bool ok = StepUtility::HeadFromStream(buff, 0, StepHeaderLen, &parsed);
-    EXPECT_TRUE(ok);
-    EXPECT_EQ(parsed.PackageID, head.PackageID);
-    EXPECT_EQ(parsed.BodyLen, head.BodyLen);
-    EXPECT_EQ(parsed.MsgSeqNum, head.MsgSeqNum);
-    EXPECT_EQ(parsed.MessageChain, head.MessageChain);
+    int headEndIndex = -1;
+    EXPECT_TRUE(StepUtility::HeadFromStream(&stream[0], 0, headLen, &parsed, headEndIndex));
+    EXPECT_EQ(headEndIndex, headLen);
+    EXPECT_EQ(parsed.Magic, ProtocolMagicValue);
+    EXPECT_EQ(parsed.Version, ProtocolVersionValue);
+    EXPECT_EQ(parsed.PackageID, 0x1001);
+    EXPECT_EQ(parsed.BodyLen, 128);
+    EXPECT_EQ(parsed.MsgSeqNum, 42);
+    EXPECT_EQ(parsed.MessageChain, 0);
 }
 
 TEST(StepUtilityTest, HeadStreamRoundTrip_MinValues)
 {
-    HeadField head = {};
-    head.PackageID = 0x0001;
-    head.BodyLen = 0;
-    head.MsgSeqNum = 0;
-    head.MessageChain = 0;
-
-    char buff[StepHeaderLen + 1] = {};
-    StepUtility::HeadToStream(&head, buff, StepHeaderLen);
+    std::string stream = MakeStepHeadStream(0x0001, 0, 0, 0);
 
     HeadField parsed = {};
-    EXPECT_TRUE(StepUtility::HeadFromStream(buff, 0, StepHeaderLen, &parsed));
+    int headEndIndex = -1;
+    EXPECT_TRUE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
+    EXPECT_EQ(headEndIndex, (int)stream.size());
     EXPECT_EQ(parsed.PackageID, 0x0001);
     EXPECT_EQ(parsed.BodyLen, 0);
     EXPECT_EQ(parsed.MsgSeqNum, 0);
@@ -376,73 +459,149 @@ TEST(StepUtilityTest, HeadStreamRoundTrip_MinValues)
 
 TEST(StepUtilityTest, HeadStreamRoundTrip_MaxValues)
 {
-    HeadField head = {};
-    head.PackageID = 0xFFFF;
-    head.BodyLen = 65535;       // UShortType max
-    head.MsgSeqNum = 999999999;
-    head.MessageChain = 1;
-
-    char buff[StepHeaderLen + 1] = {};
-    StepUtility::HeadToStream(&head, buff, StepHeaderLen);
+    std::string stream = MakeStepHeadStream(0xFFFF, 65535, 999999999, 1);
 
     HeadField parsed = {};
-    EXPECT_TRUE(StepUtility::HeadFromStream(buff, 0, StepHeaderLen, &parsed));
+    int headEndIndex = -1;
+    EXPECT_TRUE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
     EXPECT_EQ(parsed.PackageID, 0xFFFF);
     EXPECT_EQ(parsed.BodyLen, 65535);
     EXPECT_EQ(parsed.MsgSeqNum, 999999999);
     EXPECT_EQ(parsed.MessageChain, 1);
 }
 
-TEST(StepUtilityTest, HeadFromStream_InvalidKey)
+TEST(StepUtilityTest, HeadFromStream_BodyFollowsHead)
 {
-    // 构造一个包含未知 key 的头流
-    // HeadFromStream 跳过首个 SOH，数据必须以前导 SOH 开头
-    std::string headStream = std::string(1, kSOH) + MakeStepField(0xFFFF, "test");
-    HeadField head = {};
-    EXPECT_FALSE(StepUtility::HeadFromStream(&headStream[0], 0, (int)headStream.size(), &head));
+    // 包头后面接包体时，headEndIndex 必须正好停在包体起点
+    std::string body = MakeStepField(0x100D, "600001");
+    std::string stream = MakeStepHeadStream(0x1001, (unsigned short)body.size(), 7, 0) + body;
+
+    HeadField parsed = {};
+    int headEndIndex = -1;
+    EXPECT_TRUE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
+    EXPECT_EQ(headEndIndex, (int)(stream.size() - body.size()));
+    EXPECT_EQ(parsed.BodyLen, static_cast<unsigned short>(body.size()));
+}
+
+TEST(StepUtilityTest, HeadFromStream_MissingKey)
+{
+    // 少一个字段（这里去掉 MessageChain）必须判失败，六个字段全到齐才算解析成功
+    std::string stream = std::string(1, kSOH)
+                       + MakeStepField(Items::Magic, ProtocolMagicText)
+                       + MakeStepField(Items::Version, "2")
+                       + MakeStepField(Items::PackageID, "1001")
+                       + MakeStepField(Items::BodyLen, "00008")
+                       + MakeStepField(Items::MsgSeqNum, "7")
+                       + MakeStepField(0x100D, "600001");
+
+    HeadField parsed = {};
+    int headEndIndex = -1;
+    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
+}
+
+TEST(StepUtilityTest, HeadFromStream_UnknownKey)
+{
+    // 首个字段就不是包头字段，等于一个字段都没解出来
+    std::string stream = std::string(1, kSOH) + MakeStepField(0xFFFF, "test");
+
+    HeadField parsed = {};
+    int headEndIndex = -1;
+    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
+}
+
+TEST(StepUtilityTest, HeadFromStream_WrongMagic)
+{
+    std::string stream = MakeRawStepHeadStream("XPK2", "2", "1001", "00008", "7", "0", MakeStepField(0x100D, "600001"));
+
+    HeadField parsed = {};
+    int headEndIndex = -1;
+    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
+}
+
+TEST(StepUtilityTest, HeadFromStream_UnparseableValue)
+{
+    // 值不是数字必须判失败。旧实现用 std::stoi，抛出的异常会直接穿过线程入口终止进程
+    std::string stream = MakeRawStepHeadStream(ProtocolMagicText, "abc", "1001", "00008", "7", "0", MakeStepField(0x100D, "600001"));
+
+    HeadField parsed = {};
+    int headEndIndex = -1;
+    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
+}
+
+TEST(StepUtilityTest, HeadFromStream_TrailingGarbageValue)
+{
+    // "8=2abc" 这种带尾巴的值也必须判失败，不能让 stoi 只吃掉前缀就放过
+    std::string stream = MakeRawStepHeadStream(ProtocolMagicText, "2abc", "1001", "00008", "7", "0", MakeStepField(0x100D, "600001"));
+
+    HeadField parsed = {};
+    int headEndIndex = -1;
+    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
+}
+
+TEST(StepUtilityTest, HeadFromStream_BodyLenOutOfRange)
+{
+    // 包体长度是 16 位无符号，超范围必须判失败，不能截断成 34464
+    std::string stream = MakeRawStepHeadStream(ProtocolMagicText, "2", "1001", "99999", "7", "0", MakeStepField(0x100D, "600001"));
+
+    HeadField parsed = {};
+    int headEndIndex = -1;
+    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
+}
+
+TEST(StepUtilityTest, HeadFromStream_EmptyValue)
+{
+    std::string stream = MakeRawStepHeadStream(ProtocolMagicText, "2", "1001", "", "7", "0", MakeStepField(0x100D, "600001"));
+
+    HeadField parsed = {};
+    int headEndIndex = -1;
+    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
 }
 
 // ============================================================
 // TailToStream / TailFromStream 往返测试
 // ============================================================
 
-TEST(StepUtilityTest, TailStreamRoundTrip)
+TEST(StepUtilityTest, TailToStream_InsufficientBuffer)
 {
     TailField tail = {};
     tail.CheckSum = 123;
 
-    char buff[StepTailLen + 1] = {};
-    StepUtility::TailToStream(&tail, buff, StepTailLen);
+    char buff[StepTailLen] = {};
+    EXPECT_EQ(StepUtility::TailToStream(&tail, buff, StepTailLen - 1), 0);
+}
+
+TEST(StepUtilityTest, TailStreamRoundTrip)
+{
+    std::string buff = MakeStepTailStream(123);
+
+    // 校验和扩到 32 位后，报尾固定 "5=" + 8 位十六进制 + SOH，共 11 字节
+    ASSERT_EQ(buff.size(), StepTailLen);
+    EXPECT_EQ(buff[0], '5');
+    EXPECT_EQ(buff[1], '=');
+    EXPECT_EQ(buff[StepTailLen - 1], kSOH);
 
     TailField parsed = {};
-    EXPECT_TRUE(StepUtility::TailFromStream(buff, 0, StepTailLen, &parsed));
+    EXPECT_TRUE(StepUtility::TailFromStream(&buff[0], 0, (int)buff.size(), &parsed));
     EXPECT_EQ(parsed.CheckSum, 123);
 }
 
 TEST(StepUtilityTest, TailStreamRoundTrip_Zero)
 {
-    TailField tail = {};
-    tail.CheckSum = 0;
-
-    char buff[StepTailLen + 1] = {};
-    StepUtility::TailToStream(&tail, buff, StepTailLen);
+    std::string buff = MakeStepTailStream(0);
 
     TailField parsed = {};
-    EXPECT_TRUE(StepUtility::TailFromStream(buff, 0, StepTailLen, &parsed));
+    EXPECT_TRUE(StepUtility::TailFromStream(&buff[0], 0, (int)buff.size(), &parsed));
     EXPECT_EQ(parsed.CheckSum, 0);
 }
 
 TEST(StepUtilityTest, TailStreamRoundTrip_Max)
 {
-    TailField tail = {};
-    tail.CheckSum = 255;
-
-    char buff[StepTailLen + 1] = {};
-    StepUtility::TailToStream(&tail, buff, StepTailLen);
+    // 旧实现是 unsigned short 的 4 位十六进制，最大只到 0xFFFF，这里钉住全 32 位
+    std::string buff = MakeStepTailStream(0xFFFFFFFFu);
 
     TailField parsed = {};
-    EXPECT_TRUE(StepUtility::TailFromStream(buff, 0, StepTailLen, &parsed));
-    EXPECT_EQ(parsed.CheckSum, 255);
+    EXPECT_TRUE(StepUtility::TailFromStream(&buff[0], 0, (int)buff.size(), &parsed));
+    EXPECT_EQ(static_cast<unsigned int>(parsed.CheckSum), 0xFFFFFFFFu);
 }
 
 TEST(StepUtilityTest, TailFromStream_InvalidKey)
@@ -453,40 +612,65 @@ TEST(StepUtilityTest, TailFromStream_InvalidKey)
     EXPECT_FALSE(StepUtility::TailFromStream(&tailStream[0], 0, (int)tailStream.size(), &tail));
 }
 
+TEST(StepUtilityTest, TailFromStream_OutOfRangeCheckSum)
+{
+    // 9 位十六进制超过 32 位，必须判失败而不是截断
+    std::string tailStream = MakeStepField(Items::CheckSum, "1FFFFFFFF");
+    TailField tail = {};
+    EXPECT_FALSE(StepUtility::TailFromStream(&tailStream[0], 0, (int)tailStream.size(), &tail));
+}
+
+TEST(StepUtilityTest, TailFromStream_NoField)
+{
+    // 一个字段都没解析出来必须判失败，否则会被当成校验和为 0 的合法报尾
+    char buff[1] = { 0 };
+    TailField tail = {};
+    EXPECT_FALSE(StepUtility::TailFromStream(buff, 0, 0, &tail));
+}
+
 // ============================================================
 // 综合：构造一个完整 Head + Body + Tail 报文
 // ============================================================
 
 TEST(StepUtilityTest, CompleteHeadBodyTail)
 {
+    // 包体是纯字段数据流，不带前导 SOH
+    std::string body = MakeStepField(0x100D, "600001") + MakeStepField(0x6015, "12.345");
+
     HeadField head = {};
+    head.Magic = ProtocolMagicValue;
+    head.Version = ProtocolVersionValue;
     head.PackageID = 0x1001;
-    head.BodyLen = 8;
+    head.BodyLen = static_cast<UShortType>(body.size());
     head.MsgSeqNum = 1;
     head.MessageChain = 0;
 
-    char headBuf[StepHeaderLen + 1] = {};
-    StepUtility::HeadToStream(&head, headBuf, StepHeaderLen);
+    char headBuf[StepMaxHeaderLen] = {};
+    int headLen = StepUtility::HeadToStream(&head, headBuf, StepMaxHeaderLen);
+    ASSERT_GT(headLen, 0);
 
-    // 构造 body: 简单字段（无前导 SOH，body 是纯字段数据流）
-    std::string body = MakeStepField(0x100D, "600001") + MakeStepField(0x6015, "12.345");
+    std::string message(headBuf, headBuf + headLen);
+    message += body;
+    // 校验和覆盖包头与包体，与 Package::MakePackage 的算法一致
+    auto checkSum = CalculateCrc32c(reinterpret_cast<const unsigned char*>(message.data()), (int)message.size());
+    message += MakeStepTailStream(checkSum);
 
-    // 计算 body 校验和
-    TailField tail = {};
-    tail.CheckSum = 42;
-
-    char tailBuf[StepTailLen + 1] = {};
-    StepUtility::TailToStream(&tail, tailBuf, StepTailLen);
-
-    // 组装完整报文
-    std::string message = std::string(headBuf) + body + tailBuf;
-    EXPECT_GT(message.size(), (size_t)(StepHeaderLen + StepTailLen));
-
-    // 反向解析 head
+    // 反向解析：包头
     HeadField parsedHead = {};
-    EXPECT_TRUE(StepUtility::HeadFromStream(&message[0], 0, StepHeaderLen, &parsedHead));
+    int headEndIndex = -1;
+    EXPECT_TRUE(StepUtility::HeadFromStream(&message[0], 0, (int)message.size(), &parsedHead, headEndIndex));
     EXPECT_EQ(parsedHead.PackageID, 0x1001);
     EXPECT_EQ(parsedHead.MsgSeqNum, 1);
+    EXPECT_EQ(headEndIndex, headLen);
+    EXPECT_EQ(message.substr(headLen, body.size()), body);
+
+    // 反向解析：报尾
+    int tailIndex = headEndIndex + parsedHead.BodyLen;
+    ASSERT_EQ(static_cast<size_t>(tailIndex + StepTailLen), message.size());
+
+    TailField parsedTail = {};
+    EXPECT_TRUE(StepUtility::TailFromStream(&message[0], tailIndex, tailIndex + StepTailLen, &parsedTail));
+    EXPECT_EQ(static_cast<unsigned int>(parsedTail.CheckSum), checkSum);
 }
 
 // ============================================================

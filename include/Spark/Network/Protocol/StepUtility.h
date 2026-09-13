@@ -5,8 +5,10 @@
 #include <unordered_map>
 
 
-constexpr unsigned int StepHeaderLen = 36u;
-constexpr unsigned int StepTailLen = 9u;
+//报尾固定为 "5=" + CRC32C 的 8 位十六进制 + SOH
+constexpr unsigned int StepTailLen = 2u + 8u + 1u;
+//包头由 key=value 字段串成、长度不固定，这个值只是"超过它还没解析出包头就判定为非法"的上界
+constexpr unsigned int StepMaxHeaderLen = 128u;
 constexpr unsigned int SOH = 1u;
 
 namespace spark::network
@@ -21,6 +23,8 @@ public:
 	static bool GetFieldEnd(char* buff, int startIndex, int endIndex, unsigned short& fieldID, int& fieldEndIndex);
 	static bool GetNextFieldZone(char* buff, int startIndex, int endIndex, unsigned short& fieldID, int& fieldStartIndex, int& fieldEndIndex);
 	static bool GetPackageStart(char* buff, int startIndex, int endIndex, int& packageStartIndex);
+	//报文起始锚点，形如 SOH + "0=SPK2" + SOH，与 ProtocolVersion.h 的魔术字是同一串字节
+	static const std::string& GetPackageStartAnchor();
 
 	static void WriteString(char*& ppos, int key, bool value);
 	static void WriteString(char*& ppos, int key, char value);
@@ -40,9 +44,12 @@ public:
 	static void WriteHexString(char*& ppos, int key, unsigned short value);
 
 
-	static void HeadToStream(HeadField* head, char* buff, int size);
-	static bool HeadFromStream(char* buff, int startIndex, int endIndex, HeadField* head);
-	static void TailToStream(TailField* tail, char* buff, int size);
+	//返回实际写入的包头长度
+	static int HeadToStream(HeadField* head, char* buff, int size);
+	//成功时把包头结束位置写入 headEndIndex，即包体的起始位置
+	static bool HeadFromStream(char* buff, int startIndex, int endIndex, HeadField* head, int& headEndIndex);
+	//返回实际写入的报尾长度
+	static int TailToStream(TailField* tail, char* buff, int size);
 	static bool TailFromStream(char* buff, int startIndex, int endIndex, TailField* tail);
 
 };

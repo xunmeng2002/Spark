@@ -5,6 +5,7 @@ namespace spark::network
 class Items
 {
 public:
+	static constexpr unsigned int Magic = 0x0000;
 	static constexpr unsigned int PackageID = 0x0001;
 	static constexpr unsigned int BodyLen = 0x0002;
 	static constexpr unsigned int MessageChain = 0x0003;
@@ -12,6 +13,7 @@ public:
 	static constexpr unsigned int CheckSum = 0x0005;
 	static constexpr unsigned int FieldStart = 0x0006;
 	static constexpr unsigned int FieldEnd = 0x0007;
+	static constexpr unsigned int Version = 0x0008;
 	static constexpr unsigned int AccountID = 0x1001;
 	static constexpr unsigned int AdminUserID = 0x1002;
 	static constexpr unsigned int BarPeriod = 0x1003;

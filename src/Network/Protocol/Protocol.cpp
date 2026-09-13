@@ -139,15 +139,22 @@ void Protocol::OnDisConnect(SessionIDType sessionID, const char* ip, int port)
 void Protocol::OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer)
 {
 	if (m_IOBase == nullptr)
+	{
+		buffer->Deallocate();
 		return;
-	auto packageReader = m_SessionPackageReaders[sessionID];
-	if (packageReader == nullptr)
+	}
+	auto it = m_SessionPackageReaders.find(sessionID);
+	if (it == m_SessionPackageReaders.end() || it->second == nullptr)
 	{
 		WriteLog(LogLevel::Error, "Cannot Find PackageReader for SessionID:%lld", sessionID);
+		buffer->Deallocate();
 		m_IOBase->DisConnect(sessionID);
 		return;
 	}
+	auto packageReader = it->second;
 	packageReader->Append(buffer->GetData(), buffer->GetLength());
+	//Append 已经拷走字节，之后再无引用，所以在这里归还，后面的解析路径不必再考虑释放
+	buffer->Deallocate();
 	while (true)
 	{
 		Package* package = nullptr;

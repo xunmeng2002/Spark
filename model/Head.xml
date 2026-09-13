@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <fields>
 	<field name="Head" 							id="0x0001" desc="报文头">
+		<item name="Magic" type="Int" desc="魔术字，固定为ProtocolMagicValue"/>
+		<item name="MsgSeqNum" type="Int" desc="请求编号"/>
 		<item name="PackageID" type="UShort" desc="报文代码"/>
 		<item name="BodyLen" type="UShort" desc="报文长度"/>
+		<item name="Version" type="UShort" desc="协议版本，固定为ProtocolVersionValue"/>
 		<item name="MessageChain" type="Bool" desc="报文链标记"/>
-		<item name="MsgSeqNum" type="Int" desc="请求编号"/>
+		<item name="Reserved" type="Bool" desc="保留字段，必须为false"/>
 	</field>
 	<field name="Tail" 							id="0x0002" desc="报文尾">
-		<item name="CheckSum" type="UShort" desc="校验和tag = 6固定长度3位"/>
+		<item name="CheckSum" type="Int" desc="CRC32C校验和，覆盖报文头与包体"/>
 	</field>
 </fields>

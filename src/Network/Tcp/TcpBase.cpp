@@ -190,6 +190,10 @@ void TcpBase::DoRecv(Connect* connect)
 
 		m_IOSubscriber->OnRecv(tcpConnect->SessionID, buffer);
 	}
+	else
+	{
+		buffer->Deallocate();
+	}
 }
 void TcpBase::DoAccept()
 {

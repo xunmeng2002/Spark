@@ -349,10 +349,10 @@ The project includes a comprehensive **Google Test**-based unit test suite with 
 | | `TimerTest` | Timer firing and cancellation |
 | | `TimeUtilityTest` | Time formatting and conversion |
 | | `UtilityTest` | General utility functions |
-| **Network** | `StepUtilityTest` | Step protocol field parsing, Head/Tail stream conversion (36 cases) |
-| | `ProtocolUtilityTest` | CHECKSUM calculation (8 cases) |
+| **Network** | `StepUtilityTest` | Step protocol field parsing, Head/Tail stream conversion (51 cases) |
+| | `ProtocolUtilityTest` | CHECKSUM / CRC32C calculation and byte pattern search (8 + 9 + 7 cases) |
 | | `PackageReaderTest` | Buffer management: Append/PopFront/Shift/Reset (14 cases) |
-| | `PackageSerializationTest` | End-to-end MakePackage ↔ ParsePackage round-trip (6 cases) |
+| | `PackageSerializationTest` | End-to-end MakePackage ↔ ParsePackage round-trip, resync and version check (15 cases) |
 | **Serialization** | `Base64Test` | Base64 encoding/decoding |
 | | `CSVParserTest` | CSV row/column parsing, quote escaping |
 | | `CSVRecordTest` | CSV record reading/writing |

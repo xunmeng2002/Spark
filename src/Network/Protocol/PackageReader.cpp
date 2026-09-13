@@ -1,5 +1,6 @@
 #include <Spark/Network/Protocol/PackageReader.h>
 #include <Spark/Network/Protocol/ProtocolUtility.h>
+#include <Spark/Network/Protocol/ProtocolVersion.h>
 #include <Spark/Network/Protocol/StepUtility.h>
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
@@ -15,6 +16,7 @@ PackageReader::PackageReader(ProtocolTypeType protocolType, PackageFactoryBase* 
 {
 	m_Data = m_Buff;
 	m_Length = 0;
+	m_DiscardLength = 0;
 
 	m_ProtocolType = protocolType;
 	m_PackageFactory = packageFactory;
@@ -40,6 +42,7 @@ void PackageReader::Reset()
 {
 	m_Data = m_Buff;
 	m_Length = 0;
+	m_DiscardLength = 0;
 }
 void PackageReader::PopFront(unsigned int len)
 {
@@ -79,6 +82,45 @@ unsigned int PackageReader::Append(char* data, unsigned int len)
 	m_Length += len;
 	return len;
 }
+void PackageReader::DiscardFront(unsigned int len)
+{
+	len = std::min(len, m_Length);
+	m_DiscardLength += len;
+	PopFront(len);
+}
+PackageReader::AlignResult PackageReader::AlignToAnchor(const char* anchor, unsigned int anchorLength)
+{
+	unsigned int offset = 0;
+	if (FindBytes(m_Data, m_Length, anchor, anchorLength, offset))
+	{
+		if (offset > 0)
+		{
+			DiscardFront(offset);
+		}
+		return AlignResult::Aligned;
+	}
+	//锚点可能跨收包边界，所以保留末尾不足一个锚点的字节，其余都是无意义的前缀
+	unsigned int discardLength = m_Length - std::min(m_Length, anchorLength - 1);
+	if (discardLength > 0)
+	{
+		if (m_DiscardLength == 0)
+		{
+			//首次丢弃说明对端说的可能不是本协议，把这段字节的开头记下来便于定位
+			unsigned int probe = 0;
+			::memcpy(&probe, m_Data, std::min(m_Length, unsigned(sizeof(probe))));
+			WriteLog(LogLevel::Warning, "Package Start Not Found, Resync. SessionID:%lld, IP:%s, HeadValue:0x%08X, BufferLen:%u",
+				m_SessionID, m_IPAddress, probe, m_Length);
+		}
+		DiscardFront(discardLength);
+	}
+	if (m_DiscardLength > MaxPackageSize)
+	{
+		WriteLog(LogLevel::Error, "Garbage Stream Detected, DisConnect. SessionID:%lld, IP:%s, DiscardedBytes:%u",
+			m_SessionID, m_IPAddress, m_DiscardLength);
+		return AlignResult::GarbageStream;
+	}
+	return AlignResult::NeedMoreData;
+}
 bool PackageReader::ParsePackage(Package*& package)
 {
 	if (m_ProtocolType == ProtocolTypeType::Xtp)
@@ -93,100 +135,145 @@ bool PackageReader::ParsePackage(Package*& package)
 }
 bool PackageReader::ParseXtpPackage(Package*& package)
 {
-	if (m_Length < sizeof(HeadField))
-		return true;
-	memcpy(&m_Head, m_Data, sizeof(HeadField));
-	if (m_Length < (m_Head.BodyLen + sizeof(HeadField) + sizeof(TailField)))
+	while (true)
 	{
-		return true;
-	}
-	memcpy(&m_Tail, m_Data + sizeof(HeadField) + m_Head.BodyLen, sizeof(m_Tail));
-	auto checkSum = CalculateSum((unsigned char*)m_Data, m_Head.BodyLen + sizeof(HeadField));
-	if (checkSum != m_Tail.CheckSum)
-	{
-		WriteLog(LogLevel::Error, "CheckSum not Match. Tail.CheckSum:%d, CalculateSum:%d", m_Tail.CheckSum, checkSum);
-		Reset();
-		return false;
-	}
-	if (!m_PackageFactory->IsInboundPackageAccepted(m_Head.PackageID))
-	{
-		WriteLog(LogLevel::Error, "Inbound Package Not Accepted. PackageID:%d, SessionID:%lld, IP:%s", m_Head.PackageID, m_SessionID, m_IPAddress);
-		Reset();
-		return false;
-	}
-	package = m_PackageFactory->CreatePackage(m_Head.PackageID);
-	if (package == nullptr)
-	{
-		WriteLog(LogLevel::Warning, "CreatePackage Failed. ProtocolType:%d, PackageID:%d", m_ProtocolType, m_Head.PackageID);
-		return false;
-	}
+		AlignResult alignResult = AlignToAnchor((const char*)&ProtocolMagicValue, sizeof(ProtocolMagicValue));
+		if (alignResult == AlignResult::GarbageStream)
+		{
+			return false;
+		}
+		if (alignResult != AlignResult::Aligned || m_Length < sizeof(HeadField))
+		{
+			return true;
+		}
+		memcpy(&m_Head, m_Data, sizeof(HeadField));
+		//版本先于长度校验：版本不符时 BodyLen 的语义本身就不可信
+		if (m_Head.Version != ProtocolVersionValue)
+		{
+			WriteLog(LogLevel::Error, "Protocol Version Not Match. RemoteVersion:%u, LocalVersion:%u, SessionID:%lld, IP:%s",
+				m_Head.Version, ProtocolVersionValue, m_SessionID, m_IPAddress);
+			return false;
+		}
+		if (m_Length < (sizeof(HeadField) + m_Head.BodyLen + sizeof(TailField)))
+		{
+			return true;
+		}
+		memcpy(&m_Tail, m_Data + sizeof(HeadField) + m_Head.BodyLen, sizeof(m_Tail));
+		auto checkSum = CalculateCrc32c((const unsigned char*)m_Data, sizeof(HeadField) + m_Head.BodyLen);
+		if (checkSum != static_cast<unsigned int>(m_Tail.CheckSum))
+		{
+			WriteLog(LogLevel::Error, "CheckSum not Match. Tail.CheckSum:0x%08X, CalculateCrc32c:0x%08X", m_Tail.CheckSum, checkSum);
+			//只丢一个字节，让下一次扫描重新定位到真正的魔术字，而不是清空整段缓冲
+			DiscardFront(1);
+			continue;
+		}
+		if (!m_PackageFactory->IsInboundPackageAccepted(m_Head.PackageID))
+		{
+			WriteLog(LogLevel::Error, "Inbound Package Not Accepted. PackageID:%d, SessionID:%lld, IP:%s", m_Head.PackageID, m_SessionID, m_IPAddress);
+			return false;
+		}
+		package = m_PackageFactory->CreatePackage(m_Head.PackageID);
+		if (package == nullptr)
+		{
+			WriteLog(LogLevel::Warning, "CreatePackage Failed. ProtocolType:%d, PackageID:%d", m_ProtocolType, m_Head.PackageID);
+			return false;
+		}
 
-	package->SessionID = m_SessionID;
-	snprintf(package->IPAddress, sizeof(IPAddressType), "%s", m_IPAddress);
-	package->Head = m_Head;
-	package->Tail = m_Tail;
-	auto ret = package->FromXtpStream(m_Data, sizeof(HeadField), sizeof(HeadField) + m_Head.BodyLen);
-	PopFront(sizeof(HeadField) + m_Head.BodyLen + sizeof(TailField));
-	return ret;
+		package->SessionID = m_SessionID;
+		snprintf(package->IPAddress, sizeof(IPAddressType), "%s", m_IPAddress);
+		package->Head = m_Head;
+		package->Tail = m_Tail;
+		auto ret = package->FromXtpStream(m_Data, sizeof(HeadField), sizeof(HeadField) + m_Head.BodyLen);
+		PopFront(sizeof(HeadField) + m_Head.BodyLen + sizeof(TailField));
+		if (!ret)
+		{
+			WriteLog(LogLevel::Warning, "FromXtpStream Failed. ProtocolType:%d, PackageID:%d, BodyLen:%d", m_ProtocolType, m_Head.PackageID, m_Head.BodyLen);
+			package->Deallocate();
+			package = nullptr;
+			return false;
+		}
+		m_DiscardLength = 0;
+		return true;
+	}
 }
 bool PackageReader::ParseStepPackage(Package*& package)
 {
-	if (m_Length < StepHeaderLen)
+	const std::string& anchor = StepUtility::GetPackageStartAnchor();
+	unsigned int anchorLength = unsigned(anchor.size());
+	while (true)
 	{
-		return true;
-	}
-	int packageStartIndex = 0;
-	if (!StepUtility::GetPackageStart(m_Data, 0, m_Length, packageStartIndex))
-	{
-		WriteLog(LogLevel::Warning, "Cannot Find PackageStart Mark.");
-		return false;
-	}
-	if (m_Length - packageStartIndex < StepHeaderLen)
-	{
-		return true;
-	}
-	::memset(&m_Head, 0, sizeof(m_Head));
-	if (!StepUtility::HeadFromStream(m_Data, packageStartIndex, packageStartIndex + StepHeaderLen, &m_Head))
-	{
-		WriteLog(LogLevel::Warning, "Parse Head Failed.");
-		return false;
-	}
-	if ((m_Length - packageStartIndex) < (StepHeaderLen + m_Head.BodyLen + StepTailLen))
-	{
-		return true;
-	}
-	if (!StepUtility::TailFromStream(m_Data, packageStartIndex + StepHeaderLen + m_Head.BodyLen, packageStartIndex + StepHeaderLen + m_Head.BodyLen + StepTailLen, &m_Tail))
-	{
-		WriteLog(LogLevel::Warning, "Parse Tail Failed.");
-		return false;
-	}
-	auto checkSum = CalculateSum((unsigned char*)m_Data + packageStartIndex, StepHeaderLen + m_Head.BodyLen);
-	if (checkSum != m_Tail.CheckSum)
-	{
-		WriteLog(LogLevel::Warning, "CheckSum not Match. Tail.CheckSum:%d, CalculateSum:%d", m_Tail.CheckSum, checkSum);
-		Reset();
-		return false;
-	}
-	if (!m_PackageFactory->IsInboundPackageAccepted(m_Head.PackageID))
-	{
-		WriteLog(LogLevel::Error, "Inbound Package Not Accepted. PackageID:%d, SessionID:%lld, IP:%s", m_Head.PackageID, m_SessionID, m_IPAddress);
-		Reset();
-		return false;
-	}
-	package = m_PackageFactory->CreatePackage(m_Head.PackageID);
-	if (package == nullptr)
-	{
-		WriteLog(LogLevel::Warning, "CreatePackage Failed. ProtocolType:%d, PackageID:%d", m_ProtocolType, m_Head.PackageID);
-		return false;
-	}
+		AlignResult alignResult = AlignToAnchor(anchor.c_str(), anchorLength);
+		if (alignResult == AlignResult::GarbageStream)
+		{
+			return false;
+		}
+		if (alignResult != AlignResult::Aligned)
+		{
+			return true;
+		}
+		int headEndIndex = 0;
+		::memset(&m_Head, 0, sizeof(m_Head));
+		if (!StepUtility::HeadFromStream(m_Data, 0, m_Length, &m_Head, headEndIndex))
+		{
+			if (m_Length <= StepMaxHeaderLen)
+			{
+				return true;
+			}
+			WriteLog(LogLevel::Warning, "Parse Head Failed. SessionID:%lld, IP:%s, BufferLen:%u", m_SessionID, m_IPAddress, m_Length);
+			DiscardFront(1);
+			continue;
+		}
+		if (m_Head.Version != ProtocolVersionValue)
+		{
+			WriteLog(LogLevel::Error, "Protocol Version Not Match. RemoteVersion:%u, LocalVersion:%u, SessionID:%lld, IP:%s",
+				m_Head.Version, ProtocolVersionValue, m_SessionID, m_IPAddress);
+			return false;
+		}
+		int tailIndex = headEndIndex + m_Head.BodyLen;
+		if (m_Length < unsigned(tailIndex + StepTailLen))
+		{
+			return true;
+		}
+		if (!StepUtility::TailFromStream(m_Data, tailIndex, tailIndex + StepTailLen, &m_Tail))
+		{
+			WriteLog(LogLevel::Warning, "Parse Tail Failed. SessionID:%lld, IP:%s", m_SessionID, m_IPAddress);
+			DiscardFront(1);
+			continue;
+		}
+		auto checkSum = CalculateCrc32c((const unsigned char*)m_Data, tailIndex);
+		if (checkSum != static_cast<unsigned int>(m_Tail.CheckSum))
+		{
+			WriteLog(LogLevel::Warning, "CheckSum not Match. Tail.CheckSum:0x%08X, CalculateCrc32c:0x%08X", m_Tail.CheckSum, checkSum);
+			DiscardFront(1);
+			continue;
+		}
+		if (!m_PackageFactory->IsInboundPackageAccepted(m_Head.PackageID))
+		{
+			WriteLog(LogLevel::Error, "Inbound Package Not Accepted. PackageID:%d, SessionID:%lld, IP:%s", m_Head.PackageID, m_SessionID, m_IPAddress);
+			return false;
+		}
+		package = m_PackageFactory->CreatePackage(m_Head.PackageID);
+		if (package == nullptr)
+		{
+			WriteLog(LogLevel::Warning, "CreatePackage Failed. ProtocolType:%d, PackageID:%d", m_ProtocolType, m_Head.PackageID);
+			return false;
+		}
 
-	package->SessionID = m_SessionID;
-	snprintf(package->IPAddress, sizeof(IPAddressType), "%s", m_IPAddress);
-	memcpy(&package->Head, &m_Head, sizeof(HeadField));
-	memcpy(&package->Tail, &m_Tail, sizeof(TailField));
-	auto ret = package->FromStepStream(m_Data, packageStartIndex + StepHeaderLen, packageStartIndex + StepHeaderLen + m_Head.BodyLen);
-	PopFront(packageStartIndex + StepHeaderLen + m_Head.BodyLen + StepTailLen);
-	return ret;
+		package->SessionID = m_SessionID;
+		snprintf(package->IPAddress, sizeof(IPAddressType), "%s", m_IPAddress);
+		memcpy(&package->Head, &m_Head, sizeof(HeadField));
+		memcpy(&package->Tail, &m_Tail, sizeof(TailField));
+		auto ret = package->FromStepStream(m_Data, headEndIndex, tailIndex);
+		PopFront(tailIndex + StepTailLen);
+		if (!ret)
+		{
+			WriteLog(LogLevel::Warning, "FromStepStream Failed. ProtocolType:%d, PackageID:%d, BodyLen:%d", m_ProtocolType, m_Head.PackageID, m_Head.BodyLen);
+			package->Deallocate();
+			package = nullptr;
+			return false;
+		}
+		m_DiscardLength = 0;
+		return true;
+	}
 }
 }
-
