@@ -39,12 +39,20 @@ int Package::MakePackage(ProtocolTypeType protocolType, char* buff, int size)
 	if (protocolType == ProtocolTypeType::Xtp)
 	{
 		char* data = buff + sizeof(Head);
-		Head.BodyLen = ToXtpStream(data, size - sizeof(Head) - sizeof(Tail));
+		int bodyCapacity = size - static_cast<int>(sizeof(Head)) - static_cast<int>(sizeof(Tail));
+		int bodyLen = ToXtpStream(data, bodyCapacity);
+		if (bodyLen < 0 || bodyLen > bodyCapacity || bodyLen > static_cast<int>(MaxFrameBodyLen))
+		{
+			WriteLog(LogLevel::Error, "Xtp Body Length Invalid. BodyLen:%d, BodyCapacity:%d, MaxFrameBodyLen:%u",
+				bodyLen, bodyCapacity, MaxFrameBodyLen);
+			return 0;
+		}
+		Head.BodyLen = static_cast<UShortType>(bodyLen);
 		memcpy(buff, &Head, sizeof(Head));
-		Tail.CheckSum = static_cast<IntType>(CalculateCrc32c((const unsigned char*)buff, sizeof(Head) + Head.BodyLen));
-		memcpy(data + Head.BodyLen, &Tail, sizeof(Tail));
+		Tail.CheckSum = static_cast<IntType>(CalculateCrc32c((const unsigned char*)buff, sizeof(Head) + bodyLen));
+		memcpy(data + bodyLen, &Tail, sizeof(Tail));
 
-		return sizeof(Head) + Head.BodyLen + sizeof(Tail);
+		return sizeof(Head) + bodyLen + sizeof(Tail);
 	}
 	else if (protocolType == ProtocolTypeType::Step)
 	{
@@ -57,15 +65,23 @@ int Package::MakePackage(ProtocolTypeType protocolType, char* buff, int size)
 			WriteLog(LogLevel::Error, "Step Head To Stream Failed. HeadLen:%d, Size:%d", headLen, size);
 			return 0;
 		}
-		Head.BodyLen = ToStepStream(buff + headLen, size - headLen - StepTailLen);
+		int bodyCapacity = size - headLen - (int)StepTailLen;
+		int bodyLen = ToStepStream(buff + headLen, bodyCapacity);
+		if (bodyLen < 0 || bodyLen > bodyCapacity || bodyLen > static_cast<int>(MaxFrameBodyLen))
+		{
+			WriteLog(LogLevel::Error, "Step Body Length Invalid. BodyLen:%d, BodyCapacity:%d, MaxFrameBodyLen:%u",
+				bodyLen, bodyCapacity, MaxFrameBodyLen);
+			return 0;
+		}
+		Head.BodyLen = static_cast<UShortType>(bodyLen);
 		if (StepUtility::HeadToStream(&Head, buff, size) != headLen)
 		{
 			WriteLog(LogLevel::Error, "Step Head Length Changed After BodyLen Filled. HeadLen:%d, BodyLen:%d", headLen, Head.BodyLen);
 			return 0;
 		}
-		Tail.CheckSum = static_cast<IntType>(CalculateCrc32c((const unsigned char*)buff, headLen + Head.BodyLen));
-		StepUtility::TailToStream(&Tail, buff + headLen + Head.BodyLen, StepTailLen);
-		return headLen + Head.BodyLen + StepTailLen;
+		Tail.CheckSum = static_cast<IntType>(CalculateCrc32c((const unsigned char*)buff, headLen + bodyLen));
+		StepUtility::TailToStream(&Tail, buff + headLen + bodyLen, StepTailLen);
+		return headLen + bodyLen + StepTailLen;
 	}
 	return 0;
 }

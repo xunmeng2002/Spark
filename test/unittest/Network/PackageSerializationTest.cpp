@@ -458,3 +458,37 @@ TEST(PackageSerializationTest, EmptyField_NullBody)
 
     pkg->Deallocate();
 }
+
+// ============================================================
+// 包体超出一帧上限
+// ============================================================
+
+namespace
+{
+    // 生成器不看 size 参数，这里只回报一个超限的包体长度，用来验证 MakePackage 的长度契约
+    class OversizedBodyPackage : public Package
+    {
+    public:
+        void Deallocate() override {}
+        int ToStepStream(char*, int) const override { return static_cast<int>(MaxFrameBodyLen) + 1; }
+        bool FromStepStream(char*, int, int) override { return true; }
+        int ToXtpStream(char*, int) const override { return static_cast<int>(MaxFrameBodyLen) + 1; }
+        bool FromXtpStream(char*, int, int) override { return true; }
+        const char* GetDebugString() const override { return "OversizedBodyPackage"; }
+    };
+}
+
+TEST(PackageSerializationTest, OversizedBody_RejectedBeforeWrite)
+{
+    OversizedBodyPackage pkg;
+    pkg.Prepare(kSessionID, 0, 1);
+
+    char buff[MaxPackageSize] = {};
+    buff[0] = 'X';
+    // Xtp 的长度契约在写报文头之前判定，缓冲一个字节都不该动
+    EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Xtp, buff, MaxPackageSize), 0);
+    EXPECT_EQ(buff[0], 'X');
+
+    // Step 的包头要先落盘才量得出包头长度，判定在其后，只要求拒绝发送
+    EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Step, buff, MaxPackageSize), 0);
+}

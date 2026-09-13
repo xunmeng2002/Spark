@@ -83,6 +83,16 @@ void PackageReader::DiscardFront(unsigned int len)
 	m_DiscardLength += len;
 	PopFront(len);
 }
+bool PackageReader::IsBodyLenWithinFrameLimit() const
+{
+	if (m_Head.BodyLen <= MaxFrameBodyLen)
+	{
+		return true;
+	}
+	WriteLog(LogLevel::Warning, "Body Length Exceeds Frame Limit. BodyLen:%u, MaxFrameBodyLen:%u, SessionID:%lld, IP:%s",
+		m_Head.BodyLen, MaxFrameBodyLen, m_SessionID, m_IPAddress);
+	return false;
+}
 PackageReader::AlignResult PackageReader::AlignToAnchor(const char* anchor, unsigned int anchorLength)
 {
 	unsigned int offset = 0;
@@ -149,7 +159,12 @@ bool PackageReader::ParseXtpPackage(Package*& package)
 				m_Head.Version, ProtocolVersionValue, m_SessionID, m_IPAddress);
 			return false;
 		}
-		if (m_Length < (sizeof(HeadField) + m_Head.BodyLen + sizeof(TailField)))
+		if (!IsBodyLenWithinFrameLimit())
+	{
+		DiscardFront(1);
+		continue;
+	}
+	if (m_Length < (sizeof(HeadField) + m_Head.BodyLen + sizeof(TailField)))
 		{
 			return true;
 		}
@@ -224,7 +239,12 @@ bool PackageReader::ParseStepPackage(Package*& package)
 				m_Head.Version, ProtocolVersionValue, m_SessionID, m_IPAddress);
 			return false;
 		}
-		int tailIndex = headEndIndex + m_Head.BodyLen;
+		if (!IsBodyLenWithinFrameLimit())
+	{
+		DiscardFront(1);
+		continue;
+	}
+	int tailIndex = headEndIndex + m_Head.BodyLen;
 		if (m_Length < unsigned(tailIndex + StepTailLen))
 		{
 			return true;

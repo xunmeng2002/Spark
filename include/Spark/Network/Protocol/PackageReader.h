@@ -40,6 +40,7 @@ private:
 	};
 	AlignResult AlignToAnchor(const char* anchor, unsigned int anchorLength);
 	void DiscardFront(unsigned int len);
+	bool IsBodyLenWithinFrameLimit() const;
 
 protected:
 	ProtocolTypeType m_ProtocolType;

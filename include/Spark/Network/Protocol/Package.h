@@ -2,6 +2,7 @@
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Types.h>
 #include <Spark/Network/Protocol/Head.h>
+#include <Spark/Network/Protocol/ProtocolVersion.h>
 #include <stdint.h>
 
 
@@ -9,6 +10,7 @@
 
 namespace spark::network
 {
+static_assert(MaxPackageSize >= MaxFrameSize, "读侧缓冲必须容纳一帧上限，否则对端发来的最大帧无法解析");
 class NETWORK_EXPORTS Package
 {
 public:

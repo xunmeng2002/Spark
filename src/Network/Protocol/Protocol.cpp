@@ -6,6 +6,8 @@
 using namespace spark::core;
 namespace spark::network
 {
+static_assert(BuffSize >= MaxFrameSize, "IO 层的收发缓冲必须容纳一帧上限，否则 MakePackage 会写出界");
+
 Protocol::Protocol(ProtocolTypeType protocolType, ServerTypeType serverType, IOModelType ioModel, int milliSeconds, PackageFactoryBase* packageFactory)
 	:m_ProtocolType(protocolType), m_ServerType(serverType), m_IOModel(ioModel), m_MilliSeconds(milliSeconds), m_Subscriber(nullptr), m_PackageFactory(packageFactory), m_IOBase(nullptr), m_IOThread(nullptr)
 {
