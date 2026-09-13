@@ -81,6 +81,33 @@
   - **实证（x64-Debug）**：`cmake --build out/build/x64-Debug` 零错误；`bin/Debug/UnitTests.exe` **366/366 通过（25 套件）**。`Templates` 34 个文件 +793/−65 行；QT 15 个文件全部是别名改名（+388/−388，即纯改名）。
   - **未覆盖的点（诚实记录）**：新族当前**没有任何模型在用**，所以新的反序列化分支与 5 个 `WriteString` 重载在现有用例里**不被执行**——366 与加调色板之前是同一个数字，不能当作"新路径已生效"的证据。要真正跑到它，需要模型里出现一个 `UInt8`（或其它新别名）字段 + 一条逐字节往返用例。
   - **风险标注（§7）**：`InitMdbFromCsv` 把 8/16/32 位族映射到 `int` 分支，落到 `(!!@type!!Type)csv_record.GetFieldAsInt(...)` 上——第一次有表用这些窄别名时会触发 `int` → 窄类型的收窄转换（MSVC C4244，告警级，不阻断编译）。Step/Xtp 的**旧方言**模板（各自项目本地一份 `StepUtility`，可能没有 `ParseInteger`）故意不加范围校验，新标签在那里仍走原有的 `atoi` 路径。`WriteLog` 仍是 printf 风格，本次新增的 `%hhu/%hhd/%hd` 只对窄整型合法，GCC `-Wformat` 需在 WSL preset 上复验（沿袭下条未做项）。
+- **类型 label 逐族统一（2026-09-13，`Templates` 提交 `15677be` + `bce6ad7`，接在"类型调色板补齐"之后）**：
+  上一批解决"段名与位宽齐不齐"，这一批解决"同一族的 label 各自为政"。
+  - **Mdb 定宽族 5 个文件**：`uint16s: 'short' → 'uint16_t'`、`int32s: 'int' → 'int32_t'`，与同族既有的
+    `uint8_t`/`int8_t` 等对齐。`int64s` 的 `'int64'` 保留不动——它是**哨兵**而非类型名：`MdbIndexComp`
+    拿 label 去实例化 `std::hash<>`，Linux 上 `int64_t` 是 `long`，会让全仓 `%lld` 变成格式不匹配。
+  - **`InitMdbFromCsv` 是例外（它的 label 是取值函数选择器，不是类型名）**：`'short'` 与 `'int'` 两个分支
+    的函数体一字不差，故 `uint16s` 并入 `'int'` 并删掉重复分支（§5 DRY）。
+  - **协议族 5 个文件**（`Protocol/Packages`、`Protocol/Step`、`Protocol/Xtp`、`ApiTest/ApiMiddle`、
+    `ApiTest/SpiMiddle`）：`uint16s: 'short'|'ushort' → 'uint16'`、`int32s: 'int' → 'int32'`，改为与同文件
+    兄弟段一致的裸名（`uint8`/`int8`/`uint16`…）。
+  - **`TestCases.cpp.tpl` 同形，并顺带堵漏**：`uint16s: 'short' → 'int'`、删掉 `LoadOrders` 里的重复分支；
+    真正的收益在 `LoadOrderCancels`——它的链里**没有** `"short"` 分支、链尾也没有 `else`，所以声明在
+    `uint16s` 段、又被 `OrderCancel` 引用的字段，此前在 JSON 加载时被**静默跳过**（无报错，字段保持未初始化）。
+    改后两条链与 `InitMdbFromCsv` 完全同形。这同时**修正了上一条记录**：它当时已写明"`TestCases` 映射到
+    既有分支标签（`int`）"，但模板里实际还是 `'short'`，本批才真正对齐。
+  - **逐改逐证（不半改）**：三个脚本各自断言段位置唯一、块第二行是 `!!travel!!`、段内恰好一行
+    `!!types[@name]`、且旧值与预期逐字相同；再用 `difflib` 的 hunk 级 guard 只放行"目标行一对一替换"与
+    "整块删除"，出现任何其它改动立即整体中止，故不存在"改了一半"的中间态。每批改完 `pumpall.py` 在 Spark
+    与 QT 各跑一次 exit 0、`git status` 全空，即生成物逐字节未变。
+  - **影响面（实测，非推断）**：`TestCases.cpp.tpl` 的唯一消费方在 **Offer** 仓（`Source/pumplist.xml:53`），
+    不在本轮三仓范围内。只**读**了它的模型、未写 Offer：`Model/Offer/Types.xml` 仍是旧调色板（只有
+    `bools`/`ints`/`int64s`，连 `ints` 这个段名都不在 12 段约定里），`uint16` 计数 0，故对该仓同样零输出。
+  - **未覆盖的点**：C# 族与 SQL 族的 `short`/`ushort` 是**真类型名**，故意不动（C++ 侧已无残留）；
+    `formats` 的 `uint16s` 仍三花脸（`Packages` 为 `%hu`、`StepPackages` 为 `%d`、其余 5 个为 `%u`），
+    实测三者对 uint16 的打印结果**完全相同**（变参提升为 `int`），属纯风格问题，本批未动。
+  - **风险标注（§7）**：只改模板 label 与一条死分支，未触及多线程、锁与内存管理；`TestCases` 那条改动的
+    方向是"此前静默跳过的字段开始被赋值"，属**行为变更**（修漏），已确认对现有全部消费方零输出。
 
 ## 🔄 进行中
 
@@ -93,6 +120,13 @@
 - **Step 头上的 `Reserved` 字段暂不上线（本轮决策，待复核）**：`Head.xml` 里 `HeadField` 有 7 个字段（含 `Reserved`），但 Step 的文本包头只序列化 6 个（`HeadItemCount = 6`），`Reserved` 仅 Xtp 分支有。理由：`Reserved` 的定义是"保留字段，必须为 false"，缺省即 false，上线只会让包头多 12 字节；如果希望两端能校验"对端没乱用保留位"，需要把它加进 `HeadToStream`/`HeadFromStream` 并把 `HeadItemCount` 改成 7。
 - **P5 握手（协议版本协商）未实施**：计划里本就建议**不做**——版本号已经能在第一帧的固定偏移上校验出来，握手只会把"不一致"的发现推迟到连接建立之后，且要新增一对报文。当前实现按此执行，若日后要做，入口是 `Protocol::OnConnect`。
 - **生成器不认 `size`，包体越界写没有写前防护（2026-09-13 记，本批只做了事后判定）**：`ToXtpStream`/`ToStepStream` 的模板实现直接 memcpy/写文本，然后 `return int(ppos - buff)`，既不比对 `size` 也不返回负数。本批在 `MakePackage` 补的判定是事后检查：能拦住非法帧发出、能拦住 `BodyLen` 被截断，但包体真超限时序列化器已经把字节写到了缓冲之外（`Buffer<SIZE>` 的 `char m_Buffer[SIZE]` 后面就是它自己的 `m_Length`/`m_ReadPos`，溢出的破坏面是对象自身成员）。要做到写前防护，只有两条路：模板侧每写一个字段前比对剩余容量（改 `../Templates`，影响全部生成物与生成时间），或给 `ToXtpStream` 传一个带容量语义的可写游标对象。**需要用户决定是否做**；不做的前提是"没有任何模型会产出接近 64 KB 的包"，这条假设当前成立但无自动化守卫。
+- **文本协议反序列化对 `uint16`/`int32` 仍走 `else: atoi`（2026-09-13 记，待决定）**：
+  `Templates/Cpp/Protocol/Packages/Packages.cpp.tpl` 的整数分支是
+  `elif $type in ('uint8','int8','int16','uint32','uint64')` + `else: atoi(value.c_str())`，即 `uint16s`
+  与 `int32s` 这两个段**掉进 `else`**，拿不到上一批新加的 `StepUtility::ParseInteger` 范围检查。补两个标签
+  进去改的是文本协议反序列化路径，且是**行为变更**（从"小值正确、超范围静默截断 / `atoi` 溢出 UB"变成
+  "拒绝并报错"），需用户点头。并存项：`atoi` 的溢出 UB 对**本就走在 `else` 里**的既有族是既有问题，
+  非本批引入。同一处的 `formats` 对 `uint16s` 三花脸（`%hu`/`%d`/`%u`）属纯风格，可一并收口。
 
 ## 归档索引
 
