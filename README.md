@@ -349,7 +349,7 @@ int main(int argc, const char* argv[])
 | | `TimeUtilityTest` | 时间格式化、转换 |
 | | `UtilityTest` | 通用工具函数 |
 | **Network** | `StepUtilityTest` | Step 协议字段解析、Head/Tail 流式转换（51 用例） |
-| | `ProtocolUtilityTest` | CHECKSUM / CRC32C 校验和与字节模式查找（8 + 9 + 7 用例） |
+| | `ProtocolUtilityTest` | CRC32C 校验和与字节模式查找（9 + 7 用例） |
 | | `PackageReaderTest` | 缓冲管理：Append/PopFront/Shift/Reset（14 用例） |
 | | `PackageSerializationTest` | MakePackage ↔ ParsePackage 端到端往返、重同步与版本校验（15 用例） |
 | **Serialization** | `Base64Test` | Base64 编解码 |

@@ -29,16 +29,6 @@ constexpr std::array<unsigned int, 256> MakeCrc32cTable()
 constexpr std::array<unsigned int, 256> Crc32cTable = MakeCrc32cTable();
 }
 
-short CalculateSum(unsigned char* buff, int len)
-{
-	int sum = 0;
-	for (auto i = 0; i < len; ++i)
-	{
-		sum += buff[i];
-	}
-	return sum % 256;
-}
-
 unsigned int CalculateCrc32c(const unsigned char* buff, int len)
 {
 	unsigned int remainder = Crc32cInitValue;
