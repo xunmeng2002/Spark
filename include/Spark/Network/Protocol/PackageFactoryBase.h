@@ -9,7 +9,7 @@ class PackageFactoryBase
 public:
     PackageFactoryBase() = default;
     virtual ~PackageFactoryBase() = default;
-	virtual Package* CreatePackage(UShortType packageID) = 0;
-	virtual bool IsInboundPackageAccepted(UShortType packageID) { return true; }
+	virtual Package* CreatePackage(UInt16Type packageID) = 0;
+	virtual bool IsInboundPackageAccepted(UInt16Type packageID) { return true; }
 };
 }

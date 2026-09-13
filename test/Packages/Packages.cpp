@@ -127,8 +127,8 @@ int NotifyComponentConnectStatusPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (NotifyComponentConnectStatus != nullptr)
 	{
-		memcpy(buff + offset, &NotifyComponentConnectStatusField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &NotifyComponentConnectStatusField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, NotifyComponentConnectStatus, sizeof(NotifyComponentConnectStatusField));
 		offset += sizeof(NotifyComponentConnectStatusField);
 	}
@@ -139,8 +139,8 @@ bool NotifyComponentConnectStatusPackage::FromXtpStream(char* buff, int startInd
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case NotifyComponentConnectStatusField::FieldID:
@@ -284,8 +284,8 @@ int ReqAccountLoginPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAccountLogin != nullptr)
 	{
-		memcpy(buff + offset, &ReqAccountLoginField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAccountLoginField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAccountLogin, sizeof(ReqAccountLoginField));
 		offset += sizeof(ReqAccountLoginField);
 	}
@@ -296,8 +296,8 @@ bool ReqAccountLoginPackage::FromXtpStream(char* buff, int startIndex, int endIn
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAccountLoginField::FieldID:
@@ -515,15 +515,15 @@ int RspAccountLoginPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAccountLogin != nullptr)
 	{
-		memcpy(buff + offset, &RspAccountLoginField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAccountLoginField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAccountLogin, sizeof(RspAccountLoginField));
 		offset += sizeof(RspAccountLoginField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -534,8 +534,8 @@ bool RspAccountLoginPackage::FromXtpStream(char* buff, int startIndex, int endIn
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAccountLoginField::FieldID:
@@ -679,8 +679,8 @@ int ReqAccountLogoutPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAccountLogout != nullptr)
 	{
-		memcpy(buff + offset, &ReqAccountLogoutField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAccountLogoutField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAccountLogout, sizeof(ReqAccountLogoutField));
 		offset += sizeof(ReqAccountLogoutField);
 	}
@@ -691,8 +691,8 @@ bool ReqAccountLogoutPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAccountLogoutField::FieldID:
@@ -882,15 +882,15 @@ int RspAccountLogoutPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAccountLogout != nullptr)
 	{
-		memcpy(buff + offset, &RspAccountLogoutField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAccountLogoutField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAccountLogout, sizeof(RspAccountLogoutField));
 		offset += sizeof(RspAccountLogoutField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -901,8 +901,8 @@ bool RspAccountLogoutPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAccountLogoutField::FieldID:
@@ -1046,8 +1046,8 @@ int ReqQryAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryAccount != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryAccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryAccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryAccount, sizeof(ReqQryAccountField));
 		offset += sizeof(ReqQryAccountField);
 	}
@@ -1058,8 +1058,8 @@ bool ReqQryAccountPackage::FromXtpStream(char* buff, int startIndex, int endInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryAccountField::FieldID:
@@ -1279,15 +1279,15 @@ int RspQryAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Account != nullptr)
 	{
-		memcpy(buff + offset, &AccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &AccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Account, sizeof(AccountField));
 		offset += sizeof(AccountField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -1298,8 +1298,8 @@ bool RspQryAccountPackage::FromXtpStream(char* buff, int startIndex, int endInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case AccountField::FieldID:
@@ -1443,8 +1443,8 @@ int ReqQryHolderAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryHolderAccount != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryHolderAccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryHolderAccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryHolderAccount, sizeof(ReqQryHolderAccountField));
 		offset += sizeof(ReqQryHolderAccountField);
 	}
@@ -1455,8 +1455,8 @@ bool ReqQryHolderAccountPackage::FromXtpStream(char* buff, int startIndex, int e
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryHolderAccountField::FieldID:
@@ -1663,15 +1663,15 @@ int RspQryHolderAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (HolderAccount != nullptr)
 	{
-		memcpy(buff + offset, &HolderAccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &HolderAccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, HolderAccount, sizeof(HolderAccountField));
 		offset += sizeof(HolderAccountField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -1682,8 +1682,8 @@ bool RspQryHolderAccountPackage::FromXtpStream(char* buff, int startIndex, int e
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case HolderAccountField::FieldID:
@@ -1827,8 +1827,8 @@ int ReqQryCapitalPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryCapital != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryCapitalField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryCapitalField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryCapital, sizeof(ReqQryCapitalField));
 		offset += sizeof(ReqQryCapitalField);
 	}
@@ -1839,8 +1839,8 @@ bool ReqQryCapitalPackage::FromXtpStream(char* buff, int startIndex, int endInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryCapitalField::FieldID:
@@ -2173,15 +2173,15 @@ int RspQryCapitalPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Capital != nullptr)
 	{
-		memcpy(buff + offset, &CapitalField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &CapitalField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Capital, sizeof(CapitalField));
 		offset += sizeof(CapitalField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -2192,8 +2192,8 @@ bool RspQryCapitalPackage::FromXtpStream(char* buff, int startIndex, int endInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case CapitalField::FieldID:
@@ -2337,8 +2337,8 @@ int ReqQryPositionPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryPosition != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryPositionField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryPositionField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryPosition, sizeof(ReqQryPositionField));
 		offset += sizeof(ReqQryPositionField);
 	}
@@ -2349,8 +2349,8 @@ bool ReqQryPositionPackage::FromXtpStream(char* buff, int startIndex, int endInd
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryPositionField::FieldID:
@@ -2705,15 +2705,15 @@ int RspQryPositionPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Position != nullptr)
 	{
-		memcpy(buff + offset, &PositionField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &PositionField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Position, sizeof(PositionField));
 		offset += sizeof(PositionField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -2724,8 +2724,8 @@ bool RspQryPositionPackage::FromXtpStream(char* buff, int startIndex, int endInd
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case PositionField::FieldID:
@@ -2869,8 +2869,8 @@ int ReqQryOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryOrder != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryOrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryOrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryOrder, sizeof(ReqQryOrderField));
 		offset += sizeof(ReqQryOrderField);
 	}
@@ -2881,8 +2881,8 @@ bool ReqQryOrderPackage::FromXtpStream(char* buff, int startIndex, int endIndex)
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryOrderField::FieldID:
@@ -3285,15 +3285,15 @@ int RspQryOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Order != nullptr)
 	{
-		memcpy(buff + offset, &OrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &OrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Order, sizeof(OrderField));
 		offset += sizeof(OrderField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -3304,8 +3304,8 @@ bool RspQryOrderPackage::FromXtpStream(char* buff, int startIndex, int endIndex)
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case OrderField::FieldID:
@@ -3449,8 +3449,8 @@ int ReqQryTradePackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryTrade != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryTradeField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryTradeField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryTrade, sizeof(ReqQryTradeField));
 		offset += sizeof(ReqQryTradeField);
 	}
@@ -3461,8 +3461,8 @@ bool ReqQryTradePackage::FromXtpStream(char* buff, int startIndex, int endIndex)
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryTradeField::FieldID:
@@ -3795,15 +3795,15 @@ int RspQryTradePackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Trade != nullptr)
 	{
-		memcpy(buff + offset, &TradeField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &TradeField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Trade, sizeof(TradeField));
 		offset += sizeof(TradeField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -3814,8 +3814,8 @@ bool RspQryTradePackage::FromXtpStream(char* buff, int startIndex, int endIndex)
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case TradeField::FieldID:
@@ -3970,8 +3970,8 @@ int ReqQryInstrumentPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryInstrument != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryInstrumentField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryInstrumentField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryInstrument, sizeof(ReqQryInstrumentField));
 		offset += sizeof(ReqQryInstrumentField);
 	}
@@ -3982,8 +3982,8 @@ bool ReqQryInstrumentPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryInstrumentField::FieldID:
@@ -4218,15 +4218,15 @@ int RspQryInstrumentPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Instrument != nullptr)
 	{
-		memcpy(buff + offset, &InstrumentField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &InstrumentField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Instrument, sizeof(InstrumentField));
 		offset += sizeof(InstrumentField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -4237,8 +4237,8 @@ bool RspQryInstrumentPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case InstrumentField::FieldID:
@@ -4393,8 +4393,8 @@ int ReqQryOptionInstrumentPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryOptionInstrument != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryOptionInstrumentField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryOptionInstrumentField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryOptionInstrument, sizeof(ReqQryOptionInstrumentField));
 		offset += sizeof(ReqQryOptionInstrumentField);
 	}
@@ -4405,8 +4405,8 @@ bool ReqQryOptionInstrumentPackage::FromXtpStream(char* buff, int startIndex, in
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryOptionInstrumentField::FieldID:
@@ -4693,15 +4693,15 @@ int RspQryOptionInstrumentPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (OptionInstrument != nullptr)
 	{
-		memcpy(buff + offset, &OptionInstrumentField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &OptionInstrumentField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, OptionInstrument, sizeof(OptionInstrumentField));
 		offset += sizeof(OptionInstrumentField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -4712,8 +4712,8 @@ bool RspQryOptionInstrumentPackage::FromXtpStream(char* buff, int startIndex, in
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case OptionInstrumentField::FieldID:
@@ -4874,8 +4874,8 @@ int ReqQryCommissionRatePackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryCommissionRate != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryCommissionRateField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryCommissionRateField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryCommissionRate, sizeof(ReqQryCommissionRateField));
 		offset += sizeof(ReqQryCommissionRateField);
 	}
@@ -4886,8 +4886,8 @@ bool ReqQryCommissionRatePackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryCommissionRateField::FieldID:
@@ -5154,15 +5154,15 @@ int RspQryCommissionRatePackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (CommissionRate != nullptr)
 	{
-		memcpy(buff + offset, &CommissionRateField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &CommissionRateField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, CommissionRate, sizeof(CommissionRateField));
 		offset += sizeof(CommissionRateField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -5173,8 +5173,8 @@ bool RspQryCommissionRatePackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case CommissionRateField::FieldID:
@@ -5318,8 +5318,8 @@ int ReqQryMoneyTransferPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryMoneyTransfer != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryMoneyTransferField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryMoneyTransferField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryMoneyTransfer, sizeof(ReqQryMoneyTransferField));
 		offset += sizeof(ReqQryMoneyTransferField);
 	}
@@ -5330,8 +5330,8 @@ bool ReqQryMoneyTransferPackage::FromXtpStream(char* buff, int startIndex, int e
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryMoneyTransferField::FieldID:
@@ -5600,15 +5600,15 @@ int RspQryMoneyTransferPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (MoneyTransfer != nullptr)
 	{
-		memcpy(buff + offset, &MoneyTransferField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &MoneyTransferField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, MoneyTransfer, sizeof(MoneyTransferField));
 		offset += sizeof(MoneyTransferField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -5619,8 +5619,8 @@ bool RspQryMoneyTransferPackage::FromXtpStream(char* buff, int startIndex, int e
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case MoneyTransferField::FieldID:
@@ -5822,8 +5822,8 @@ int ReqInsertOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqInsertOrder != nullptr)
 	{
-		memcpy(buff + offset, &ReqInsertOrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqInsertOrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqInsertOrder, sizeof(ReqInsertOrderField));
 		offset += sizeof(ReqInsertOrderField);
 	}
@@ -5834,8 +5834,8 @@ bool ReqInsertOrderPackage::FromXtpStream(char* buff, int startIndex, int endInd
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqInsertOrderField::FieldID:
@@ -6238,15 +6238,15 @@ int RspInsertOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Order != nullptr)
 	{
-		memcpy(buff + offset, &OrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &OrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Order, sizeof(OrderField));
 		offset += sizeof(OrderField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -6257,8 +6257,8 @@ bool RspInsertOrderPackage::FromXtpStream(char* buff, int startIndex, int endInd
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case OrderField::FieldID:
@@ -6453,8 +6453,8 @@ int ReqCancelOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqCancelOrder != nullptr)
 	{
-		memcpy(buff + offset, &ReqCancelOrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqCancelOrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqCancelOrder, sizeof(ReqCancelOrderField));
 		offset += sizeof(ReqCancelOrderField);
 	}
@@ -6465,8 +6465,8 @@ bool ReqCancelOrderPackage::FromXtpStream(char* buff, int startIndex, int endInd
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqCancelOrderField::FieldID:
@@ -6707,15 +6707,15 @@ int RspCancelOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (CancelOrder != nullptr)
 	{
-		memcpy(buff + offset, &CancelOrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &CancelOrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, CancelOrder, sizeof(CancelOrderField));
 		offset += sizeof(CancelOrderField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -6726,8 +6726,8 @@ bool RspCancelOrderPackage::FromXtpStream(char* buff, int startIndex, int endInd
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case CancelOrderField::FieldID:
@@ -7084,8 +7084,8 @@ int RtnOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Order != nullptr)
 	{
-		memcpy(buff + offset, &OrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &OrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Order, sizeof(OrderField));
 		offset += sizeof(OrderField);
 	}
@@ -7096,8 +7096,8 @@ bool RtnOrderPackage::FromXtpStream(char* buff, int startIndex, int endIndex)
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case OrderField::FieldID:
@@ -7373,8 +7373,8 @@ int RtnTradePackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Trade != nullptr)
 	{
-		memcpy(buff + offset, &TradeField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &TradeField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Trade, sizeof(TradeField));
 		offset += sizeof(TradeField);
 	}
@@ -7385,8 +7385,8 @@ bool RtnTradePackage::FromXtpStream(char* buff, int startIndex, int endIndex)
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case TradeField::FieldID:
@@ -7598,8 +7598,8 @@ int RtnMoneyTransferPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (MoneyTransfer != nullptr)
 	{
-		memcpy(buff + offset, &MoneyTransferField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &MoneyTransferField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, MoneyTransfer, sizeof(MoneyTransferField));
 		offset += sizeof(MoneyTransferField);
 	}
@@ -7610,8 +7610,8 @@ bool RtnMoneyTransferPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case MoneyTransferField::FieldID:
@@ -7761,8 +7761,8 @@ int RtnAccountLogoutPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (AccountLogout != nullptr)
 	{
-		memcpy(buff + offset, &AccountLogoutField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &AccountLogoutField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, AccountLogout, sizeof(AccountLogoutField));
 		offset += sizeof(AccountLogoutField);
 	}
@@ -7773,8 +7773,8 @@ bool RtnAccountLogoutPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case AccountLogoutField::FieldID:
@@ -7918,8 +7918,8 @@ int ReqRiskUserLoginPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRiskUserLogin != nullptr)
 	{
-		memcpy(buff + offset, &ReqRiskUserLoginField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRiskUserLoginField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRiskUserLogin, sizeof(ReqRiskUserLoginField));
 		offset += sizeof(ReqRiskUserLoginField);
 	}
@@ -7930,8 +7930,8 @@ bool ReqRiskUserLoginPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRiskUserLoginField::FieldID:
@@ -8155,15 +8155,15 @@ int RspRiskUserLoginPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspRiskUserLogin != nullptr)
 	{
-		memcpy(buff + offset, &RspRiskUserLoginField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspRiskUserLoginField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspRiskUserLogin, sizeof(RspRiskUserLoginField));
 		offset += sizeof(RspRiskUserLoginField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -8174,8 +8174,8 @@ bool RspRiskUserLoginPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspRiskUserLoginField::FieldID:
@@ -8319,8 +8319,8 @@ int ReqRiskUserLogoutPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRiskUserLogout != nullptr)
 	{
-		memcpy(buff + offset, &ReqRiskUserLogoutField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRiskUserLogoutField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRiskUserLogout, sizeof(ReqRiskUserLogoutField));
 		offset += sizeof(ReqRiskUserLogoutField);
 	}
@@ -8331,8 +8331,8 @@ bool ReqRiskUserLogoutPackage::FromXtpStream(char* buff, int startIndex, int end
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRiskUserLogoutField::FieldID:
@@ -8522,15 +8522,15 @@ int RspRiskUserLogoutPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspRiskUserLogout != nullptr)
 	{
-		memcpy(buff + offset, &RspRiskUserLogoutField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspRiskUserLogoutField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspRiskUserLogout, sizeof(RspRiskUserLogoutField));
 		offset += sizeof(RspRiskUserLogoutField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -8541,8 +8541,8 @@ bool RspRiskUserLogoutPackage::FromXtpStream(char* buff, int startIndex, int end
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspRiskUserLogoutField::FieldID:
@@ -8703,8 +8703,8 @@ int RtnRiskUserLogoutPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RiskUserLogout != nullptr)
 	{
-		memcpy(buff + offset, &RiskUserLogoutField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RiskUserLogoutField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RiskUserLogout, sizeof(RiskUserLogoutField));
 		offset += sizeof(RiskUserLogoutField);
 	}
@@ -8715,8 +8715,8 @@ bool RtnRiskUserLogoutPackage::FromXtpStream(char* buff, int startIndex, int end
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RiskUserLogoutField::FieldID:
@@ -8879,8 +8879,8 @@ int RtnAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Account != nullptr)
 	{
-		memcpy(buff + offset, &AccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &AccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Account, sizeof(AccountField));
 		offset += sizeof(AccountField);
 	}
@@ -8891,8 +8891,8 @@ bool RtnAccountPackage::FromXtpStream(char* buff, int startIndex, int endIndex)
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case AccountField::FieldID:
@@ -9025,8 +9025,8 @@ int RtnAccountDeletePackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (AccountDelete != nullptr)
 	{
-		memcpy(buff + offset, &AccountDeleteField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &AccountDeleteField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, AccountDelete, sizeof(AccountDeleteField));
 		offset += sizeof(AccountDeleteField);
 	}
@@ -9037,8 +9037,8 @@ bool RtnAccountDeletePackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case AccountDeleteField::FieldID:
@@ -9336,8 +9336,8 @@ int RtnPositionPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Position != nullptr)
 	{
-		memcpy(buff + offset, &PositionField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &PositionField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Position, sizeof(PositionField));
 		offset += sizeof(PositionField);
 	}
@@ -9348,8 +9348,8 @@ bool RtnPositionPackage::FromXtpStream(char* buff, int startIndex, int endIndex)
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case PositionField::FieldID:
@@ -9494,8 +9494,8 @@ int RtnAccountRiskPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (AccountRisk != nullptr)
 	{
-		memcpy(buff + offset, &AccountRiskField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &AccountRiskField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, AccountRisk, sizeof(AccountRiskField));
 		offset += sizeof(AccountRiskField);
 	}
@@ -9506,8 +9506,8 @@ bool RtnAccountRiskPackage::FromXtpStream(char* buff, int startIndex, int endInd
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case AccountRiskField::FieldID:
@@ -9646,8 +9646,8 @@ int RtnAccountRiskDeletePackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (AccountRiskDelete != nullptr)
 	{
-		memcpy(buff + offset, &AccountRiskDeleteField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &AccountRiskDeleteField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, AccountRiskDelete, sizeof(AccountRiskDeleteField));
 		offset += sizeof(AccountRiskDeleteField);
 	}
@@ -9658,8 +9658,8 @@ bool RtnAccountRiskDeletePackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case AccountRiskDeleteField::FieldID:
@@ -9843,8 +9843,8 @@ int RtnAccountRiskNotifyPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (AccountRiskNotify != nullptr)
 	{
-		memcpy(buff + offset, &AccountRiskNotifyField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &AccountRiskNotifyField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, AccountRiskNotify, sizeof(AccountRiskNotifyField));
 		offset += sizeof(AccountRiskNotifyField);
 	}
@@ -9855,8 +9855,8 @@ bool RtnAccountRiskNotifyPackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case AccountRiskNotifyField::FieldID:
@@ -9989,8 +9989,8 @@ int ReqQryRiskGroupAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryRiskGroupAccount != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryRiskGroupAccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryRiskGroupAccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryRiskGroupAccount, sizeof(ReqQryRiskGroupAccountField));
 		offset += sizeof(ReqQryRiskGroupAccountField);
 	}
@@ -10001,8 +10001,8 @@ bool ReqQryRiskGroupAccountPackage::FromXtpStream(char* buff, int startIndex, in
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryRiskGroupAccountField::FieldID:
@@ -10222,15 +10222,15 @@ int RspQryRiskGroupAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Account != nullptr)
 	{
-		memcpy(buff + offset, &AccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &AccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Account, sizeof(AccountField));
 		offset += sizeof(AccountField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -10241,8 +10241,8 @@ bool RspQryRiskGroupAccountPackage::FromXtpStream(char* buff, int startIndex, in
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case AccountField::FieldID:
@@ -10397,8 +10397,8 @@ int ReqQryRiskGroupCapitalPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryRiskGroupCapital != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryRiskGroupCapitalField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryRiskGroupCapitalField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryRiskGroupCapital, sizeof(ReqQryRiskGroupCapitalField));
 		offset += sizeof(ReqQryRiskGroupCapitalField);
 	}
@@ -10409,8 +10409,8 @@ bool ReqQryRiskGroupCapitalPackage::FromXtpStream(char* buff, int startIndex, in
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryRiskGroupCapitalField::FieldID:
@@ -10743,15 +10743,15 @@ int RspQryRiskGroupCapitalPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Capital != nullptr)
 	{
-		memcpy(buff + offset, &CapitalField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &CapitalField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Capital, sizeof(CapitalField));
 		offset += sizeof(CapitalField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -10762,8 +10762,8 @@ bool RspQryRiskGroupCapitalPackage::FromXtpStream(char* buff, int startIndex, in
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case CapitalField::FieldID:
@@ -10918,8 +10918,8 @@ int ReqQryRiskGroupPositionPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryRiskGroupPosition != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryRiskGroupPositionField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryRiskGroupPositionField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryRiskGroupPosition, sizeof(ReqQryRiskGroupPositionField));
 		offset += sizeof(ReqQryRiskGroupPositionField);
 	}
@@ -10930,8 +10930,8 @@ bool ReqQryRiskGroupPositionPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryRiskGroupPositionField::FieldID:
@@ -11286,15 +11286,15 @@ int RspQryRiskGroupPositionPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Position != nullptr)
 	{
-		memcpy(buff + offset, &PositionField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &PositionField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Position, sizeof(PositionField));
 		offset += sizeof(PositionField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -11305,8 +11305,8 @@ bool RspQryRiskGroupPositionPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case PositionField::FieldID:
@@ -11461,8 +11461,8 @@ int ReqQryRiskGroupOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryRiskGroupOrder != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryRiskGroupOrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryRiskGroupOrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryRiskGroupOrder, sizeof(ReqQryRiskGroupOrderField));
 		offset += sizeof(ReqQryRiskGroupOrderField);
 	}
@@ -11473,8 +11473,8 @@ bool ReqQryRiskGroupOrderPackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryRiskGroupOrderField::FieldID:
@@ -11877,15 +11877,15 @@ int RspQryRiskGroupOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Order != nullptr)
 	{
-		memcpy(buff + offset, &OrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &OrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Order, sizeof(OrderField));
 		offset += sizeof(OrderField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -11896,8 +11896,8 @@ bool RspQryRiskGroupOrderPackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case OrderField::FieldID:
@@ -12052,8 +12052,8 @@ int ReqQryRiskGroupTradePackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryRiskGroupTrade != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryRiskGroupTradeField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryRiskGroupTradeField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryRiskGroupTrade, sizeof(ReqQryRiskGroupTradeField));
 		offset += sizeof(ReqQryRiskGroupTradeField);
 	}
@@ -12064,8 +12064,8 @@ bool ReqQryRiskGroupTradePackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryRiskGroupTradeField::FieldID:
@@ -12398,15 +12398,15 @@ int RspQryRiskGroupTradePackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Trade != nullptr)
 	{
-		memcpy(buff + offset, &TradeField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &TradeField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Trade, sizeof(TradeField));
 		offset += sizeof(TradeField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -12417,8 +12417,8 @@ bool RspQryRiskGroupTradePackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case TradeField::FieldID:
@@ -12573,8 +12573,8 @@ int ReqQryRiskGroupAccountRiskPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryRiskGroupAccountRisk != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryRiskGroupAccountRiskField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryRiskGroupAccountRiskField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryRiskGroupAccountRisk, sizeof(ReqQryRiskGroupAccountRiskField));
 		offset += sizeof(ReqQryRiskGroupAccountRiskField);
 	}
@@ -12585,8 +12585,8 @@ bool ReqQryRiskGroupAccountRiskPackage::FromXtpStream(char* buff, int startIndex
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryRiskGroupAccountRiskField::FieldID:
@@ -12788,15 +12788,15 @@ int RspQryRiskGroupAccountRiskPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (AccountRisk != nullptr)
 	{
-		memcpy(buff + offset, &AccountRiskField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &AccountRiskField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, AccountRisk, sizeof(AccountRiskField));
 		offset += sizeof(AccountRiskField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -12807,8 +12807,8 @@ bool RspQryRiskGroupAccountRiskPackage::FromXtpStream(char* buff, int startIndex
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case AccountRiskField::FieldID:
@@ -12963,8 +12963,8 @@ int ReqQryRiskGroupAccountRiskNotifyPackage::ToXtpStream(char* buff, int size) c
 	int offset = 0;
 	if (ReqQryRiskGroupAccountRiskNotify != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryRiskGroupAccountRiskNotifyField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryRiskGroupAccountRiskNotifyField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryRiskGroupAccountRiskNotify, sizeof(ReqQryRiskGroupAccountRiskNotifyField));
 		offset += sizeof(ReqQryRiskGroupAccountRiskNotifyField);
 	}
@@ -12975,8 +12975,8 @@ bool ReqQryRiskGroupAccountRiskNotifyPackage::FromXtpStream(char* buff, int star
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryRiskGroupAccountRiskNotifyField::FieldID:
@@ -13217,15 +13217,15 @@ int RspQryRiskGroupAccountRiskNotifyPackage::ToXtpStream(char* buff, int size) c
 	int offset = 0;
 	if (AccountRiskNotify != nullptr)
 	{
-		memcpy(buff + offset, &AccountRiskNotifyField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &AccountRiskNotifyField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, AccountRiskNotify, sizeof(AccountRiskNotifyField));
 		offset += sizeof(AccountRiskNotifyField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -13236,8 +13236,8 @@ bool RspQryRiskGroupAccountRiskNotifyPackage::FromXtpStream(char* buff, int star
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case AccountRiskNotifyField::FieldID:
@@ -13456,8 +13456,8 @@ int ReqRiskInsertOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRiskInsertOrder != nullptr)
 	{
-		memcpy(buff + offset, &ReqRiskInsertOrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRiskInsertOrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRiskInsertOrder, sizeof(ReqRiskInsertOrderField));
 		offset += sizeof(ReqRiskInsertOrderField);
 	}
@@ -13468,8 +13468,8 @@ bool ReqRiskInsertOrderPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRiskInsertOrderField::FieldID:
@@ -13872,15 +13872,15 @@ int RspRiskInsertOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (Order != nullptr)
 	{
-		memcpy(buff + offset, &OrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &OrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, Order, sizeof(OrderField));
 		offset += sizeof(OrderField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -13891,8 +13891,8 @@ bool RspRiskInsertOrderPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case OrderField::FieldID:
@@ -14098,8 +14098,8 @@ int ReqRiskCancelOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRiskCancelOrder != nullptr)
 	{
-		memcpy(buff + offset, &ReqRiskCancelOrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRiskCancelOrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRiskCancelOrder, sizeof(ReqRiskCancelOrderField));
 		offset += sizeof(ReqRiskCancelOrderField);
 	}
@@ -14110,8 +14110,8 @@ bool ReqRiskCancelOrderPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRiskCancelOrderField::FieldID:
@@ -14352,15 +14352,15 @@ int RspRiskCancelOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (CancelOrder != nullptr)
 	{
-		memcpy(buff + offset, &CancelOrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &CancelOrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, CancelOrder, sizeof(CancelOrderField));
 		offset += sizeof(CancelOrderField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -14371,8 +14371,8 @@ bool RspRiskCancelOrderPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case CancelOrderField::FieldID:
@@ -14527,8 +14527,8 @@ int ReqMdUserLoginPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqMdUserLogin != nullptr)
 	{
-		memcpy(buff + offset, &ReqMdUserLoginField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqMdUserLoginField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqMdUserLogin, sizeof(ReqMdUserLoginField));
 		offset += sizeof(ReqMdUserLoginField);
 	}
@@ -14539,8 +14539,8 @@ bool ReqMdUserLoginPackage::FromXtpStream(char* buff, int startIndex, int endInd
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqMdUserLoginField::FieldID:
@@ -14758,15 +14758,15 @@ int RspMdUserLoginPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspMdUserLogin != nullptr)
 	{
-		memcpy(buff + offset, &RspMdUserLoginField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspMdUserLoginField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspMdUserLogin, sizeof(RspMdUserLoginField));
 		offset += sizeof(RspMdUserLoginField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -14777,8 +14777,8 @@ bool RspMdUserLoginPackage::FromXtpStream(char* buff, int startIndex, int endInd
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspMdUserLoginField::FieldID:
@@ -14922,8 +14922,8 @@ int ReqMdUserLogoutPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqMdUserLogout != nullptr)
 	{
-		memcpy(buff + offset, &ReqMdUserLogoutField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqMdUserLogoutField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqMdUserLogout, sizeof(ReqMdUserLogoutField));
 		offset += sizeof(ReqMdUserLogoutField);
 	}
@@ -14934,8 +14934,8 @@ bool ReqMdUserLogoutPackage::FromXtpStream(char* buff, int startIndex, int endIn
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqMdUserLogoutField::FieldID:
@@ -15125,15 +15125,15 @@ int RspMdUserLogoutPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspMdUserLogout != nullptr)
 	{
-		memcpy(buff + offset, &RspMdUserLogoutField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspMdUserLogoutField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspMdUserLogout, sizeof(RspMdUserLogoutField));
 		offset += sizeof(RspMdUserLogoutField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -15144,8 +15144,8 @@ bool RspMdUserLogoutPackage::FromXtpStream(char* buff, int startIndex, int endIn
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspMdUserLogoutField::FieldID:
@@ -15300,8 +15300,8 @@ int ReqMdInitPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqMdInit != nullptr)
 	{
-		memcpy(buff + offset, &ReqMdInitField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqMdInitField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqMdInit, sizeof(ReqMdInitField));
 		offset += sizeof(ReqMdInitField);
 	}
@@ -15312,8 +15312,8 @@ bool ReqMdInitPackage::FromXtpStream(char* buff, int startIndex, int endIndex)
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqMdInitField::FieldID:
@@ -15514,15 +15514,15 @@ int RspMdInitPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspMdInit != nullptr)
 	{
-		memcpy(buff + offset, &RspMdInitField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspMdInitField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspMdInit, sizeof(RspMdInitField));
 		offset += sizeof(RspMdInitField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -15533,8 +15533,8 @@ bool RspMdInitPackage::FromXtpStream(char* buff, int startIndex, int endIndex)
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspMdInitField::FieldID:
@@ -15689,8 +15689,8 @@ int ReqSubscribeMdPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqSubscribeMd != nullptr)
 	{
-		memcpy(buff + offset, &ReqSubscribeMdField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqSubscribeMdField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqSubscribeMd, sizeof(ReqSubscribeMdField));
 		offset += sizeof(ReqSubscribeMdField);
 	}
@@ -15701,8 +15701,8 @@ bool ReqSubscribeMdPackage::FromXtpStream(char* buff, int startIndex, int endInd
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqSubscribeMdField::FieldID:
@@ -15903,15 +15903,15 @@ int RspSubscribeMdPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspSubscribeMd != nullptr)
 	{
-		memcpy(buff + offset, &RspSubscribeMdField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspSubscribeMdField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspSubscribeMd, sizeof(RspSubscribeMdField));
 		offset += sizeof(RspSubscribeMdField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -15922,8 +15922,8 @@ bool RspSubscribeMdPackage::FromXtpStream(char* buff, int startIndex, int endInd
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspSubscribeMdField::FieldID:
@@ -16131,8 +16131,8 @@ int RtnShortMdPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ShortMd != nullptr)
 	{
-		memcpy(buff + offset, &ShortMdField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ShortMdField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ShortMd, sizeof(ShortMdField));
 		offset += sizeof(ShortMdField);
 	}
@@ -16143,8 +16143,8 @@ bool RtnShortMdPackage::FromXtpStream(char* buff, int startIndex, int endIndex)
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ShortMdField::FieldID:
@@ -16294,8 +16294,8 @@ int RtnExchangeStatusPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RtnExchangeStatus != nullptr)
 	{
-		memcpy(buff + offset, &RtnExchangeStatusField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RtnExchangeStatusField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RtnExchangeStatus, sizeof(RtnExchangeStatusField));
 		offset += sizeof(RtnExchangeStatusField);
 	}
@@ -16306,8 +16306,8 @@ bool RtnExchangeStatusPackage::FromXtpStream(char* buff, int startIndex, int end
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RtnExchangeStatusField::FieldID:
@@ -16451,8 +16451,8 @@ int RtnMdInitCompletedPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (MdInitCompleted != nullptr)
 	{
-		memcpy(buff + offset, &MdInitCompletedField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &MdInitCompletedField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, MdInitCompleted, sizeof(MdInitCompletedField));
 		offset += sizeof(MdInitCompletedField);
 	}
@@ -16463,8 +16463,8 @@ bool RtnMdInitCompletedPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case MdInitCompletedField::FieldID:
@@ -16608,8 +16608,8 @@ int ReqAdminUserLoginPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAdminUserLogin != nullptr)
 	{
-		memcpy(buff + offset, &ReqAdminUserLoginField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAdminUserLoginField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAdminUserLogin, sizeof(ReqAdminUserLoginField));
 		offset += sizeof(ReqAdminUserLoginField);
 	}
@@ -16620,8 +16620,8 @@ bool ReqAdminUserLoginPackage::FromXtpStream(char* buff, int startIndex, int end
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAdminUserLoginField::FieldID:
@@ -16839,15 +16839,15 @@ int RspAdminUserLoginPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAdminUserLogin != nullptr)
 	{
-		memcpy(buff + offset, &RspAdminUserLoginField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAdminUserLoginField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAdminUserLogin, sizeof(RspAdminUserLoginField));
 		offset += sizeof(RspAdminUserLoginField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -16858,8 +16858,8 @@ bool RspAdminUserLoginPackage::FromXtpStream(char* buff, int startIndex, int end
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAdminUserLoginField::FieldID:
@@ -17003,8 +17003,8 @@ int ReqAdminUserLogoutPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAdminUserLogout != nullptr)
 	{
-		memcpy(buff + offset, &ReqAdminUserLogoutField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAdminUserLogoutField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAdminUserLogout, sizeof(ReqAdminUserLogoutField));
 		offset += sizeof(ReqAdminUserLogoutField);
 	}
@@ -17015,8 +17015,8 @@ bool ReqAdminUserLogoutPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAdminUserLogoutField::FieldID:
@@ -17206,15 +17206,15 @@ int RspAdminUserLogoutPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAdminUserLogout != nullptr)
 	{
-		memcpy(buff + offset, &RspAdminUserLogoutField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAdminUserLogoutField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAdminUserLogout, sizeof(RspAdminUserLogoutField));
 		offset += sizeof(RspAdminUserLogoutField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -17225,8 +17225,8 @@ bool RspAdminUserLogoutPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAdminUserLogoutField::FieldID:
@@ -17387,8 +17387,8 @@ int RtnAdminUserLogoutPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (AdminUserLogout != nullptr)
 	{
-		memcpy(buff + offset, &AdminUserLogoutField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &AdminUserLogoutField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, AdminUserLogout, sizeof(AdminUserLogoutField));
 		offset += sizeof(AdminUserLogoutField);
 	}
@@ -17399,8 +17399,8 @@ bool RtnAdminUserLogoutPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case AdminUserLogoutField::FieldID:
@@ -17572,8 +17572,8 @@ int ReqAddRiskUserPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddRiskUser != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddRiskUserField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddRiskUserField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddRiskUser, sizeof(ReqAddRiskUserField));
 		offset += sizeof(ReqAddRiskUserField);
 	}
@@ -17584,8 +17584,8 @@ bool ReqAddRiskUserPackage::FromXtpStream(char* buff, int startIndex, int endInd
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddRiskUserField::FieldID:
@@ -17786,15 +17786,15 @@ int RspAddRiskUserPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddRiskUser != nullptr)
 	{
-		memcpy(buff + offset, &RspAddRiskUserField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddRiskUserField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddRiskUser, sizeof(RspAddRiskUserField));
 		offset += sizeof(RspAddRiskUserField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -17805,8 +17805,8 @@ bool RspAddRiskUserPackage::FromXtpStream(char* buff, int startIndex, int endInd
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddRiskUserField::FieldID:
@@ -17989,8 +17989,8 @@ int ReqUpdateRiskUserPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqUpdateRiskUser != nullptr)
 	{
-		memcpy(buff + offset, &ReqUpdateRiskUserField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqUpdateRiskUserField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqUpdateRiskUser, sizeof(ReqUpdateRiskUserField));
 		offset += sizeof(ReqUpdateRiskUserField);
 	}
@@ -18001,8 +18001,8 @@ bool ReqUpdateRiskUserPackage::FromXtpStream(char* buff, int startIndex, int end
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqUpdateRiskUserField::FieldID:
@@ -18203,15 +18203,15 @@ int RspUpdateRiskUserPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspUpdateRiskUser != nullptr)
 	{
-		memcpy(buff + offset, &RspUpdateRiskUserField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspUpdateRiskUserField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspUpdateRiskUser, sizeof(RspUpdateRiskUserField));
 		offset += sizeof(RspUpdateRiskUserField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -18222,8 +18222,8 @@ bool RspUpdateRiskUserPackage::FromXtpStream(char* buff, int startIndex, int end
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspUpdateRiskUserField::FieldID:
@@ -18378,8 +18378,8 @@ int ReqRemoveRiskUserPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRemoveRiskUser != nullptr)
 	{
-		memcpy(buff + offset, &ReqRemoveRiskUserField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRemoveRiskUserField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRemoveRiskUser, sizeof(ReqRemoveRiskUserField));
 		offset += sizeof(ReqRemoveRiskUserField);
 	}
@@ -18390,8 +18390,8 @@ bool ReqRemoveRiskUserPackage::FromXtpStream(char* buff, int startIndex, int end
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRemoveRiskUserField::FieldID:
@@ -18592,15 +18592,15 @@ int RspRemoveRiskUserPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspRemoveRiskUser != nullptr)
 	{
-		memcpy(buff + offset, &RspRemoveRiskUserField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspRemoveRiskUserField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspRemoveRiskUser, sizeof(RspRemoveRiskUserField));
 		offset += sizeof(RspRemoveRiskUserField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -18611,8 +18611,8 @@ bool RspRemoveRiskUserPackage::FromXtpStream(char* buff, int startIndex, int end
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspRemoveRiskUserField::FieldID:
@@ -18789,8 +18789,8 @@ int ReqAddAdminUserPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddAdminUser != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddAdminUserField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddAdminUserField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddAdminUser, sizeof(ReqAddAdminUserField));
 		offset += sizeof(ReqAddAdminUserField);
 	}
@@ -18801,8 +18801,8 @@ bool ReqAddAdminUserPackage::FromXtpStream(char* buff, int startIndex, int endIn
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddAdminUserField::FieldID:
@@ -19003,15 +19003,15 @@ int RspAddAdminUserPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddAdminUser != nullptr)
 	{
-		memcpy(buff + offset, &RspAddAdminUserField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddAdminUserField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddAdminUser, sizeof(RspAddAdminUserField));
 		offset += sizeof(RspAddAdminUserField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -19022,8 +19022,8 @@ bool RspAddAdminUserPackage::FromXtpStream(char* buff, int startIndex, int endIn
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddAdminUserField::FieldID:
@@ -19200,8 +19200,8 @@ int ReqUpdateAdminUserPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqUpdateAdminUser != nullptr)
 	{
-		memcpy(buff + offset, &ReqUpdateAdminUserField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqUpdateAdminUserField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqUpdateAdminUser, sizeof(ReqUpdateAdminUserField));
 		offset += sizeof(ReqUpdateAdminUserField);
 	}
@@ -19212,8 +19212,8 @@ bool ReqUpdateAdminUserPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqUpdateAdminUserField::FieldID:
@@ -19414,15 +19414,15 @@ int RspUpdateAdminUserPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspUpdateAdminUser != nullptr)
 	{
-		memcpy(buff + offset, &RspUpdateAdminUserField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspUpdateAdminUserField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspUpdateAdminUser, sizeof(RspUpdateAdminUserField));
 		offset += sizeof(RspUpdateAdminUserField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -19433,8 +19433,8 @@ bool RspUpdateAdminUserPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspUpdateAdminUserField::FieldID:
@@ -19589,8 +19589,8 @@ int ReqRemoveAdminUserPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRemoveAdminUser != nullptr)
 	{
-		memcpy(buff + offset, &ReqRemoveAdminUserField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRemoveAdminUserField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRemoveAdminUser, sizeof(ReqRemoveAdminUserField));
 		offset += sizeof(ReqRemoveAdminUserField);
 	}
@@ -19601,8 +19601,8 @@ bool ReqRemoveAdminUserPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRemoveAdminUserField::FieldID:
@@ -19803,15 +19803,15 @@ int RspRemoveAdminUserPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspRemoveAdminUser != nullptr)
 	{
-		memcpy(buff + offset, &RspRemoveAdminUserField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspRemoveAdminUserField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspRemoveAdminUser, sizeof(RspRemoveAdminUserField));
 		offset += sizeof(RspRemoveAdminUserField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -19822,8 +19822,8 @@ bool RspRemoveAdminUserPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspRemoveAdminUserField::FieldID:
@@ -20070,8 +20070,8 @@ int ReqAddPrimaryAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddPrimaryAccount != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddPrimaryAccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddPrimaryAccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddPrimaryAccount, sizeof(ReqAddPrimaryAccountField));
 		offset += sizeof(ReqAddPrimaryAccountField);
 	}
@@ -20082,8 +20082,8 @@ bool ReqAddPrimaryAccountPackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddPrimaryAccountField::FieldID:
@@ -20284,15 +20284,15 @@ int RspAddPrimaryAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddPrimaryAccount != nullptr)
 	{
-		memcpy(buff + offset, &RspAddPrimaryAccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddPrimaryAccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddPrimaryAccount, sizeof(RspAddPrimaryAccountField));
 		offset += sizeof(RspAddPrimaryAccountField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -20303,8 +20303,8 @@ bool RspAddPrimaryAccountPackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddPrimaryAccountField::FieldID:
@@ -20551,8 +20551,8 @@ int ReqUpdatePrimaryAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqUpdatePrimaryAccount != nullptr)
 	{
-		memcpy(buff + offset, &ReqUpdatePrimaryAccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqUpdatePrimaryAccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqUpdatePrimaryAccount, sizeof(ReqUpdatePrimaryAccountField));
 		offset += sizeof(ReqUpdatePrimaryAccountField);
 	}
@@ -20563,8 +20563,8 @@ bool ReqUpdatePrimaryAccountPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqUpdatePrimaryAccountField::FieldID:
@@ -20765,15 +20765,15 @@ int RspUpdatePrimaryAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspUpdatePrimaryAccount != nullptr)
 	{
-		memcpy(buff + offset, &RspUpdatePrimaryAccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspUpdatePrimaryAccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspUpdatePrimaryAccount, sizeof(RspUpdatePrimaryAccountField));
 		offset += sizeof(RspUpdatePrimaryAccountField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -20784,8 +20784,8 @@ bool RspUpdatePrimaryAccountPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspUpdatePrimaryAccountField::FieldID:
@@ -20940,8 +20940,8 @@ int ReqRemovePrimaryAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRemovePrimaryAccount != nullptr)
 	{
-		memcpy(buff + offset, &ReqRemovePrimaryAccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRemovePrimaryAccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRemovePrimaryAccount, sizeof(ReqRemovePrimaryAccountField));
 		offset += sizeof(ReqRemovePrimaryAccountField);
 	}
@@ -20952,8 +20952,8 @@ bool ReqRemovePrimaryAccountPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRemovePrimaryAccountField::FieldID:
@@ -21154,15 +21154,15 @@ int RspRemovePrimaryAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspRemovePrimaryAccount != nullptr)
 	{
-		memcpy(buff + offset, &RspRemovePrimaryAccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspRemovePrimaryAccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspRemovePrimaryAccount, sizeof(RspRemovePrimaryAccountField));
 		offset += sizeof(RspRemovePrimaryAccountField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -21173,8 +21173,8 @@ bool RspRemovePrimaryAccountPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspRemovePrimaryAccountField::FieldID:
@@ -21392,8 +21392,8 @@ int ReqAddAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddAccount != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddAccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddAccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddAccount, sizeof(ReqAddAccountField));
 		offset += sizeof(ReqAddAccountField);
 	}
@@ -21404,8 +21404,8 @@ bool ReqAddAccountPackage::FromXtpStream(char* buff, int startIndex, int endInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddAccountField::FieldID:
@@ -21606,15 +21606,15 @@ int RspAddAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddAccount != nullptr)
 	{
-		memcpy(buff + offset, &RspAddAccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddAccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddAccount, sizeof(RspAddAccountField));
 		offset += sizeof(RspAddAccountField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -21625,8 +21625,8 @@ bool RspAddAccountPackage::FromXtpStream(char* buff, int startIndex, int endInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddAccountField::FieldID:
@@ -21844,8 +21844,8 @@ int ReqUpdateAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqUpdateAccount != nullptr)
 	{
-		memcpy(buff + offset, &ReqUpdateAccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqUpdateAccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqUpdateAccount, sizeof(ReqUpdateAccountField));
 		offset += sizeof(ReqUpdateAccountField);
 	}
@@ -21856,8 +21856,8 @@ bool ReqUpdateAccountPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqUpdateAccountField::FieldID:
@@ -22058,15 +22058,15 @@ int RspUpdateAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspUpdateAccount != nullptr)
 	{
-		memcpy(buff + offset, &RspUpdateAccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspUpdateAccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspUpdateAccount, sizeof(RspUpdateAccountField));
 		offset += sizeof(RspUpdateAccountField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -22077,8 +22077,8 @@ bool RspUpdateAccountPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspUpdateAccountField::FieldID:
@@ -22233,8 +22233,8 @@ int ReqRemoveAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRemoveAccount != nullptr)
 	{
-		memcpy(buff + offset, &ReqRemoveAccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRemoveAccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRemoveAccount, sizeof(ReqRemoveAccountField));
 		offset += sizeof(ReqRemoveAccountField);
 	}
@@ -22245,8 +22245,8 @@ bool ReqRemoveAccountPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRemoveAccountField::FieldID:
@@ -22447,15 +22447,15 @@ int RspRemoveAccountPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspRemoveAccount != nullptr)
 	{
-		memcpy(buff + offset, &RspRemoveAccountField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspRemoveAccountField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspRemoveAccount, sizeof(RspRemoveAccountField));
 		offset += sizeof(RspRemoveAccountField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -22466,8 +22466,8 @@ bool RspRemoveAccountPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspRemoveAccountField::FieldID:
@@ -22663,8 +22663,8 @@ int ReqAddBaseCommissionPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddBaseCommission != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddBaseCommissionField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddBaseCommissionField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddBaseCommission, sizeof(ReqAddBaseCommissionField));
 		offset += sizeof(ReqAddBaseCommissionField);
 	}
@@ -22675,8 +22675,8 @@ bool ReqAddBaseCommissionPackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddBaseCommissionField::FieldID:
@@ -22894,15 +22894,15 @@ int RspAddBaseCommissionPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddBaseCommission != nullptr)
 	{
-		memcpy(buff + offset, &RspAddBaseCommissionField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddBaseCommissionField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddBaseCommission, sizeof(RspAddBaseCommissionField));
 		offset += sizeof(RspAddBaseCommissionField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -22913,8 +22913,8 @@ bool RspAddBaseCommissionPackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddBaseCommissionField::FieldID:
@@ -23110,8 +23110,8 @@ int ReqUpdateBaseCommissionPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqUpdateBaseCommission != nullptr)
 	{
-		memcpy(buff + offset, &ReqUpdateBaseCommissionField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqUpdateBaseCommissionField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqUpdateBaseCommission, sizeof(ReqUpdateBaseCommissionField));
 		offset += sizeof(ReqUpdateBaseCommissionField);
 	}
@@ -23122,8 +23122,8 @@ bool ReqUpdateBaseCommissionPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqUpdateBaseCommissionField::FieldID:
@@ -23341,15 +23341,15 @@ int RspUpdateBaseCommissionPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspUpdateBaseCommission != nullptr)
 	{
-		memcpy(buff + offset, &RspUpdateBaseCommissionField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspUpdateBaseCommissionField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspUpdateBaseCommission, sizeof(RspUpdateBaseCommissionField));
 		offset += sizeof(RspUpdateBaseCommissionField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -23360,8 +23360,8 @@ bool RspUpdateBaseCommissionPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspUpdateBaseCommissionField::FieldID:
@@ -23533,8 +23533,8 @@ int ReqRemoveBaseCommissionPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRemoveBaseCommission != nullptr)
 	{
-		memcpy(buff + offset, &ReqRemoveBaseCommissionField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRemoveBaseCommissionField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRemoveBaseCommission, sizeof(ReqRemoveBaseCommissionField));
 		offset += sizeof(ReqRemoveBaseCommissionField);
 	}
@@ -23545,8 +23545,8 @@ bool ReqRemoveBaseCommissionPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRemoveBaseCommissionField::FieldID:
@@ -23764,15 +23764,15 @@ int RspRemoveBaseCommissionPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
 	if (RspRemoveBaseCommission != nullptr)
 	{
-		memcpy(buff + offset, &RspRemoveBaseCommissionField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspRemoveBaseCommissionField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspRemoveBaseCommission, sizeof(RspRemoveBaseCommissionField));
 		offset += sizeof(RspRemoveBaseCommissionField);
 	}
@@ -23783,8 +23783,8 @@ bool RspRemoveBaseCommissionPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspInfoField::FieldID:
@@ -24033,8 +24033,8 @@ int ReqAddCommissionGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddCommissionGroup != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddCommissionGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddCommissionGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddCommissionGroup, sizeof(ReqAddCommissionGroupField));
 		offset += sizeof(ReqAddCommissionGroupField);
 	}
@@ -24045,8 +24045,8 @@ bool ReqAddCommissionGroupPackage::FromXtpStream(char* buff, int startIndex, int
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddCommissionGroupField::FieldID:
@@ -24270,15 +24270,15 @@ int RspAddCommissionGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddCommissionGroup != nullptr)
 	{
-		memcpy(buff + offset, &RspAddCommissionGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddCommissionGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddCommissionGroup, sizeof(RspAddCommissionGroupField));
 		offset += sizeof(RspAddCommissionGroupField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -24289,8 +24289,8 @@ bool RspAddCommissionGroupPackage::FromXtpStream(char* buff, int startIndex, int
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddCommissionGroupField::FieldID:
@@ -24539,8 +24539,8 @@ int ReqUpdateCommissionGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqUpdateCommissionGroup != nullptr)
 	{
-		memcpy(buff + offset, &ReqUpdateCommissionGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqUpdateCommissionGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqUpdateCommissionGroup, sizeof(ReqUpdateCommissionGroupField));
 		offset += sizeof(ReqUpdateCommissionGroupField);
 	}
@@ -24551,8 +24551,8 @@ bool ReqUpdateCommissionGroupPackage::FromXtpStream(char* buff, int startIndex, 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqUpdateCommissionGroupField::FieldID:
@@ -24776,15 +24776,15 @@ int RspUpdateCommissionGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspUpdateCommissionGroup != nullptr)
 	{
-		memcpy(buff + offset, &RspUpdateCommissionGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspUpdateCommissionGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspUpdateCommissionGroup, sizeof(RspUpdateCommissionGroupField));
 		offset += sizeof(RspUpdateCommissionGroupField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -24795,8 +24795,8 @@ bool RspUpdateCommissionGroupPackage::FromXtpStream(char* buff, int startIndex, 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspUpdateCommissionGroupField::FieldID:
@@ -24974,8 +24974,8 @@ int ReqRemoveCommissionGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRemoveCommissionGroup != nullptr)
 	{
-		memcpy(buff + offset, &ReqRemoveCommissionGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRemoveCommissionGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRemoveCommissionGroup, sizeof(ReqRemoveCommissionGroupField));
 		offset += sizeof(ReqRemoveCommissionGroupField);
 	}
@@ -24986,8 +24986,8 @@ bool ReqRemoveCommissionGroupPackage::FromXtpStream(char* buff, int startIndex, 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRemoveCommissionGroupField::FieldID:
@@ -25211,15 +25211,15 @@ int RspRemoveCommissionGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspRemoveCommissionGroup != nullptr)
 	{
-		memcpy(buff + offset, &RspRemoveCommissionGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspRemoveCommissionGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspRemoveCommissionGroup, sizeof(RspRemoveCommissionGroupField));
 		offset += sizeof(RspRemoveCommissionGroupField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -25230,8 +25230,8 @@ bool RspRemoveCommissionGroupPackage::FromXtpStream(char* buff, int startIndex, 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspRemoveCommissionGroupField::FieldID:
@@ -25409,8 +25409,8 @@ int ReqAddOptionMarginParamPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddOptionMarginParam != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddOptionMarginParamField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddOptionMarginParamField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddOptionMarginParam, sizeof(ReqAddOptionMarginParamField));
 		offset += sizeof(ReqAddOptionMarginParamField);
 	}
@@ -25421,8 +25421,8 @@ bool ReqAddOptionMarginParamPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddOptionMarginParamField::FieldID:
@@ -25623,15 +25623,15 @@ int RspAddOptionMarginParamPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddOptionMarginParam != nullptr)
 	{
-		memcpy(buff + offset, &RspAddOptionMarginParamField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddOptionMarginParamField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddOptionMarginParam, sizeof(RspAddOptionMarginParamField));
 		offset += sizeof(RspAddOptionMarginParamField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -25642,8 +25642,8 @@ bool RspAddOptionMarginParamPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddOptionMarginParamField::FieldID:
@@ -25821,8 +25821,8 @@ int ReqUpdateOptionMarginParamPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqUpdateOptionMarginParam != nullptr)
 	{
-		memcpy(buff + offset, &ReqUpdateOptionMarginParamField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqUpdateOptionMarginParamField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqUpdateOptionMarginParam, sizeof(ReqUpdateOptionMarginParamField));
 		offset += sizeof(ReqUpdateOptionMarginParamField);
 	}
@@ -25833,8 +25833,8 @@ bool ReqUpdateOptionMarginParamPackage::FromXtpStream(char* buff, int startIndex
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqUpdateOptionMarginParamField::FieldID:
@@ -26035,15 +26035,15 @@ int RspUpdateOptionMarginParamPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspUpdateOptionMarginParam != nullptr)
 	{
-		memcpy(buff + offset, &RspUpdateOptionMarginParamField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspUpdateOptionMarginParamField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspUpdateOptionMarginParam, sizeof(RspUpdateOptionMarginParamField));
 		offset += sizeof(RspUpdateOptionMarginParamField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -26054,8 +26054,8 @@ bool RspUpdateOptionMarginParamPackage::FromXtpStream(char* buff, int startIndex
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspUpdateOptionMarginParamField::FieldID:
@@ -26210,8 +26210,8 @@ int ReqRemoveOptionMarginParamPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRemoveOptionMarginParam != nullptr)
 	{
-		memcpy(buff + offset, &ReqRemoveOptionMarginParamField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRemoveOptionMarginParamField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRemoveOptionMarginParam, sizeof(ReqRemoveOptionMarginParamField));
 		offset += sizeof(ReqRemoveOptionMarginParamField);
 	}
@@ -26222,8 +26222,8 @@ bool ReqRemoveOptionMarginParamPackage::FromXtpStream(char* buff, int startIndex
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRemoveOptionMarginParamField::FieldID:
@@ -26424,15 +26424,15 @@ int RspRemoveOptionMarginParamPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspRemoveOptionMarginParam != nullptr)
 	{
-		memcpy(buff + offset, &RspRemoveOptionMarginParamField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspRemoveOptionMarginParamField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspRemoveOptionMarginParam, sizeof(RspRemoveOptionMarginParamField));
 		offset += sizeof(RspRemoveOptionMarginParamField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -26443,8 +26443,8 @@ bool RspRemoveOptionMarginParamPackage::FromXtpStream(char* buff, int startIndex
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspRemoveOptionMarginParamField::FieldID:
@@ -26622,8 +26622,8 @@ int ReqAddTradeOfferPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddTradeOffer != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddTradeOfferField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddTradeOfferField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddTradeOffer, sizeof(ReqAddTradeOfferField));
 		offset += sizeof(ReqAddTradeOfferField);
 	}
@@ -26634,8 +26634,8 @@ bool ReqAddTradeOfferPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddTradeOfferField::FieldID:
@@ -26831,15 +26831,15 @@ int RspAddTradeOfferPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddTradeOffer != nullptr)
 	{
-		memcpy(buff + offset, &RspAddTradeOfferField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddTradeOfferField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddTradeOffer, sizeof(RspAddTradeOfferField));
 		offset += sizeof(RspAddTradeOfferField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -26850,8 +26850,8 @@ bool RspAddTradeOfferPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddTradeOfferField::FieldID:
@@ -27029,8 +27029,8 @@ int ReqUpdateTradeOfferPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqUpdateTradeOffer != nullptr)
 	{
-		memcpy(buff + offset, &ReqUpdateTradeOfferField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqUpdateTradeOfferField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqUpdateTradeOffer, sizeof(ReqUpdateTradeOfferField));
 		offset += sizeof(ReqUpdateTradeOfferField);
 	}
@@ -27041,8 +27041,8 @@ bool ReqUpdateTradeOfferPackage::FromXtpStream(char* buff, int startIndex, int e
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqUpdateTradeOfferField::FieldID:
@@ -27238,15 +27238,15 @@ int RspUpdateTradeOfferPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspUpdateTradeOffer != nullptr)
 	{
-		memcpy(buff + offset, &RspUpdateTradeOfferField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspUpdateTradeOfferField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspUpdateTradeOffer, sizeof(RspUpdateTradeOfferField));
 		offset += sizeof(RspUpdateTradeOfferField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -27257,8 +27257,8 @@ bool RspUpdateTradeOfferPackage::FromXtpStream(char* buff, int startIndex, int e
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspUpdateTradeOfferField::FieldID:
@@ -27408,8 +27408,8 @@ int ReqRemoveTradeOfferPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRemoveTradeOffer != nullptr)
 	{
-		memcpy(buff + offset, &ReqRemoveTradeOfferField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRemoveTradeOfferField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRemoveTradeOffer, sizeof(ReqRemoveTradeOfferField));
 		offset += sizeof(ReqRemoveTradeOfferField);
 	}
@@ -27420,8 +27420,8 @@ bool ReqRemoveTradeOfferPackage::FromXtpStream(char* buff, int startIndex, int e
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRemoveTradeOfferField::FieldID:
@@ -27617,15 +27617,15 @@ int RspRemoveTradeOfferPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspRemoveTradeOffer != nullptr)
 	{
-		memcpy(buff + offset, &RspRemoveTradeOfferField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspRemoveTradeOfferField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspRemoveTradeOffer, sizeof(RspRemoveTradeOfferField));
 		offset += sizeof(RspRemoveTradeOfferField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -27636,8 +27636,8 @@ bool RspRemoveTradeOfferPackage::FromXtpStream(char* buff, int startIndex, int e
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspRemoveTradeOfferField::FieldID:
@@ -27798,8 +27798,8 @@ int ReqAddTradeGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddTradeGroup != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddTradeGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddTradeGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddTradeGroup, sizeof(ReqAddTradeGroupField));
 		offset += sizeof(ReqAddTradeGroupField);
 	}
@@ -27810,8 +27810,8 @@ bool ReqAddTradeGroupPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddTradeGroupField::FieldID:
@@ -28007,15 +28007,15 @@ int RspAddTradeGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddTradeGroup != nullptr)
 	{
-		memcpy(buff + offset, &RspAddTradeGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddTradeGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddTradeGroup, sizeof(RspAddTradeGroupField));
 		offset += sizeof(RspAddTradeGroupField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -28026,8 +28026,8 @@ bool RspAddTradeGroupPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddTradeGroupField::FieldID:
@@ -28188,8 +28188,8 @@ int ReqUpdateTradeGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqUpdateTradeGroup != nullptr)
 	{
-		memcpy(buff + offset, &ReqUpdateTradeGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqUpdateTradeGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqUpdateTradeGroup, sizeof(ReqUpdateTradeGroupField));
 		offset += sizeof(ReqUpdateTradeGroupField);
 	}
@@ -28200,8 +28200,8 @@ bool ReqUpdateTradeGroupPackage::FromXtpStream(char* buff, int startIndex, int e
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqUpdateTradeGroupField::FieldID:
@@ -28397,15 +28397,15 @@ int RspUpdateTradeGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspUpdateTradeGroup != nullptr)
 	{
-		memcpy(buff + offset, &RspUpdateTradeGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspUpdateTradeGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspUpdateTradeGroup, sizeof(RspUpdateTradeGroupField));
 		offset += sizeof(RspUpdateTradeGroupField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -28416,8 +28416,8 @@ bool RspUpdateTradeGroupPackage::FromXtpStream(char* buff, int startIndex, int e
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspUpdateTradeGroupField::FieldID:
@@ -28567,8 +28567,8 @@ int ReqRemoveTradeGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRemoveTradeGroup != nullptr)
 	{
-		memcpy(buff + offset, &ReqRemoveTradeGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRemoveTradeGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRemoveTradeGroup, sizeof(ReqRemoveTradeGroupField));
 		offset += sizeof(ReqRemoveTradeGroupField);
 	}
@@ -28579,8 +28579,8 @@ bool ReqRemoveTradeGroupPackage::FromXtpStream(char* buff, int startIndex, int e
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRemoveTradeGroupField::FieldID:
@@ -28776,15 +28776,15 @@ int RspRemoveTradeGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspRemoveTradeGroup != nullptr)
 	{
-		memcpy(buff + offset, &RspRemoveTradeGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspRemoveTradeGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspRemoveTradeGroup, sizeof(RspRemoveTradeGroupField));
 		offset += sizeof(RspRemoveTradeGroupField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -28795,8 +28795,8 @@ bool RspRemoveTradeGroupPackage::FromXtpStream(char* buff, int startIndex, int e
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspRemoveTradeGroupField::FieldID:
@@ -28963,8 +28963,8 @@ int ReqAddTradeGroupItemPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddTradeGroupItem != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddTradeGroupItemField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddTradeGroupItemField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddTradeGroupItem, sizeof(ReqAddTradeGroupItemField));
 		offset += sizeof(ReqAddTradeGroupItemField);
 	}
@@ -28975,8 +28975,8 @@ bool ReqAddTradeGroupItemPackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddTradeGroupItemField::FieldID:
@@ -29178,15 +29178,15 @@ int RspAddTradeGroupItemPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddTradeGroupItem != nullptr)
 	{
-		memcpy(buff + offset, &RspAddTradeGroupItemField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddTradeGroupItemField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddTradeGroupItem, sizeof(RspAddTradeGroupItemField));
 		offset += sizeof(RspAddTradeGroupItemField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -29197,8 +29197,8 @@ bool RspAddTradeGroupItemPackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddTradeGroupItemField::FieldID:
@@ -29365,8 +29365,8 @@ int ReqUpdateTradeGroupItemPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqUpdateTradeGroupItem != nullptr)
 	{
-		memcpy(buff + offset, &ReqUpdateTradeGroupItemField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqUpdateTradeGroupItemField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqUpdateTradeGroupItem, sizeof(ReqUpdateTradeGroupItemField));
 		offset += sizeof(ReqUpdateTradeGroupItemField);
 	}
@@ -29377,8 +29377,8 @@ bool ReqUpdateTradeGroupItemPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqUpdateTradeGroupItemField::FieldID:
@@ -29580,15 +29580,15 @@ int RspUpdateTradeGroupItemPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspUpdateTradeGroupItem != nullptr)
 	{
-		memcpy(buff + offset, &RspUpdateTradeGroupItemField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspUpdateTradeGroupItemField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspUpdateTradeGroupItem, sizeof(RspUpdateTradeGroupItemField));
 		offset += sizeof(RspUpdateTradeGroupItemField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -29599,8 +29599,8 @@ bool RspUpdateTradeGroupItemPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspUpdateTradeGroupItemField::FieldID:
@@ -29756,8 +29756,8 @@ int ReqRemoveTradeGroupItemPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRemoveTradeGroupItem != nullptr)
 	{
-		memcpy(buff + offset, &ReqRemoveTradeGroupItemField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRemoveTradeGroupItemField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRemoveTradeGroupItem, sizeof(ReqRemoveTradeGroupItemField));
 		offset += sizeof(ReqRemoveTradeGroupItemField);
 	}
@@ -29768,8 +29768,8 @@ bool ReqRemoveTradeGroupItemPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRemoveTradeGroupItemField::FieldID:
@@ -29971,15 +29971,15 @@ int RspRemoveTradeGroupItemPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspRemoveTradeGroupItem != nullptr)
 	{
-		memcpy(buff + offset, &RspRemoveTradeGroupItemField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspRemoveTradeGroupItemField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspRemoveTradeGroupItem, sizeof(RspRemoveTradeGroupItemField));
 		offset += sizeof(RspRemoveTradeGroupItemField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -29990,8 +29990,8 @@ bool RspRemoveTradeGroupItemPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspRemoveTradeGroupItemField::FieldID:
@@ -30152,8 +30152,8 @@ int ReqAddRiskGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddRiskGroup != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddRiskGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddRiskGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddRiskGroup, sizeof(ReqAddRiskGroupField));
 		offset += sizeof(ReqAddRiskGroupField);
 	}
@@ -30164,8 +30164,8 @@ bool ReqAddRiskGroupPackage::FromXtpStream(char* buff, int startIndex, int endIn
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddRiskGroupField::FieldID:
@@ -30361,15 +30361,15 @@ int RspAddRiskGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddRiskGroup != nullptr)
 	{
-		memcpy(buff + offset, &RspAddRiskGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddRiskGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddRiskGroup, sizeof(RspAddRiskGroupField));
 		offset += sizeof(RspAddRiskGroupField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -30380,8 +30380,8 @@ bool RspAddRiskGroupPackage::FromXtpStream(char* buff, int startIndex, int endIn
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddRiskGroupField::FieldID:
@@ -30542,8 +30542,8 @@ int ReqUpdateRiskGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqUpdateRiskGroup != nullptr)
 	{
-		memcpy(buff + offset, &ReqUpdateRiskGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqUpdateRiskGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqUpdateRiskGroup, sizeof(ReqUpdateRiskGroupField));
 		offset += sizeof(ReqUpdateRiskGroupField);
 	}
@@ -30554,8 +30554,8 @@ bool ReqUpdateRiskGroupPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqUpdateRiskGroupField::FieldID:
@@ -30751,15 +30751,15 @@ int RspUpdateRiskGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspUpdateRiskGroup != nullptr)
 	{
-		memcpy(buff + offset, &RspUpdateRiskGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspUpdateRiskGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspUpdateRiskGroup, sizeof(RspUpdateRiskGroupField));
 		offset += sizeof(RspUpdateRiskGroupField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -30770,8 +30770,8 @@ bool RspUpdateRiskGroupPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspUpdateRiskGroupField::FieldID:
@@ -30921,8 +30921,8 @@ int ReqRemoveRiskGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRemoveRiskGroup != nullptr)
 	{
-		memcpy(buff + offset, &ReqRemoveRiskGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRemoveRiskGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRemoveRiskGroup, sizeof(ReqRemoveRiskGroupField));
 		offset += sizeof(ReqRemoveRiskGroupField);
 	}
@@ -30933,8 +30933,8 @@ bool ReqRemoveRiskGroupPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRemoveRiskGroupField::FieldID:
@@ -31130,15 +31130,15 @@ int RspRemoveRiskGroupPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspRemoveRiskGroup != nullptr)
 	{
-		memcpy(buff + offset, &RspRemoveRiskGroupField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspRemoveRiskGroupField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspRemoveRiskGroup, sizeof(RspRemoveRiskGroupField));
 		offset += sizeof(RspRemoveRiskGroupField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -31149,8 +31149,8 @@ bool RspRemoveRiskGroupPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspRemoveRiskGroupField::FieldID:
@@ -31306,8 +31306,8 @@ int ReqAddRiskGroupItemPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddRiskGroupItem != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddRiskGroupItemField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddRiskGroupItemField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddRiskGroupItem, sizeof(ReqAddRiskGroupItemField));
 		offset += sizeof(ReqAddRiskGroupItemField);
 	}
@@ -31318,8 +31318,8 @@ bool ReqAddRiskGroupItemPackage::FromXtpStream(char* buff, int startIndex, int e
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddRiskGroupItemField::FieldID:
@@ -31521,15 +31521,15 @@ int RspAddRiskGroupItemPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddRiskGroupItem != nullptr)
 	{
-		memcpy(buff + offset, &RspAddRiskGroupItemField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddRiskGroupItemField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddRiskGroupItem, sizeof(RspAddRiskGroupItemField));
 		offset += sizeof(RspAddRiskGroupItemField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -31540,8 +31540,8 @@ bool RspAddRiskGroupItemPackage::FromXtpStream(char* buff, int startIndex, int e
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddRiskGroupItemField::FieldID:
@@ -31697,8 +31697,8 @@ int ReqUpdateRiskGroupItemPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqUpdateRiskGroupItem != nullptr)
 	{
-		memcpy(buff + offset, &ReqUpdateRiskGroupItemField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqUpdateRiskGroupItemField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqUpdateRiskGroupItem, sizeof(ReqUpdateRiskGroupItemField));
 		offset += sizeof(ReqUpdateRiskGroupItemField);
 	}
@@ -31709,8 +31709,8 @@ bool ReqUpdateRiskGroupItemPackage::FromXtpStream(char* buff, int startIndex, in
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqUpdateRiskGroupItemField::FieldID:
@@ -31912,15 +31912,15 @@ int RspUpdateRiskGroupItemPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspUpdateRiskGroupItem != nullptr)
 	{
-		memcpy(buff + offset, &RspUpdateRiskGroupItemField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspUpdateRiskGroupItemField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspUpdateRiskGroupItem, sizeof(RspUpdateRiskGroupItemField));
 		offset += sizeof(RspUpdateRiskGroupItemField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -31931,8 +31931,8 @@ bool RspUpdateRiskGroupItemPackage::FromXtpStream(char* buff, int startIndex, in
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspUpdateRiskGroupItemField::FieldID:
@@ -32088,8 +32088,8 @@ int ReqRemoveRiskGroupItemPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRemoveRiskGroupItem != nullptr)
 	{
-		memcpy(buff + offset, &ReqRemoveRiskGroupItemField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRemoveRiskGroupItemField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRemoveRiskGroupItem, sizeof(ReqRemoveRiskGroupItemField));
 		offset += sizeof(ReqRemoveRiskGroupItemField);
 	}
@@ -32100,8 +32100,8 @@ bool ReqRemoveRiskGroupItemPackage::FromXtpStream(char* buff, int startIndex, in
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRemoveRiskGroupItemField::FieldID:
@@ -32303,15 +32303,15 @@ int RspRemoveRiskGroupItemPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspRemoveRiskGroupItem != nullptr)
 	{
-		memcpy(buff + offset, &RspRemoveRiskGroupItemField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspRemoveRiskGroupItemField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspRemoveRiskGroupItem, sizeof(RspRemoveRiskGroupItemField));
 		offset += sizeof(RspRemoveRiskGroupItemField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -32322,8 +32322,8 @@ bool RspRemoveRiskGroupItemPackage::FromXtpStream(char* buff, int startIndex, in
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspRemoveRiskGroupItemField::FieldID:
@@ -32490,8 +32490,8 @@ int ReqAddOrUpdateRiskPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddOrUpdateRisk != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddOrUpdateRiskField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddOrUpdateRiskField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddOrUpdateRisk, sizeof(ReqAddOrUpdateRiskField));
 		offset += sizeof(ReqAddOrUpdateRiskField);
 	}
@@ -32502,8 +32502,8 @@ bool ReqAddOrUpdateRiskPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddOrUpdateRiskField::FieldID:
@@ -32699,15 +32699,15 @@ int RspAddOrUpdateRiskPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddOrUpdateRisk != nullptr)
 	{
-		memcpy(buff + offset, &RspAddOrUpdateRiskField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddOrUpdateRiskField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddOrUpdateRisk, sizeof(RspAddOrUpdateRiskField));
 		offset += sizeof(RspAddOrUpdateRiskField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -32718,8 +32718,8 @@ bool RspAddOrUpdateRiskPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddOrUpdateRiskField::FieldID:
@@ -32869,8 +32869,8 @@ int ReqRemoveRiskPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRemoveRisk != nullptr)
 	{
-		memcpy(buff + offset, &ReqRemoveRiskField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRemoveRiskField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRemoveRisk, sizeof(ReqRemoveRiskField));
 		offset += sizeof(ReqRemoveRiskField);
 	}
@@ -32881,8 +32881,8 @@ bool ReqRemoveRiskPackage::FromXtpStream(char* buff, int startIndex, int endInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRemoveRiskField::FieldID:
@@ -33078,15 +33078,15 @@ int RspRemoveRiskPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspRemoveRisk != nullptr)
 	{
-		memcpy(buff + offset, &RspRemoveRiskField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspRemoveRiskField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspRemoveRisk, sizeof(RspRemoveRiskField));
 		offset += sizeof(RspRemoveRiskField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -33097,8 +33097,8 @@ bool RspRemoveRiskPackage::FromXtpStream(char* buff, int startIndex, int endInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspRemoveRiskField::FieldID:
@@ -33271,8 +33271,8 @@ int ReqAddRiskRulePackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddRiskRule != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddRiskRuleField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddRiskRuleField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddRiskRule, sizeof(ReqAddRiskRuleField));
 		offset += sizeof(ReqAddRiskRuleField);
 	}
@@ -33283,8 +33283,8 @@ bool ReqAddRiskRulePackage::FromXtpStream(char* buff, int startIndex, int endInd
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddRiskRuleField::FieldID:
@@ -33486,15 +33486,15 @@ int RspAddRiskRulePackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddRiskRule != nullptr)
 	{
-		memcpy(buff + offset, &RspAddRiskRuleField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddRiskRuleField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddRiskRule, sizeof(RspAddRiskRuleField));
 		offset += sizeof(RspAddRiskRuleField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -33505,8 +33505,8 @@ bool RspAddRiskRulePackage::FromXtpStream(char* buff, int startIndex, int endInd
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddRiskRuleField::FieldID:
@@ -33804,8 +33804,8 @@ int ReqAddRiskRuleItemPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddRiskRuleItem != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddRiskRuleItemField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddRiskRuleItemField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddRiskRuleItem, sizeof(ReqAddRiskRuleItemField));
 		offset += sizeof(ReqAddRiskRuleItemField);
 	}
@@ -33816,8 +33816,8 @@ bool ReqAddRiskRuleItemPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddRiskRuleItemField::FieldID:
@@ -34025,15 +34025,15 @@ int RspAddRiskRuleItemPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddRiskRuleItem != nullptr)
 	{
-		memcpy(buff + offset, &RspAddRiskRuleItemField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddRiskRuleItemField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddRiskRuleItem, sizeof(RspAddRiskRuleItemField));
 		offset += sizeof(RspAddRiskRuleItemField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -34044,8 +34044,8 @@ bool RspAddRiskRuleItemPackage::FromXtpStream(char* buff, int startIndex, int en
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddRiskRuleItemField::FieldID:
@@ -34218,8 +34218,8 @@ int ReqAddRiskTradeScopePackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddRiskTradeScope != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddRiskTradeScopeField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddRiskTradeScopeField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddRiskTradeScope, sizeof(ReqAddRiskTradeScopeField));
 		offset += sizeof(ReqAddRiskTradeScopeField);
 	}
@@ -34230,8 +34230,8 @@ bool ReqAddRiskTradeScopePackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddRiskTradeScopeField::FieldID:
@@ -34427,15 +34427,15 @@ int RspAddRiskTradeScopePackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddRiskTradeScope != nullptr)
 	{
-		memcpy(buff + offset, &RspAddRiskTradeScopeField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddRiskTradeScopeField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddRiskTradeScope, sizeof(RspAddRiskTradeScopeField));
 		offset += sizeof(RspAddRiskTradeScopeField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -34446,8 +34446,8 @@ bool RspAddRiskTradeScopePackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddRiskTradeScopeField::FieldID:
@@ -34608,8 +34608,8 @@ int ReqAddAccountRiskPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAddAccountRisk != nullptr)
 	{
-		memcpy(buff + offset, &ReqAddAccountRiskField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAddAccountRiskField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAddAccountRisk, sizeof(ReqAddAccountRiskField));
 		offset += sizeof(ReqAddAccountRiskField);
 	}
@@ -34620,8 +34620,8 @@ bool ReqAddAccountRiskPackage::FromXtpStream(char* buff, int startIndex, int end
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAddAccountRiskField::FieldID:
@@ -34828,15 +34828,15 @@ int RspAddAccountRiskPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAddAccountRisk != nullptr)
 	{
-		memcpy(buff + offset, &RspAddAccountRiskField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAddAccountRiskField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAddAccountRisk, sizeof(RspAddAccountRiskField));
 		offset += sizeof(RspAddAccountRiskField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -34847,8 +34847,8 @@ bool RspAddAccountRiskPackage::FromXtpStream(char* buff, int startIndex, int end
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAddAccountRiskField::FieldID:
@@ -35009,8 +35009,8 @@ int ReqRemoveAccountRiskPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqRemoveAccountRisk != nullptr)
 	{
-		memcpy(buff + offset, &ReqRemoveAccountRiskField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqRemoveAccountRiskField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqRemoveAccountRisk, sizeof(ReqRemoveAccountRiskField));
 		offset += sizeof(ReqRemoveAccountRiskField);
 	}
@@ -35021,8 +35021,8 @@ bool ReqRemoveAccountRiskPackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqRemoveAccountRiskField::FieldID:
@@ -35229,15 +35229,15 @@ int RspRemoveAccountRiskPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspRemoveAccountRisk != nullptr)
 	{
-		memcpy(buff + offset, &RspRemoveAccountRiskField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspRemoveAccountRiskField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspRemoveAccountRisk, sizeof(RspRemoveAccountRiskField));
 		offset += sizeof(RspRemoveAccountRiskField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -35248,8 +35248,8 @@ bool RspRemoveAccountRiskPackage::FromXtpStream(char* buff, int startIndex, int 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspRemoveAccountRiskField::FieldID:
@@ -35483,8 +35483,8 @@ int ReqMoneyTransferPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqMoneyTransfer != nullptr)
 	{
-		memcpy(buff + offset, &ReqMoneyTransferField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqMoneyTransferField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqMoneyTransfer, sizeof(ReqMoneyTransferField));
 		offset += sizeof(ReqMoneyTransferField);
 	}
@@ -35495,8 +35495,8 @@ bool ReqMoneyTransferPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqMoneyTransferField::FieldID:
@@ -35714,15 +35714,15 @@ int RspMoneyTransferPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspMoneyTransfer != nullptr)
 	{
-		memcpy(buff + offset, &RspMoneyTransferField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspMoneyTransferField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspMoneyTransfer, sizeof(RspMoneyTransferField));
 		offset += sizeof(RspMoneyTransferField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -35733,8 +35733,8 @@ bool RspMoneyTransferPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspMoneyTransferField::FieldID:
@@ -35934,8 +35934,8 @@ int ReqAuditOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqAuditOrder != nullptr)
 	{
-		memcpy(buff + offset, &ReqAuditOrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqAuditOrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqAuditOrder, sizeof(ReqAuditOrderField));
 		offset += sizeof(ReqAuditOrderField);
 	}
@@ -35946,8 +35946,8 @@ bool ReqAuditOrderPackage::FromXtpStream(char* buff, int startIndex, int endInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqAuditOrderField::FieldID:
@@ -36193,15 +36193,15 @@ int RspAuditOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspAuditOrder != nullptr)
 	{
-		memcpy(buff + offset, &RspAuditOrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspAuditOrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspAuditOrder, sizeof(RspAuditOrderField));
 		offset += sizeof(RspAuditOrderField);
 	}
 	if (RspInfo != nullptr)
 	{
-		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspInfoField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspInfo, sizeof(RspInfoField));
 		offset += sizeof(RspInfoField);
 	}
@@ -36212,8 +36212,8 @@ bool RspAuditOrderPackage::FromXtpStream(char* buff, int startIndex, int endInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspAuditOrderField::FieldID:
@@ -36363,8 +36363,8 @@ int ReqOfferLoginPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqOfferLogin != nullptr)
 	{
-		memcpy(buff + offset, &ReqOfferLoginField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqOfferLoginField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqOfferLogin, sizeof(ReqOfferLoginField));
 		offset += sizeof(ReqOfferLoginField);
 	}
@@ -36375,8 +36375,8 @@ bool ReqOfferLoginPackage::FromXtpStream(char* buff, int startIndex, int endInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqOfferLoginField::FieldID:
@@ -36532,8 +36532,8 @@ int RspOfferLoginPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspOfferLogin != nullptr)
 	{
-		memcpy(buff + offset, &RspOfferLoginField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspOfferLoginField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspOfferLogin, sizeof(RspOfferLoginField));
 		offset += sizeof(RspOfferLoginField);
 	}
@@ -36544,8 +36544,8 @@ bool RspOfferLoginPackage::FromXtpStream(char* buff, int startIndex, int endInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspOfferLoginField::FieldID:
@@ -36689,8 +36689,8 @@ int ReqPrimaryAccountLoginPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqPrimaryAccountLogin != nullptr)
 	{
-		memcpy(buff + offset, &ReqPrimaryAccountLoginField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqPrimaryAccountLoginField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqPrimaryAccountLogin, sizeof(ReqPrimaryAccountLoginField));
 		offset += sizeof(ReqPrimaryAccountLoginField);
 	}
@@ -36701,8 +36701,8 @@ bool ReqPrimaryAccountLoginPackage::FromXtpStream(char* buff, int startIndex, in
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqPrimaryAccountLoginField::FieldID:
@@ -36863,8 +36863,8 @@ int RspPrimaryAccountLoginPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspPrimaryAccountLogin != nullptr)
 	{
-		memcpy(buff + offset, &RspPrimaryAccountLoginField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspPrimaryAccountLoginField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspPrimaryAccountLogin, sizeof(RspPrimaryAccountLoginField));
 		offset += sizeof(RspPrimaryAccountLoginField);
 	}
@@ -36875,8 +36875,8 @@ bool RspPrimaryAccountLoginPackage::FromXtpStream(char* buff, int startIndex, in
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspPrimaryAccountLoginField::FieldID:
@@ -37020,8 +37020,8 @@ int ReqPrimaryAccountLogoutPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqPrimaryAccountLogout != nullptr)
 	{
-		memcpy(buff + offset, &ReqPrimaryAccountLogoutField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqPrimaryAccountLogoutField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqPrimaryAccountLogout, sizeof(ReqPrimaryAccountLogoutField));
 		offset += sizeof(ReqPrimaryAccountLogoutField);
 	}
@@ -37032,8 +37032,8 @@ bool ReqPrimaryAccountLogoutPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqPrimaryAccountLogoutField::FieldID:
@@ -37177,8 +37177,8 @@ int RtnPrimaryAccountLogoutPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RtnPrimaryAccountLogout != nullptr)
 	{
-		memcpy(buff + offset, &RtnPrimaryAccountLogoutField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RtnPrimaryAccountLogoutField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RtnPrimaryAccountLogout, sizeof(RtnPrimaryAccountLogoutField));
 		offset += sizeof(RtnPrimaryAccountLogoutField);
 	}
@@ -37189,8 +37189,8 @@ bool RtnPrimaryAccountLogoutPackage::FromXtpStream(char* buff, int startIndex, i
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RtnPrimaryAccountLogoutField::FieldID:
@@ -37323,8 +37323,8 @@ int ReqPrimaryAccountInitPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqPrimaryAccountInit != nullptr)
 	{
-		memcpy(buff + offset, &ReqPrimaryAccountInitField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqPrimaryAccountInitField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqPrimaryAccountInit, sizeof(ReqPrimaryAccountInitField));
 		offset += sizeof(ReqPrimaryAccountInitField);
 	}
@@ -37335,8 +37335,8 @@ bool ReqPrimaryAccountInitPackage::FromXtpStream(char* buff, int startIndex, int
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqPrimaryAccountInitField::FieldID:
@@ -37486,8 +37486,8 @@ int RspPrimaryAccountInitPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspPrimaryAccountInit != nullptr)
 	{
-		memcpy(buff + offset, &RspPrimaryAccountInitField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspPrimaryAccountInitField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspPrimaryAccountInit, sizeof(RspPrimaryAccountInitField));
 		offset += sizeof(RspPrimaryAccountInitField);
 	}
@@ -37498,8 +37498,8 @@ bool RspPrimaryAccountInitPackage::FromXtpStream(char* buff, int startIndex, int
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspPrimaryAccountInitField::FieldID:
@@ -37632,8 +37632,8 @@ int ReqPrimaryAccountQueryPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqPrimaryAccountQuery != nullptr)
 	{
-		memcpy(buff + offset, &ReqPrimaryAccountQueryField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqPrimaryAccountQueryField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqPrimaryAccountQuery, sizeof(ReqPrimaryAccountQueryField));
 		offset += sizeof(ReqPrimaryAccountQueryField);
 	}
@@ -37644,8 +37644,8 @@ bool ReqPrimaryAccountQueryPackage::FromXtpStream(char* buff, int startIndex, in
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqPrimaryAccountQueryField::FieldID:
@@ -37795,8 +37795,8 @@ int RspPrimaryAccountQueryPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspPrimaryAccountQuery != nullptr)
 	{
-		memcpy(buff + offset, &RspPrimaryAccountQueryField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspPrimaryAccountQueryField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspPrimaryAccountQuery, sizeof(RspPrimaryAccountQueryField));
 		offset += sizeof(RspPrimaryAccountQueryField);
 	}
@@ -37807,8 +37807,8 @@ bool RspPrimaryAccountQueryPackage::FromXtpStream(char* buff, int startIndex, in
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspPrimaryAccountQueryField::FieldID:
@@ -37941,8 +37941,8 @@ int ReqQryOfferOptionInstrumentPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqQryOfferOptionInstrument != nullptr)
 	{
-		memcpy(buff + offset, &ReqQryOfferOptionInstrumentField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqQryOfferOptionInstrumentField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqQryOfferOptionInstrument, sizeof(ReqQryOfferOptionInstrumentField));
 		offset += sizeof(ReqQryOfferOptionInstrumentField);
 	}
@@ -37953,8 +37953,8 @@ bool ReqQryOfferOptionInstrumentPackage::FromXtpStream(char* buff, int startInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqQryOfferOptionInstrumentField::FieldID:
@@ -38104,8 +38104,8 @@ int RspQryOfferOptionInstrumentPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (RspQryOfferOptionInstrument != nullptr)
 	{
-		memcpy(buff + offset, &RspQryOfferOptionInstrumentField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &RspQryOfferOptionInstrumentField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, RspQryOfferOptionInstrument, sizeof(RspQryOfferOptionInstrumentField));
 		offset += sizeof(RspQryOfferOptionInstrumentField);
 	}
@@ -38116,8 +38116,8 @@ bool RspQryOfferOptionInstrumentPackage::FromXtpStream(char* buff, int startInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case RspQryOfferOptionInstrumentField::FieldID:
@@ -38358,8 +38358,8 @@ int RtnOfferOptionInstrumentPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (OfferOptionInstrument != nullptr)
 	{
-		memcpy(buff + offset, &OfferOptionInstrumentField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &OfferOptionInstrumentField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, OfferOptionInstrument, sizeof(OfferOptionInstrumentField));
 		offset += sizeof(OfferOptionInstrumentField);
 	}
@@ -38370,8 +38370,8 @@ bool RtnOfferOptionInstrumentPackage::FromXtpStream(char* buff, int startIndex, 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case OfferOptionInstrumentField::FieldID:
@@ -38579,8 +38579,8 @@ int ReqOfferOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqOfferOrder != nullptr)
 	{
-		memcpy(buff + offset, &ReqOfferOrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqOfferOrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqOfferOrder, sizeof(ReqOfferOrderField));
 		offset += sizeof(ReqOfferOrderField);
 	}
@@ -38591,8 +38591,8 @@ bool ReqOfferOrderPackage::FromXtpStream(char* buff, int startIndex, int endInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqOfferOrderField::FieldID:
@@ -38793,8 +38793,8 @@ int ReqOfferCancelOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (ReqOfferCancelOrder != nullptr)
 	{
-		memcpy(buff + offset, &ReqOfferCancelOrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &ReqOfferCancelOrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, ReqOfferCancelOrder, sizeof(ReqOfferCancelOrderField));
 		offset += sizeof(ReqOfferCancelOrderField);
 	}
@@ -38805,8 +38805,8 @@ bool ReqOfferCancelOrderPackage::FromXtpStream(char* buff, int startIndex, int e
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case ReqOfferCancelOrderField::FieldID:
@@ -39098,8 +39098,8 @@ int RtnOfferOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (OfferOrder != nullptr)
 	{
-		memcpy(buff + offset, &OfferOrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &OfferOrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, OfferOrder, sizeof(OfferOrderField));
 		offset += sizeof(OfferOrderField);
 	}
@@ -39110,8 +39110,8 @@ bool RtnOfferOrderPackage::FromXtpStream(char* buff, int startIndex, int endInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case OfferOrderField::FieldID:
@@ -39351,8 +39351,8 @@ int RtnOfferTradePackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (OfferTrade != nullptr)
 	{
-		memcpy(buff + offset, &OfferTradeField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &OfferTradeField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, OfferTrade, sizeof(OfferTradeField));
 		offset += sizeof(OfferTradeField);
 	}
@@ -39363,8 +39363,8 @@ bool RtnOfferTradePackage::FromXtpStream(char* buff, int startIndex, int endInde
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case OfferTradeField::FieldID:
@@ -39576,8 +39576,8 @@ int RtnOfferErrorCancelOrderPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (OfferErrorCancelOrder != nullptr)
 	{
-		memcpy(buff + offset, &OfferErrorCancelOrderField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &OfferErrorCancelOrderField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, OfferErrorCancelOrder, sizeof(OfferErrorCancelOrderField));
 		offset += sizeof(OfferErrorCancelOrderField);
 	}
@@ -39588,8 +39588,8 @@ bool RtnOfferErrorCancelOrderPackage::FromXtpStream(char* buff, int startIndex, 
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case OfferErrorCancelOrderField::FieldID:
@@ -39739,8 +39739,8 @@ int RtnOfferCapitalPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (OfferCapital != nullptr)
 	{
-		memcpy(buff + offset, &OfferCapitalField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &OfferCapitalField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, OfferCapital, sizeof(OfferCapitalField));
 		offset += sizeof(OfferCapitalField);
 	}
@@ -39751,8 +39751,8 @@ bool RtnOfferCapitalPackage::FromXtpStream(char* buff, int startIndex, int endIn
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case OfferCapitalField::FieldID:
@@ -39954,8 +39954,8 @@ int RtnOfferPositionPackage::ToXtpStream(char* buff, int size) const
 	int offset = 0;
 	if (OfferPosition != nullptr)
 	{
-		memcpy(buff + offset, &OfferPositionField::FieldID, sizeof(UShortType));
-		offset += sizeof(UShortType);
+		memcpy(buff + offset, &OfferPositionField::FieldID, sizeof(UInt16Type));
+		offset += sizeof(UInt16Type);
 		memcpy(buff + offset, OfferPosition, sizeof(OfferPositionField));
 		offset += sizeof(OfferPositionField);
 	}
@@ -39966,8 +39966,8 @@ bool RtnOfferPositionPackage::FromXtpStream(char* buff, int startIndex, int endI
 	int offset = startIndex;
 	while(offset < endIndex)
 	{
-		auto fieldID = *(UShortType*)(buff + offset);
-		offset += sizeof(UShortType);
+		auto fieldID = *(UInt16Type*)(buff + offset);
+		offset += sizeof(UInt16Type);
 		switch (fieldID)
 		{
 		case OfferPositionField::FieldID:

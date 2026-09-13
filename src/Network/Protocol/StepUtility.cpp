@@ -174,7 +174,37 @@ void StepUtility::WriteString(char*& ppos, int key, char value)
 }
 void StepUtility::WriteString(char*& ppos, int key, unsigned short value)
 {
-	int len = sprintf(ppos, "%d=%d", key, value);
+	int len = sprintf(ppos, "%d=%u", key, static_cast<unsigned int>(value));
+	ppos += len;
+	*ppos++ = SOH;
+}
+void StepUtility::WriteString(char*& ppos, int key, uint8_t value)
+{
+	int len = sprintf(ppos, "%d=%u", key, static_cast<unsigned int>(value));
+	ppos += len;
+	*ppos++ = SOH;
+}
+void StepUtility::WriteString(char*& ppos, int key, int8_t value)
+{
+	int len = sprintf(ppos, "%d=%d", key, static_cast<int>(value));
+	ppos += len;
+	*ppos++ = SOH;
+}
+void StepUtility::WriteString(char*& ppos, int key, int16_t value)
+{
+	int len = sprintf(ppos, "%d=%d", key, static_cast<int>(value));
+	ppos += len;
+	*ppos++ = SOH;
+}
+void StepUtility::WriteString(char*& ppos, int key, uint32_t value)
+{
+	int len = sprintf(ppos, "%d=%u", key, static_cast<unsigned int>(value));
+	ppos += len;
+	*ppos++ = SOH;
+}
+void StepUtility::WriteString(char*& ppos, int key, uint64_t value)
+{
+	int len = sprintf(ppos, "%d=%llu", key, static_cast<unsigned long long>(value));
 	ppos += len;
 	*ppos++ = SOH;
 }
@@ -262,28 +292,28 @@ bool StepUtility::HeadFromStream(char* buff, int startIndex, int endIndex, HeadF
 			{
 				return false;
 			}
-			head->Version = static_cast<UShortType>(parsed);
+			head->Version = static_cast<UInt16Type>(parsed);
 			break;
 		case Items::PackageID:
 			if (!TryParseInteger(value, 16, parsed))
 			{
 				return false;
 			}
-			head->PackageID = static_cast<UShortType>(parsed);
+			head->PackageID = static_cast<UInt16Type>(parsed);
 			break;
 		case Items::BodyLen:
 			if (!TryParseInteger(value, 10, parsed) || parsed < 0 || parsed > 0xFFFF)
 			{
 				return false;
 			}
-			head->BodyLen = static_cast<UShortType>(parsed);
+			head->BodyLen = static_cast<UInt16Type>(parsed);
 			break;
 		case Items::MsgSeqNum:
 			if (!TryParseInteger(value, 10, parsed))
 			{
 				return false;
 			}
-			head->MsgSeqNum = static_cast<IntType>(parsed);
+			head->MsgSeqNum = static_cast<Int32Type>(parsed);
 			break;
 		case Items::MessageChain:
 			if (!TryParseInteger(value, 10, parsed))
@@ -343,7 +373,7 @@ bool StepUtility::TailFromStream(char* buff, int startIndex, int endIndex, TailF
 		{
 			return false;
 		}
-		tail->CheckSum = static_cast<IntType>(static_cast<unsigned int>(checksum));
+		tail->CheckSum = static_cast<Int32Type>(static_cast<unsigned int>(checksum));
 		parsed = true;
 		startIndex = sohIndex + 1;
 	}

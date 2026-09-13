@@ -5,72 +5,92 @@
 typedef bool BoolType;
 
 
-//短整型类型
-typedef unsigned short UShortType;
+//无符号8位整型类型
+typedef uint8_t UInt8Type;
 
+
+//8位整型类型
+typedef int8_t Int8Type;
+
+
+//无符号16位整型类型
+typedef uint16_t UInt16Type;
+
+
+//16位整型类型
+typedef int16_t Int16Type;
+
+
+//无符号32位整型类型
+typedef uint32_t UInt32Type;
+
+
+//32位整型类型
+typedef int32_t Int32Type;
 
 //客户端委托编号类型
-typedef int ClientOrderIDType;
+typedef int32_t ClientOrderIDType;
 
 //指令类型
-typedef int CommandType;
+typedef int32_t CommandType;
 
 //错误代码类型
-typedef int ErrorIDType;
+typedef int32_t ErrorIDType;
 
 //前置代码类型
-typedef int FrontIDType;
+typedef int32_t FrontIDType;
 
 //组代码类型
-typedef int GroupIDType;
-
-//整型类型
-typedef int IntType;
+typedef int32_t GroupIDType;
 
 //最大委托编号类型
-typedef int MaxOrderIDType;
+typedef int32_t MaxOrderIDType;
 
 //整型类型
-typedef int NumberType;
+typedef int32_t NumberType;
 
 //报盘代码类型
-typedef int OfferIDType;
+typedef int32_t OfferIDType;
 
 //委托编号类型
-typedef int OrderIDType;
+typedef int32_t OrderIDType;
 
 //请求代码类型
-typedef int RequestIDType;
+typedef int32_t RequestIDType;
 
 //风控代码类型
-typedef int RiskIDType;
+typedef int32_t RiskIDType;
 
 //风控指标代码类型
-typedef int RiskIndexIDType;
+typedef int32_t RiskIndexIDType;
 
 //风控等级
-typedef int RiskLevelType;
+typedef int32_t RiskLevelType;
 
 //风控规则代码类型
-typedef int RiskRuleIDType;
+typedef int32_t RiskRuleIDType;
 
 //风控规则子项代码类型
-typedef int RiskRuleItemIDType;
+typedef int32_t RiskRuleItemIDType;
 
 //风控文本引用序号
-typedef int RiskTextRefType;
+typedef int32_t RiskTextRefType;
 
 //角色代码类型
-typedef int RoleIDType;
+typedef int32_t RoleIDType;
 
 //时间秒数类型
-typedef int SecondType;
+typedef int32_t SecondType;
 
 //序号类型
-typedef int SequenceNoType;
+typedef int32_t SequenceNoType;
 
 //合约乘数类型
-typedef int VolumeMultipleType;
+typedef int32_t VolumeMultipleType;
+
+
+//无符号64位整型类型
+typedef uint64_t UInt64Type;
 
 
 	//64位整型类型
@@ -245,7 +265,7 @@ typedef char UserNameType[64];
 
 
 //账户类别
-enum class AccountClassType : int
+enum class AccountClassType : int32_t
 {
 	//期货
 	Future = 0,
@@ -256,7 +276,7 @@ enum class AccountClassType : int
 };
 
 //账户结算状态
-enum class AccountSettlementStatusType : int
+enum class AccountSettlementStatusType : int32_t
 {
 	//未开始
 	NotStart = 0,
@@ -267,7 +287,7 @@ enum class AccountSettlementStatusType : int
 };
 
 //账户类型
-enum class AccountTypeType : int
+enum class AccountTypeType : int32_t
 {
 	//主账户
 	Primary = 0,
@@ -276,7 +296,7 @@ enum class AccountTypeType : int
 };
 
 //账户状态
-enum class AccountStatusType : int
+enum class AccountStatusType : int32_t
 {
 	//启用
 	Normal = 0,
@@ -285,7 +305,7 @@ enum class AccountStatusType : int
 };
 
 //应用平台类型
-enum class AppPlatformType : int
+enum class AppPlatformType : int32_t
 {
 	Windows = 0,
 	Linux = 1,
@@ -294,7 +314,7 @@ enum class AppPlatformType : int
 };
 
 //审核状态
-enum class AuditStatusType : int
+enum class AuditStatusType : int32_t
 {
 	//通过
 	Approve = 0,
@@ -303,7 +323,7 @@ enum class AuditStatusType : int
 };
 
 //Bar精度
-enum class BarPrecesType : int
+enum class BarPrecesType : int32_t
 {
 	//秒
 	Second = 0,
@@ -314,7 +334,7 @@ enum class BarPrecesType : int
 };
 
 //组件类型
-enum class ComponentType : int
+enum class ComponentType : int32_t
 {
 	//交易前置
 	TradeFront = 0,
@@ -329,7 +349,7 @@ enum class ComponentType : int
 };
 
 //触发条件类型
-enum class ContingentConditionType : int
+enum class ContingentConditionType : int32_t
 {
 	//立即
 	Immediately = 0,
@@ -342,7 +362,7 @@ enum class ContingentConditionType : int
 };
 
 //连接状态
-enum class ConnectStatusType : int
+enum class ConnectStatusType : int32_t
 {
 	//未连接
 	UnConnected = 0,
@@ -359,7 +379,7 @@ enum class ConnectStatusType : int
 };
 
 //数据库操作
-enum class DBOperateType : int
+enum class DBOperateType : int32_t
 {
 	//创建所有表
 	CreateTables = 0,
@@ -382,7 +402,7 @@ enum class DBOperateType : int
 };
 
 //数据库类型
-enum class DBTypeType : int
+enum class DBTypeType : int32_t
 {
 	//duckdb
 	DuckDB = 0,
@@ -395,7 +415,7 @@ enum class DBTypeType : int
 };
 
 //交割方式
-enum class DeliveryMethodType : int
+enum class DeliveryMethodType : int32_t
 {
 	//现金交割
 	Cash = 0,
@@ -404,7 +424,7 @@ enum class DeliveryMethodType : int
 };
 
 //买卖方向
-enum class DirectionType : int
+enum class DirectionType : int32_t
 {
 	//买
 	Buy = 0,
@@ -413,7 +433,7 @@ enum class DirectionType : int
 };
 
 //交易所状态
-enum class ExchangeStatusType : int
+enum class ExchangeStatusType : int32_t
 {
 	//开盘前
 	BeforeTrading = 0,
@@ -434,7 +454,7 @@ enum class ExchangeStatusType : int
 };
 
 //强平原因
-enum class ForceCloseReasonType : int
+enum class ForceCloseReasonType : int32_t
 {
 	//非强平
 	NotForceClose = 0,
@@ -455,7 +475,7 @@ enum class ForceCloseReasonType : int
 };
 
 //投保标志
-enum class HedgeFlagType : int
+enum class HedgeFlagType : int32_t
 {
 	//投机
 	Speculation = 0,
@@ -466,7 +486,7 @@ enum class HedgeFlagType : int
 };
 
 //行情初始化状态
-enum class InitStatusType : int
+enum class InitStatusType : int32_t
 {
 	//未初始化
 	UnInitialized = 0,
@@ -477,7 +497,7 @@ enum class InitStatusType : int
 };
 
 //合约类别
-enum class InstrumentClassType : int
+enum class InstrumentClassType : int32_t
 {
 	//普通合约
 	Normal = 0,
@@ -486,7 +506,7 @@ enum class InstrumentClassType : int
 };
 
 //IO模型
-enum class IOModelType : int
+enum class IOModelType : int32_t
 {
 	//Select
 	Select = 0,
@@ -497,7 +517,7 @@ enum class IOModelType : int
 };
 
 //IO类型
-enum class IOTypeType : int
+enum class IOTypeType : int32_t
 {
 	//Tcp
 	Tcp = 0,
@@ -508,7 +528,7 @@ enum class IOTypeType : int
 };
 
 //逻辑运算函数
-enum class LogicFuncType : int
+enum class LogicFuncType : int32_t
 {
 	//等于
 	Equal = 0,
@@ -541,7 +561,7 @@ enum class LogicFuncType : int
 };
 
 //登录状态
-enum class LoginStatusType : int
+enum class LoginStatusType : int32_t
 {
 	//未登录
 	NotLog = 0,
@@ -552,7 +572,7 @@ enum class LoginStatusType : int
 };
 
 //保证金价格类型
-enum class MarginPriceTypeType : int
+enum class MarginPriceTypeType : int32_t
 {
 	//昨结算价
 	PreSettlementPrice = 0,
@@ -565,7 +585,7 @@ enum class MarginPriceTypeType : int
 };
 
 //保证金类型
-enum class MarginTypeType : int
+enum class MarginTypeType : int32_t
 {
 	//比例
 	Rate = 0,
@@ -574,7 +594,7 @@ enum class MarginTypeType : int
 };
 
 //行情数据类型
-enum class MarketDataTypeType : int
+enum class MarketDataTypeType : int32_t
 {
 	//快照行情
 	Tick = 0,
@@ -583,7 +603,7 @@ enum class MarketDataTypeType : int
 };
 
 //撮合模式
-enum class MatchModeType : int
+enum class MatchModeType : int32_t
 {
 	//订单簿
 	OrderBook = 0,
@@ -596,7 +616,7 @@ enum class MatchModeType : int
 };
 
 //持仓方向
-enum class PosiDirectionType : int
+enum class PosiDirectionType : int32_t
 {
 	//多头
 	Long = 0,
@@ -607,7 +627,7 @@ enum class PosiDirectionType : int
 };
 
 //报盘类型
-enum class OfferTypeType : int
+enum class OfferTypeType : int32_t
 {
 	//模拟
 	SE = 0,
@@ -616,7 +636,7 @@ enum class OfferTypeType : int
 };
 
 //开平标志
-enum class OffsetFlagType : int
+enum class OffsetFlagType : int32_t
 {
 	//开仓
 	Open = 0,
@@ -627,7 +647,7 @@ enum class OffsetFlagType : int
 };
 
 //期权指标类型
-enum class OptionIndicatorTypeType : int
+enum class OptionIndicatorTypeType : int32_t
 {
 	//Delta
 	Delta = 0,
@@ -642,7 +662,7 @@ enum class OptionIndicatorTypeType : int
 };
 
 //期权类型
-enum class OptionTypeType : int
+enum class OptionTypeType : int32_t
 {
 	//认购期权
 	Call = 0,
@@ -651,7 +671,7 @@ enum class OptionTypeType : int
 };
 
 //委托价格类型
-enum class OrderPriceTypeType : int
+enum class OrderPriceTypeType : int32_t
 {
 	//限价
 	LimitPrice = 0,
@@ -670,7 +690,7 @@ enum class OrderPriceTypeType : int
 };
 
 //委托状态
-enum class OrderStatusType : int
+enum class OrderStatusType : int32_t
 {
 	//正在申报
 	Inserting = 0,
@@ -703,7 +723,7 @@ enum class OrderStatusType : int
 };
 
 //委托类型
-enum class OrderTypeType : int
+enum class OrderTypeType : int32_t
 {
 	//普通单
 	Normal = 0,
@@ -714,7 +734,7 @@ enum class OrderTypeType : int
 };
 
 //参数类型
-enum class ParamTypeType : int
+enum class ParamTypeType : int32_t
 {
 	//常量
 	Const = 0,
@@ -723,7 +743,7 @@ enum class ParamTypeType : int
 };
 
 //产品类型
-enum class ProductClassType : int
+enum class ProductClassType : int32_t
 {
 	//期货
 	Future = 0,
@@ -746,7 +766,7 @@ enum class ProductClassType : int
 };
 
 //协议类型
-enum class ProtocolTypeType : int
+enum class ProtocolTypeType : int32_t
 {
 	//Xtp协议
 	Xtp = 0,
@@ -755,7 +775,7 @@ enum class ProtocolTypeType : int
 };
 
 //查询状态
-enum class QueryStatusType : int
+enum class QueryStatusType : int32_t
 {
 	//未查询
 	UnQueried = 0,
@@ -766,7 +786,7 @@ enum class QueryStatusType : int
 };
 
 //风控动作
-enum class RiskActionType : int
+enum class RiskActionType : int32_t
 {
 	//警告
 	Warn = 0,
@@ -779,7 +799,7 @@ enum class RiskActionType : int
 };
 
 //风控类别代码
-enum class RiskClassIDType : int
+enum class RiskClassIDType : int32_t
 {
 	//交易范围控制
 	TradeScope = 0,
@@ -802,7 +822,7 @@ enum class RiskClassIDType : int
 };
 
 //风控指标类型
-enum class RiskIndexTypeType : int
+enum class RiskIndexTypeType : int32_t
 {
 	//整型
 	Int = 0,
@@ -813,7 +833,7 @@ enum class RiskIndexTypeType : int
 };
 
 //风险度类型
-enum class RiskLevelTypeType : int
+enum class RiskLevelTypeType : int32_t
 {
 	//保证金
 	Margin = 0,
@@ -822,7 +842,7 @@ enum class RiskLevelTypeType : int
 };
 
 //风控类型
-enum class RiskRuleStyleType : int
+enum class RiskRuleStyleType : int32_t
 {
 	//事后风控
 	Afterward = 0,
@@ -831,7 +851,7 @@ enum class RiskRuleStyleType : int
 };
 
 //风控状态
-enum class RiskStatusType : int
+enum class RiskStatusType : int32_t
 {
 	//正常
 	Normal = 0,
@@ -840,7 +860,7 @@ enum class RiskStatusType : int
 };
 
 //证券细分类别
-enum class SecurityDetailTypeType : int
+enum class SecurityDetailTypeType : int32_t
 {
 	//指数
 	Index = 0,
@@ -877,7 +897,7 @@ enum class SecurityDetailTypeType : int
 };
 
 //交易节类别
-enum class SectionClassType : int
+enum class SectionClassType : int32_t
 {
 	//集合竞价
 	Auction = 0,
@@ -886,7 +906,7 @@ enum class SectionClassType : int
 };
 
 //服务类别
-enum class ServerTypeType : int
+enum class ServerTypeType : int32_t
 {
 	//客户端
 	Client = 0,
@@ -895,7 +915,7 @@ enum class ServerTypeType : int
 };
 
 //系统运行状态
-enum class SystemRunningStatusType : int
+enum class SystemRunningStatusType : int32_t
 {
 	//未运行
 	NotRun = 0,
@@ -906,7 +926,7 @@ enum class SystemRunningStatusType : int
 };
 
 //系统结算状态
-enum class SystemSettlementStatusType : int
+enum class SystemSettlementStatusType : int32_t
 {
 	//未开始
 	NotStart = 0,
@@ -921,7 +941,7 @@ enum class SystemSettlementStatusType : int
 };
 
 //证券委托价格类型
-enum class StockOrderPriceTypeType : int
+enum class StockOrderPriceTypeType : int32_t
 {
 	//限价
 	LimitPrice = 0,
@@ -940,7 +960,7 @@ enum class StockOrderPriceTypeType : int
 };
 
 //Tick类型
-enum class TickTypeType : int
+enum class TickTypeType : int32_t
 {
 	//新增委托
 	Add = 0,
@@ -953,7 +973,7 @@ enum class TickTypeType : int
 };
 
 //有效期类型
-enum class TimeConditionType : int
+enum class TimeConditionType : int32_t
 {
 	//立即完成，否则撤销
 	IOC = 0,
@@ -970,7 +990,7 @@ enum class TimeConditionType : int
 };
 
 //交易范围类别
-enum class TradeScopeTypeType : int
+enum class TradeScopeTypeType : int32_t
 {
 	//黑名单
 	BlackList = 0,
@@ -979,7 +999,7 @@ enum class TradeScopeTypeType : int
 };
 
 //交易状态
-enum class TradeStatusType : int
+enum class TradeStatusType : int32_t
 {
 	//忽略
 	Ignore = 0,
@@ -992,7 +1012,7 @@ enum class TradeStatusType : int
 };
 
 //成交类型
-enum class TradeTypeType : int
+enum class TradeTypeType : int32_t
 {
 	//普通成交
 	Common = 0,
@@ -1007,7 +1027,7 @@ enum class TradeTypeType : int
 };
 
 //出入金方向
-enum class TransferDirectionType : int
+enum class TransferDirectionType : int32_t
 {
 	//入金
 	TransferIn = 0,
@@ -1016,7 +1036,7 @@ enum class TransferDirectionType : int
 };
 
 //出入金标记
-enum class TransferFlagType : int
+enum class TransferFlagType : int32_t
 {
 	//正常
 	Normal = 0,
@@ -1025,7 +1045,7 @@ enum class TransferFlagType : int
 };
 
 //出入金方式
-enum class TransferMethodType : int
+enum class TransferMethodType : int32_t
 {
 	//转账
 	Transfer = 0,
@@ -1038,7 +1058,7 @@ enum class TransferMethodType : int
 };
 
 //成交量类型
-enum class VolumeConditionType : int
+enum class VolumeConditionType : int32_t
 {
 	//任何数量
 	AV = 0,
@@ -1049,3 +1069,9 @@ enum class VolumeConditionType : int
 };
 
 
+
+//线协议是按字段宽度直接 memcpy 上线的：宽度一变线上格式就静默错位，所以在这里钉死
+//64 位保留 long long 而非 int64_t：Linux 上 int64_t 是 long，会让全仓 %lld 变成格式不匹配
+static_assert(sizeof(long long) == 8, "Int64 别名用 long long，线上必须占 8 字节");
+static_assert(sizeof(double) == 8, "Double 别名用 double，线上必须占 8 字节");
+static_assert(sizeof(bool) == 1, "Bool 别名用 bool，线上必须占 1 字节");

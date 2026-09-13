@@ -47,9 +47,9 @@ int Package::MakePackage(ProtocolTypeType protocolType, char* buff, int size)
 				bodyLen, bodyCapacity, MaxFrameBodyLen);
 			return 0;
 		}
-		Head.BodyLen = static_cast<UShortType>(bodyLen);
+		Head.BodyLen = static_cast<UInt16Type>(bodyLen);
 		memcpy(buff, &Head, sizeof(Head));
-		Tail.CheckSum = static_cast<IntType>(CalculateCrc32c((const unsigned char*)buff, sizeof(Head) + bodyLen));
+		Tail.CheckSum = static_cast<Int32Type>(CalculateCrc32c((const unsigned char*)buff, sizeof(Head) + bodyLen));
 		memcpy(data + bodyLen, &Tail, sizeof(Tail));
 
 		return sizeof(Head) + bodyLen + sizeof(Tail);
@@ -73,13 +73,13 @@ int Package::MakePackage(ProtocolTypeType protocolType, char* buff, int size)
 				bodyLen, bodyCapacity, MaxFrameBodyLen);
 			return 0;
 		}
-		Head.BodyLen = static_cast<UShortType>(bodyLen);
+		Head.BodyLen = static_cast<UInt16Type>(bodyLen);
 		if (StepUtility::HeadToStream(&Head, buff, size) != headLen)
 		{
 			WriteLog(LogLevel::Error, "Step Head Length Changed After BodyLen Filled. HeadLen:%d, BodyLen:%d", headLen, Head.BodyLen);
 			return 0;
 		}
-		Tail.CheckSum = static_cast<IntType>(CalculateCrc32c((const unsigned char*)buff, headLen + bodyLen));
+		Tail.CheckSum = static_cast<Int32Type>(CalculateCrc32c((const unsigned char*)buff, headLen + bodyLen));
 		StepUtility::TailToStream(&Tail, buff + headLen + bodyLen, StepTailLen);
 		return headLen + bodyLen + StepTailLen;
 	}

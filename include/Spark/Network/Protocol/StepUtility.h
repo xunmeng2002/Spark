@@ -3,6 +3,10 @@
 #include <Spark/Network/Protocol/Head.h>
 #include <string>
 #include <unordered_map>
+#include <charconv>
+#include <cstdint>
+#include <system_error>
+#include <type_traits>
 
 
 //报尾固定为 "5=" + CRC32C 的 8 位十六进制 + SOH
@@ -33,6 +37,33 @@ public:
 	static void WriteString(char*& ppos, int key, double value);
 	static void WriteString(char*& ppos, int key, std::string value);
 	static void WriteString(char*& ppos, int key, char* value);
+	//下面五个是 8/16/32/64 位补的类型。不补就会落到末尾那个模板重载上，它按 %s 打印整数
+	static void WriteString(char*& ppos, int key, uint8_t value);
+	static void WriteString(char*& ppos, int key, int8_t value);
+	static void WriteString(char*& ppos, int key, int16_t value);
+	static void WriteString(char*& ppos, int key, uint32_t value);
+	static void WriteString(char*& ppos, int key, uint64_t value);
+
+	//文本转整型：格式非法或越界都返回 false。窄类型直接 atoi 会静默截断，所以必须走这里
+	template<typename T>
+	static bool ParseInteger(const std::string& text, T& value)
+	{
+		static_assert(std::is_integral<T>::value, "ParseInteger 只接受整型");
+		if (text.empty())
+		{
+			return false;
+		}
+		T parsed = 0;
+		const char* first = text.data();
+		const char* last = first + text.size();
+		auto result = std::from_chars(first, last, parsed);
+		if (result.ec != std::errc() || result.ptr != last)
+		{
+			return false;
+		}
+		value = parsed;
+		return true;
+	}
 	template<typename T>
 	static void WriteString(char*& ppos, int key, T value)
 	{

@@ -62,6 +62,26 @@
   - **下游影响（重要）**：QT 通过**安装树**消费 Spark——`Spark_DIR = D:/Gitee/Libs/Spark/x64-windows`，所以本批改动不进入 QT 的编译，QT 侧 ninja 报 `no work to do` 是正确的，不能当作"已生效"。要让 QT 用上新常量，需先重装 Spark（`cmake --install out/build/x64-Debug`，`CMAKE_INSTALL_PREFIX` 已配置为该安装树）。QT 全仓无 `MaxPackageSize`/`MakePackage` 引用，无需跟改。
   - **风险标注（§7）**：判定落在每帧一次的收发热路径上，只有整数比较，无性能影响。`MakePackage` 的检查是**事后**的——生成器不看 `size`，所以它能阻止非法帧发出、能阻止长度被截断，**但不能**阻止序列化器本身的越界写；写前防护需改 `../Templates`，见待决策条。
 
+- **类型宽度显式化（2026-09-13，`Templates` + `Model` + Spark 生成物）**：线上是按字段宽度逐字节 memcpy，所以"别名的宽度"就是"线上格式"；此前 `typedef int IntType` / `unsigned short UShortType` 把线上宽度挂在"编译器把 `int` 当几位"上。改 `../Templates/Cpp/Spark/Types.h.tpl`：`unsigned short → uint16_t`、`int → int32_t`；`../Model/Types.xml` 的枚举容器 `basetype='int' → 'int32_t'`（一处覆盖全部 60 个枚举）。
+  - **64 位保留 `long long`（用户决策）**：Linux/GCC 上 `int64_t` 是 `long`，改成它会让全仓 `%lld`（Spark 68 处 + QT 78 处）变成格式不匹配；`long long` + `%lld` 在两个平台都对。模板尾部因此新增三个宽度断言（`long long` / `double` / `bool`）——只有这三个不是标准保证的宽度，固定宽度类型自身已精确。
+  - **改生成物必须先证明生成器能复现现状**：动手前用**未改**的模板重跑 `pump.py`，输出与仓库现状逐字节一致（空 diff）；改完再 pump，diff 只含 1 个 `uint16_t` + 21 个 `int32_t` + 60 个枚举 `: int32_t` + 末尾断言块；`EnumString.h` 未受影响，`long long` / `double` / `char[]` 段原样未动。
+  - **`ProtocolVersion.h` 补字段偏移断言**：`offsetof(HeadField, Magic / MsgSeqNum / PackageID / BodyLen / Version / MessageChain / Reserved)` 依次 0 / 4 / 8 / 10 / 12 / 14 / 15，`offsetof(TailField, CheckSum) == 0`——只钉总长 16 / 4 会漏掉"字段重排但总长不变"。
+  - **收掉 3 处 `%u` 配 `UShortType`**（`PackageReader.cpp` 的 `m_Head.BodyLen`、`m_Head.Version` ×2）→ `static_cast<unsigned int>`：窄整型进可变参数会先升格成 `int`，`%u` 在标准上不成立（GCC `-Wformat` 会报），而 Linux 是发布主战场。Network 目录之外的 `%u` 处数为 0。
+  - **零语义变更的证据**：`cmake --build out/build/x64-Debug` 零错误零告警；`UnitTests.exe` **366/366 通过（25 套件）**，含逐字节线上往返用例——断言全部成立即证明本平台 `int32_t == int`、`uint16_t == unsigned short`，故不需要递增 `ProtocolVersionValue`。
+  - **下游**：QT 无自己的 `Types.h`（`#include <Spark/Types.h>`），生成代码只引用别名名，**不需要改源码**；待重装 Spark 经安装树自动生效。
+  - **未做**：WSL-GCC preset 从未构建过（当前只有 x64-Debug），建议在它上面用 `-Wformat -Wconversion` 全量扫一遍；根治格式化符问题的是把 `WriteLog` 换 `std::format`，但属 logger 热路径，需单独一批并计量。
+  - **风险标注（§7）**：本批是类型别名重定义，无新增分支、无锁、无内存管理改动；`Types.h` 是全部生成物的公共头，下游重装后需整体重建。
+- **类型调色板补齐 8/16/32/64 位（2026-09-13，`Templates` + `Model` + Spark/QT 生成物与手写源码；关闭原 ❓「8 位整型是否补进类型模板」，见归档 `Q.15`）**：原 ❓ 判断"要补就得四条链一起"，本批四条链都做了——别名容器、各模板的族映射、Step 的反序列化范围校验、MDB/SQL/C# 的类型名。别名按用户统一后的风格：`UInt8/Int8/UInt16/Int16/UInt32/Int32/UInt64/Int64`。
+  - **段名统一**：容器段名 `ushorts` → `uint16s`、`ints` → `int32s`，与新增的 `uint8s/int8s/int16s/uint32s/uint64s/int64s` 并列。段名是模板与模型之间的约定，25 个模板里硬编码了这两个段名，全部同步。
+  - **标签（label）按"谁消费它"逐个选，不照抄一套词表**：C++ 协议族的 label 同时是 printf 格式选择器，用 `uint8/int8/int16/uint32/uint64` 配 `%hhu/%hhd/%hd/%u/%llu`；Mdb 族的 label 会被直接塞进 `std::hash<LABEL>()` 并与 `!!@type!!Type` 拼类型名，因此用定宽 typedef 名（`uint8_t`…）；`InitMdbFromCsv` 与 `TestCases` 的取值链**没有 `else`**，写了链上不存在的标签会一声不响地跳过该字段，故映射到既有分支标签（`int`，64 位用 `int64`）；`RiskIndex` 的标签是函数选择器，映射 `int`；SQL 族的 label 就是 DDL 列类型（MySQL `tinyint unsigned`/`smallint`/`int unsigned`/`bigint unsigned`、Sqlite `int`、DuckDB `utinyint`/`smallint`/`uinteger`/`ubigint`）；C# 族是 C# 类型名（`byte/sbyte/short/uint/ulong`）。
+  - **Step 反序列化的静默截断被堵住**：`Packages.cpp.tpl` 的分支链此前只认 `ushort/int/int64/…`，新族会落进 `else: atoi(value.c_str())`——编译通过、小值正确、超范围静默截断。新增 `elif $type in ('uint8','int8','int16','uint32','uint64')` 分支，改走新加的 `StepUtility::ParseInteger`（`std::from_chars`，格式非法或越界都返回 false），失败时写 Warning 日志（含字段名与原始文本）后 `return false`。C# 侧 `StepPackages.cs.tpl` 的链路有 `else` 会赋字符串，故补了 5 个显式 `Convert.ToByte/ToSByte/ToInt16/ToUInt32/ToUInt64` 分支。
+  - **`WriteString` 补 5 个重载**：不补时新族会落到末尾那个模板重载，它按 `%s` 打印整数，`sprintf(ppos, "%d=%s", key, value)` 会把整型当 `char*` 解引用——**必崩**路径。`UShortType`/`IntType` 别名随 `Types.xml` 改名而失效，10 个模板里硬编码的 `UShortType` 一并改为 `UInt16Type`（`UShortType` 是 `Templates` 里唯一残留的旧别名，已与 `Types.xml` 的别名表逐名核对）。
+  - **MySQL 的一个错值顺手修正**：`uint16s` 的原标签 `short` 不是 MySQL 类型，改为 `smallint unsigned`。该段此前没有任何字段在用，故无线上 DDL 变化。
+  - **先证明生成器能复现现状再动手**：改 `Packages.cpp.tpl` 前，用未改的模板在临时目录重跑一遍，输出与已提交的 `test/Packages/Packages.cpp` **逐字节一致**（39995 行）；新分支另用探针模型渲染一遍，核对缩进、括号与 `%hhu` 调试格式。改完 `pumpall.py` 在 Spark 与 QT 各跑一次均 exit 0，生成物 diff 过滤掉别名改名后为空。
+  - **实证（x64-Debug）**：`cmake --build out/build/x64-Debug` 零错误；`bin/Debug/UnitTests.exe` **366/366 通过（25 套件）**。`Templates` 34 个文件 +793/−65 行；QT 15 个文件全部是别名改名（+388/−388，即纯改名）。
+  - **未覆盖的点（诚实记录）**：新族当前**没有任何模型在用**，所以新的反序列化分支与 5 个 `WriteString` 重载在现有用例里**不被执行**——366 与加调色板之前是同一个数字，不能当作"新路径已生效"的证据。要真正跑到它，需要模型里出现一个 `UInt8`（或其它新别名）字段 + 一条逐字节往返用例。
+  - **风险标注（§7）**：`InitMdbFromCsv` 把 8/16/32 位族映射到 `int` 分支，落到 `(!!@type!!Type)csv_record.GetFieldAsInt(...)` 上——第一次有表用这些窄别名时会触发 `int` → 窄类型的收窄转换（MSVC C4244，告警级，不阻断编译）。Step/Xtp 的**旧方言**模板（各自项目本地一份 `StepUtility`，可能没有 `ParseInteger`）故意不加范围校验，新标签在那里仍走原有的 `atoi` 路径。`WriteLog` 仍是 printf 风格，本次新增的 `%hhu/%hhd/%hd` 只对窄整型合法，GCC `-Wformat` 需在 WSL preset 上复验（沿袭下条未做项）。
+
 ## 🔄 进行中
 
 - 无
@@ -70,7 +90,11 @@
 
 - **设计约束：宿主必须显式调用 `Stop()`+`Join()`，否则最后一次缓冲必丢（2026-09-12 定论，非待修缺陷）**：进程退出时日志线程先被终止，任何晚于此的析构（`~Logger()` / `~ThreadBase()`）都无法补救——这是上一条实证得出的时序结论，不是可以靠改析构语义绕过的。宿主若确实无法在 `return` 前收尾，可考虑自行注册更早的收尾点（`std::atexit` 回调在 `ExitProcess` 之前执行，理论上仍能完成一次真正的 `Stop()`+`Join()`；**未实测**）。
 - 单元测试用例数（47 / 9 + 7 / 12 / 15）为当前快照，用例增减后需同步更新 README，后续可考虑改为不标注具体数量以避免频繁维护
-- **Step 协议两端实现已分叉，需要单独决策（2026-09-13 排查连带发现）**：`D:\Gitee\SimExchange\Source\StepProtocol\` 有一份**独立的 Step 实现**（自己的 `StepUtility.h`：`StepHeaderLen 44`、`StepTailLen 7`、`StepVersion 1`，头字段是 `Version/BodyLen/MessageType/MessageChain/MsgSeqNum`，**没有魔术字**；`HeadFromStream` 只收 2 个参数）。它与本仓 `StepUtility` 不共享任何代码，本次改造**没有**动它。如果 SimExchange 的 Step 端点是本仓 Step 协议的真实对端，那么本仓 `ProtocolVersionValue = 2` + 锚点 `SOH + "0=SPK2" + SOH` 之后，两者已经对不上（SimExchange 的包不会命中锚点，会被当噪声丢弃；本仓的包在 SimExchange 侧也解析不了）。**需要用户确认这条链路上到底谁跟谁通信**，再决定是否要同步改 SimExchange。
 - **Step 头上的 `Reserved` 字段暂不上线（本轮决策，待复核）**：`Head.xml` 里 `HeadField` 有 7 个字段（含 `Reserved`），但 Step 的文本包头只序列化 6 个（`HeadItemCount = 6`），`Reserved` 仅 Xtp 分支有。理由：`Reserved` 的定义是"保留字段，必须为 false"，缺省即 false，上线只会让包头多 12 字节；如果希望两端能校验"对端没乱用保留位"，需要把它加进 `HeadToStream`/`HeadFromStream` 并把 `HeadItemCount` 改成 7。
 - **P5 握手（协议版本协商）未实施**：计划里本就建议**不做**——版本号已经能在第一帧的固定偏移上校验出来，握手只会把"不一致"的发现推迟到连接建立之后，且要新增一对报文。当前实现按此执行，若日后要做，入口是 `Protocol::OnConnect`。
 - **生成器不认 `size`，包体越界写没有写前防护（2026-09-13 记，本批只做了事后判定）**：`ToXtpStream`/`ToStepStream` 的模板实现直接 memcpy/写文本，然后 `return int(ppos - buff)`，既不比对 `size` 也不返回负数。本批在 `MakePackage` 补的判定是事后检查：能拦住非法帧发出、能拦住 `BodyLen` 被截断，但包体真超限时序列化器已经把字节写到了缓冲之外（`Buffer<SIZE>` 的 `char m_Buffer[SIZE]` 后面就是它自己的 `m_Length`/`m_ReadPos`，溢出的破坏面是对象自身成员）。要做到写前防护，只有两条路：模板侧每写一个字段前比对剩余容量（改 `../Templates`，影响全部生成物与生成时间），或给 `ToXtpStream` 传一个带容量语义的可写游标对象。**需要用户决定是否做**；不做的前提是"没有任何模型会产出接近 64 KB 的包"，这条假设当前成立但无自动化守卫。
+
+## 归档索引
+
+- `Q.15` 8 位整型是否补进类型模板（2026-09-13 关闭）
+- `Q.14` Step 协议两端实现已分叉（2026-09-13 关闭）——见 `PROGRESS-archive.md`

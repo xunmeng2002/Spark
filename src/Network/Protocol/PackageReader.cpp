@@ -90,7 +90,7 @@ bool PackageReader::IsBodyLenWithinFrameLimit() const
 		return true;
 	}
 	WriteLog(LogLevel::Warning, "Body Length Exceeds Frame Limit. BodyLen:%u, MaxFrameBodyLen:%u, SessionID:%lld, IP:%s",
-		m_Head.BodyLen, MaxFrameBodyLen, m_SessionID, m_IPAddress);
+		static_cast<unsigned int>(m_Head.BodyLen), MaxFrameBodyLen, m_SessionID, m_IPAddress);
 	return false;
 }
 PackageReader::AlignResult PackageReader::AlignToAnchor(const char* anchor, unsigned int anchorLength)
@@ -156,15 +156,16 @@ bool PackageReader::ParseXtpPackage(Package*& package)
 		if (m_Head.Version != ProtocolVersionValue)
 		{
 			WriteLog(LogLevel::Error, "Protocol Version Not Match. RemoteVersion:%u, LocalVersion:%u, SessionID:%lld, IP:%s",
-				m_Head.Version, ProtocolVersionValue, m_SessionID, m_IPAddress);
+				static_cast<unsigned int>(m_Head.Version), static_cast<unsigned int>(ProtocolVersionValue),
+				m_SessionID, m_IPAddress);
 			return false;
 		}
 		if (!IsBodyLenWithinFrameLimit())
-	{
-		DiscardFront(1);
-		continue;
-	}
-	if (m_Length < (sizeof(HeadField) + m_Head.BodyLen + sizeof(TailField)))
+		{
+			DiscardFront(1);
+			continue;
+		}
+		if (m_Length < (sizeof(HeadField) + m_Head.BodyLen + sizeof(TailField)))
 		{
 			return true;
 		}
@@ -236,15 +237,16 @@ bool PackageReader::ParseStepPackage(Package*& package)
 		if (m_Head.Version != ProtocolVersionValue)
 		{
 			WriteLog(LogLevel::Error, "Protocol Version Not Match. RemoteVersion:%u, LocalVersion:%u, SessionID:%lld, IP:%s",
-				m_Head.Version, ProtocolVersionValue, m_SessionID, m_IPAddress);
+				static_cast<unsigned int>(m_Head.Version), static_cast<unsigned int>(ProtocolVersionValue),
+				m_SessionID, m_IPAddress);
 			return false;
 		}
 		if (!IsBodyLenWithinFrameLimit())
-	{
-		DiscardFront(1);
-		continue;
-	}
-	int tailIndex = headEndIndex + m_Head.BodyLen;
+		{
+			DiscardFront(1);
+			continue;
+		}
+		int tailIndex = headEndIndex + m_Head.BodyLen;
 		if (m_Length < unsigned(tailIndex + StepTailLen))
 		{
 			return true;

@@ -7,12 +7,12 @@ namespace spark::network
 class HeadField
 {
 public:
-	static constexpr UShortType FieldID = 0x0001;
-	IntType Magic;		//魔术字，固定为ProtocolMagicValue
-	IntType MsgSeqNum;		//请求编号
-	UShortType PackageID;		//报文代码
-	UShortType BodyLen;		//报文长度
-	UShortType Version;		//协议版本，固定为ProtocolVersionValue
+	static constexpr UInt16Type FieldID = 0x0001;
+	Int32Type Magic;		//魔术字，固定为ProtocolMagicValue
+	Int32Type MsgSeqNum;		//请求编号
+	UInt16Type PackageID;		//报文代码
+	UInt16Type BodyLen;		//报文长度
+	UInt16Type Version;		//协议版本，固定为ProtocolVersionValue
 	BoolType MessageChain;		//报文链标记
 	BoolType Reserved;		//保留字段，必须为false
 };
@@ -20,7 +20,7 @@ public:
 class TailField
 {
 public:
-	static constexpr UShortType FieldID = 0x0002;
-	IntType CheckSum;		//CRC32C校验和，覆盖报文头与包体
+	static constexpr UInt16Type FieldID = 0x0002;
+	Int32Type CheckSum;		//CRC32C校验和，覆盖报文头与包体
 };
 }

@@ -219,7 +219,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_WrongVersionIsFatal)
     HeadField head = {};
     memcpy(&head, buff, sizeof(head));
     EXPECT_EQ(head.Version, ProtocolVersionValue);
-    head.Version = static_cast<UShortType>(ProtocolVersionValue + 1);
+    head.Version = static_cast<UInt16Type>(ProtocolVersionValue + 1);
     memcpy(buff, &head, sizeof(head));
 
     PackageFactory factory;

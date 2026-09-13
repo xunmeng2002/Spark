@@ -64,7 +64,7 @@ namespace
     std::string MakeStepTailStream(unsigned int checkSum)
     {
         TailField tail = {};
-        tail.CheckSum = static_cast<IntType>(checkSum);
+        tail.CheckSum = static_cast<Int32Type>(checkSum);
 
         char buff[StepTailLen + 1] = {};
         StepUtility::TailToStream(&tail, buff, StepTailLen);
@@ -603,7 +603,7 @@ TEST(StepUtilityTest, CompleteHeadBodyTail)
     head.Magic = ProtocolMagicValue;
     head.Version = ProtocolVersionValue;
     head.PackageID = 0x1001;
-    head.BodyLen = static_cast<UShortType>(body.size());
+    head.BodyLen = static_cast<UInt16Type>(body.size());
     head.MsgSeqNum = 1;
     head.MessageChain = 0;
 

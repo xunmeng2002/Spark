@@ -2,15 +2,16 @@
 #include <Spark/Types.h>
 #include <Spark/Network/Protocol/Head.h>
 #include <bit>
+#include <cstddef>
 #include <limits>
 
 namespace spark::network
 {
 //协议版本。报文头结构或字段语义变化时必须同步递增，否则两端会按不同的格式解析同一串字节
-constexpr UShortType ProtocolVersionValue = 2;
+constexpr UInt16Type ProtocolVersionValue = 2;
 
 //魔术字。线上小端字节序为 53 50 4B 32，即 ASCII 的 SPK2
-constexpr IntType ProtocolMagicValue = 0x324B5053;
+constexpr Int32Type ProtocolMagicValue = 0x324B5053;
 
 //Step 协议中魔术字的文本形态，与 ProtocolMagicValue 是同一串字节的两种写法
 constexpr char ProtocolMagicText[] = "SPK2";
@@ -26,7 +27,13 @@ static_assert(sizeof(HeadField) == 16,
 	"HeadField 布局变化会改变线上格式，必须同步升级 ProtocolVersionValue");
 static_assert(sizeof(TailField) == 4, "TailField 布局变化会改变线上格式");
 static_assert(sizeof(HeadField) + sizeof(TailField) == 20, "单帧固定开销必须是 20 字节");
-static_assert(MaxFrameBodyLen <= std::numeric_limits<UShortType>::max(),
+//字段偏移与字段宽度同样是线上格式：整块 memcpy 时，重排或改宽都不会被总长断言发现
+static_assert(offsetof(HeadField, Magic) == 0 && offsetof(HeadField, MsgSeqNum) == 4
+	&& offsetof(HeadField, PackageID) == 8 && offsetof(HeadField, BodyLen) == 10
+	&& offsetof(HeadField, Version) == 12 && offsetof(HeadField, MessageChain) == 14
+	&& offsetof(HeadField, Reserved) == 15, "HeadField 字段偏移变化会改变线上格式，必须同步升级 ProtocolVersionValue");
+static_assert(offsetof(TailField, CheckSum) == 0, "TailField 字段偏移变化会改变线上格式");
+static_assert(MaxFrameBodyLen <= std::numeric_limits<UInt16Type>::max(),
 	"包体上限必须能写进 BodyLen（UShort），否则包体长度会被静默截断");
 static_assert(std::endian::native == std::endian::little, "线协议依赖小端字节序");
 
