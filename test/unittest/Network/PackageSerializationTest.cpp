@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include <cstring>
+#include <limits>
 #include <string>
 using namespace spark;
 using namespace spark::network;
@@ -165,7 +166,7 @@ TEST(PackageSerializationTest, XtpRoundTrip)
     int totalLen = pkg->MakePackage(ProtocolTypeType::Xtp, buff, MaxPackageSize);
     EXPECT_GT(totalLen, 0);
     // XTP: Head(binary) + Body + Tail(binary)
-    EXPECT_GT(totalLen, (int)(sizeof(HeadField) + sizeof(TailField)));
+    EXPECT_GT(totalLen, FixedFrameOverhead);
 
     pkg->Deallocate();
 
@@ -566,4 +567,88 @@ TEST(PackageSerializationTest, TruncatedBody_RejectedBeforeWrite)
 
     // Step 的包头要先落盘才量得出包头长度，判定在其后，只要求拒绝发送
     EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Step, buff, MaxPackageSize), 0);
+}
+
+// ============================================================
+// 缓冲小于单帧固定开销（报文头 + 报文尾 = 20 字节）
+// ============================================================
+
+namespace
+{
+    //按仓外实现的常见写法故意"先写后判"：拿到包体缓冲先改一个字节，再去看容量够不够。
+    //ToXtpStream 是公开纯虚函数，仓外实现不保证先比容量再写，所以 MakePackage 必须在调用它之前
+    //就把尺寸挡住——只要它被调用过，是否越界写就已经交给下游决定了
+    class WriteBeforeMeasurePackage : public Package
+    {
+    public:
+        void Deallocate() override {}
+        int ToStepStream(char* buff, int capacity) const override { return Probe(buff, capacity); }
+        bool FromStepStream(char*, int, int) override { return true; }
+        int ToXtpStream(char* buff, int capacity) const override { return Probe(buff, capacity); }
+        bool FromXtpStream(char*, int, int) override { return true; }
+        const char* GetDebugString() const override { return "WriteBeforeMeasurePackage"; }
+
+        bool WasMeasured() const { return is_measured_; }
+        int ObservedCapacity() const { return observed_capacity_; }
+
+    private:
+        int Probe(char* buff, int capacity) const
+        {
+            is_measured_ = true;
+            observed_capacity_ = capacity;
+            buff[0] = 'W';
+            return 0;
+        }
+
+        mutable bool is_measured_ = false;
+        mutable int observed_capacity_ = 0;
+    };
+}
+
+TEST(PackageSerializationTest, MakePackage_BufferSmallerThanFixedOverhead)
+{
+    //物理缓冲给足，传进去的 size 才是唯一的自变量：闸门一旦失效，越界写会落在分配内被最后那条
+    //断言读到，而不是把用例变成一次随机崩溃
+    const int sizes[] = { FixedFrameOverhead - 1, 0, -1, std::numeric_limits<int>::min() };
+
+    for (int size : sizes)
+    {
+        WriteBeforeMeasurePackage pkg;
+        pkg.Prepare(kSessionID, 0, 1);
+
+        char buff[MaxPackageSize] = {};
+        std::memset(buff, 'S', sizeof(buff));
+
+        EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Xtp, buff, size), 0) << "size=" << size;
+        EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Step, buff, size), 0) << "size=" << size;
+        //闸门必须排在指针与容量运算之前：生成器一次都不该被调用，负容量也不该被传出去
+        EXPECT_FALSE(pkg.WasMeasured()) << "size=" << size;
+
+        EXPECT_EQ(std::string(buff, sizeof(buff)), std::string(sizeof(buff), 'S')) << "size=" << size;
+    }
+}
+
+TEST(PackageSerializationTest, MakePackage_BufferExactlyFixedOverheadReachesGenerator)
+{
+    //闸门边界必须正好落在 20 字节：恰为 20 时 XTP 的包体容量是 0，仍要放行到生成器，
+    //由生成器回一个装得进 0 字节的包体长度。闸门写宽一字节就会把这种边界帧误拒
+    WriteBeforeMeasurePackage pkg;
+    pkg.Prepare(kSessionID, 0, 1);
+
+    char buff[MaxPackageSize] = {};
+    EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Xtp, buff, FixedFrameOverhead), FixedFrameOverhead);
+    EXPECT_TRUE(pkg.WasMeasured());
+    EXPECT_EQ(pkg.ObservedCapacity(), 0);
+}
+
+TEST(PackageSerializationTest, MakePackage_NullBufferRejected)
+{
+    //缓冲为空指针时尺寸再大也无意义：闸门必须按空指针判失败，而不是拿它去做指针算术。
+    //这条属新增的正性检查，旧实现会在这里崩
+    WriteBeforeMeasurePackage pkg;
+    pkg.Prepare(kSessionID, 0, 1);
+
+    EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Xtp, nullptr, MaxPackageSize), 0);
+    EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Step, nullptr, MaxPackageSize), 0);
+    EXPECT_FALSE(pkg.WasMeasured());
 }

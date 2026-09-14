@@ -22,11 +22,14 @@ constexpr unsigned int MaxFrameSize = 64 * 1024;
 //包体上限。BodyLen 是 16 位字段，一帧又要塞得进帧上限，取两者中小的那个
 constexpr unsigned int MaxFrameBodyLen = MaxFrameSize - sizeof(HeadField) - sizeof(TailField);
 
+//单帧固定开销（报文头 + 报文尾）。凡是判断"缓冲区至少要多长"的地方都用它，别在调用点现算
+constexpr int FixedFrameOverhead = sizeof(HeadField) + sizeof(TailField);
+
 //报文头与报文尾是直接把结构体 memcpy 上线的，布局一变线上格式就变，所以在这里把尺寸钉死
 static_assert(sizeof(HeadField) == 16,
 	"HeadField 布局变化会改变线上格式，必须同步升级 ProtocolVersionValue");
 static_assert(sizeof(TailField) == 4, "TailField 布局变化会改变线上格式");
-static_assert(sizeof(HeadField) + sizeof(TailField) == 20, "单帧固定开销必须是 20 字节");
+static_assert(FixedFrameOverhead == 20, "单帧固定开销必须是 20 字节");
 //字段偏移与字段宽度同样是线上格式：整块 memcpy 时，重排或改宽都不会被总长断言发现
 static_assert(offsetof(HeadField, Magic) == 0 && offsetof(HeadField, MsgSeqNum) == 4
 	&& offsetof(HeadField, PackageID) == 8 && offsetof(HeadField, BodyLen) == 10

@@ -248,16 +248,17 @@ int StepUtility::HeadToStream(HeadField* head, char* buff, int size)
 	{
 		return 0;
 	}
-	int len = 0;
-	len += ::snprintf(buff + len, size - len, "%c%u=%s%c", static_cast<int>(SOH), static_cast<unsigned int>(Items::Magic), ProtocolMagicText, static_cast<int>(SOH));
-	len += ::snprintf(buff + len, size - len, "%u=%u%c", static_cast<unsigned int>(Items::Version), static_cast<unsigned int>(head->Version), static_cast<int>(SOH));
-	len += ::snprintf(buff + len, size - len, "%u=%04X%c", static_cast<unsigned int>(Items::PackageID), static_cast<unsigned int>(head->PackageID), static_cast<int>(SOH));
-	len += ::snprintf(buff + len, size - len, "%u=%05u%c", static_cast<unsigned int>(Items::BodyLen), static_cast<unsigned int>(head->BodyLen), static_cast<int>(SOH));
-	len += ::snprintf(buff + len, size - len, "%u=%13d%c", static_cast<unsigned int>(Items::MsgSeqNum), head->MsgSeqNum, static_cast<int>(SOH));
-	len += ::snprintf(buff + len, size - len, "%u=%d", static_cast<unsigned int>(Items::MessageChain), head->MessageChain);
-	//最后一个不能使用sprintf赋值，因为sprintf会在末尾自动补上0
-	buff[len] = SOH;
-	return len + 1;
+	StepWriteCursor cursor(buff, size);
+	if (!cursor.AppendField("{:c}{:d}={:s}", SOH, Items::Magic, ProtocolMagicText)
+		|| !cursor.AppendField("{:d}={:d}", Items::Version, head->Version)
+		|| !cursor.AppendField("{:d}={:04X}", Items::PackageID, head->PackageID)
+		|| !cursor.AppendField("{:d}={:05d}", Items::BodyLen, head->BodyLen)
+		|| !cursor.AppendField("{:d}={:13d}", Items::MsgSeqNum, head->MsgSeqNum)
+		|| !cursor.AppendField("{:d}={:d}", Items::MessageChain, head->MessageChain))
+	{
+		return 0;
+	}
+	return cursor.GetWrittenLength();
 }
 bool StepUtility::HeadFromStream(char* buff, int startIndex, int endIndex, HeadField* head, int& headEndIndex)
 {

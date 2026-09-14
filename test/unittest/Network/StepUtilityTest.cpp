@@ -23,6 +23,27 @@ namespace
         return std::to_string(key) + "=" + value + std::string(1, SOH);
     }
 
+    //写入路径用例骨架：搭缓冲 → 建游标 → 写一个字段 → 与预期字段串逐字节比对。
+    //容量取 64：写入路径的字段都是短文本或单个数字；容量边界与截断语义另有专门用例，不走这里
+    template<typename FieldValue>
+    void ExpectStepField(UInt16Type key, const FieldValue& value, const std::string& expectedValue)
+    {
+        char buff[64] = {};
+        StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
+        StepUtility::WriteString(cursor, key, value);
+
+        EXPECT_EQ(std::string(buff, cursor.GetWrittenLength()), MakeStepField(key, expectedValue));
+    }
+
+    void ExpectHexStepField(UInt16Type key, UInt16Type value, const std::string& expectedValue)
+    {
+        char buff[64] = {};
+        StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
+        StepUtility::WriteHexString(cursor, key, value);
+
+        EXPECT_EQ(std::string(buff, cursor.GetWrittenLength()), MakeStepField(key, expectedValue));
+    }
+
     // 按 HeadToStream 的写法造一个完整包头，返回实际写出的字节
     std::string MakeStepHeadStream(unsigned short packageID, unsigned short bodyLen, int msgSeqNum, int messageChain)
     {
@@ -303,134 +324,72 @@ TEST(StepUtilityTest, GetNextFieldZone_FieldEndIDOutOfRange)
 
 TEST(StepUtilityTest, WriteString_Bool)
 {
-    char buff[64] = {};
-    StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
-    StepUtility::WriteString(cursor, 0x8001, true);   // IsAllowLogin
-    *cursor.GetWritePosition() = '\0';
-
-    EXPECT_EQ(std::string(buff, cursor.GetWrittenLength()), MakeStepField(0x8001, "1"));
+    ExpectStepField(0x8001, true, "1");   // IsAllowLogin
 }
 
 TEST(StepUtilityTest, WriteString_Char)
 {
-    char buff[64] = {};
-    StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
-    StepUtility::WriteString(cursor, 0x9005, 'B');    // Direction
-    *cursor.GetWritePosition() = '\0';
-
-    EXPECT_EQ(std::string(buff, cursor.GetWrittenLength()), MakeStepField(0x9005, "B"));
+    ExpectStepField(0x9005, 'B', "B");    // Direction
 }
 
 TEST(StepUtilityTest, WriteString_UnsignedShort)
 {
-    char buff[64] = {};
-    StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
-    StepUtility::WriteString(cursor, 0x0001, static_cast<UInt16Type>(0x0001));  // PackageID
-    *cursor.GetWritePosition() = '\0';
-
-    EXPECT_EQ(std::string(buff, cursor.GetWrittenLength()), MakeStepField(0x0001, "1"));
+    ExpectStepField(0x0001, static_cast<UInt16Type>(0x0001), "1");  // PackageID
 }
 
 TEST(StepUtilityTest, WriteString_Int)
 {
-    char buff[64] = {};
-    StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
-    StepUtility::WriteString(cursor, 0x0004, 123456);  // MsgSeqNum
-    *cursor.GetWritePosition() = '\0';
-
-    EXPECT_EQ(std::string(buff, cursor.GetWrittenLength()), MakeStepField(0x0004, "123456"));
+    ExpectStepField(0x0004, 123456, "123456");  // MsgSeqNum
 }
 
 TEST(StepUtilityTest, WriteString_LongLong)
 {
-    char buff[64] = {};
-    StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
-    StepUtility::WriteString(cursor, 0x3001, 20240115LL);  // TradingDay
-    *cursor.GetWritePosition() = '\0';
-
-    EXPECT_EQ(std::string(buff, cursor.GetWrittenLength()), MakeStepField(0x3001, "20240115"));
+    ExpectStepField(0x3001, 20240115LL, "20240115");  // TradingDay
 }
 
 //钉住 UInt64Type 必须命中 %llu 重载：落到末尾那个 template 重载会按 %s 把整数当 char* 解引用
 TEST(StepUtilityTest, WriteString_UInt64)
 {
-    char buff[64] = {};
-    StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
     //0x9999 不占用任何 ItemID：模型里没有 UInt64 字段，本用例只验证重载分派
-    StepUtility::WriteString(cursor, 0x9999, static_cast<UInt64Type>(18446744073709551615ULL));
-    *cursor.GetWritePosition() = '\0';
-
     //取 UInt64 上限，确保不会被 32 位重载静默截断
-    EXPECT_EQ(std::string(buff), MakeStepField(0x9999, "18446744073709551615"));
+    ExpectStepField(0x9999, static_cast<UInt64Type>(18446744073709551615ULL), "18446744073709551615");
 }
 
 TEST(StepUtilityTest, WriteString_Double)
 {
-    char buff[64] = {};
-    StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
-    StepUtility::WriteString(cursor, 0x6015, 12.345);  // Price
-    *cursor.GetWritePosition() = '\0';
-
-    EXPECT_EQ(std::string(buff, cursor.GetWrittenLength()), MakeStepField(0x6015, "12.345000"));
+    ExpectStepField(0x6015, 12.345, "12.345000");  // Price
 }
 
 TEST(StepUtilityTest, WriteString_StdString)
 {
-    char buff[64] = {};
-    StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
-    StepUtility::WriteString(cursor, 0x100D, std::string("600001"));  // InstrumentID
-    *cursor.GetWritePosition() = '\0';
-
-    EXPECT_EQ(std::string(buff, cursor.GetWrittenLength()), MakeStepField(0x100D, "600001"));
+    ExpectStepField(0x100D, std::string("600001"), "600001");  // InstrumentID
 }
 
 TEST(StepUtilityTest, WriteString_CharPtr)
 {
-    char buff[64] = {};
-    StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
-    StepUtility::WriteString(cursor, 0x100D, "cu2401");
-    *cursor.GetWritePosition() = '\0';
-
-    EXPECT_EQ(std::string(buff, cursor.GetWrittenLength()), MakeStepField(0x100D, "cu2401"));
+    ExpectStepField(0x100D, "cu2401", "cu2401");
 }
 
 TEST(StepUtilityTest, WriteHexString)
 {
-    char buff[64] = {};
-    StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
-    StepUtility::WriteHexString(cursor, 0x0001, 0x00FF);  // test with value 255
-    *cursor.GetWritePosition() = '\0';
-
-    EXPECT_EQ(std::string(buff, cursor.GetWrittenLength()), MakeStepField(0x0001, "00FF"));
+    ExpectHexStepField(0x0001, 0x00FF, "00FF");  // test with value 255
 }
 
 //bool 落到 std::format 的 {} 会输出 true/false，必须显式 {:d} 才与 sprintf 时代的 0/1 逐字节一致
 TEST(StepUtilityTest, WriteString_BoolStaysNumeric)
 {
-    char buff[64] = {};
-    StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
-    StepUtility::WriteString(cursor, 0x8001, false);
-
-    EXPECT_EQ(std::string(buff, cursor.GetWrittenLength()), MakeStepField(0x8001, "0"));
+    ExpectStepField(0x8001, false, "0");
 }
 
 //Int8Type / UInt8Type 是 signed char / unsigned char，不在 std::format 的字符类型集合内，{:d} 给整数
 TEST(StepUtilityTest, WriteString_Int8)
 {
-    char buff[64] = {};
-    StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
-    StepUtility::WriteString(cursor, 0x0002, static_cast<Int8Type>(-5));
-
-    EXPECT_EQ(std::string(buff, cursor.GetWrittenLength()), MakeStepField(0x0002, "-5"));
+    ExpectStepField(0x0002, static_cast<Int8Type>(-5), "-5");
 }
 
 TEST(StepUtilityTest, WriteString_UInt8)
 {
-    char buff[64] = {};
-    StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
-    StepUtility::WriteString(cursor, 0x0003, static_cast<UInt8Type>(200));
-
-    EXPECT_EQ(std::string(buff, cursor.GetWrittenLength()), MakeStepField(0x0003, "200"));
+    ExpectStepField(0x0003, static_cast<UInt8Type>(200), "200");
 }
 
 //容量正好等于 "key=value" + SOH：不判截断，落盘字节与 MakeStepField 完全一致
@@ -498,17 +457,13 @@ TEST(StepUtilityTest, WriteCursor_StopsAfterTruncation)
     EXPECT_EQ(std::string(buff, sizeof(buff)), std::string(afterTruncation, sizeof(afterTruncation)));
 }
 
-//本批唯一一处线上字节与 sprintf 时代不同：{:s} 写整个 std::string，%s 停在首个内嵌 NUL。
-//生成代码的字符串字段全是 char[] C 串，走不到这里；此用例把这个差异钉成有意的
+//WriteString(std::string) 是唯一一处线上字节与 sprintf 时代不同：{:s} 写整个 std::string，
+//%s 停在首个内嵌 NUL。生成代码的字符串字段全是 char[] C 串，走不到这里；此用例把差异钉成有意的
 TEST(StepUtilityTest, WriteString_StdStringEmbeddedNul)
 {
-    char buff[64] = {};
-    StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
     const std::string embedded("cu\0x", 4);
 
-    StepUtility::WriteString(cursor, 0x100D, embedded);
-
-    EXPECT_EQ(std::string(buff, cursor.GetWrittenLength()), MakeStepField(0x100D, embedded));
+    ExpectStepField(0x100D, embedded, embedded);
 }
 
 // ============================================================
@@ -522,6 +477,42 @@ TEST(StepUtilityTest, HeadToStream_InsufficientBuffer)
 
     char buff[StepMaxHeaderLen - 1] = {};
     EXPECT_EQ(StepUtility::HeadToStream(&head, buff, StepMaxHeaderLen - 1), 0);
+}
+
+//把包头逐字节钉成黄金串，覆盖 sprintf→std::format 剩下的三个填充翻译点：%04X 大写零填充、
+//%05u 零填充、%13d 空格填充。PackageID 取 0x00A1 让大写与补零同时可见，MsgSeqNum 取负值
+//让 %13d 的填充方向（右对齐）与填充字符（空格而非零）在字节上现形
+TEST(StepUtilityTest, HeadToStream_ByteExactGolden)
+{
+    HeadField head = {};
+    head.Magic = ProtocolMagicValue;
+    head.Version = ProtocolVersionValue;
+    head.PackageID = 0x00A1;
+    head.BodyLen = 8;
+    head.MsgSeqNum = -1;
+    head.MessageChain = 1;
+
+    char buff[StepMaxHeaderLen] = {};
+    int headLen = StepUtility::HeadToStream(&head, buff, StepMaxHeaderLen);
+
+    std::string expected = std::string(1, SOH)
+                         + MakeStepField(Items::Magic, ProtocolMagicText)
+                         + MakeStepField(Items::Version, std::to_string(ProtocolVersionValue))
+                         + MakeStepField(Items::PackageID, "00A1")
+                         + MakeStepField(Items::BodyLen, "00008")
+                         + MakeStepField(Items::MsgSeqNum, std::string(11, ' ') + "-1")
+                         + MakeStepField(Items::MessageChain, "1");
+
+    EXPECT_EQ(headLen, static_cast<int>(expected.size()));
+    EXPECT_EQ(std::string(buff, buff + headLen), expected);
+
+    //读侧靠 strtoll 跳过前导空白才吃得下被空格填充的 -1。这条断言把该依赖钉成契约：
+    //若日后换成不容空白的解析器，这里会先红
+    HeadField parsed = {};
+    int headEndIndex = -1;
+    EXPECT_TRUE(StepUtility::HeadFromStream(&buff[0], 0, headLen, &parsed, headEndIndex));
+    EXPECT_EQ(parsed.MsgSeqNum, -1);
+    EXPECT_EQ(parsed.PackageID, 0x00A1);
 }
 
 TEST(StepUtilityTest, HeadStreamRoundTrip)
@@ -548,10 +539,14 @@ TEST(StepUtilityTest, HeadStreamRoundTrip_MinValues)
 {
     std::string stream = MakeStepHeadStream(0x0001, 0, 0, 0);
 
+    int headLen = static_cast<int>(stream.size());
+    EXPECT_GT(headLen, 0);
+    EXPECT_LT(headLen, static_cast<int>(StepMaxHeaderLen));
+
     HeadField parsed = {};
     int headEndIndex = -1;
-    EXPECT_TRUE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
-    EXPECT_EQ(headEndIndex, (int)stream.size());
+    EXPECT_TRUE(StepUtility::HeadFromStream(&stream[0], 0, headLen, &parsed, headEndIndex));
+    EXPECT_EQ(headEndIndex, headLen);
     EXPECT_EQ(parsed.PackageID, 0x0001);
     EXPECT_EQ(parsed.BodyLen, 0);
     EXPECT_EQ(parsed.MsgSeqNum, 0);
@@ -562,9 +557,15 @@ TEST(StepUtilityTest, HeadStreamRoundTrip_MaxValues)
 {
     std::string stream = MakeStepHeadStream(0xFFFF, 65535, 999999999, 1);
 
+    //BodyLen 五位、PackageID 四位、MsgSeqNum 十三位全部填满，是包头的真实上界（实测 51 字节）。
+    //放不下时 HeadToStream 返回 0，所以先红的是上面那条 EXPECT_GT，这条记的是"远小于闸门阈值"
+    int headLen = static_cast<int>(stream.size());
+    EXPECT_GT(headLen, 0);
+    EXPECT_LT(headLen, static_cast<int>(StepMaxHeaderLen));
+
     HeadField parsed = {};
     int headEndIndex = -1;
-    EXPECT_TRUE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
+    EXPECT_TRUE(StepUtility::HeadFromStream(&stream[0], 0, headLen, &parsed, headEndIndex));
     EXPECT_EQ(parsed.PackageID, 0xFFFF);
     EXPECT_EQ(parsed.BodyLen, 65535);
     EXPECT_EQ(parsed.MsgSeqNum, 999999999);
