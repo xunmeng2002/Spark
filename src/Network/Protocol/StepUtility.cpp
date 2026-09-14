@@ -156,7 +156,7 @@ const std::string& StepUtility::GetPackageStartAnchor()
 	static const std::string anchor = []()
 	{
 		char buff[32] = { 0 };
-		::snprintf(buff, sizeof(buff), "%c%u=%s%c", SOH, Items::Magic, ProtocolMagicText, SOH);
+		::snprintf(buff, sizeof(buff), "%c%u=%s%c", static_cast<int>(SOH), static_cast<unsigned int>(Items::Magic), ProtocolMagicText, static_cast<int>(SOH));
 		return std::string(buff);
 	}();
 	return anchor;
@@ -255,12 +255,12 @@ int StepUtility::HeadToStream(HeadField* head, char* buff, int size)
 		return 0;
 	}
 	int len = 0;
-	len += ::snprintf(buff + len, size - len, "%c%u=%s%c", SOH, Items::Magic, ProtocolMagicText, SOH);
-	len += ::snprintf(buff + len, size - len, "%u=%u%c", Items::Version, head->Version, SOH);
-	len += ::snprintf(buff + len, size - len, "%u=%04X%c", Items::PackageID, head->PackageID, SOH);
-	len += ::snprintf(buff + len, size - len, "%u=%05u%c", Items::BodyLen, head->BodyLen, SOH);
-	len += ::snprintf(buff + len, size - len, "%u=%13d%c", Items::MsgSeqNum, head->MsgSeqNum, SOH);
-	len += ::snprintf(buff + len, size - len, "%u=%d", Items::MessageChain, head->MessageChain);
+	len += ::snprintf(buff + len, size - len, "%c%u=%s%c", static_cast<int>(SOH), static_cast<unsigned int>(Items::Magic), ProtocolMagicText, static_cast<int>(SOH));
+	len += ::snprintf(buff + len, size - len, "%u=%u%c", static_cast<unsigned int>(Items::Version), static_cast<unsigned int>(head->Version), static_cast<int>(SOH));
+	len += ::snprintf(buff + len, size - len, "%u=%04X%c", static_cast<unsigned int>(Items::PackageID), static_cast<unsigned int>(head->PackageID), static_cast<int>(SOH));
+	len += ::snprintf(buff + len, size - len, "%u=%05u%c", static_cast<unsigned int>(Items::BodyLen), static_cast<unsigned int>(head->BodyLen), static_cast<int>(SOH));
+	len += ::snprintf(buff + len, size - len, "%u=%13d%c", static_cast<unsigned int>(Items::MsgSeqNum), head->MsgSeqNum, static_cast<int>(SOH));
+	len += ::snprintf(buff + len, size - len, "%u=%d", static_cast<unsigned int>(Items::MessageChain), head->MessageChain);
 	//最后一个不能使用sprintf赋值，因为sprintf会在末尾自动补上0
 	buff[len] = SOH;
 	return len + 1;
@@ -343,7 +343,7 @@ int StepUtility::TailToStream(TailField* tail, char* buff, int size)
 	{
 		return 0;
 	}
-	int len = ::snprintf(buff, static_cast<size_t>(size), "%u=%08X", Items::CheckSum, static_cast<unsigned int>(tail->CheckSum));
+	int len = ::snprintf(buff, static_cast<size_t>(size), "%u=%08X", static_cast<unsigned int>(Items::CheckSum), static_cast<unsigned int>(tail->CheckSum));
 	if (len != static_cast<int>(StepTailLen) - 1)
 	{
 		return 0;

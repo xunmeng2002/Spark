@@ -18,7 +18,6 @@ namespace
     constexpr char kSOH = 1;
 
     // 构造 "key=value\SOH"（无前导 SOH，用于 GetNext 直接解析）
-    // 只留一个重载：Items 里的字段 ID 是 unsigned int，另外两个重载会让调用变成二义
     std::string MakeStepField(unsigned int key, const std::string& value)
     {
         return std::to_string(key) + "=" + value + std::string(1, kSOH);
