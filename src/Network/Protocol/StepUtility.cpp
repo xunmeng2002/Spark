@@ -1,10 +1,8 @@
 #include <Spark/Network/Protocol/StepUtility.h>
 #include <Spark/Network/Protocol/Items.h>
-#include <Spark/Network/Protocol/ProtocolUtility.h>
 #include <Spark/Network/Protocol/ProtocolVersion.h>
 #include <Spark/Core/Logger/Logger.h>
 #include <stdio.h>
-#include <string.h>
 
 using namespace std;
 using namespace spark::core;
