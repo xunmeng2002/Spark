@@ -492,3 +492,78 @@ TEST(PackageSerializationTest, OversizedBody_RejectedBeforeWrite)
     // Step 的包头要先落盘才量得出包头长度，判定在其后，只要求拒绝发送
     EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Step, buff, MaxPackageSize), 0);
 }
+
+// ============================================================
+// 生成器的容量边界：正好放得下 / 差 1 字节
+// ============================================================
+
+TEST(PackageSerializationTest, StepBody_CapacityBoundary)
+{
+    auto* pkg = CreateSamplePackage();
+    char reference[MaxPackageSize] = {};
+    int bodyLen = pkg->ToStepStream(reference, MaxPackageSize);
+    ASSERT_GT(bodyLen, 0);
+
+    //容量正好等于包体长度（每个字段的 SOH 都在内）：成功的最小边界，字节与参考逐字节一致
+    char exact[MaxPackageSize] = {};
+    EXPECT_EQ(pkg->ToStepStream(exact, bodyLen), bodyLen);
+    EXPECT_EQ(std::string(exact, bodyLen), std::string(reference, bodyLen));
+
+    //再少 1 字节：为 SOH 预留的那 1 字节放不下，生成器必须回 -1 而不是把字段截断写出去
+    char truncated[MaxPackageSize] = {};
+    EXPECT_EQ(pkg->ToStepStream(truncated, bodyLen - 1), -1);
+
+    pkg->Deallocate();
+}
+
+TEST(PackageSerializationTest, XtpBody_CapacityBoundary)
+{
+    auto* pkg = CreateSamplePackage();
+    char reference[MaxPackageSize] = {};
+    int bodyLen = pkg->ToXtpStream(reference, MaxPackageSize);
+    ASSERT_GT(bodyLen, 0);
+
+    char exact[MaxPackageSize] = {};
+    EXPECT_EQ(pkg->ToXtpStream(exact, bodyLen), bodyLen);
+    EXPECT_EQ(std::string(exact, bodyLen), std::string(reference, bodyLen));
+
+    //XTP 的字段是定长记录，差 1 字节时末条记录放不下
+    char truncated[MaxPackageSize] = {};
+    EXPECT_EQ(pkg->ToXtpStream(truncated, bodyLen - 1), -1);
+
+    pkg->Deallocate();
+}
+
+// ============================================================
+// 包体长度为负（生成器报容量不足）
+// ============================================================
+
+namespace
+{
+    //生成器回 -1 表示"给定容量放不下"，MakePackage 必须拒绝发送
+    class TruncatedBodyPackage : public Package
+    {
+    public:
+        void Deallocate() override {}
+        int ToStepStream(char*, int) const override { return -1; }
+        bool FromStepStream(char*, int, int) override { return true; }
+        int ToXtpStream(char*, int) const override { return -1; }
+        bool FromXtpStream(char*, int, int) override { return true; }
+        const char* GetDebugString() const override { return "TruncatedBodyPackage"; }
+    };
+}
+
+TEST(PackageSerializationTest, TruncatedBody_RejectedBeforeWrite)
+{
+    TruncatedBodyPackage pkg;
+    pkg.Prepare(kSessionID, 0, 1);
+
+    char buff[MaxPackageSize] = {};
+    buff[0] = 'X';
+    // Xtp 的长度契约在写报文头之前判定，缓冲一个字节都不该动
+    EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Xtp, buff, MaxPackageSize), 0);
+    EXPECT_EQ(buff[0], 'X');
+
+    // Step 的包头要先落盘才量得出包头长度，判定在其后，只要求拒绝发送
+    EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Step, buff, MaxPackageSize), 0);
+}

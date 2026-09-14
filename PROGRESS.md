@@ -4,6 +4,93 @@
 
 ## ✅ 已完成
 
+- **STEP 写路径收口：有界游标 + `std::format` + 写侧类型拼写（2026-09-14，用户逐字批准；含一处推翻计划的风险断言）**：
+  上一批把字段 ID 收窄成 `UInt16Type` 并补齐 19 处格式实参 cast，但**写路径本身仍无上界**——
+  `WriteString` / `WriteHexString` 往 `char*& ppos` 里 `sprintf`，调用方 `ToStepStream(char* buff, int size)`
+  拿到 `size` 却**从不引用**，`Package.cpp` 的长度校验是**事后**的（判失败时越界写早已发生）；
+  第二处无界写是 `ToXtpStream` 的裸 `memcpy`。读路径早已逐个收 `endIndex`，本批把写侧对称收口。
+  - **新增 `StepWriteCursor`（放 `StepUtility.h`，形状由用户从三处选型里选定）**：`AppendField(std::format_string<Args...>, Args&&...)`
+    是**唯一**算容量的地方——`writableLength = GetRemainingLength() - 1`（为 SOH 预留 1 字节），
+    `std::format_to_n` 之后以 `result.size > writableLength` 判截断，成功才推进游标并补 SOH；
+    一旦截断即**闩住**，此后所有字段写入直接返回 `false`（计划外的扩充：不闩会出现"前几个字段已落、
+    后面继续写"的中间态）。15 个调用点各剩一行 `cursor.AppendField("{}={:d}", key, value);`，
+    §5 那 14 处逐字节相同的尾两行随之消失。
+  - **状态存 `begin + capacity + written`（三个 `int`）而非 `char* end`**：`Package.cpp:42` 算 XTP 的
+    `bodyCapacity` 时**未校验正性**，`size` 很小时为负，`buffer + 负数` 属越界指针运算；存 `int capacity_`
+    后比较全在 `int` 域内，负容量自然落到"写不下"。
+  - **`sprintf` → `std::format_to_n`，13 个格式串一律显式写表示类型**：`{}={:d}`×9、`{}={:c}`、`{}={:.6f}`、
+    `{}={:s}`、`{}={:04X}`。**不能写裸 `{}`**：`BoolType` 的 `{}` 在 MSVC 出 `true`/`false`、在 libstdc++ 13
+    出 `1`/`0`（线上字节会变），`{:d}` 两平台一致。`StepUtility.h` 原有 4 条钉 `Int32Type` / `Int64Type` /
+    `UInt64Type` / `DoubleType` 的 `static_assert` **随之删除**——世上已无 printf 格式串，类型适配改由
+    `std::format_string<Args...>` 的 `consteval` 校验在编译期完成。`<cstdio>` 移出该头；`StepUtility.cpp`
+    补 `<stdio.h>`，因为 `::snprintf` 仍在用，而它此前**仅靠 `<format>` 的传递包含**才编得过。
+  - **我错了一处·"截断时一个字节都不写"是错的（写测试时才发现）**：`std::format_to_n` **会把能放下的前缀
+    留在缓冲里**。两个新用例当场暴露：`WriteString_ReservesByteForSoh` 拿到 `"32769=X"`、
+    `WriteCursor_StopsAfterTruncation` 拿到 `"4109=0123456789\0"`。**已按事实改写类注释与这两个用例**，
+    契约改为：不推进游标、绝不越过 `capacity`、`[begin, begin + GetWrittenLength())` 始终是完整字段序列，
+    **但截断时调用方必须丢弃整个包体**。该更正同时推翻计划"风险"一节里的同一句断言。
+  - **写侧类型拼写收口**：13 个 `WriteString` 重载 + `WriteHexString` + 兜底模板的 `int key` → `UInt16Type key`；
+    四个 `Get*` 一并改别名拼写。属公开 API 变更，用户已批准（并顺带更正了本文件里"四个 `Get*` 的 `key` 是 `int`"
+    这半句错误，见上）。
+  - **兜底模板改编译期拒绝**：`static_assert(std::is_same<T, const char*>::value || std::is_same<T, char*>::value, "WriteString 只覆盖 Types.h 调色板里的类型与字符串指针；裸 long / size_t 请先转成对应别名")`。
+    动机正是用户点的坑——`sprintf` 时代传整型是按 `%s` 解引用（崩），换 `std::format` 后同一处会**静默按数字写出**、
+    线上格式悄悄变化，比崩溃难发现得多。**两个负向探针都按设计触发**：scratch TU 里
+    `WriteString(cursor, 0x0001, 42L)` 报 `error C2338` 并打出该文本（而非静默输出 `42`）；
+    `AppendField` 传错类型报 `error C7595`（证明 `consteval` 格式串校验确实生效）。
+  - **模板与调用处**：`Templates/Cpp/Protocol/Packages/Packages.cpp.tpl` 的 `ToStepStream` 改用游标、截断返回 `-1`
+    （直接落进 `Package.cpp` 已有的 `bodyLen < 0` 判定，**契约不变**，事后校验退回"真正的兜底"）；
+    `ToXtpStream` 每次 `memcpy` 前加 `offset + fieldSize > size` 判断、越界 `return -1`。两个活消费方重新生成：
+    `Spark/test/Packages/Packages.cpp`（+4203/−2131）与 `QuantTrading/src/Packages/Packages.cpp`（+1217/−654）。
+  - **顺序是硬约束，计划里就写明了**：`QuantTrading/CMakeLists.txt:51` 是
+    `find_package(Spark REQUIRED PATHS "../Libs/Spark/x64-windows")`，吃的是**安装副本**而非源码树，
+    故必须"改 Spark 源码 → 重生成 Spark 生成物 → `cmake --install out/build/x64-Release` 刷新
+    `Libs/Spark/x64-windows` → **才**重生成 QuantTrading"。刷新 `Libs` 不产生提交（`Libs/Spark/` 整体
+    未被该仓跟踪）。
+  - **实证**：Windows x64 Debug **381/381**、x64-Release **381/381**、WSL GCC Debug **380/380**
+    （差 1 条仍是 `DirTest.cpp` 的 `#ifdef _WIN32`），全部零编译告警；逐条核对 `.obj` 时间戳新于源码
+    以证明真的重编（本工程无 `/W` 等级，格式失配编译期静默）。`StepUtilityTest` 51 → **59**，
+    `PackageSerializationTest` 16 → **19**。生成物**幂等**：用提交后的模板重跑 pump，五个输出**逐字节相同**；
+    `PackageFactory.{h,cpp}` 零 churn（本批不动模型）。`QuantTrading` 的 `Packages.cpp.obj` **编译通过**
+    （`[25/153]`，目标文件新于源文件），**但整仓构建被一个与本事无关的既有破坏挡住**：
+    `src/Mdb/MdbStructs.cpp` 用了 `FieldType::Int32`，而 `Libs/DBAdapters` 的 `Schema.h` 里 `FieldType` 是
+    `{Int, Int64, Double, Char, Bool}`（**没有 `Int32`**，且该枚举属 DBAdapters 不属 Spark）。
+    故 QuantTrading 记为"**签名变更对消费方干净，但整仓未编译验证**"。
+  - **本轮代码审查（2026-09-14）**：严重 **0** / 高 **0** / 中 **2** / 低 **3**，净结论"无阻断项，两条中属护栏与注释层面的收口遗漏"。
+    - **采纳·我错了一处（中）：注释声称的宽度兜底不存在**。删那 4 条 `is_same` 时我给的理由是"世上已无 printf 格式串"，
+      并把注释里的兜底改指到"Types.h 那几条钉宽度的 `static_assert`"——**这半句是假的**：`Types.h:1075-1079` 断言的是
+      `sizeof(long long)` / `sizeof(unsigned long long)` / `sizeof(double)` / `sizeof(bool)`，全是**字面类型、不引用别名**，
+      对别名漂移恒真；而 `is_same<Int64Type, long long>` 这类绑定断言**没有等价替代**。**已补回 4 条**（`Int32Type`/`Int64Type`/
+      `UInt64Type`/`DoubleType`），理由换成真实的那个：别名漂移成同宽异型时 `std::format` 不响、`sizeof` 断言也不响，
+      而 XTP 路径按 `sizeof(别名)` 走 `memcpy`，宽度一变线上格式就错位。**探针**：把 `Types.h:97` 的 `typedef long long Int64Type;`
+      临时改成 `long` → `StepUtility.h:29` 报 `error C2338: static assertion failed: 'Int64Type 必须是 long long，XTP 按 sizeof 取宽'`，
+      **正是删掉断言后会被放行的那条路径**；随后撤回，`Types.h` 相对 HEAD 零差异。
+    - **采纳·我漏了一处（中）：`GetRemainingLength() - 1` 在 `capacity == INT_MIN` 时有符号下溢**。`remaining` 为 `INT_MIN` 时
+      该减法 UB（补码回绕成 `INT_MAX`），`writableLength < 0` 判不出来，`format_to_n` 拿到约 2^31 的上界、截断条件永远不成立。
+      仓内不可达（Step 分支保证 `bodyCapacity >= 1`），但 `ToStepStream` 是 `Package` 的**公开虚函数**、`StepWriteCursor` 是
+      `NETWORK_EXPORTS` 导出类，仓外调用方可传任意 `size`。**改法比审查建议的构造函数闩锁更小**：先 `if (remainingLength <= 0)`
+      再减 1，减法两侧都非负、且不留死代码。用例已扩到 `{ 0, -1, std::numeric_limits<int>::min() }`；**反向探针**把护栏改回旧写法后
+      第三轮迭代拿到 `"32769=1\x1"`（`IsTruncated()` 为假、缓冲被写花）而失败，确认用例真咬得住。
+    - **采纳·我错了一处（低）：测试注释给的理由仓内不成立**。原文写"`Package::MakePackage` 的 Xtp 分支不校验 `bodyCapacity` 为正"，
+      但 Xtp 分支走 `ToXtpStream`、**从不构造游标**；唯一构造游标的 Step 分支（`Package.cpp:69`）前面有
+      `headLen <= 0 || headLen + StepTailLen >= size` 的判断，保证 `bodyCapacity >= 1`。**护栏本身站得住，理由换成"仓外调用方可传任意 size"**；
+      同一条错误理由也支撑过"游标不存 `char* end`"那段设计说明，一并改成同样措辞。
+    - **未采纳·留待后续批次（低）**：`Packages.cpp.tpl:137` 那行 `(int)!!$fieldName!!->!!@name!!` 的 C 风格 cast——审查建议"顺手清掉"，
+      但计划里已定为另开一批（改它要重跑两个消费方的生成、再刷新 `Libs` 安装副本并重验），仍延后。**实测规模远比计划里写的"1740 行"小**：
+      两份生成物共 **322 处**（Spark `test/Packages/Packages.cpp` 246、QuantTrading 76）。
+    - **审查另记三条信息**：①13 个 `WriteString` 重载**不应合并**（9 个 `"{}={:d}"` 看着像纯重复，但其存在理由就是给每个别名一个
+      精确的非模板匹配；合并后裸 `long` 会命中新模板、兜底 `static_assert` 失效）——§5"拒绝过度封装"的正当例外；②截断闩锁被判定
+      "冗余但恰当的防御，建议保留"；③`HeadToStream` 的 `size - len` 连乘模式当前可证安全（入口保证 `size >= StepMaxHeaderLen(128)`、
+      包头最大约 60 字节，故 `snprintf` 永不截断、`size - len >= 68 > 0`），但这条不变量没有任何静态断言钉住。
+    - **审查后的复验**：Windows x64 Debug **381/381**、x64-Release **381/381**、WSL GCC Debug **380/380**；
+      强制重编（`touch` 后重建）Windows 与 GCC 两侧告警计数均为 **0**。
+  - **明确排除**：`SAMS` 与 `LibTest` 是已废弃项目，不在改动范围；`Templates/Cpp/Protocol/Step/` 与
+    `.../Xtp/` 两个**死模板目录由用户自行删除**（已核实 0 个 pumplist 引用、0 份生成物），本批不碰它们，
+    **提交时必须只 stage `Cpp/Protocol/Packages/Packages.cpp.tpl` 这一个文件**。
+  - **未收口（另开批次）**：`Packages.cpp.tpl:137` 的 `(int)` C 风格 cast（§6 禁止；实测两份生成物共 322 处，
+    不是计划里估的 1740 行）；`GetDebugString` 在 `:264` 生成的调用点仍用无界 `sprintf`；
+    计划里提过的 `ToXtpStream` → `PutBytes` 整合延后；测试文件剩余 9 处样板重复；
+    `size_t` 在 Windows 上就是 `UInt64Type`，故兜底模板那条断言实际上平台相关。
+
 - **`UInt64Type` 由 `uint64_t` 改为 `unsigned long long`（2026-09-14，用户决策"全改"）**：昨天把类型调色板统一到明确位数的整型时，`Int64` 因"Linux 上 `int64_t` 是 `long`，会让全仓 `%lld` 变成格式不匹配"而**特意保留 `long long`**，但无符号侧漏了同一条——`uint64_t` 在 Linux 上是 `unsigned long`，`%llu` 同样不匹配。本轮补齐这个对称性。
   - **起因是"没有消费方"这个事实**：`UInt64Type` 全仓（`grep` 整个 Spark）**只有 typedef 那一行本身**，零消费者；跨仓扫描只有 `DBAdapters/test/TestDB/TestDB.cpp:799` 一个同名的 `char UInt64Type[16]` 列，与该别名无关。**唯一真正消费 64 位无符号的地方是 `StepUtility::WriteString(char*&, int, uint64_t)`**，而它为了配 `%llu` 已经写了 `static_cast<unsigned long long>(value)` —— 这正是"别名选错，代价落在每个格式点上"的现行证据。
   - **改动（两仓，共 5 处）**：`../Templates/Cpp/Spark/Types.h.tpl` 的 uint64s 段 `typedef uint64_t` → `typedef unsigned long long`，尾部断言块补一条 `static_assert(sizeof(unsigned long long) == 8, …)`（原本只有 `long long` / `double` / `bool` 三条）；`pump.py` 重新生成 `include/Spark/Types.h`；`StepUtility.h` / `StepUtility.cpp` 的 `uint64_t` 重载改为 `UInt64Type` 并**去掉那个 `static_cast<unsigned long long>`**。
@@ -46,12 +133,12 @@
         - **收窄影响面（无真实风险）**：全仓 3508 行 `Items::`——1746 个 `case` 标签、1740 个 `WriteString`/`WriteHexString` 的 `int key` 实参、12 行 `MakeStepField(unsigned int key, ...)`、1 处 `std::to_string(Items::Version)`；无移位 / `sizeof` / 模板实参 / 数组维度 / 取地址等危险形态。审查补扫了唯一会**改变重载选择**的形态 `WriteString(ppos, SomeKey, Items::X)`——在 Spark / `Templates` / `QuantTrading` / `SAMS` 四棵树里 **0 处**。`std::to_string(Items::Version)` 由 `to_string(unsigned)` 改选 `to_string(int)`，值 8、输出文本相同。
         - **本轮代码审查结论**：严重 **0** / 高 **1**（即下面的 16 位护栏，审查建议作为本轮末尾一步落地）/ 中 **5** / 低 **3**，结论"本轮改动本身干净、可合并；生成物可复现、类型收窄对所有现存用法保值、下游无源码破坏"。**审查另指出一个我完全漏掉的同源问题**：`%c` 的实参 `SOH` 是 `constexpr unsigned int`（`StepUtility.h:18`）而 `%c` 要 `int`，全仓共 **8 处**（`:159` 两处、`:258` 两处、`:259`~`:262` 各一处；审查**原报 9 处**、把格式串是 `"%u=%d"`（根本没有 `%c`）的 `:263` 也算了进去，见下条勘误）。**审查也确认了 8 处 cast 不属 §5 DRY 违规**（同一个运算符作用于 8 个不同操作数，不是"仅参数不同的相似逻辑"；抽 `ToUnsigned()` 反属过度封装），但它顺带指出同文件里 6 行同形状 `snprintf` 才是够得上 §5 形状的重复，且正解方向是让这些字段改走 `WriteString`/`WriteHexString` 重载而非把 cast 集中。
         - **已落地·16 位护栏（2026-09-14，用户批准落地）**：今天**没有任何东西在守"ItemID 必须落 16 位"**——`= 0x10000` 这种复制初始化在**本工程现有 flags 下完全静默**，连 `/W4` 都只给 `C4305`/`C4309` 告警（且无 `/WX`），`Items.xml` 里写错一个 ID 构建照样通过。**后果不是"常量值不对"而是静默线格式损坏**：ID 同时是写在线上的 key（`WriteString` 的 `%d`、`HeadToStream` 的 `%u`），`0x10000` 截断成 `0x0000` 就与 `Items::Magic` 撞成同一个 key，而接收侧刚把 key 上界钉在 `0xFFFF`、**永远还原不出 `0x10000`**。**修法**：模板第 11 行由复制初始化改为列表初始化 `static constexpr UInt16Type !!@name!!{!!@id!!};`——**一处改动、零新增行**。备选是逐条 `static_assert(!!@id!! <= 0xFFFF, ...)`，**必须用原始字面量**——写在已被转换后的常量上是**恒真**的（审查实测该断言从不触发，属装饰品），故未采用。**端到端实证（真模板 + 改坏的模型，全程在临时目录、未触碰任何仓库文件）**：把真实 `../Model/Items.xml` 复制一份、只把 `Magic` 的 `id="0x0000"` 改成 `id="0x10000"`，用真实模板 pump 出 `static constexpr UInt16Type Magic{0x10000};`，按工程同款 flags 编译 → `error C2397: 从"int"转换到"const UInt16Type"需要收缩转换`（该头第 9 行）、`cl exit=2`。**正向控制**：真实 `Items.h`（298 条花括号常量）两配置编译干净，边界 `0x0000`/`0x0008`/`0xA00E`/`0xFFFF` 均零诊断。**代价**：与 `Head.h.tpl` 那两行 `static constexpr UInt16Type FieldID = 0x0001;` 写法不再统一（用户已接受）；`Head.h` / `ProtocolVersion.h` 的 `FieldID` 同属 16 位 ID，是否也收待定。
-        - **待批·同源 16 位护栏缺口（2026-09-14 复审发现，属既有问题、需先批）**：护栏只落在 `Items.h` 上，**同一个未加护栏的 `= !!@id!!` 形态还有三个模板**，其中两个的暴露面大于 `Items.h`，数字均经我独立复核：①`Templates/Cpp/Protocol/Packages/Fields.h.tpl:9` → `test/Packages/Spark/Fields.h` **174 条** `FieldID`，且是**真实暴露**——`Packages.cpp.tpl:132,152` 用 `WriteHexString(..., XField::FieldID)` 配 `%04X` 写成 16 位、`:262` 用 `memcpy(buff + offset, &XField::FieldID, sizeof(UInt16Type))` **取地址、按 2 字节读**、`:171`/`:280` 还把 `FieldID` 当 `case` 标签；②`Templates/Cpp/Protocol/Packages/Packages.h.tpl:30` → `test/Packages/Packages.h` **188 条** `PackageID`，各包的 `ToStepStream` 里 `Head.PackageID = PackageID;`（实测 **188 处**，与常量条数一一对应）随后由 `HeadToStream` 用 `%04X` 写出；③`Templates/Cpp/Spark/Network/Protocol/Head.h.tpl:12` → `Head.h:10,23` 两条 `FieldID`——**本工程内暂无消费方**（`grep HeadField::FieldID` / `TailField::FieldID` 命中 0），属潜在而非现实暴露。**跨仓爆炸半径大于 `Items.h`**：`Fields.h.tpl` / `Packages.h.tpl` 合计被 **5 个 pumplist** 引用（`LibTest/src`、`QuantTrading`、`SAMS/Api`、`SAMS/Source`、`Spark/test`），而 `Items.h.tpl` 只被 `Spark/pumplist.xml` 一个引用。改法与本轮同构（模板改列表初始化 + 重生成，一处改动、零新增行），但同样要**逐仓重生成并成对提交**，规模需先评估。
-        - **已落地·同批同源 cast 一并收口（2026-09-14，用户批准"两类全补"）**：①`head->Version` / `head->PackageID` / `head->BodyLen`（皆 `UInt16Type`）配 `%u`/`%04X`/`%05u` → `static_cast<unsigned int>(...)`，**3 处**。**这一项属既有问题**（`Head.h` 本轮未改、字段本来就是 `UInt16Type`，上一版就一直不匹配），补它是因为不补就是**半收口**——同一行里前一个实参被刻意 cast、后一个同类型同问题的实参原样留着，下一个读者会以为这一类已经清完。②`SOH`（`StepUtility.h:18` 的 `constexpr unsigned int`）配 `%c` → `static_cast<int>(SOH)`，**8 处**（`:159` 两处、`:258` 两处、`:259`、`:260`、`:261`、`:262`）。**我据实更正了审查的计数**：审查报 9 处、把 `:263` 也算了进去，但该行格式串是 `"%u=%d"`、根本没有 `%c`；`:173` 的 `sprintf(ppos, "%d=%c", key, value)` 里 `value` 是 `char`、本来就配 `%c`，不需改。故同源补的是 **3 + 8 = 11 处**。按意图**未加 cast** 的两处已逐个核对 `Head.h`：`:262` 的 `head->MsgSeqNum` 是 `Int32Type`(`int`) 配 `%d` ✓、`:263` 的 `head->MessageChain` 是 `BoolType`(`bool`) 经默认提升配 `%d` ✓。文件内 cast 现况：`Items::` 8、`head->` 3、`SOH` 8、`tail->CheckSum` 1。**实测**：两配置各 **370/370**（`StepUtilityTest` 51）、零编译告警；Debug 侧确认真实重编 8 个目标（`StepUtility.cpp`、`Packages.cpp`、`PackageSerializationTest.cpp`、`StepUtilityTest.cpp` 等），包头往返那组用例（`HeadStreamRoundTrip` / `_MinValues` / `_MaxValues` / `HeadFromStream_BodyLenOutOfRange` 等）全绿。**行宽**：本批 5 行落在 158~171 字符——`cpp-style.md` §3 的 150 阈值只约束函数声明/定义的参数列表，这些是调用语句；`src` 下既有最长行 206 字符、`.editorconfig` 未设 `max_line_length`，故保持单行不折。**审查另提一个更彻底的备选（同属独立改动、需先批）**：把 `StepUtility.h:18` 的 `constexpr unsigned int SOH = 1u;` 改成 `constexpr char SOH = '\x01';`——`%c` 在变参里读的正是 `int`，而 `char` 形参提升即得 `int`，这 8 处 cast 可**全部去掉**，且与测试里的 `kSOH` 拼写一致；但它是公开头常量、被 **28 行**代码引用（`buff[i] == SOH` / `*ppos++ = SOH` / `buff[len] = SOH` / `TryParseInteger` 那几处比较），故未并入本轮。
-        - **待批·`int key` 形参拼写**：`Items::*` 现为 `UInt16Type`（语义就是"16 位字段 ID"），而 `WriteString` / `WriteHexString` / 四个 `Get*` 的 `key` 形参是 `int`，同一概念三种拼写。收口属**公开 API 变更**（§3.1 需先决），本次未动；改后 1740 个 `Items::*` 实参**零改动**（同类型），但测试里的 `int` 字面量实参（如 `0x9999`）需一并核对。
+        - **待批·同源 16 位护栏缺口（2026-09-14 复审发现，属既有问题、需先批）**：护栏只落在 `Items.h` 上，**同一个未加护栏的 `= !!@id!!` 形态还有三个模板**，其中两个的暴露面大于 `Items.h`，数字均经我独立复核：①`Templates/Cpp/Protocol/Packages/Fields.h.tpl:9` → `test/Packages/Spark/Fields.h` **174 条** `FieldID`，且是**真实暴露**——`Packages.cpp.tpl:132,152` 用 `WriteHexString(..., XField::FieldID)` 配 `%04X` 写成 16 位、`:262` 用 `memcpy(buff + offset, &XField::FieldID, sizeof(UInt16Type))` **取地址、按 2 字节读**、`:171`/`:280` 还把 `FieldID` 当 `case` 标签；②`Templates/Cpp/Protocol/Packages/Packages.h.tpl:30` → `test/Packages/Packages.h` **188 条** `PackageID`，各包的 `ToStepStream` 里 `Head.PackageID = PackageID;`（实测 **188 处**，与常量条数一一对应）随后由 `HeadToStream` 用 `%04X` 写出；③`Templates/Cpp/Spark/Network/Protocol/Head.h.tpl:12` → `Head.h:10,23` 两条 `FieldID`——**本工程内暂无消费方**（`grep HeadField::FieldID` / `TailField::FieldID` 命中 0），属潜在而非现实暴露。**跨仓爆炸半径大于 `Items.h`**（原写"**5 个 pumplist**"，2026-09-14 随写路径批次复核后**更正**）：`grep -rn "Fields.h.tpl\|Packages.h.tpl" --include=pumplist.xml /d/Gitee` 命中 5 个仓 16 条，但真正指向**存在的**模板的只有 **2 个仓**——`QuantTrading/pumplist.xml:31,32` 与 `Spark/test/pumplist.xml:2,3`，路径是 `../Templates/Cpp/Protocol/Packages/`。其余 3 个仓（`LibTest/src:15,19`、`SAMS/Api:12,21,30,39`、`SAMS/Source:70,71`）写的是 `../Templates/Cpp/Packages/`，而 `D:\Gitee\Templates\Cpp\` 下**没有 `Packages` 目录**（只有 `Protocol/` 等），属**死引用**；且这 3 个仓本就是已废弃项目。`Items.h.tpl` 只被 `Spark/pumplist.xml` 一个引用，这一条仍成立。改法与本轮同构（模板改列表初始化 + 重生成，一处改动、零新增行），但同样要**逐仓重生成并成对提交**，规模需先评估。
+        - **已落地·同批同源 cast 一并收口（2026-09-14，用户批准"两类全补"）**：①`head->Version` / `head->PackageID` / `head->BodyLen`（皆 `UInt16Type`）配 `%u`/`%04X`/`%05u` → `static_cast<unsigned int>(...)`，**3 处**。**这一项属既有问题**（`Head.h` 本轮未改、字段本来就是 `UInt16Type`，上一版就一直不匹配），补它是因为不补就是**半收口**——同一行里前一个实参被刻意 cast、后一个同类型同问题的实参原样留着，下一个读者会以为这一类已经清完。②`SOH`（`StepUtility.h:18` 的 `constexpr unsigned int`）配 `%c` → `static_cast<int>(SOH)`，**8 处**（`:159` 两处、`:258` 两处、`:259`、`:260`、`:261`、`:262`）。**我据实更正了审查的计数**：审查报 9 处、把 `:263` 也算了进去，但该行格式串是 `"%u=%d"`、根本没有 `%c`；`:173` 的 `sprintf(ppos, "%d=%c", key, value)` 里 `value` 是 `char`、本来就配 `%c`，不需改。故同源补的是 **3 + 8 = 11 处**。按意图**未加 cast** 的两处已逐个核对 `Head.h`：`:262` 的 `head->MsgSeqNum` 是 `Int32Type`(`int`) 配 `%d` ✓、`:263` 的 `head->MessageChain` 是 `BoolType`(`bool`) 经默认提升配 `%d` ✓。文件内 cast 现况：`Items::` 8、`head->` 3、`SOH` 8、`tail->CheckSum` 1。**实测**：两配置各 **370/370**（`StepUtilityTest` 51）、零编译告警；Debug 侧确认真实重编 8 个目标（`StepUtility.cpp`、`Packages.cpp`、`PackageSerializationTest.cpp`、`StepUtilityTest.cpp` 等），包头往返那组用例（`HeadStreamRoundTrip` / `_MinValues` / `_MaxValues` / `HeadFromStream_BodyLenOutOfRange` 等）全绿。**行宽**：本批 5 行落在 158~171 字符——`cpp-style.md` §3 的 150 阈值只约束函数声明/定义的参数列表，这些是调用语句；`src` 下既有最长行 206 字符、`.editorconfig` 未设 `max_line_length`，故保持单行不折。**审查另提的那个备选已于下一批落地**：`StepUtility.h` 的 `constexpr unsigned int SOH = 1u;` → `constexpr char SOH = '\x01';`。改格式串之后那 8 处 `%c` cast 连同 `sprintf` 一起消失，不再需要。改前已核实**不存在** `WriteString(..., SOH)` 形态的调用（否则会换到 `char` 重载、线上文本由 `1` 变成 `\x01`），故当时那 28 处引用全是 `char` 语境、安全；测试里的 `kSOH` 改为直接用头里的 `SOH`。
+        - **已落地·`int key` 形参拼写（2026-09-14，随写路径批次落地；含一处已提交错误的更正）**：上文原写"`WriteString` / `WriteHexString` / 四个 `Get*` 的 `key` 形参是 `int`"——**后半句是错的**。`git show HEAD:include/Spark/Network/Protocol/StepUtility.h` 逐行核对：四个 `Get*`（`GetNext` / `GetFieldStart` / `GetFieldEnd` / `GetNextFieldZone`）的 `key` / `fieldID` **早已是 `uint16_t&`**，`GetNextSoh` / `GetNextEqual` 也只收下标；真正是 `int` 的只有**写侧**——`WriteString`（13 个重载 + 兜底模板）与 `WriteHexString`。故本批把写侧全部改为 `UInt16Type`、四个 `Get*` 一并改成调色板别名拼写（同类型、零行为差异），1740 个 `Items::*` 实参零改动、测试里的 `int` 字面量实参（如 `0x9999`）也无需改。属**公开 API 变更**，用户已批准。
         - **跨仓提交耦合（同 `Types.h` 那条）**：`Templates` 的 `Items.h.tpl` 与 Spark 的 `Items.h` 是同一变更的两半，**必须成对提交**；只提 Spark 一侧的话，下次在旧模板上重跑生成会把类型改回 `unsigned int`。下游 `QuantTrading`、`SAMS\Api\*` 直接 include `Libs/Spark` 安装副本里的这个公开头（用法同样只有 `case` + `key` 实参两种形态，无源码级破坏），建议合并后各重建一次。审查另提一个可选 CI 思路：既然"重跑生成 = 逐字节一致"已验证，可加一条"重生成后 diff 为空"的检查，同时防手改生成物与模板脱节。
         - **登记·既有偏差（本轮不动）**：生成物 298 行全是 TAB 而 `.editorconfig` 写 `indent_style = space`；`pump.py` 以 `UTF-8-SIG` 输出故 `Items.h` **带 BOM**（`Head.h` 同，属生成器行为、不是手改痕迹）；`.tpl` 是 CRLF 而 `.editorconfig` 要求 LF（输出侧是 LF，故生成物仍合规）。要改就是全量生成物重排，按 §1 属大规模改动需先批。
-      - **待批（均超出本批范围）**：①14 处逐字节相同的尾两行 `ppos += len; *ppos++ = SOH;`（§5 字面违规），修法是私有 `AdvanceStepField`，**属重构需先批**——**不要**把 13 个重载并成一个模板：每个宽度的格式串各不相同，合并等于把类型安全退回运行期；②`PROGRESS.md` 实测 **74554 字节（约 72.8 KiB）**、**已超 §8.1 的 50 KB 目标**（本轮只记录不拆，用户 2026-09-14 决定），需按 `D.xx` 编号把已关闭子项移入归档。**原 ②（补 `long` / `unsigned long` 重载）随 B 方案落地而作废**——那条建议本意是补 A 拼写的缺口，而 `long` 根本不是本系统的类型。
+      - **待批（均超出本批范围）**：①~~14 处逐字节相同的尾两行~~**已落地**，且收口方式与这里原设想的不同：不是抽出私有 `AdvanceStepField`，而是把"写入 + 补 SOH"整体搬进 `StepWriteCursor::AppendField`，于是 15 个调用点各剩一行，重复连同容量上界一起消失（**仍未**把 13 个重载并成一个模板——理由不变）。②`PROGRESS.md` 实测 **87262 字节（约 85.2 KiB）**、**已超 §8.1 的 50 KB 目标 70%**（74554 → 87262，本批又增 12708；用户 2026-09-14 决定"本轮只记录不拆"，故至今未动），需按 `D.xx` 编号把已关闭子项移入归档。**原 ②（补 `long` / `unsigned long` 重载）随 B 方案落地而作废**——那条建议本意是补 A 拼写的缺口，而 `long` 根本不是本系统的类型。
       - **明确不在本批处理**：参数/局部用 camelCase（`fieldID`/`startIndex`/`sohIndex`/`ppos`）、常量 `SOH`/`StepTailLen`/`StepMaxHeaderLen` 缺 `k` 前缀、include 分组未按字母序且项目头与标准库头间无空行——均为全仓系统性既有偏差，改名会牵动上千处调用点。
   - **代码审查结论**：严重 / 高危各 **0** 项，结论"本轮改动可以合并"。审查同时确认了三条我原先的判断——Mdb 模板里的 `'uint64_t'` 确实只作标签、无遗漏消费方、注释属 `CLAUDE.md` §4 允许的例外（语言/重载分派坑）。**已采纳**：类型同一性断言、`<Spark/Types.h>` 显式 include、用例 key 由 `0x0002`（就是 `Items::BodyLen`，语义冲突）改为 `0x9999`、上条跨项目影响的更正。**未采纳/待用户决定**：①`WriteString` 用 `sprintf` 且不带容量（**既有违规、非本轮引入**；修它要给公开 `WriteString` 加容量参数，按 §3.1 属公开 API 变更，需先问）；②`StepUtilityTest` 里 `char buff[64]…*ppos='\0';` 这段样板已重复 **9 次**（§5 DRY；抽 helper 要改既有 8 个用例，按 §1 禁止擅自重构，待批）；③给末尾那个兜底模板加 `static_assert` 拒绝整型/浮点（把"漏补重载"从运行期 SEH 提为编译期错误，属行为变更，待批）。**明确不改**：用例名 `WriteString_UInt64` 保留——它命名的就是调色板项（`Model/Types.xml` 的 `UInt64`），而相邻的 `_UnsignedShort` / `_LongLong` 命名的是裸类型重载，两者命名对象本就不同。
   - **跨项目影响（原记录有误，2026-09-14 代码审查后更正）**：先前写成"QuantTrading / QuoteHub 等共用仓，其他项目下次 pump 后 `Types.h` 也会变"——**这是高估**。实测 `grep -rln "Templates/Cpp/Spark/Types.h.tpl" --include=pumplist.xml /d/Gitee` **只命中 `./Spark/pumplist.xml` 一条**；Mdb / DBAdapters 等是经 `find_package(Spark PATHS "../Libs/Spark/x64-windows")` 消费**预编译安装包**，自己并不 pump 这个模板。改模板因此不会自动改变其他项目的生成物。**真正需要留意的跨项目点**是 ABI：`WriteString(char*&, int, UInt64Type)` 是 `NETWORK_EXPORTS` 类的静态成员，Linux 上参数类型由 `unsigned long` 变 `unsigned long long` 会**改符号签名字节串**，凡链接 `Libs/Spark/x64-linux` 预编译包的项目需重新安装 Spark 包（Windows 侧同类型、无 ABI 变化）。该符号是上一提交刚引入的，当前无外部消费者。两个仓都**未提交**，留待用户决定提交时机。
@@ -170,7 +257,7 @@
 - **设计约束：宿主必须显式调用 `Stop()`+`Join()`，否则最后一次缓冲必丢（2026-09-12 定论，非待修缺陷）**：进程退出时日志线程先被终止，任何晚于此的析构（`~Logger()` / `~ThreadBase()`）都无法补救——这是上一条实证得出的时序结论，不是可以靠改析构语义绕过的。宿主若确实无法在 `return` 前收尾，可考虑自行注册更早的收尾点（`std::atexit` 回调在 `ExitProcess` 之前执行，理论上仍能完成一次真正的 `Stop()`+`Join()`；**未实测**）。
 - **Step 头上的 `Reserved` 字段暂不上线（本轮决策，待复核）**：`Head.xml` 里 `HeadField` 有 7 个字段（含 `Reserved`），但 Step 的文本包头只序列化 6 个（`HeadItemCount = 6`），`Reserved` 仅 Xtp 分支有。理由：`Reserved` 的定义是"保留字段，必须为 false"，缺省即 false，上线只会让包头多 12 字节；如果希望两端能校验"对端没乱用保留位"，需要把它加进 `HeadToStream`/`HeadFromStream` 并把 `HeadItemCount` 改成 7。
 - **P5 握手（协议版本协商）未实施**：计划里本就建议**不做**——版本号已经能在第一帧的固定偏移上校验出来，握手只会把"不一致"的发现推迟到连接建立之后，且要新增一对报文。当前实现按此执行，若日后要做，入口是 `Protocol::OnConnect`。
-- **生成器不认 `size`，包体越界写没有写前防护（2026-09-13 记，本批只做了事后判定）**：`ToXtpStream`/`ToStepStream` 的模板实现直接 memcpy/写文本，然后 `return int(ppos - buff)`，既不比对 `size` 也不返回负数。本批在 `MakePackage` 补的判定是事后检查：能拦住非法帧发出、能拦住 `BodyLen` 被截断，但包体真超限时序列化器已经把字节写到了缓冲之外（`Buffer<SIZE>` 的 `char m_Buffer[SIZE]` 后面就是它自己的 `m_Length`/`m_ReadPos`，溢出的破坏面是对象自身成员）。要做到写前防护，只有两条路：模板侧每写一个字段前比对剩余容量（改 `../Templates`，影响全部生成物与生成时间），或给 `ToXtpStream` 传一个带容量语义的可写游标对象。**需要用户决定是否做**；不做的前提是"没有任何模型会产出接近 64 KB 的包"，这条假设当前成立但无自动化守卫。
+- ~~**生成器不认 `size`，包体越界写没有写前防护**~~ **已关闭（2026-09-14）**：用户选定"携带上界的游标对象"且 `ToXtpStream` 一并收口，两条路都走了——`ToStepStream` 改用 `StepWriteCursor`（每字段写前比容量、截断返回 `-1`），`ToXtpStream` 每次 `memcpy` 前加 `offset + fieldSize > size` 判断。写前防护已到位，`Package.cpp` 的长度校验退回"真正的兜底"。**原文保留如下（仅作已关闭条目的历史记录，待归档时整条搬走）**：`ToXtpStream`/`ToStepStream` 的模板实现直接 memcpy/写文本，然后 `return int(ppos - buff)`，既不比对 `size` 也不返回负数。本批在 `MakePackage` 补的判定是事后检查：能拦住非法帧发出、能拦住 `BodyLen` 被截断，但包体真超限时序列化器已经把字节写到了缓冲之外（`Buffer<SIZE>` 的 `char m_Buffer[SIZE]` 后面就是它自己的 `m_Length`/`m_ReadPos`，溢出的破坏面是对象自身成员）。要做到写前防护，只有两条路：模板侧每写一个字段前比对剩余容量（改 `../Templates`，影响全部生成物与生成时间），或给 `ToXtpStream` 传一个带容量语义的可写游标对象。**需要用户决定是否做**（已于 2026-09-14 决定：采用携带上界的游标对象，并一并收口 `ToXtpStream`）；不做的前提是"没有任何模型会产出接近 64 KB 的包"，这条假设当前成立但无自动化守卫。
 - **文本协议反序列化对 `uint16`/`int32` 仍走 `else: atoi`（2026-09-13 记，待决定）**：
   `Templates/Cpp/Protocol/Packages/Packages.cpp.tpl` 的整数分支是
   `elif $type in ('uint8','int8','int16','uint32','uint64')` + `else: atoi(value.c_str())`，即 `uint16s`

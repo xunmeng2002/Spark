@@ -4,9 +4,11 @@
 #include <Spark/Types.h>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <charconv>
+#include <cstddef>
 #include <cstdint>
-#include <cstdio>
+#include <format>
 #include <system_error>
 #include <type_traits>
 
@@ -15,45 +17,93 @@
 constexpr unsigned int StepTailLen = 2u + 8u + 1u;
 //包头由 key=value 字段串成、长度不固定，这个值只是"超过它还没解析出包头就判定为非法"的上界
 constexpr unsigned int StepMaxHeaderLen = 128u;
-constexpr unsigned int SOH = 1u;
+constexpr char SOH = '\x01';
 
-//WriteString 的重载形参一律用调色板别名，重载集合与 Types.h 的别名一一对应。代价是别名改了类型时重载照样匹配、
-//只有 .cpp 里的格式串会失配，所以把格式串绑在具体类型上的那四个别名在这里钉死；其余重载体内先 static_cast 到
-//int / unsigned int，或靠默认提升，别名怎么变都不会失配。Types.h 的宽度断言管不住这件事——sizeof(int64_t) 也是 8，
-//Linux 上它就是 long。本套重载只覆盖调色板里的类型，传裸 long / size_t 会落到末尾那个模板重载上按 %s 把整数
-//当 char* 解引用
-static_assert(std::is_same<Int32Type, int>::value, "Int32Type 必须是 int，%d 才匹配");
-static_assert(std::is_same<Int64Type, long long>::value, "Int64Type 必须是 long long，%lld 才匹配");
-static_assert(std::is_same<UInt64Type, unsigned long long>::value, "UInt64Type 必须是 unsigned long long，%llu 才匹配");
-static_assert(std::is_same<DoubleType, double>::value, "DoubleType 必须是 double，%.6f 才匹配");
+//WriteString 的重载形参一律用调色板别名，重载集合与 Types.h 的别名一一对应。格式串改由 std::format_string<Args...>
+//在编译期逐字段校验，但 {:d} 对任何整型宽度都成立，所以别名宽度漂移不归它管：兜底的是"重载集合必须两两不同型"
+//（两个别名撞成同一种类型即重定义报错）加上下面那几条钉类型同一性的 static_assert——别名漂移成同宽异型时
+//std::format 不响、Types.h 的几条 sizeof 断言也不响（它断言的是字面类型 long long / double / bool，不引用别名），
+//而 XTP 路径按 sizeof(别名) 走 memcpy，宽度一变线上格式就错位。本套重载只覆盖调色板里的类型与字符串指针，
+//传裸 long / size_t 会落到末尾那个模板重载上，由它 static_assert 拒绝
+static_assert(std::is_same<Int32Type, int>::value, "Int32Type 必须是 int，XTP 按 sizeof 取宽");
+static_assert(std::is_same<Int64Type, long long>::value, "Int64Type 必须是 long long，XTP 按 sizeof 取宽");
+static_assert(std::is_same<UInt64Type, unsigned long long>::value, "UInt64Type 必须是 unsigned long long，XTP 按 sizeof 取宽");
+static_assert(std::is_same<DoubleType, double>::value, "DoubleType 必须是 double，XTP 按 sizeof 取宽");
 
 namespace spark::network
 {
+//把 STEP 字段正文按容量上界写入缓冲并补 SOH。容量里含为 SOH 预留的 1 字节，放不下时不推进写游标、
+//置截断标志并返回 false，且此后不再接受任何字段写入；调用方据此回一个负长度，落到 Package::MakePackage
+//已有的 bodyLen < 0 判定上。由此 [begin, begin + GetWrittenLength()) 始终是完整的字段序列，
+//但 std::format_to_n 会把能放下的前缀留在该区间之后，所以截断时调用方必须丢弃整个包体
+class NETWORK_EXPORTS StepWriteCursor
+{
+public:
+	StepWriteCursor(char* buffer, int capacity);
+
+	char* GetWritePosition() const;
+	int GetRemainingLength() const;
+	int GetWrittenLength() const;
+	bool IsTruncated() const;
+
+	template<typename... FieldValues>
+	bool AppendField(std::format_string<FieldValues...> fieldFormat, FieldValues&&... fieldValues)
+	{
+		if (is_truncated_)
+		{
+			return false;
+		}
+		const int remainingLength = GetRemainingLength();
+		if (remainingLength <= 0)
+		{
+			is_truncated_ = true;
+			return false;
+		}
+		const int writableLength = remainingLength - 1;
+		auto result = std::format_to_n(GetWritePosition(), static_cast<std::size_t>(writableLength), fieldFormat,
+			std::forward<FieldValues>(fieldValues)...);
+		if (result.size > static_cast<std::ptrdiff_t>(writableLength))
+		{
+			is_truncated_ = true;
+			return false;
+		}
+		written_length_ += static_cast<int>(result.out - GetWritePosition());
+		*GetWritePosition() = SOH;
+		written_length_ += 1;
+		return true;
+	}
+
+private:
+	char* buffer_begin_;
+	int capacity_;
+	int written_length_;
+	bool is_truncated_;
+};
+
 class NETWORK_EXPORTS StepUtility
 {
 public:
 	static bool GetNextSoh(char* buff, int startIndex, int endIndex, int& sohIndex);
 	static bool GetNextEqual(char* buff, int startIndex, int endIndex, int& equalIndex);
-	static bool GetNext(char* buff, int startIndex, int endIndex, uint16_t& key, std::string& value, int& sohIndex);
-	static bool GetFieldStart(char* buff, int startIndex, int endIndex, uint16_t& fieldID, int& fieldStartIndex);
-	static bool GetFieldEnd(char* buff, int startIndex, int endIndex, uint16_t& fieldID, int& fieldEndIndex);
-	static bool GetNextFieldZone(char* buff, int startIndex, int endIndex, uint16_t& fieldID, int& fieldStartIndex, int& fieldEndIndex);
+	static bool GetNext(char* buff, int startIndex, int endIndex, UInt16Type& key, std::string& value, int& sohIndex);
+	static bool GetFieldStart(char* buff, int startIndex, int endIndex, UInt16Type& fieldID, int& fieldStartIndex);
+	static bool GetFieldEnd(char* buff, int startIndex, int endIndex, UInt16Type& fieldID, int& fieldEndIndex);
+	static bool GetNextFieldZone(char* buff, int startIndex, int endIndex, UInt16Type& fieldID, int& fieldStartIndex, int& fieldEndIndex);
 	//报文起始锚点，形如 SOH + "0=SPK2" + SOH，与 ProtocolVersion.h 的魔术字是同一串字节
 	static const std::string& GetPackageStartAnchor();
 
-	static void WriteString(char*& ppos, int key, BoolType value);
-	static void WriteString(char*& ppos, int key, char value);
-	static void WriteString(char*& ppos, int key, Int8Type value);
-	static void WriteString(char*& ppos, int key, UInt8Type value);
-	static void WriteString(char*& ppos, int key, Int16Type value);
-	static void WriteString(char*& ppos, int key, UInt16Type value);
-	static void WriteString(char*& ppos, int key, Int32Type value);
-	static void WriteString(char*& ppos, int key, UInt32Type value);
-	static void WriteString(char*& ppos, int key, Int64Type value);
-	static void WriteString(char*& ppos, int key, UInt64Type value);
-	static void WriteString(char*& ppos, int key, DoubleType value);
-	static void WriteString(char*& ppos, int key, std::string value);
-	static void WriteString(char*& ppos, int key, char* value);
+	static void WriteString(StepWriteCursor& cursor, UInt16Type key, BoolType value);
+	static void WriteString(StepWriteCursor& cursor, UInt16Type key, char value);
+	static void WriteString(StepWriteCursor& cursor, UInt16Type key, Int8Type value);
+	static void WriteString(StepWriteCursor& cursor, UInt16Type key, UInt8Type value);
+	static void WriteString(StepWriteCursor& cursor, UInt16Type key, Int16Type value);
+	static void WriteString(StepWriteCursor& cursor, UInt16Type key, UInt16Type value);
+	static void WriteString(StepWriteCursor& cursor, UInt16Type key, Int32Type value);
+	static void WriteString(StepWriteCursor& cursor, UInt16Type key, UInt32Type value);
+	static void WriteString(StepWriteCursor& cursor, UInt16Type key, Int64Type value);
+	static void WriteString(StepWriteCursor& cursor, UInt16Type key, UInt64Type value);
+	static void WriteString(StepWriteCursor& cursor, UInt16Type key, DoubleType value);
+	static void WriteString(StepWriteCursor& cursor, UInt16Type key, std::string value);
 
 	//文本转整型：格式非法或越界都返回 false。窄类型直接 atoi 会静默截断，所以必须走这里
 	template<typename T>
@@ -76,13 +126,13 @@ public:
 		return true;
 	}
 	template<typename T>
-	static void WriteString(char*& ppos, int key, T value)
+	static void WriteString(StepWriteCursor& cursor, UInt16Type key, T value)
 	{
-		int len = sprintf(ppos, "%d=%s", key, value);
-		ppos += len;
-		*ppos++ = SOH;
+		static_assert(std::is_same<T, const char*>::value || std::is_same<T, char*>::value,
+			"WriteString 只覆盖 Types.h 调色板里的类型与字符串指针；裸 long / size_t 请先转成对应别名");
+		cursor.AppendField("{}={:s}", key, value);
 	}
-	static void WriteHexString(char*& ppos, int key, uint16_t value);
+	static void WriteHexString(StepWriteCursor& cursor, UInt16Type key, UInt16Type value);
 
 
 	//返回实际写入的包头长度

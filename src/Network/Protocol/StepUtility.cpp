@@ -4,6 +4,7 @@
 #include <Spark/Network/Protocol/ProtocolVersion.h>
 #include <Spark/Core/Logger/Logger.h>
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -36,7 +37,7 @@ bool TryParseInteger(const std::string& text, int base, long long& value)
 }
 
 //读取 buff 中 [startIndex, endIndex) 内以 SOH 结尾的十六进制字段值
-bool TryReadHexField(char* buff, int startIndex, int endIndex, uint16_t& value)
+bool TryReadHexField(char* buff, int startIndex, int endIndex, UInt16Type& value)
 {
 	int sohIndex = 0;
 	if (!StepUtility::GetNextSoh(buff, startIndex, endIndex, sohIndex))
@@ -48,9 +49,34 @@ bool TryReadHexField(char* buff, int startIndex, int endIndex, uint16_t& value)
 	{
 		return false;
 	}
-	value = static_cast<uint16_t>(parsed);
+	value = static_cast<UInt16Type>(parsed);
 	return true;
 }
+}
+
+StepWriteCursor::StepWriteCursor(char* buffer, int capacity)
+	: buffer_begin_(buffer), capacity_(capacity), written_length_(0), is_truncated_(false)
+{
+}
+
+char* StepWriteCursor::GetWritePosition() const
+{
+	return buffer_begin_ + written_length_;
+}
+
+int StepWriteCursor::GetRemainingLength() const
+{
+	return capacity_ - written_length_;
+}
+
+int StepWriteCursor::GetWrittenLength() const
+{
+	return written_length_;
+}
+
+bool StepWriteCursor::IsTruncated() const
+{
+	return is_truncated_;
 }
 
 bool StepUtility::GetNextSoh(char* buff, int startIndex, int endIndex, int& sohIndex)
@@ -77,7 +103,7 @@ bool StepUtility::GetNextEqual(char* buff, int startIndex, int endIndex, int& eq
 	}
 	return false;
 }
-bool StepUtility::GetNext(char* buff, int startIndex, int endIndex, uint16_t& key, std::string& value, int& sohIndex)
+bool StepUtility::GetNext(char* buff, int startIndex, int endIndex, UInt16Type& key, std::string& value, int& sohIndex)
 {
 	if (!GetNextSoh(buff, startIndex, endIndex, sohIndex))
 	{
@@ -92,7 +118,7 @@ bool StepUtility::GetNext(char* buff, int startIndex, int endIndex, uint16_t& ke
 	value = std::string(buff + equalIndex + 1, buff + sohIndex);
 	return true;
 }
-bool StepUtility::GetFieldStart(char* buff, int startIndex, int endIndex, uint16_t& fieldID, int& fieldStartIndex)
+bool StepUtility::GetFieldStart(char* buff, int startIndex, int endIndex, UInt16Type& fieldID, int& fieldStartIndex)
 {
 	//i 取 '6' 的位置，标记是 "SOH + 6 + ="；i 为 0 时前面没有字节，不可能是标记
 	for (int i = startIndex; i + 1 < endIndex; ++i)
@@ -110,7 +136,7 @@ bool StepUtility::GetFieldStart(char* buff, int startIndex, int endIndex, uint16
 	}
 	return false;
 }
-bool StepUtility::GetFieldEnd(char* buff, int startIndex, int endIndex, uint16_t& fieldID, int& fieldEndIndex)
+bool StepUtility::GetFieldEnd(char* buff, int startIndex, int endIndex, UInt16Type& fieldID, int& fieldEndIndex)
 {
 	//i 取 '7' 的位置，标记是 "SOH + 7 + ="；i 为 0 时前面没有字节，不可能是标记
 	for (int i = startIndex; i + 1 < endIndex; ++i)
@@ -133,13 +159,13 @@ bool StepUtility::GetFieldEnd(char* buff, int startIndex, int endIndex, uint16_t
 	}
 	return false;
 }
-bool StepUtility::GetNextFieldZone(char* buff, int startIndex, int endIndex, uint16_t& fieldID, int& fieldStartIndex, int& fieldEndIndex)
+bool StepUtility::GetNextFieldZone(char* buff, int startIndex, int endIndex, UInt16Type& fieldID, int& fieldStartIndex, int& fieldEndIndex)
 {
 	if (!GetFieldStart(buff, startIndex, endIndex, fieldID, fieldStartIndex))
 	{
 		return false;
 	}
-	uint16_t fieldIDEnd;
+	UInt16Type fieldIDEnd;
 	if (!GetFieldEnd(buff, fieldStartIndex, endIndex, fieldIDEnd, fieldEndIndex))
 	{
 		return false;
@@ -162,90 +188,58 @@ const std::string& StepUtility::GetPackageStartAnchor()
 	return anchor;
 }
 
-void StepUtility::WriteString(char*& ppos, int key, BoolType value)
+void StepUtility::WriteString(StepWriteCursor& cursor, UInt16Type key, BoolType value)
 {
-	int len = sprintf(ppos, "%d=%d", key, value);
-	ppos += len;
-	*ppos++ = SOH;
+	cursor.AppendField("{}={:d}", key, value);
 }
-void StepUtility::WriteString(char*& ppos, int key, char value)
+void StepUtility::WriteString(StepWriteCursor& cursor, UInt16Type key, char value)
 {
-	int len = sprintf(ppos, "%d=%c", key, value);
-	ppos += len;
-	*ppos++ = SOH;
+	cursor.AppendField("{}={:c}", key, value);
 }
-void StepUtility::WriteString(char*& ppos, int key, Int8Type value)
+void StepUtility::WriteString(StepWriteCursor& cursor, UInt16Type key, Int8Type value)
 {
-	int len = sprintf(ppos, "%d=%d", key, static_cast<int>(value));
-	ppos += len;
-	*ppos++ = SOH;
+	cursor.AppendField("{}={:d}", key, value);
 }
-void StepUtility::WriteString(char*& ppos, int key, UInt8Type value)
+void StepUtility::WriteString(StepWriteCursor& cursor, UInt16Type key, UInt8Type value)
 {
-	int len = sprintf(ppos, "%d=%u", key, static_cast<unsigned int>(value));
-	ppos += len;
-	*ppos++ = SOH;
+	cursor.AppendField("{}={:d}", key, value);
 }
-void StepUtility::WriteString(char*& ppos, int key, Int16Type value)
+void StepUtility::WriteString(StepWriteCursor& cursor, UInt16Type key, Int16Type value)
 {
-	int len = sprintf(ppos, "%d=%d", key, static_cast<int>(value));
-	ppos += len;
-	*ppos++ = SOH;
+	cursor.AppendField("{}={:d}", key, value);
 }
-void StepUtility::WriteString(char*& ppos, int key, UInt16Type value)
+void StepUtility::WriteString(StepWriteCursor& cursor, UInt16Type key, UInt16Type value)
 {
-	int len = sprintf(ppos, "%d=%u", key, static_cast<unsigned int>(value));
-	ppos += len;
-	*ppos++ = SOH;
+	cursor.AppendField("{}={:d}", key, value);
 }
-void StepUtility::WriteString(char*& ppos, int key, Int32Type value)
+void StepUtility::WriteString(StepWriteCursor& cursor, UInt16Type key, Int32Type value)
 {
-	int len = sprintf(ppos, "%d=%d", key, value);
-	ppos += len;
-	*ppos++ = SOH;
+	cursor.AppendField("{}={:d}", key, value);
 }
-void StepUtility::WriteString(char*& ppos, int key, UInt32Type value)
+void StepUtility::WriteString(StepWriteCursor& cursor, UInt16Type key, UInt32Type value)
 {
-	int len = sprintf(ppos, "%d=%u", key, static_cast<unsigned int>(value));
-	ppos += len;
-	*ppos++ = SOH;
+	cursor.AppendField("{}={:d}", key, value);
 }
-void StepUtility::WriteString(char*& ppos, int key, Int64Type value)
+void StepUtility::WriteString(StepWriteCursor& cursor, UInt16Type key, Int64Type value)
 {
-	int len = sprintf(ppos, "%d=%lld", key, value);
-	ppos += len;
-	*ppos++ = SOH;
+	cursor.AppendField("{}={:d}", key, value);
 }
-void StepUtility::WriteString(char*& ppos, int key, UInt64Type value)
+void StepUtility::WriteString(StepWriteCursor& cursor, UInt16Type key, UInt64Type value)
 {
-	int len = sprintf(ppos, "%d=%llu", key, value);
-	ppos += len;
-	*ppos++ = SOH;
+	cursor.AppendField("{}={:d}", key, value);
 }
-void StepUtility::WriteString(char*& ppos, int key, DoubleType value)
+void StepUtility::WriteString(StepWriteCursor& cursor, UInt16Type key, DoubleType value)
 {
-	int len = sprintf(ppos, "%d=%.6f", key, value);
-	ppos += len;
-	*ppos++ = SOH;
+	cursor.AppendField("{}={:.6f}", key, value);
 }
-void StepUtility::WriteString(char*& ppos, int key, std::string value)
+void StepUtility::WriteString(StepWriteCursor& cursor, UInt16Type key, std::string value)
 {
-	int len = sprintf(ppos, "%d=%s", key, value.c_str());
-	ppos += len;
-	*ppos++ = SOH;
-}
-void StepUtility::WriteString(char*& ppos, int key, char* value)
-{
-	int len = sprintf(ppos, "%d=%s", key, value);
-	ppos += len;
-	*ppos++ = SOH;
+	cursor.AppendField("{}={:s}", key, value);
 }
 
-void StepUtility::WriteHexString(char*& ppos, int key, uint16_t value)
+void StepUtility::WriteHexString(StepWriteCursor& cursor, UInt16Type key, UInt16Type value)
 {
-	int len = sprintf(ppos, "%d=%04X", key, static_cast<unsigned int>(value));
-	ppos += len;
-	*ppos++ = SOH;
+	cursor.AppendField("{}={:04X}", key, value);
 }
 
 int StepUtility::HeadToStream(HeadField* head, char* buff, int size)
@@ -270,7 +264,7 @@ bool StepUtility::HeadFromStream(char* buff, int startIndex, int endIndex, HeadF
 	//跳过报文首个SOH符号
 	startIndex += 1;
 	int seenCount = 0;
-	uint16_t key;
+	UInt16Type key;
 	std::string value;
 	int sohIndex;
 	while (startIndex < endIndex)
@@ -358,7 +352,7 @@ bool StepUtility::TailFromStream(char* buff, int startIndex, int endIndex, TailF
 	bool parsed = false;
 	while (startIndex < endIndex)
 	{
-		uint16_t key;
+		UInt16Type key;
 		string value;
 		int sohIndex;
 		if (!GetNext(buff, startIndex, endIndex, key, value, sohIndex))
