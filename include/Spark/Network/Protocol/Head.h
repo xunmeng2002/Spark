@@ -9,7 +9,7 @@ class HeadField
 public:
 	static constexpr UInt16Type FieldID = 0x0001;
 	Int32Type Magic;		//魔术字，固定为ProtocolMagicValue
-	Int32Type MsgSeqNum;		//请求编号
+	UInt32Type MsgSeqNum;		//请求编号，从 0 起单调递增的计数器
 	UInt16Type PackageID;		//报文代码
 	UInt16Type BodyLen;		//报文长度
 	UInt16Type Version;		//协议版本，固定为ProtocolVersionValue
@@ -21,6 +21,6 @@ class TailField
 {
 public:
 	static constexpr UInt16Type FieldID = 0x0002;
-	Int32Type CheckSum;		//CRC32C校验和，覆盖报文头与包体
+	UInt32Type CheckSum;		//CRC32C校验和，覆盖报文头与包体
 };
 }

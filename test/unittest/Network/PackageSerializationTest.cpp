@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include <cstring>
+#include <format>
 #include <limits>
 #include <string>
 using namespace spark;
@@ -52,14 +53,14 @@ namespace
     bool PatchStepVersion(std::string& frame, unsigned short version)
     {
         const std::string& anchor = StepUtility::GetPackageStartAnchor();
-        std::string key = anchor + std::to_string(Items::Version) + "=";
+        std::string key = anchor + std::format("{:04X}", Items::Version) + "=";
         size_t pos = frame.find(key);
         if (pos == std::string::npos)
         {
             return false;
         }
-        std::string origin = std::to_string(ProtocolVersionValue);
-        std::string fresh = std::to_string(version);
+        std::string origin = std::format("{:04X}", ProtocolVersionValue);
+        std::string fresh = std::format("{:04X}", version);
         if (origin.size() != fresh.size())
         {
             return false;
@@ -490,7 +491,7 @@ TEST(PackageSerializationTest, OversizedBody_RejectedBeforeWrite)
     EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Xtp, buff, MaxPackageSize), 0);
     EXPECT_EQ(buff[0], 'X');
 
-    // Step 的包头要先落盘才量得出包头长度，判定在其后，只要求拒绝发送
+    // Step 的包头定长，容量闸门同样排在调用生成器之前，只要求拒绝发送
     EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Step, buff, MaxPackageSize), 0);
 }
 
@@ -565,7 +566,7 @@ TEST(PackageSerializationTest, TruncatedBody_RejectedBeforeWrite)
     EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Xtp, buff, MaxPackageSize), 0);
     EXPECT_EQ(buff[0], 'X');
 
-    // Step 的包头要先落盘才量得出包头长度，判定在其后，只要求拒绝发送
+    // Step 的包头定长，容量闸门同样排在调用生成器之前，只要求拒绝发送
     EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Step, buff, MaxPackageSize), 0);
 }
 
@@ -637,6 +638,25 @@ TEST(PackageSerializationTest, MakePackage_BufferExactlyFixedOverheadReachesGene
 
     char buff[MaxPackageSize] = {};
     EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Xtp, buff, FixedFrameOverhead), FixedFrameOverhead);
+    EXPECT_TRUE(pkg.WasMeasured());
+    EXPECT_EQ(pkg.ObservedCapacity(), 0);
+}
+
+TEST(PackageSerializationTest, StepPackage_BufferExactlyHeadPlusTailReachesGenerator)
+{
+    //Step 的闸门是定长包头 62 + 报尾 14 = 76 字节：恰为 76 时包体容量是 0，仍要放行到生成器；
+    //差 1 字节时生成器一次都不该被调用。闸门写宽一字节就会把这种边界帧误拒
+    const int needed = static_cast<int>(StepHeadLen + StepTailLen);
+
+    WriteBeforeMeasurePackage pkg;
+    pkg.Prepare(kSessionID, 0, 1);
+
+    char buff[MaxPackageSize] = {};
+    EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Step, buff, needed - 1), 0);
+    EXPECT_FALSE(pkg.WasMeasured());
+
+    //紧邻的第二次调用才会放行：正方向边界必须落在 76 而不是更大
+    EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Step, buff, needed), needed);
     EXPECT_TRUE(pkg.WasMeasured());
     EXPECT_EQ(pkg.ObservedCapacity(), 0);
 }

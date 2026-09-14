@@ -171,7 +171,7 @@ bool PackageReader::ParseXtpPackage(Package*& package)
 		}
 		memcpy(&m_Tail, m_Data + sizeof(HeadField) + m_Head.BodyLen, sizeof(m_Tail));
 		auto checkSum = CalculateCrc32c((const unsigned char*)m_Data, sizeof(HeadField) + m_Head.BodyLen);
-		if (checkSum != static_cast<unsigned int>(m_Tail.CheckSum))
+		if (checkSum != m_Tail.CheckSum)
 		{
 			WriteLog(LogLevel::Error, "CheckSum not Match. Tail.CheckSum:0x%08X, CalculateCrc32c:0x%08X", m_Tail.CheckSum, checkSum);
 			//只丢一个字节，让下一次扫描重新定位到真正的魔术字，而不是清空整段缓冲
@@ -258,7 +258,7 @@ bool PackageReader::ParseStepPackage(Package*& package)
 			continue;
 		}
 		auto checkSum = CalculateCrc32c((const unsigned char*)m_Data, tailIndex);
-		if (checkSum != static_cast<unsigned int>(m_Tail.CheckSum))
+		if (checkSum != m_Tail.CheckSum)
 		{
 			WriteLog(LogLevel::Warning, "CheckSum not Match. Tail.CheckSum:0x%08X, CalculateCrc32c:0x%08X", m_Tail.CheckSum, checkSum);
 			DiscardFront(1);

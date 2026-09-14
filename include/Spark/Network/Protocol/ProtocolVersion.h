@@ -4,11 +4,16 @@
 #include <bit>
 #include <cstddef>
 #include <limits>
+#include <type_traits>
 
 namespace spark::network
 {
-//协议版本。报文头结构或字段语义变化时必须同步递增，否则两端会按不同的格式解析同一串字节
-constexpr UInt16Type ProtocolVersionValue = 2;
+//协议版本。报文头结构或字段语义变化时必须同步递增，否则两端会按不同的格式解析同一串字节。
+//升到 3：Step 协议的键与整型全部改为定宽大写十六进制，MsgSeqNum 与 CheckSum 改为无符号。
+//注意 XTP 与 Step 共用这一个版本号，而两者都在报文头里写它、也都在读侧校验它：XTP 的线格式本批
+//没有变化（两字段同宽同位，memcpy 出来的字节逐位相同），但它会随这条常量一起升到 3，所以 XTP 对端
+//也必须同步升级，否则会在"协议版本不匹配"上被直接判死。若要按协议分开版本号，得改两处校验分支
+constexpr UInt16Type ProtocolVersionValue = 3;
 
 //魔术字。线上小端字节序为 53 50 4B 32，即 ASCII 的 SPK2
 constexpr Int32Type ProtocolMagicValue = 0x324B5053;
@@ -36,6 +41,14 @@ static_assert(offsetof(HeadField, Magic) == 0 && offsetof(HeadField, MsgSeqNum) 
 	&& offsetof(HeadField, Version) == 12 && offsetof(HeadField, MessageChain) == 14
 	&& offsetof(HeadField, Reserved) == 15, "HeadField 字段偏移变化会改变线上格式，必须同步升级 ProtocolVersionValue");
 static_assert(offsetof(TailField, CheckSum) == 0, "TailField 字段偏移变化会改变线上格式");
+//这两个字段是计数器与校验和，无符号是它们的语义而不是实现细节。改回有符号会让 Step 协议里的
+//8 位十六进制写法产生补码歧义（FFFFFFFF 究竟读成 -1 还是 4294967295），故在此钉死
+static_assert(std::is_same<UInt32Type, decltype(HeadField::MsgSeqNum)>::value
+	&& std::is_same<UInt32Type, decltype(TailField::CheckSum)>::value,
+	"MsgSeqNum 与 CheckSum 必须是无符号的 UInt32Type");
+//StepUtility::TailToStream 把 CheckSum 直接交给 snprintf 的 "%08X"，变参不参与编译期类型检查，
+//宽度与符号全靠"UInt32Type 就是 unsigned int"这一点，故在此钉住
+static_assert(std::is_same<UInt32Type, unsigned int>::value, "TailToStream 的 %08X 依赖 UInt32Type 就是 unsigned int");
 static_assert(MaxFrameBodyLen <= std::numeric_limits<UInt16Type>::max(),
 	"包体上限必须能写进 BodyLen（UShort），否则包体长度会被静默截断");
 static_assert(std::endian::native == std::endian::little, "线协议依赖小端字节序");

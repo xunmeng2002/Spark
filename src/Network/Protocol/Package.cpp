@@ -29,8 +29,10 @@ Package::~Package() {
 }
 void Package::Prepare(SessionIDType sessionID, int messageChain, int msgSeqNum)
 {
+	//MsgSeqNum 是无符号计数器，这里的 int 形参按模 2^32 转换（负值落到 0xFFFFFFFF 附近）。
+	//形参类型本身仍是有符号 int（改它要动公开签名），转换写成显式的是为了让这层取模是有意的
 	SessionID = sessionID;
-	Head.MsgSeqNum = msgSeqNum;
+	Head.MsgSeqNum = static_cast<UInt32Type>(msgSeqNum);
 	Head.MessageChain = messageChain;
 }
 int Package::MakePackage(ProtocolTypeType protocolType, char* buff, int size)
@@ -60,23 +62,21 @@ int Package::MakePackage(ProtocolTypeType protocolType, char* buff, int size)
 		}
 		Head.BodyLen = static_cast<UInt16Type>(bodyLen);
 		memcpy(buff, &Head, sizeof(Head));
-		Tail.CheckSum = static_cast<Int32Type>(CalculateCrc32c((const unsigned char*)buff, sizeof(Head) + bodyLen));
+		Tail.CheckSum = CalculateCrc32c(reinterpret_cast<const unsigned char*>(buff), sizeof(Head) + bodyLen);
 		memcpy(data + bodyLen, &Tail, sizeof(Tail));
 
 		return sizeof(Head) + bodyLen + sizeof(Tail);
 	}
 	else if (protocolType == ProtocolTypeType::Step)
 	{
-		//包体长度写在报文头里，而包头长度取决于包体长度字段的宽度，
-		//所以先用占位长度量出包头长度，写完包体后再回填并校验头长未变
-		Head.BodyLen = 0;
-		int headLen = StepUtility::HeadToStream(&Head, buff, size);
-		if (headLen <= 0 || headLen + (int)StepTailLen >= size)
+		//包头是定长的，包体长度可以在写头之前就算出来，所以只写一次头
+		if (size < static_cast<int>(StepHeadLen) + static_cast<int>(StepTailLen))
 		{
-			WriteLog(LogLevel::Error, "Step Head To Stream Failed. HeadLen:%d, Size:%d", headLen, size);
+			WriteLog(LogLevel::Error, "Step Buffer Too Small. Size:%d, Needed:%u", size, StepHeadLen + StepTailLen);
 			return 0;
 		}
-		int bodyCapacity = size - headLen - (int)StepTailLen;
+		const int headLen = static_cast<int>(StepHeadLen);
+		int bodyCapacity = size - headLen - static_cast<int>(StepTailLen);
 		int bodyLen = ToStepStream(buff + headLen, bodyCapacity);
 		if (bodyLen < 0 || bodyLen > bodyCapacity || bodyLen > static_cast<int>(MaxFrameBodyLen))
 		{
@@ -85,14 +85,14 @@ int Package::MakePackage(ProtocolTypeType protocolType, char* buff, int size)
 			return 0;
 		}
 		Head.BodyLen = static_cast<UInt16Type>(bodyLen);
-		if (StepUtility::HeadToStream(&Head, buff, size) != headLen)
+		if (StepUtility::HeadToStream(&Head, buff, headLen) != headLen)
 		{
-			WriteLog(LogLevel::Error, "Step Head Length Changed After BodyLen Filled. HeadLen:%d, BodyLen:%d", headLen, Head.BodyLen);
+			WriteLog(LogLevel::Error, "Step Head To Stream Failed. Expected HeadLen:%d", headLen);
 			return 0;
 		}
-		Tail.CheckSum = static_cast<Int32Type>(CalculateCrc32c((const unsigned char*)buff, headLen + bodyLen));
-		StepUtility::TailToStream(&Tail, buff + headLen + bodyLen, StepTailLen);
-		return headLen + bodyLen + StepTailLen;
+		Tail.CheckSum = CalculateCrc32c(reinterpret_cast<const unsigned char*>(buff), headLen + bodyLen);
+		StepUtility::TailToStream(&Tail, buff + headLen + bodyLen, static_cast<int>(StepTailLen));
+		return headLen + bodyLen + static_cast<int>(StepTailLen);
 	}
 	return 0;
 }
