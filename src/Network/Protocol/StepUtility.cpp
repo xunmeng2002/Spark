@@ -36,14 +36,20 @@ bool TryParseInteger(const std::string& text, int base, long long& value)
 }
 
 //读取 buff 中 [startIndex, endIndex) 内以 SOH 结尾的十六进制字段值
-bool TryReadHexField(char* buff, int startIndex, int endIndex, long long& value)
+bool TryReadHexField(char* buff, int startIndex, int endIndex, uint16_t& value)
 {
 	int sohIndex = 0;
 	if (!StepUtility::GetNextSoh(buff, startIndex, endIndex, sohIndex))
 	{
 		return false;
 	}
-	return TryParseInteger(std::string(buff + startIndex, buff + sohIndex), 16, value);
+	long long parsed = 0;
+	if (!TryParseInteger(std::string(buff + startIndex, buff + sohIndex), 16, parsed) || parsed < 0 || parsed > 0xFFFF)
+	{
+		return false;
+	}
+	value = static_cast<uint16_t>(parsed);
+	return true;
 }
 }
 
@@ -71,7 +77,7 @@ bool StepUtility::GetNextEqual(char* buff, int startIndex, int endIndex, int& eq
 	}
 	return false;
 }
-bool StepUtility::GetNext(char* buff, int startIndex, int endIndex, unsigned short& key, std::string& value, int& sohIndex)
+bool StepUtility::GetNext(char* buff, int startIndex, int endIndex, uint16_t& key, std::string& value, int& sohIndex)
 {
 	if (!GetNextSoh(buff, startIndex, endIndex, sohIndex))
 	{
@@ -86,7 +92,7 @@ bool StepUtility::GetNext(char* buff, int startIndex, int endIndex, unsigned sho
 	value = std::string(buff + equalIndex + 1, buff + sohIndex);
 	return true;
 }
-bool StepUtility::GetFieldStart(char* buff, int startIndex, int endIndex, unsigned short& fieldID, int& fieldStartIndex)
+bool StepUtility::GetFieldStart(char* buff, int startIndex, int endIndex, uint16_t& fieldID, int& fieldStartIndex)
 {
 	//i 取 '6' 的位置，标记是 "SOH + 6 + ="；i 为 0 时前面没有字节，不可能是标记
 	for (int i = startIndex; i + 1 < endIndex; ++i)
@@ -95,18 +101,16 @@ bool StepUtility::GetFieldStart(char* buff, int startIndex, int endIndex, unsign
 		{
 			continue;
 		}
-		long long parsed = 0;
-		if (!TryReadHexField(buff, i + 2, endIndex, parsed))
+		if (!TryReadHexField(buff, i + 2, endIndex, fieldID))
 		{
 			return false;
 		}
 		fieldStartIndex = i;
-		fieldID = static_cast<unsigned short>(parsed);
 		return true;
 	}
 	return false;
 }
-bool StepUtility::GetFieldEnd(char* buff, int startIndex, int endIndex, unsigned short& fieldID, int& fieldEndIndex)
+bool StepUtility::GetFieldEnd(char* buff, int startIndex, int endIndex, uint16_t& fieldID, int& fieldEndIndex)
 {
 	//i 取 '7' 的位置，标记是 "SOH + 7 + ="；i 为 0 时前面没有字节，不可能是标记
 	for (int i = startIndex; i + 1 < endIndex; ++i)
@@ -115,36 +119,34 @@ bool StepUtility::GetFieldEnd(char* buff, int startIndex, int endIndex, unsigned
 		{
 			continue;
 		}
-		long long parsed = 0;
-		if (!TryReadHexField(buff, i + 2, endIndex, parsed))
-		{
-			return false;
-		}
 		int sohIndex = 0;
 		if (!GetNextSoh(buff, i, endIndex, sohIndex))
 		{
 			return false;
 		}
-		fieldID = static_cast<unsigned short>(parsed);
+		if (!TryReadHexField(buff, i + 2, endIndex, fieldID))
+		{
+			return false;
+		}
 		fieldEndIndex = sohIndex + 1;
 		return true;
 	}
 	return false;
 }
-bool StepUtility::GetNextFieldZone(char* buff, int startIndex, int endIndex, unsigned short& fieldID, int& fieldStartIndex, int& fieldEndIndex)
+bool StepUtility::GetNextFieldZone(char* buff, int startIndex, int endIndex, uint16_t& fieldID, int& fieldStartIndex, int& fieldEndIndex)
 {
 	if (!GetFieldStart(buff, startIndex, endIndex, fieldID, fieldStartIndex))
 	{
 		return false;
 	}
-	unsigned short fieldIDEnd;
+	uint16_t fieldIDEnd;
 	if (!GetFieldEnd(buff, fieldStartIndex, endIndex, fieldIDEnd, fieldEndIndex))
 	{
 		return false;
 	}
 	if (fieldID != fieldIDEnd)
 	{
-		WriteLog(LogLevel::Error, "FieldID not Match. FieldID:0x%X, FieldIDEnd:0x%X", fieldID, fieldIDEnd);
+		WriteLog(LogLevel::Error, "FieldID not Match. FieldID:0x%X, FieldIDEnd:0x%X", static_cast<unsigned int>(fieldID), static_cast<unsigned int>(fieldIDEnd));
 		return false;
 	}
 	return true;
@@ -160,7 +162,7 @@ const std::string& StepUtility::GetPackageStartAnchor()
 	return anchor;
 }
 
-void StepUtility::WriteString(char*& ppos, int key, bool value)
+void StepUtility::WriteString(char*& ppos, int key, BoolType value)
 {
 	int len = sprintf(ppos, "%d=%d", key, value);
 	ppos += len;
@@ -172,55 +174,55 @@ void StepUtility::WriteString(char*& ppos, int key, char value)
 	ppos += len;
 	*ppos++ = SOH;
 }
-void StepUtility::WriteString(char*& ppos, int key, unsigned short value)
-{
-	int len = sprintf(ppos, "%d=%u", key, static_cast<unsigned int>(value));
-	ppos += len;
-	*ppos++ = SOH;
-}
-void StepUtility::WriteString(char*& ppos, int key, uint8_t value)
-{
-	int len = sprintf(ppos, "%d=%u", key, static_cast<unsigned int>(value));
-	ppos += len;
-	*ppos++ = SOH;
-}
-void StepUtility::WriteString(char*& ppos, int key, int8_t value)
+void StepUtility::WriteString(char*& ppos, int key, Int8Type value)
 {
 	int len = sprintf(ppos, "%d=%d", key, static_cast<int>(value));
 	ppos += len;
 	*ppos++ = SOH;
 }
-void StepUtility::WriteString(char*& ppos, int key, int16_t value)
-{
-	int len = sprintf(ppos, "%d=%d", key, static_cast<int>(value));
-	ppos += len;
-	*ppos++ = SOH;
-}
-void StepUtility::WriteString(char*& ppos, int key, uint32_t value)
+void StepUtility::WriteString(char*& ppos, int key, UInt8Type value)
 {
 	int len = sprintf(ppos, "%d=%u", key, static_cast<unsigned int>(value));
 	ppos += len;
 	*ppos++ = SOH;
 }
-void StepUtility::WriteString(char*& ppos, int key, uint64_t value)
+void StepUtility::WriteString(char*& ppos, int key, Int16Type value)
 {
-	int len = sprintf(ppos, "%d=%llu", key, static_cast<unsigned long long>(value));
+	int len = sprintf(ppos, "%d=%d", key, static_cast<int>(value));
 	ppos += len;
 	*ppos++ = SOH;
 }
-void StepUtility::WriteString(char*& ppos, int key, int value)
+void StepUtility::WriteString(char*& ppos, int key, UInt16Type value)
+{
+	int len = sprintf(ppos, "%d=%u", key, static_cast<unsigned int>(value));
+	ppos += len;
+	*ppos++ = SOH;
+}
+void StepUtility::WriteString(char*& ppos, int key, Int32Type value)
 {
 	int len = sprintf(ppos, "%d=%d", key, value);
 	ppos += len;
 	*ppos++ = SOH;
 }
-void StepUtility::WriteString(char*& ppos, int key, long long value)
+void StepUtility::WriteString(char*& ppos, int key, UInt32Type value)
+{
+	int len = sprintf(ppos, "%d=%u", key, static_cast<unsigned int>(value));
+	ppos += len;
+	*ppos++ = SOH;
+}
+void StepUtility::WriteString(char*& ppos, int key, Int64Type value)
 {
 	int len = sprintf(ppos, "%d=%lld", key, value);
 	ppos += len;
 	*ppos++ = SOH;
 }
-void StepUtility::WriteString(char*& ppos, int key, double value)
+void StepUtility::WriteString(char*& ppos, int key, UInt64Type value)
+{
+	int len = sprintf(ppos, "%d=%llu", key, value);
+	ppos += len;
+	*ppos++ = SOH;
+}
+void StepUtility::WriteString(char*& ppos, int key, DoubleType value)
 {
 	int len = sprintf(ppos, "%d=%.6f", key, value);
 	ppos += len;
@@ -239,9 +241,9 @@ void StepUtility::WriteString(char*& ppos, int key, char* value)
 	*ppos++ = SOH;
 }
 
-void StepUtility::WriteHexString(char*& ppos, int key, unsigned short value)
+void StepUtility::WriteHexString(char*& ppos, int key, uint16_t value)
 {
-	int len = sprintf(ppos, "%d=%04X", key, value);
+	int len = sprintf(ppos, "%d=%04X", key, static_cast<unsigned int>(value));
 	ppos += len;
 	*ppos++ = SOH;
 }
@@ -268,7 +270,7 @@ bool StepUtility::HeadFromStream(char* buff, int startIndex, int endIndex, HeadF
 	//跳过报文首个SOH符号
 	startIndex += 1;
 	int seenCount = 0;
-	unsigned short key;
+	uint16_t key;
 	std::string value;
 	int sohIndex;
 	while (startIndex < endIndex)
@@ -356,7 +358,7 @@ bool StepUtility::TailFromStream(char* buff, int startIndex, int endIndex, TailF
 	bool parsed = false;
 	while (startIndex < endIndex)
 	{
-		unsigned short key;
+		uint16_t key;
 		string value;
 		int sohIndex;
 		if (!GetNext(buff, startIndex, endIndex, key, value, sohIndex))

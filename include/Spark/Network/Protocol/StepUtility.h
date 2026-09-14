@@ -1,10 +1,12 @@
 #pragma once
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Network/Protocol/Head.h>
+#include <Spark/Types.h>
 #include <string>
 #include <unordered_map>
 #include <charconv>
 #include <cstdint>
+#include <cstdio>
 #include <system_error>
 #include <type_traits>
 
@@ -15,6 +17,16 @@ constexpr unsigned int StepTailLen = 2u + 8u + 1u;
 constexpr unsigned int StepMaxHeaderLen = 128u;
 constexpr unsigned int SOH = 1u;
 
+//WriteString 的重载形参一律用调色板别名，重载集合与 Types.h 的别名一一对应。代价是别名改了类型时重载照样匹配、
+//只有 .cpp 里的格式串会失配，所以把格式串绑在具体类型上的那四个别名在这里钉死；其余重载体内先 static_cast 到
+//int / unsigned int，或靠默认提升，别名怎么变都不会失配。Types.h 的宽度断言管不住这件事——sizeof(int64_t) 也是 8，
+//Linux 上它就是 long。本套重载只覆盖调色板里的类型，传裸 long / size_t 会落到末尾那个模板重载上按 %s 把整数
+//当 char* 解引用
+static_assert(std::is_same<Int32Type, int>::value, "Int32Type 必须是 int，%d 才匹配");
+static_assert(std::is_same<Int64Type, long long>::value, "Int64Type 必须是 long long，%lld 才匹配");
+static_assert(std::is_same<UInt64Type, unsigned long long>::value, "UInt64Type 必须是 unsigned long long，%llu 才匹配");
+static_assert(std::is_same<DoubleType, double>::value, "DoubleType 必须是 double，%.6f 才匹配");
+
 namespace spark::network
 {
 class NETWORK_EXPORTS StepUtility
@@ -22,27 +34,26 @@ class NETWORK_EXPORTS StepUtility
 public:
 	static bool GetNextSoh(char* buff, int startIndex, int endIndex, int& sohIndex);
 	static bool GetNextEqual(char* buff, int startIndex, int endIndex, int& equalIndex);
-	static bool GetNext(char* buff, int startIndex, int endIndex, unsigned short& key, std::string& value, int& sohIndex);
-	static bool GetFieldStart(char* buff, int startIndex, int endIndex, unsigned short& fieldID, int& fieldStartIndex);
-	static bool GetFieldEnd(char* buff, int startIndex, int endIndex, unsigned short& fieldID, int& fieldEndIndex);
-	static bool GetNextFieldZone(char* buff, int startIndex, int endIndex, unsigned short& fieldID, int& fieldStartIndex, int& fieldEndIndex);
+	static bool GetNext(char* buff, int startIndex, int endIndex, uint16_t& key, std::string& value, int& sohIndex);
+	static bool GetFieldStart(char* buff, int startIndex, int endIndex, uint16_t& fieldID, int& fieldStartIndex);
+	static bool GetFieldEnd(char* buff, int startIndex, int endIndex, uint16_t& fieldID, int& fieldEndIndex);
+	static bool GetNextFieldZone(char* buff, int startIndex, int endIndex, uint16_t& fieldID, int& fieldStartIndex, int& fieldEndIndex);
 	//报文起始锚点，形如 SOH + "0=SPK2" + SOH，与 ProtocolVersion.h 的魔术字是同一串字节
 	static const std::string& GetPackageStartAnchor();
 
-	static void WriteString(char*& ppos, int key, bool value);
+	static void WriteString(char*& ppos, int key, BoolType value);
 	static void WriteString(char*& ppos, int key, char value);
-	static void WriteString(char*& ppos, int key, unsigned short value);
-	static void WriteString(char*& ppos, int key, int value);
-	static void WriteString(char*& ppos, int key, long long value);
-	static void WriteString(char*& ppos, int key, double value);
+	static void WriteString(char*& ppos, int key, Int8Type value);
+	static void WriteString(char*& ppos, int key, UInt8Type value);
+	static void WriteString(char*& ppos, int key, Int16Type value);
+	static void WriteString(char*& ppos, int key, UInt16Type value);
+	static void WriteString(char*& ppos, int key, Int32Type value);
+	static void WriteString(char*& ppos, int key, UInt32Type value);
+	static void WriteString(char*& ppos, int key, Int64Type value);
+	static void WriteString(char*& ppos, int key, UInt64Type value);
+	static void WriteString(char*& ppos, int key, DoubleType value);
 	static void WriteString(char*& ppos, int key, std::string value);
 	static void WriteString(char*& ppos, int key, char* value);
-	//下面五个是 8/16/32/64 位补的类型。不补就会落到末尾那个模板重载上，它按 %s 打印整数
-	static void WriteString(char*& ppos, int key, uint8_t value);
-	static void WriteString(char*& ppos, int key, int8_t value);
-	static void WriteString(char*& ppos, int key, int16_t value);
-	static void WriteString(char*& ppos, int key, uint32_t value);
-	static void WriteString(char*& ppos, int key, uint64_t value);
 
 	//文本转整型：格式非法或越界都返回 false。窄类型直接 atoi 会静默截断，所以必须走这里
 	template<typename T>
@@ -71,7 +82,7 @@ public:
 		ppos += len;
 		*ppos++ = SOH;
 	}
-	static void WriteHexString(char*& ppos, int key, unsigned short value);
+	static void WriteHexString(char*& ppos, int key, uint16_t value);
 
 
 	//返回实际写入的包头长度

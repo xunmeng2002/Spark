@@ -265,6 +265,39 @@ TEST(StepUtilityTest, GetNextFieldZone_MismatchedIDs)
     EXPECT_FALSE(StepUtility::GetNextFieldZone(&data[0], 0, (int)data.size(), fieldID, startIdx, endIdx));
 }
 
+TEST(StepUtilityTest, GetFieldStart_MaxFieldID)
+{
+    //0xFFFF 是 16 位字段 ID 的上边界，必须仍然合法；范围检查写成越界一个会误拒它
+    std::string data = std::string(1, kSOH) + MakeStepField(6, "FFFF");
+    uint16_t fieldID = 0;
+    int startIndex = -1;
+
+    EXPECT_TRUE(StepUtility::GetFieldStart(&data[0], 0, (int)data.size(), fieldID, startIndex));
+    EXPECT_EQ(fieldID, 0xFFFF);
+}
+
+TEST(StepUtilityTest, GetFieldStart_FieldIDOutOfRange)
+{
+    //0x10000 超出 16 位，截断后是 0x0000，会让畸形帧被当成合法字段
+    std::string data = std::string(1, kSOH) + MakeStepField(6, "10000");
+    uint16_t fieldID = 0;
+    int startIndex = -1;
+
+    EXPECT_FALSE(StepUtility::GetFieldStart(&data[0], 0, (int)data.size(), fieldID, startIndex));
+}
+
+TEST(StepUtilityTest, GetNextFieldZone_FieldEndIDOutOfRange)
+{
+    //结束 ID 0x1100D 截断后是 0x100D，与起始 ID 相等，会让结束 ID 越界的畸形帧通过 ID 校验
+    std::string data = std::string(1, kSOH) + MakeStepField(6, "100D")
+                     + "content"
+                     + std::string(1, kSOH) + MakeStepField(7, "1100D");
+    uint16_t fieldID = 0;
+    int startIdx = -1, endIdx = -1;
+
+    EXPECT_FALSE(StepUtility::GetNextFieldZone(&data[0], 0, (int)data.size(), fieldID, startIdx, endIdx));
+}
+
 // ============================================================
 // WriteString（所有重载）
 // ============================================================
@@ -322,6 +355,19 @@ TEST(StepUtilityTest, WriteString_LongLong)
     std::string result(buff);
     EXPECT_GT(result.size(), 0);
     EXPECT_EQ(result[result.size() - 1], kSOH);
+}
+
+//钉住 UInt64Type 必须命中 %llu 重载：落到末尾那个 template 重载会按 %s 把整数当 char* 解引用
+TEST(StepUtilityTest, WriteString_UInt64)
+{
+    char buff[64] = {};
+    char* ppos = buff;
+    //0x9999 不占用任何 ItemID：模型里没有 UInt64 字段，本用例只验证重载分派
+    StepUtility::WriteString(ppos, 0x9999, static_cast<UInt64Type>(18446744073709551615ULL));
+    *ppos = '\0';
+
+    //取 UInt64 上限，确保不会被 32 位重载静默截断
+    EXPECT_EQ(std::string(buff), MakeStepField(0x9999, "18446744073709551615"));
 }
 
 TEST(StepUtilityTest, WriteString_Double)

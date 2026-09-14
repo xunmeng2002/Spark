@@ -348,10 +348,10 @@ int main(int argc, const char* argv[])
 | | `TimerTest` | 定时器触发、取消 |
 | | `TimeUtilityTest` | 时间格式化、转换 |
 | | `UtilityTest` | 通用工具函数 |
-| **Network** | `StepUtilityTest` | Step 协议字段解析、Head/Tail 流式转换（47 用例） |
-| | `ProtocolUtilityTest` | CRC32C 校验和与字节模式查找（9 + 7 用例） |
-| | `PackageReaderTest` | 缓冲管理：Append/PopFront/Reset（12 用例） |
-| | `PackageSerializationTest` | MakePackage ↔ ParsePackage 端到端往返、重同步与版本校验（15 用例） |
+| **Network** | `StepUtilityTest` | Step 协议字段解析、Head/Tail 流式转换 |
+| | `ProtocolUtilityTest` | CRC32C 校验和与字节模式查找 |
+| | `PackageReaderTest` | 缓冲管理：Append/PopFront/Reset |
+| | `PackageSerializationTest` | MakePackage ↔ ParsePackage 端到端往返、重同步与版本校验 |
 | **Serialization** | `Base64Test` | Base64 编解码 |
 | | `CSVParserTest` | CSV 解析行、列、引号转义 |
 | | `CSVRecordTest` | CSV 记录读写 |

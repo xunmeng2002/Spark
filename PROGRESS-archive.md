@@ -4,6 +4,12 @@
 
 ## ❓ 原待讨论 / 待决策
 
+### Q.16
+
+- 单元测试用例数（47 / 9 + 7 / 12 / 15）为当前快照，用例增减后需同步更新 README，后续可考虑改为不标注具体数量以避免频繁维护
+
+关闭（2026-09-14）：用户决定即按原文末尾那个"后续可考虑"办——**把 README 里的用例数直接去掉**，不再维护。落地：`README.md` / `README.en.md` 的 Network 表四行（`StepUtilityTest` 48、`ProtocolUtilityTest` 9 + 7、`PackageReaderTest` 12、`PackageSerializationTest` 15）括号内的用例数全部删除，只留覆盖内容描述；两份 README 同步改。**过程中的一次中间态**：本轮因新增 `StepUtilityTest.WriteString_UInt64`，曾先把这个数从 47 手工改成 48（两处 README 同步），随后才按本决定整体删除——故归档括号里保留的是改动前的 47，与本轮改动无关。**未一并去除**：`README.md` 的"共 **23 个测试文件**"、目录树里的"（9 文件）/（4 文件）/（4 文件）/（6 文件）"，以及 `README.en.md` 目录树的 "(9 files)" 等——那些是**测试文件数**而非用例数，不在本次决定范围内，仍会随新增测试文件而过期。
+
 ### Q.15
 
 - **8 位整型是否补进类型模板（2026-09-13 记，未决）**：别名调色板只有一个来源（`../Model/Types.xml` 的容器 + `../Templates/Cpp/Spark/Types.h.tpl` 的分段），而字段按**别名名**引用，所以"多一个宽度"看似只要两处；但真正决定宽度语义的是 **14 个模板**里按族展开的 `types[@name]` / `formats[@name]` 映射（`Protocol/Packages/Packages.cpp.tpl` 的 `formats` 直接决定 Step 文本的格式化符，现为 `%d` / `%u` / `%lld` / `%f` / `%s`）。**主要陷阱**：Step 反序列化按 `$type` 分支，未列出的族一律落到 `else: atoi(value.c_str())`——加个 `int8_t` 会走进去，编译通过、小值正确、**超范围静默截断**（`"300"` → 44）；Xtp 是按宽度 memcpy，加别名反而"看着对"，于是错在文本那一侧。**实测在用宽度只有 5 种**：模型里 `sqltype` 仅出现 `bool` / `short` / `int` / `bigint` / `double`，没有 8 位字段。要补就得四条链一起（Types 容器 + 14 处映射含 `%hhd` + Step 范围夹取 + MDB 的 `tinyint` 与 `FieldType` 映射），**建议等真出现 0–255 的新字段再做**（新字段，不涉及改已有宽度）。

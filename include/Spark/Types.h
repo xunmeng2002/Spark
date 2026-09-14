@@ -90,7 +90,7 @@ typedef int32_t VolumeMultipleType;
 
 
 //无符号64位整型类型
-typedef uint64_t UInt64Type;
+typedef unsigned long long UInt64Type;
 
 
 	//64位整型类型
@@ -1073,5 +1073,7 @@ enum class VolumeConditionType : int32_t
 //线协议是按字段宽度直接 memcpy 上线的：宽度一变线上格式就静默错位，所以在这里钉死
 //64 位保留 long long 而非 int64_t：Linux 上 int64_t 是 long，会让全仓 %lld 变成格式不匹配
 static_assert(sizeof(long long) == 8, "Int64 别名用 long long，线上必须占 8 字节");
+//无符号侧同理：保留 unsigned long long 而非 uint64_t，否则 Linux 上 %llu 同样不匹配
+static_assert(sizeof(unsigned long long) == 8, "UInt64 别名用 unsigned long long，线上必须占 8 字节");
 static_assert(sizeof(double) == 8, "Double 别名用 double，线上必须占 8 字节");
 static_assert(sizeof(bool) == 1, "Bool 别名用 bool，线上必须占 1 字节");
