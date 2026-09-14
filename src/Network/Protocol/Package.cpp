@@ -36,8 +36,7 @@ void Package::Prepare(SessionIDType sessionID, int messageChain, int msgSeqNum)
 int Package::MakePackage(ProtocolTypeType protocolType, char* buff, int size)
 {
 	FillProtocolHead(Head);
-	//这道闸门必须排在任何指针与容量运算之前：ToXtpStream是公开纯虚函数，仓外实现不保证先比容量再写，
-	//所以拿一个负的bodyCapacity进去等于把越界的可能交给下游
+	//这道闸门必须排在任何指针与容量运算之前：ToXtpStream是公开纯虚函数，仓外实现不保证先比容量再写，所以拿一个负的bodyCapacity进去等于把越界的可能交给下游
 	if (buff == nullptr)
 	{
 		WriteLog(LogLevel::Error, "Package Buffer Is Null.");

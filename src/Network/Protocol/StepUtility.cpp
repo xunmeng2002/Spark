@@ -58,26 +58,23 @@ StepWriteCursor::StepWriteCursor(char* buffer, int capacity)
 	: buffer_begin_(buffer), capacity_(capacity), written_length_(0), is_truncated_(false)
 {
 }
-
-char* StepWriteCursor::GetWritePosition() const
-{
-	return buffer_begin_ + written_length_;
-}
-
-int StepWriteCursor::GetRemainingLength() const
-{
-	return capacity_ - written_length_;
-}
-
 int StepWriteCursor::GetWrittenLength() const
 {
 	return written_length_;
 }
-
 bool StepWriteCursor::IsTruncated() const
 {
 	return is_truncated_;
 }
+char* StepWriteCursor::GetWritePosition()
+{
+    return buffer_begin_ + written_length_;
+}
+int StepWriteCursor::GetRemainingLength() const
+{
+    return capacity_ - written_length_;
+}
+
 
 bool StepUtility::GetNextSoh(char* buff, int startIndex, int endIndex, int& sohIndex)
 {
