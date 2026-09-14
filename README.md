@@ -83,7 +83,7 @@ Spark/
 │   ├── TestServer/             # 网络服务端测试（旧版）
 │   ├── TestCore/               # 核心组件测试（旧版）
 │   └── TestMD5/                # MD5 验证程序
-├── model/                      # 数据模型定义文件（Head.xml / parselist.xml 等）
+├── Model/                      # 数据模型定义文件（Head.xml / parselist.xml 等）
 ├── submodules/                 # 子模块依赖（CMakeCommon）
 ├── bin/                        # 构建产物：动态库 / 可执行文件（按配置分目录）
 ├── lib/                        # 构建产物：静态库 / 导入库（按配置分目录）

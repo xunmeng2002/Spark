@@ -83,7 +83,7 @@ Spark/
 │   ├── TestServer/             # Network server tests (legacy)
 │   ├── TestCore/               # Core component tests (legacy)
 │   └── TestMD5/                # MD5 verification program
-├── model/                      # Data model definitions (Head.xml / parselist.xml, etc.)
+├── Model/                      # Data model definitions (Head.xml / parselist.xml, etc.)
 ├── submodules/                 # Submodule dependencies (CMakeCommon)
 ├── bin/                        # Build outputs: dynamic libraries / executables (per config)
 ├── lib/                        # Build outputs: static libraries / import libraries (per config)
