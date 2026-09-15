@@ -4,7 +4,7 @@
 #include <Spark/Core/Aspect/AspectAfter.h>
 #include <iostream>
 
-namespace spark::core
+namespace Spark::Core
 {
 void CoreFunc()
 {

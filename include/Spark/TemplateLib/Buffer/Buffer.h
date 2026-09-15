@@ -4,7 +4,7 @@
 #include <assert.h>
 
 
-namespace spark
+namespace Spark
 {
 constexpr unsigned int BuffSize = 64 * 1024;
 constexpr unsigned int ShmBuffSize = 1024 * 1024;

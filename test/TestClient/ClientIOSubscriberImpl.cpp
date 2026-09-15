@@ -6,10 +6,10 @@
 
 using namespace std;
 using namespace std::chrono;
-using namespace spark;
-using namespace spark::core;
-using namespace spark::network;
-using namespace spark::packages;
+using namespace Spark;
+using namespace Spark::Core;
+using namespace Spark::Network;
+using namespace Spark::Packages;
 
 ClientIOSubscriberImpl::ClientIOSubscriberImpl(IOBase* io, IOThread* ioThread)
     :m_IO(io), m_IOThread(ioThread)

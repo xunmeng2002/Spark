@@ -5,7 +5,7 @@
 #include <atomic>
 #include <cstring>
 
-namespace spark
+namespace Spark
 {
 struct SingleShmHeader
 {

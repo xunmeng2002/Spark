@@ -169,7 +169,7 @@ ctest --output-on-failure
 ```cpp
 #include <Spark/Core/Logger/Logger.h>
 
-using namespace spark::core;
+using namespace Spark::Core;
 
 int main(int argc, const char* argv[])
 {
@@ -239,9 +239,9 @@ int main()
 
 #include <cstring>
 
-using namespace spark;
-using namespace spark::core;
-using namespace spark::network;
+using namespace Spark;
+using namespace Spark::Core;
+using namespace Spark::Network;
 
 // Package factory: creates the corresponding package object by package ID
 // (implementation omitted here; see test/Packages/PackageFactory.cpp)

@@ -9,10 +9,10 @@
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 
 using namespace std;
-using namespace spark;
-using namespace spark::core;
-using namespace spark::network;
-using namespace spark::packages;
+using namespace Spark;
+using namespace Spark::Core;
+using namespace Spark::Network;
+using namespace Spark::Packages;
 
 StepClient::StepClient()
 	:Protocol(ProtocolTypeType::Step, ServerTypeType::Client, g_IOModel, 0, new PackageFactory()), m_Connected(false), m_SessionID(0LL), m_RecvCount(0)

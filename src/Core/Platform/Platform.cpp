@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 
-namespace spark::core
+namespace Spark::Core
 {
 int GetLastError()
 {

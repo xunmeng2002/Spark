@@ -5,7 +5,7 @@
 #include <cstring>
 
 
-namespace spark::core
+namespace Spark::Core
 {
 class CORE_EXPORTS Utility
 {

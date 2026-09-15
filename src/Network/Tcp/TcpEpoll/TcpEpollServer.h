@@ -2,7 +2,7 @@
 #include "Tcp/TcpEpoll/TcpEpollBase.h"
 
 
-namespace spark::network
+namespace Spark::Network
 {
 class TcpEpollServer : public TcpEpollBase
 {

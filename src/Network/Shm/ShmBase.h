@@ -11,7 +11,7 @@
 #include <chrono>
 
 
-namespace spark::network
+namespace Spark::Network
 {
 class ShmBase : public IOBase
 {

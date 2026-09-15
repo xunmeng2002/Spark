@@ -37,7 +37,7 @@ static_assert(std::is_same<Int64Type, long long>::value, "Int64Type 必须是 lo
 static_assert(std::is_same<UInt64Type, unsigned long long>::value, "UInt64Type 必须是 unsigned long long，XTP 按 sizeof 取宽");
 static_assert(std::is_same<DoubleType, double>::value, "DoubleType 必须是 double，XTP 按 sizeof 取宽");
 
-namespace spark::network
+namespace Spark::Network
 {
 class NETWORK_EXPORTS StepWriteCursor
 {

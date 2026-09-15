@@ -3,7 +3,7 @@
 
 
 
-using namespace spark::network;
+using namespace Spark::Network;
 class XtpServer : public Protocol, public ProtocolSubscriber
 {
 public:

@@ -2,7 +2,7 @@
 #include <cstring>
 
 
-namespace spark::serialization
+namespace Spark::Serialization
 {
 CSVParser::CSVParser()
 {

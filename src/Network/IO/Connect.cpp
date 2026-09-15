@@ -2,7 +2,7 @@
 
 using namespace std;
 
-namespace spark::network
+namespace Spark::Network
 {
 void Connect::PushBack(Buffer<BuffSize>* buffer)
 {

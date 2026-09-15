@@ -17,7 +17,7 @@
 #endif
 
 
-namespace spark::core
+namespace Spark::Core
 {
 constexpr unsigned int LogLineLength = 64 * 1024;
 constexpr unsigned int MaxLogFormatLength = 1024;

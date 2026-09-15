@@ -2,7 +2,7 @@
 #include <string>
 
 
-namespace spark::core
+namespace Spark::Core
 {
 struct TimeZone
 {

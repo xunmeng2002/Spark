@@ -11,9 +11,9 @@
 #endif
 
 using namespace std;
-using namespace spark::core;
+using namespace Spark::Core;
 
-namespace spark::network
+namespace Spark::Network
 {
 ShmBase::ShmBase(ServerTypeType serverType, const char* shmName, int milliSeconds)
 	:IOBase(serverType, shmName, milliSeconds), m_CommonShmHeader(nullptr), m_ShmAddr(nullptr)

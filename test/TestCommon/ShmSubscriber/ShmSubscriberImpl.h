@@ -3,8 +3,8 @@
 #include <Spark/Network/IO/IOThread.h>
 #include <Spark/TemplateLib/Buffer/Buffer.h>
 
-using namespace spark;
-using namespace spark::network;
+using namespace Spark;
+using namespace Spark::Network;
 class ShmSubscriberImpl : public IOSubscriber
 {
 public:

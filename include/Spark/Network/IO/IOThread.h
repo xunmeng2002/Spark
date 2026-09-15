@@ -11,9 +11,9 @@
 #include <map>
 
 
-namespace spark::network
+namespace Spark::Network
 {
-class NETWORK_EXPORTS IOThread : public spark::core::ThreadBase
+class NETWORK_EXPORTS IOThread : public Spark::Core::ThreadBase
 {
 public:
 	IOThread(const char* threadName);

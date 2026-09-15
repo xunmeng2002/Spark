@@ -4,7 +4,7 @@
 #include <Spark/Network/Protocol/PackageFactoryBase.h>
 
 
-namespace spark::network
+namespace Spark::Network
 {
 class NETWORK_EXPORTS PackageReader
 {

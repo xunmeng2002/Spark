@@ -5,8 +5,8 @@
 
 using namespace std;
 
-using namespace spark::core;
-namespace spark::network
+using namespace Spark::Core;
+namespace Spark::Network
 {
 IOThread::IOThread(const char* threadName)
 	:ThreadBase(threadName), m_IO(nullptr)

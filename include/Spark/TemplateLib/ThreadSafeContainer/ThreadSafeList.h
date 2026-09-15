@@ -4,7 +4,7 @@
 #include <condition_variable>
 
 
-namespace spark
+namespace Spark
 {
 template <typename T>
 class ThreadSafeList

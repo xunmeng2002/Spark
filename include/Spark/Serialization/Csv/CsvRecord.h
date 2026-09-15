@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 
-namespace spark::serialization
+namespace Spark::Serialization
 {
 const int CSV_RECORD_MAX_HEAD_SIZE = 1024;
 const int CSV_RECORD_MAX_CONTENT_SIZE = 64 * 1024;

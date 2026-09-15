@@ -4,7 +4,7 @@
 #include <memory>
 
 
-namespace spark
+namespace Spark
 {
 template <typename T>
 class ObjectPool

@@ -2,9 +2,9 @@
 #include <Spark/Core/Logger/Logger.h>
 #include "Tcp/TcpUtility.h"
 
-using namespace spark::core;
+using namespace Spark::Core;
 
-namespace spark::network
+namespace Spark::Network
 {
 TcpEpollClient::TcpEpollClient(const char* addressName, int milliSeconds)
 	:TcpEpollBase(ServerTypeType::Client, addressName, milliSeconds)

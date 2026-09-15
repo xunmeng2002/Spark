@@ -2,7 +2,7 @@
 #include <functional>
 #include <string>
 
-namespace spark::core
+namespace Spark::Core
 {
 template <typename Func, typename... Args>
 struct AspectAfter

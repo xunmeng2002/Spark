@@ -2,7 +2,7 @@
 #include <Spark/Serialization/Csv/CsvParser.h>
 
 #include <cstring>
-using namespace spark::serialization;
+using namespace Spark::Serialization;
 // ============================================================
 // CSVParser 测试
 // ============================================================

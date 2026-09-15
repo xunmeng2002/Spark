@@ -1,4 +1,4 @@
-﻿// 本文件由 ../Templates/Cpp/Protocol/Packages/Packages.cpp.tpl 生成；请勿手改，改动请改模板后重跑 pumpall.py
+// 本文件由 ../Templates/Cpp/Protocol/Packages/Packages.cpp.tpl 生成；请勿手改，改动请改模板后重跑 pumpall.py
 #include "Packages.h"
 #include <Spark/Network/Protocol/Items.h>
 #include <Spark/Network/Protocol/StepUtility.h>
@@ -8,11 +8,11 @@
 #include <cstdio>
 #include <cstring>
 
-using namespace spark;
-using namespace spark::core;
-using namespace spark::network;
+using namespace Spark;
+using namespace Spark::Core;
+using namespace Spark::Network;
 
-namespace spark::packages
+namespace Spark::Packages
 {
 thread_local char DataStringBuffer[10240];
 

@@ -3,7 +3,7 @@
 #include <Windows.h>
 
 
-namespace spark::network
+namespace Spark::Network
 {
 class IOCompletePort
 {

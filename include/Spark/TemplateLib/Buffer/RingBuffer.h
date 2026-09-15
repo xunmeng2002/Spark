@@ -4,7 +4,7 @@
 #include <assert.h>
 
 
-namespace spark
+namespace Spark
 {
 template<unsigned SIZE>
 class RingBuffer

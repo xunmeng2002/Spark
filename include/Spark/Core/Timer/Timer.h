@@ -3,7 +3,7 @@
 #include <chrono>
 
 
-namespace spark::core
+namespace Spark::Core
 {
 class CORE_EXPORTS Timer
 {

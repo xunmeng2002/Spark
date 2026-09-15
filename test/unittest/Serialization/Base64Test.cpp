@@ -3,7 +3,7 @@
 
 #include <cstring>
 #include <vector>
-using namespace spark::serialization;
+using namespace Spark::Serialization;
 // ============================================================
 // Base64 测试 — RFC 4648 标准测试向量
 // ============================================================

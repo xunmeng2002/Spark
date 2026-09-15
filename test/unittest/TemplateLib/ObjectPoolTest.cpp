@@ -4,7 +4,7 @@
 #include <atomic>
 #include <thread>
 #include <vector>
-using namespace spark;
+using namespace Spark;
 // ============================================================
 // ObjectPool 测试 — 无锁对象池（Allocate / Deallocate / AllocateShared）
 //

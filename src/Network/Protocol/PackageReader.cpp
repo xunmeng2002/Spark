@@ -8,8 +8,8 @@
 #include <cstring>
 #include <algorithm>
 
-using namespace spark::core;
-namespace spark::network
+using namespace Spark::Core;
+namespace Spark::Network
 {
 PackageReader::PackageReader(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIDType sessionID, const char* ipAddress)
 	:m_Buff{ 0 }

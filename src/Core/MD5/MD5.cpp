@@ -3,7 +3,7 @@
 using namespace std;
 
 
-namespace spark::core
+namespace Spark::Core
 {
 #define shift(x, n) (((x) << (n)) | ((x) >> (32-(n))))//右移的时候，高位一定要补零，而不是补充符号位
 #define F(x, y, z) (((x) & (y)) | ((~x) & (z)))    

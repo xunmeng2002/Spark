@@ -8,9 +8,9 @@
 #ifdef _WIN32
 
 using namespace std;
-using namespace spark::core;
+using namespace Spark::Core;
 
-namespace spark::network
+namespace Spark::Network
 {
 TcpIocpBase::TcpIocpBase(ServerTypeType serverType, const char* addressName, int milliSeconds, int backlog)
 	:TcpBase(serverType, addressName, milliSeconds), m_BackLog(backlog)

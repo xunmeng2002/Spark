@@ -3,7 +3,7 @@
 #include <cstring>
 
 
-namespace spark::network
+namespace Spark::Network
 {
 namespace
 {

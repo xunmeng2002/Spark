@@ -8,7 +8,7 @@
 #endif
 
 
-namespace spark::network
+namespace Spark::Network
 {
 #define EpollEventNumber 1024
 

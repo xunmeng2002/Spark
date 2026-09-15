@@ -10,7 +10,7 @@
 #include <mutex>
 #include <string>
 
-namespace spark::network
+namespace Spark::Network
 {
 class NETWORK_EXPORTS TcpBase : public IOBase
 {

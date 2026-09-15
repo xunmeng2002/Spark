@@ -2,7 +2,7 @@
 #include <iostream>
 
 
-namespace spark::core
+namespace Spark::Core
 {
 struct AA
 {

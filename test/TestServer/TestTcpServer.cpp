@@ -4,8 +4,8 @@
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Network/Network.h>
 
-using namespace spark::core;
-using namespace spark::network;
+using namespace Spark::Core;
+using namespace Spark::Network;
 
 void TestTcpServer()
 {

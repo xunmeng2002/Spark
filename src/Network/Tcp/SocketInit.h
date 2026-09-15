@@ -20,7 +20,7 @@ typedef int SOCKET;
 #define closesocket close
 #endif // __linux__
 
-namespace spark::network
+namespace Spark::Network
 {
 class NETWORK_EXPORTS SocketInit
 {

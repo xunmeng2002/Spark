@@ -2,7 +2,7 @@
 #include <Spark/Network/Protocol/Protocol.h>
 
 
-using namespace spark::network;
+using namespace Spark::Network;
 class StepServer : public Protocol, public ProtocolSubscriber
 {
 public:

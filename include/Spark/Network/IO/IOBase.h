@@ -12,7 +12,7 @@
 #include <condition_variable>
 
 
-namespace spark::network
+namespace Spark::Network
 {
 class IOSubscriber
 {

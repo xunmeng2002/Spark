@@ -3,7 +3,7 @@
 
 using namespace std;
 
-namespace spark::core
+namespace Spark::Core
 {
 constexpr double epsilon = std::numeric_limits<double>::epsilon();
 bool DoubleUtility::DoubleEqual(const double& left, const double& right)

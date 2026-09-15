@@ -4,9 +4,9 @@
 #include <string.h>
 #include <assert.h>
 
-using namespace spark;
-using namespace spark::core;
-using namespace spark::network;
+using namespace Spark;
+using namespace Spark::Core;
+using namespace Spark::Network;
 
 static int g_Count = 0;
 ShmSubscriberImpl::ShmSubscriberImpl(IOBase* io, ServerTypeType serverType)

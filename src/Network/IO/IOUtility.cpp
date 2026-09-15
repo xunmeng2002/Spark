@@ -1,7 +1,7 @@
 #include <Spark/Network/IO/IOUtility.h>
 
 
-namespace spark::network
+namespace Spark::Network
 {
 void ParseAddress(const std::string& addressName, std::string& address, std::string& port)
 {

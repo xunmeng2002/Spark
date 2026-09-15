@@ -2,7 +2,7 @@
 #include <Spark/Core/CoreExport.h>
 #include <chrono>
 
-namespace spark::core
+namespace Spark::Core
 {
 class CORE_EXPORTS AspectPerformance
 {

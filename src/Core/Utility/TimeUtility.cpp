@@ -10,7 +10,7 @@
 using namespace std;
 using namespace std::chrono;
 
-namespace spark::core
+namespace Spark::Core
 {
 thread_local char t_DateTimeBuff[32];
 time_t TimeUtility::GetTime()

@@ -2,7 +2,7 @@
 #ifdef _WIN32
 #include "Tcp/TcpIocp/TcpIocpBase.h"
 
-namespace spark::network
+namespace Spark::Network
 {
 class TcpIocpServer : public TcpIocpBase
 {

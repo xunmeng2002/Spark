@@ -3,7 +3,7 @@
 #include "Tcp/SocketInit.h"
 #include <string>
 
-namespace spark::network
+namespace Spark::Network
 {
 class TcpConnect;
 class NETWORK_EXPORTS SocketNotify

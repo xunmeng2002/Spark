@@ -4,7 +4,7 @@
 #include "Tcp/TcpIocp/TcpIocpConnect.h"
 #include "Tcp/TcpIocp/TcpIocpCompletePort.h"
 
-namespace spark::network
+namespace Spark::Network
 {
 class TcpIocpBase : public TcpBase
 {

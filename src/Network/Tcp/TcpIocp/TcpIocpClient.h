@@ -3,7 +3,7 @@
 #include "Tcp/TcpIocp/TcpIocpBase.h"
 
 
-namespace spark::network
+namespace Spark::Network
 {
 class TcpIocpClient : public TcpIocpBase
 {

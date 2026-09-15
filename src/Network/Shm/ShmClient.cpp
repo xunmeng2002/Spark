@@ -4,8 +4,8 @@
 
 using namespace std;
 
-using namespace spark::core;
-namespace spark::network
+using namespace Spark::Core;
+namespace Spark::Network
 {
 ShmClient::ShmClient(const char* shmName, int milliSeconds)
 	:ShmBase(ServerTypeType::Client, shmName, milliSeconds), m_Connected(false), m_HasSendConnect(false), m_ShmConnect(nullptr)

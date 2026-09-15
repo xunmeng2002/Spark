@@ -2,7 +2,7 @@
 #include "Tcp/TcpSelect/TcpSelectBase.h"
 
 
-namespace spark::network
+namespace Spark::Network
 {
 class TcpSelectServer : public TcpSelectBase
 {

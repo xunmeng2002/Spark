@@ -2,7 +2,7 @@
 #include "Shm/ShmBase.h"
 
 
-namespace spark::network
+namespace Spark::Network
 {
 class ShmClient : public ShmBase
 {

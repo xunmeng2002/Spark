@@ -3,7 +3,7 @@
 #include "Tcp/SocketInit.h"
 #include <MSWSock.h>
 
-namespace spark::network
+namespace Spark::Network
 {
 class SocketApi
 {

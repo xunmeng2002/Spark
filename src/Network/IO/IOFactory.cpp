@@ -17,10 +17,10 @@
 #include <format>
 #include <stdexcept>
 
-using namespace spark;
-using namespace spark::core;
+using namespace Spark;
+using namespace Spark::Core;
 
-namespace spark::network
+namespace Spark::Network
 {
 IOBase* IOFactory::CreateIO(ServerTypeType serverType, const char* address, IOModelType ioModel, int milliSeconds)
 {

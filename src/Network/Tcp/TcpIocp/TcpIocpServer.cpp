@@ -5,9 +5,9 @@
 #include "Tcp/TcpUtility.h"
 
 #ifdef _WIN32
-using namespace spark::core;
+using namespace Spark::Core;
 
-namespace spark::network
+namespace Spark::Network
 {
 TcpIocpServer::TcpIocpServer(const char* addressName, int milliSeconds, int backlog)
 	:TcpIocpBase(ServerTypeType::Server, addressName, milliSeconds, backlog)

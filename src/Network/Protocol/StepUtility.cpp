@@ -5,9 +5,9 @@
 #include <stdio.h>
 
 using namespace std;
-using namespace spark::core;
+using namespace Spark::Core;
 
-namespace spark::network
+namespace Spark::Network
 {
 namespace
 {

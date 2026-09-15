@@ -3,7 +3,7 @@
 using namespace std::chrono;
 
 
-namespace spark::core
+namespace Spark::Core
 {
 Timer::Timer()
 	:m_TimeInterval(60000), m_EventCount(600), m_CurrentEventCount(0)

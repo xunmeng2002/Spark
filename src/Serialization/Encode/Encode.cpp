@@ -3,7 +3,7 @@
 #include <codecvt>
 
 
-namespace spark::serialization
+namespace Spark::Serialization
 {
 class codecvt_gbk : public std::codecvt_byname<wchar_t, char, std::mbstate_t>
 {

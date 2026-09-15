@@ -5,9 +5,9 @@
 #include <mutex>
 
 using namespace std;
-using namespace spark::core;
+using namespace Spark::Core;
 
-namespace spark::network
+namespace Spark::Network
 {
 void TcpUtility::ParseIPAddress(const std::string& addressName, std::string& ip, std::string& port)
 {

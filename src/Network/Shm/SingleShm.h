@@ -6,7 +6,7 @@
 #include <string>
 
 
-namespace spark::network
+namespace Spark::Network
 {
 class SingleShm : public IOBase
 {

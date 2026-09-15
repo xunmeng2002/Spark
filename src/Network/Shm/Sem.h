@@ -6,7 +6,7 @@
 #endif
 
 
-namespace spark::network
+namespace Spark::Network
 {
 class Sem
 {

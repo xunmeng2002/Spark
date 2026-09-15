@@ -5,7 +5,7 @@
 #include <list>
 #include <mutex>
 
-namespace spark::network
+namespace Spark::Network
 {
 class NETWORK_EXPORTS Connect
 {

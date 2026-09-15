@@ -8,7 +8,7 @@
 
 #define MaxPackageSize 2 * 64 * 1024
 
-namespace spark::network
+namespace Spark::Network
 {
 static_assert(MaxPackageSize >= MaxFrameSize, "读侧缓冲必须容纳一帧上限，否则对端发来的最大帧无法解析");
 class NETWORK_EXPORTS Package

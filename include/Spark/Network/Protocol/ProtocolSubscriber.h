@@ -2,7 +2,7 @@
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Network/Protocol/Package.h>
 
-namespace spark::network
+namespace Spark::Network
 {
 class ProtocolSubscriber
 {

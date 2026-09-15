@@ -4,8 +4,8 @@
 #include <Spark/Core/Utility/TimeUtility.h>
 #include "Tcp/TcpUtility.h"
 
-using namespace spark::core;
-namespace spark::network
+using namespace Spark::Core;
+namespace Spark::Network
 {
 TcpConnect::TcpConnect(SessionIDType sessionID, const SOCKET& socketID, const std::string& remoteIP, const std::string& remotePort)
 	:Connect(sessionID, remoteIP.c_str(), atoi(remotePort.c_str()), ConnectStatusType::Connected), SocketID(socketID)

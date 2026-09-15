@@ -1,7 +1,7 @@
 #include "Logger/LogData.h"
 
-using namespace spark;
-namespace spark::core
+using namespace Spark;
+namespace Spark::Core
 {
 LogData::LogData()
 {

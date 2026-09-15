@@ -2,7 +2,7 @@
 #include <Spark/Network/NetworkExport.h>
 
 
-namespace spark::network
+namespace Spark::Network
 {
 unsigned int NETWORK_EXPORTS CalculateCrc32c(const unsigned char* buff, int len);
 //在 dataLength 字节里逐字节找 patternLength 字节的模式，找到返回 true 并把下标写入 offset

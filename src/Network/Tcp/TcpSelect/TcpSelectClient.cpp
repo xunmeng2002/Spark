@@ -4,9 +4,9 @@
 #include <cstring>
 
 using namespace std;
-using namespace spark::core;
+using namespace Spark::Core;
 
-namespace spark::network
+namespace Spark::Network
 {
 TcpSelectClient::TcpSelectClient(const char* addressName, int milliSeconds)
 	:TcpSelectBase(ServerTypeType::Client, addressName, milliSeconds)

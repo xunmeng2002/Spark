@@ -4,7 +4,7 @@
 #include <string.h>
 
 
-namespace spark::network
+namespace Spark::Network
 {
 TcpSelectBase::TcpSelectBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
 	:TcpBase(serverType, addressName, milliSeconds)

@@ -3,7 +3,7 @@
 #include <string>
 
 
-namespace spark::core
+namespace Spark::Core
 {
 std::string CORE_EXPORTS getMD5(const unsigned char* data, int len);
 }

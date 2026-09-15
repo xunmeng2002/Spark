@@ -6,8 +6,8 @@
 #include <Spark/Core/Logger/Logger.h>
 #include <thread>
 
-using namespace spark::core;
-using namespace spark::network;
+using namespace Spark::Core;
+using namespace Spark::Network;
 
 int main(int argc, const char* argv[])
 {

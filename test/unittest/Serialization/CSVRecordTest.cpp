@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <Spark/Serialization/Csv/CsvRecord.h>
-using namespace spark::serialization;
+using namespace Spark::Serialization;
 // ============================================================
 // CSVRecord 测试
 // ============================================================

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <Spark/Network/Protocol/ProtocolUtility.h>
-using namespace spark::network;
+using namespace Spark::Network;
 // ============================================================
 // CalculateCrc32c 测试
 // 校验和计算：CRC-32C（Castagnoli），反射多项式 0x82F63B78

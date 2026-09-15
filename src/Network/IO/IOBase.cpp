@@ -4,9 +4,9 @@
 #include <Spark/Core/Logger/Logger.h>
 
 using namespace std;
-using namespace spark::core;
+using namespace Spark::Core;
 
-namespace spark::network
+namespace Spark::Network
 {
 IOBase::IOBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
 	:m_ServerType(serverType), m_AddressName(addressName), m_TimeOut(chrono::milliseconds(milliSeconds)), m_IOSubscriber(nullptr), m_LastSessionIndex(0LL)

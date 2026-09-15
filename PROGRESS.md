@@ -5,7 +5,7 @@
 ## ✅ 已完成
 
 - **六仓 C++ 规范对齐 · 批 2b：Templates 残留 C 风格 cast 清零 + 生成失败路径加固（2026-09-15）**：
-  批 2 至此只剩 `namespace spark`/`mdb` → PascalCase（公开 API，须授权、与批 7 原子改）。
+  批 2 至此只剩 `namespace Spark`/`mdb` → PascalCase（公开 API，须授权、与批 7 原子改）。
   - **① C 风格 cast 清零：17 处 / 11 文件，分两轮**（`%TEMP%\tpl-ccast-fix.py` 10 条 + `%TEMP%\tpl-ptrcat-fix.py` 3 条，逐条带命中数断言、幂等可重入）。
     第一轮 **11 处 / 8 文件**：两类形态，C 关键字类型（`(int)`/`(bool)`/`(void*)`/`(const char*)`）与模板变量类型（`(!!@type!!Type)`）；`enum` 分支沿用 `Packages.cpp.tpl` 已用过的条件三元组写法，不另创。
     **第二轮补 6 处 / 3 文件（`(T*)ptr` 指针形态，是独立审查抓到的漏网，见 ⑧）**：`Cpp/Api/ApiImpl.cpp.tpl:48,56`、`Cpp/Api/GbkApiImpl.cpp.tpl:60,81`、`Cpp/Protocol/Kernel/KernelGen.cpp.tpl:48,58`，一律 `((!!$packageName!!*)package)` → `static_cast<!!$packageName!!*>(package)`。**选 `static_cast` 而非 `reinterpret_cast` 已核实**：`Packages.h.tpl:16` 为 `class !!$className!! : public Package`（单一、非虚、公有继承），模板上下文里 `package` 声明为 `Package* package`，故下行转换合法且与 C 风格等价。本轮 churn：**只 QT 变**（Spark/Mdb 重 pump 无输出——这 3 个模板不喂它们），产物里 `static_cast<XxxPackage*>(package)` **107 处 / 8 文件**，旧形态在该 8 文件归零。
@@ -19,7 +19,7 @@
   - **登记（本批未动，见 ❓ 区）**：生成物 `*TableList.h` 的 5 头 / 10 个公开常量须授权；工具链三处既有问题（`os.system` 拼串 / 头注释嵌模板路径 / 产物无体检）；**新登记 6 条**（`.cu` 白名单缺口、Mdb README 的 `tradingDay` 未定义示例、pump.py 回退路径四处、README 注释列位）见 ❓ 区同名条目。
 
 - **六仓 C++ 规范对齐 · 批 2a 三项收口：模板有界化 / `using namespace std;` 清零 / 生成物「勿手改」头（2026-09-15）**：
-  用户定的三项一次做完再动 Spark（「合并成一轮做，churn 只翻一次」）。**批 2a 至此收口**，批 2 只剩 `namespace spark`/`mdb` → PascalCase 那一段（公开 API，须与批 7 原子改）。
+  用户定的三项一次做完再动 Spark（「合并成一轮做，churn 只翻一次」）。**批 2a 至此收口**，批 2 只剩 `namespace Spark`/`mdb` → PascalCase 那一段（公开 API，须与批 7 原子改）。
   - **① `sprintf` 有界化（安全类，本批价值最高的一项）**：最后一处无界写是 `Templates/Cpp/Protocol/Packages/Packages.cpp.tpl` 的 `GetDebugString`——写目标是 `thread_local char DataStringBuffer[10240]`，`offset` 跨全包字段累加、**没有任何上界**。新增文件内 helper `AppendDebugString(int offset, const char* format, ...)`：用 `vsnprintf` 按剩余容量写入并返回新 offset，越界只截断不越写；**264 处**调用点由 `offset += sprintf(...)` 改为 `offset = AppendDebugString(offset, ...)`。同时补 `#include <cstdarg>` / `<cstdio>`。**§5 取舍**：一个 helper 对 264 处调用点，而不是逐点加护栏（`offset` 是跨字段累加的，逐点判断等于把同一段判断抄 264 遍）。至此 `Templates/` 内 `sprintf` **0 处**。
   - **② `using namespace std;` 清零**：5 处全清（`BackTestApiImpl.cpp.tpl`、`Config.cpp.tpl`、`ServerConfig.cpp.tpl`、`InitMdbFromCsv.cpp.tpl`、`InitMdbFromDB.cpp.tpl`）。随之把因去 `using` 而失去限定的 `printf`/`fstream`/`vector` 改为显式限定，或补 `#include <cstdio>`（`Config.cpp.tpl`、`ServerConfig.cpp.tpl`）。
   - **③ 生成物「勿手改」头：落在 `pump.py`（三仓各一份），不是改 66 个模板**。`sys.argv[2]` 就是真实模板路径，按目标扩展名选注释符（`.sql` → `-- `，其余 `// `），产物首行写 `// 本文件由 <模板路径> 生成；请勿手改，改动请改模板后重跑 pumpall.py`。落盘编码沿用 `UTF-8-SIG`。**这条是堵历史隐患的**——本仓 96,612 行生成物此前没有任何「勿手改」标记。
@@ -63,7 +63,7 @@
   - **据此撤掉一处多余改动** —— 我曾据错误阈值把 `VectorDb.cpp` 那条 116 字符的 `if` 条件拆成两行；**116 ≤ 150，本不违规**，已按最小改动原则还原为单行。并实地复核：**改前改后均为 0 行超 150**（`%TEMP%\beacon-linewidth-cmp.py` 对 HEAD 与工作区逐文件比对），即本仓在真实阈值下本就达标。**格式类不纳入**的结论不变，但理由换了——不是"无法被工具拦下"，而是"本仓已达标，无需整改"；其余五仓是否同样达标尚未实测。
   - **设计文档 `has_index(u8)`→`hasIndex(u8)`**（`doc/MdbVector 整体设计.txt:45`，与代码局部名一致）。改名少 1 个显示列，用脚本按块内箭头原列坐标（47）重排空格，框线校验复跑仍 **0 处错位**。
   - **`out/` 不是 `out.txt`** —— Beacon `.gitignore` 只忽略了 `out.txt`，而 CMake 预设的构建根 `out/` 一直未忽略（`out/` 下 0 个文件被跟踪，却常挂 `?? out/`）。我这次 `/W4` 扫描产的 11 个 `.obj` 就落在 `out/w4/`。已补 `out/`。
-  - **批 2–7 状态与阻塞**：**批 2（Templates，64 个模板 / 4,953 行）**——非 API 部分**可以开工**（实测 22 个模板共 190 处 `m_` **全在 `private:` 段**，另有新发现的 `t_` 23 处、`in_file` 4 处、`g_Errors` 2 处、无界 `sprintf` 5 处——后者是 Spark 生成物里 264 处 `sprintf` 与 QT/Mdb 生成物里 189 处的**唯一源头**），但 **`namespace spark`/`mdb` 是公开 API**（`Cpp/Spark/*` 与 `Cpp/Protocol/Packages/*` 生成的正是被 Mdb/DBAdapters/QT 通过 `find_package` 消费的头），**须授权且与批 7 原子改**；**批 3（Spark，167 文件 / 15,024 行）阻塞**于公开 API 授权 + §3 确认（裸 `new` 46/`delete` 20 → 智能指针、`volatile` 6 处 → `std::atomic`）；**批 4（DBAdapters）阻塞于 B0-a**（5 个生成脚本处于未暂存删除态，且该仓**无 pumplist.xml**，其 `MdbStructs.h/.cpp` 1,105 行无可复现生成路径）；**批 5（Mdb）**手写仅 1 文件，主要靠批 2；**批 6（QT，109 文件）**阻塞于授权；**批 7（跨仓命名空间统一）**须授权，回退面最大，单独一批单独 commit。
+  - **批 2–7 状态与阻塞**：**批 2（Templates，64 个模板 / 4,953 行）**——非 API 部分**可以开工**（实测 22 个模板共 190 处 `m_` **全在 `private:` 段**，另有新发现的 `t_` 23 处、`in_file` 4 处、`g_Errors` 2 处、无界 `sprintf` 5 处——后者是 Spark 生成物里 264 处 `sprintf` 与 QT/Mdb 生成物里 189 处的**唯一源头**），但 **`namespace Spark`/`mdb` 是公开 API**（`Cpp/Spark/*` 与 `Cpp/Protocol/Packages/*` 生成的正是被 Mdb/DBAdapters/QT 通过 `find_package` 消费的头），**须授权且与批 7 原子改**；**批 3（Spark，167 文件 / 15,024 行）阻塞**于公开 API 授权 + §3 确认（裸 `new` 46/`delete` 20 → 智能指针、`volatile` 6 处 → `std::atomic`）；**批 4（DBAdapters）阻塞于 B0-a**（5 个生成脚本处于未暂存删除态，且该仓**无 pumplist.xml**，其 `MdbStructs.h/.cpp` 1,105 行无可复现生成路径）；**批 5（Mdb）**手写仅 1 文件，主要靠批 2；**批 6（QT，109 文件）**阻塞于授权；**批 7（跨仓命名空间统一）**须授权，回退面最大，单独一批单独 commit。
   - **提交纪律**：**批 2 不能与批 1 同一个 commit** —— `Cpp/Mdb/*.tpl` 被 Mdb 与 QT 共用，改动落地即产生三仓生成物 churn，而**这两仓在 WSL 上构建不了**（缺 `Libs/Spark/x64-linux`，见 B0-b）。**批 1 至今未提交**（用户未要求提交）。
   - **可清理的临时件**：`%TEMP%\beacon-rename{,2,3,4}.py`、`beacon-strlit{,-revert}.py`、`beacon-stalecomment.py`、`beacon-structmember.py`、`beacon-comment-fix.py`、`beacon-doc-{repad,autosize,align,width}.py`、`beacon-w4{,b,c}.bat`、`beacon-w4sum.py`、`beacon-build.bat`、`beacon-*.xml`（pytest/RAG 的 junitxml）、以及 **`%TEMP%\beacon-replay\`、`%TEMP%\beacon-struct-bak\`**（后者是第二轮改动前 10 个文件的快照，§1 禁递归删除故未清理；**在本批提交或放弃前先别删**，它是未提交改动的唯一回退点）。
   - **本文件的体积**：批 1 条目加完后实测约 73 KB，超出 §8.1 的 50 KB 目标；**2026-09-15 已按 §8.1 滚动**——最旧三条移入 `PROGRESS-archive.md`（`D.19`/`D.18`/`D.17`），主文件剩 3 批，见下一条 ✅ 与 `## 归档索引`。
@@ -71,7 +71,7 @@
 
 ## 🔄 进行中
 
-- **六仓 C++ 规范对齐**：批 1（Beacon）**已完成并提交**（`bd95bd4`）；批 2 前置（Mdb 生成物补齐）**已提交**（`0bb5fa6`）；**批 2a + 批 2b（Templates：有界化 / 公开成员改名 / C 风格 cast 清零 / 生成失败路径加固）已完成**，见上方 ✅ 条目。**批 2 剩余部分是 `namespace spark`/`mdb` → PascalCase**——它生成的是被 Mdb / DBAdapters / QT 通过 `find_package` 消费的公开头，**须授权并与批 7 原子改**（见 ❓ 区①）。批 3–7 **未开工**，阻塞见 ❓ 区。**注意**：`Cpp/Mdb/*.tpl` 被 Mdb 与 QT 共用，落地即产生三仓生成物 churn，**须分仓、分批 commit**。
+- **六仓 C++ 规范对齐**：批 1（Beacon）**已完成并提交**（`bd95bd4`）；批 2 前置（Mdb 生成物补齐）**已提交**（`0bb5fa6`）；**批 2a + 批 2b（Templates：有界化 / 公开成员改名 / C 风格 cast 清零 / 生成失败路径加固）已完成**，见上方 ✅ 条目。**批 2 剩余部分是 `namespace Spark`/`mdb` → PascalCase**——它生成的是被 Mdb / DBAdapters / QT 通过 `find_package` 消费的公开头，**须授权并与批 7 原子改**（见 ❓ 区①）。批 3–7 **未开工**，阻塞见 ❓ 区。**注意**：`Cpp/Mdb/*.tpl` 被 Mdb 与 QT 共用，落地即产生三仓生成物 churn，**须分仓、分批 commit**。
 
 ## ❓ 待讨论 / 待决策
 
@@ -102,8 +102,8 @@
 
 - **六仓 C++ 规范对齐：批 2–7 的授权（2026-09-15 提出，全部未决）**：
   按 Harness §3，**公开 API 改名与高风险改动须逐仓单独取得授权**，不得援引批 1 Beacon 的授权（计划决策⑤）。批 1 的授权只覆盖 Beacon。以下五项各自独立，可以只批其中几项：
-  - **①批 2 Templates 的 `namespace spark`/`mdb` → PascalCase**：这两个命名空间生成的正是被 Mdb / DBAdapters / QT 通过 `find_package` 消费的**公开头**，改名会让三个消费方立刻编译失败。**必须与批 7 原子改、单独 commit**。`Cpp/Libs/PBApi` 另喂含已废弃 LibTest 的 Libs 仓。
-  - **②批 3 Spark 的公开 API 改名**：`namespace spark` 112 处 / 112 文件、小写访问器与方法约 1,295 处（最大头是 `length` 1,192 处，需先甄别哪些是我方方法、哪些是标准库——`std::` 一族已滤掉但跨库同名须人工确认）、C 风格 cast 134 处、`k` 前缀 221 处、`g_` 66 处、`enum CSV_PARSER_ERROR` + `CPE_*` → `enum class`。
+  - **①批 2 Templates 的 `namespace Spark`/`mdb` → PascalCase**：这两个命名空间生成的正是被 Mdb / DBAdapters / QT 通过 `find_package` 消费的**公开头**，改名会让三个消费方立刻编译失败。**必须与批 7 原子改、单独 commit**。`Cpp/Libs/PBApi` 另喂含已废弃 LibTest 的 Libs 仓。
+  - **②批 3 Spark 的公开 API 改名**：`namespace Spark` 112 处 / 112 文件、小写访问器与方法约 1,295 处（最大头是 `length` 1,192 处，需先甄别哪些是我方方法、哪些是标准库——`std::` 一族已滤掉但跨库同名须人工确认）、C 风格 cast 134 处、`k` 前缀 221 处、`g_` 66 处、`enum CSV_PARSER_ERROR` + `CPE_*` → `enum class`。
   - **③批 3 Spark 的 §3 高风险项（须单独确认，与②可分开批）**：裸 `new` 46 处 / 裸 `delete` 20 处 → 智能指针（`LockFreeQueue.h`/`ObjectPool.h` 是分配原语内部，**按设计需保留并登记豁免**，其余可改）；`volatile` **6 处 / 2 文件** → `std::atomic`（§6 禁 `volatile` 作同步；**须先确认这 6 处是否真用于同步**——这是本批唯一的高风险项）。
   - **④批 6 QuantTrading 的公开 API 改名**：`namespace quanttrading` 87 处 / 83 文件 → `QuantTrading`（`mdb` 4 处须与 Mdb 仓同步）；`m_` 1,215 处 / 64 文件（`m_Mdb` 一个名字就 110 处）；`strcpy` 173 处 → 有界替代；裸 `new`/`delete` 81/8 → 智能指针。`namespace std` 的 `hash` 特化**不要动**，`py` 是别名**不动**。
   - **⑤B0-a（DBAdapters 的前置决策，非授权类）**：该仓 5 个生成脚本（`pump.py`/`pumpall.py`/`parseall.py`/`ParseTableModel.py`/`ParsePackageModel.py`）处于**未暂存的删除态**，且该仓**没有 `pumplist.xml`**——其生成的 `MdbStructs.h/.cpp`（1,105 行，占全仓 20%）**没有任何可复现的生成路径**。必须先定：**保留生成**（补 pumplist 并把脚本提交回来）、**转为手写**（删脚本、把 MdbStructs 标记为手写）、还是**从 Spark 复制工具链**。此决定不做，批 4 无法开工。

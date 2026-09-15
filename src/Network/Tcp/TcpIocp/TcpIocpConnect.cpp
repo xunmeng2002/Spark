@@ -3,9 +3,9 @@
 #include <Spark/Core/Logger/Logger.h>
 
 #ifdef _WIN32
-using namespace spark::core;
+using namespace Spark::Core;
 
-namespace spark::network
+namespace Spark::Network
 {
 TcpIocpConnect::TcpIocpConnect(SessionIDType sessionID, const SOCKET& socketID, const std::string& remoteIP, const std::string& remotePort)
 	:TcpConnect(sessionID, socketID, remoteIP, remotePort)

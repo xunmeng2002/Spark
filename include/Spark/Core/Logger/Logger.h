@@ -8,7 +8,7 @@
 #include <condition_variable>
 
 
-namespace spark::core
+namespace Spark::Core
 {
 enum class LogLevel : int
 {
@@ -65,11 +65,11 @@ private:
 
 
 #define WriteLog(level, formatStr, ...)\
-	if (spark::core::Logger::GetWriteLogFunc() != nullptr)\
-		spark::core::Logger::GetWriteLogFunc()(level, __FILE__, __LINE__, __func__, formatStr, ##__VA_ARGS__);
+	if (Spark::Core::Logger::GetWriteLogFunc() != nullptr)\
+		Spark::Core::Logger::GetWriteLogFunc()(level, __FILE__, __LINE__, __func__, formatStr, ##__VA_ARGS__);
 
 
 #define WriteErrorLog(errorID, errorMsg)\
-	if (spark::core::Logger::GetWriteLogFunc() != nullptr)\
-		spark::core::Logger::GetWriteLogFunc()(spark::core::LogLevel::Error, __FILE__, __LINE__, __func__, "ErrorID:[%d], ErrorMsg:[%s].", errorID, errorMsg);
+	if (Spark::Core::Logger::GetWriteLogFunc() != nullptr)\
+		Spark::Core::Logger::GetWriteLogFunc()(Spark::Core::LogLevel::Error, __FILE__, __LINE__, __func__, "ErrorID:[%d], ErrorMsg:[%s].", errorID, errorMsg);
 }

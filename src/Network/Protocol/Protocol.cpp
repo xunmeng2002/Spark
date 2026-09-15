@@ -3,8 +3,8 @@
 #include <Spark/Network/IO/IOFactory.h>
 #include <stdexcept>
 
-using namespace spark::core;
-namespace spark::network
+using namespace Spark::Core;
+namespace Spark::Network
 {
 static_assert(BuffSize >= MaxFrameSize, "IO 层的收发缓冲必须容纳一帧上限，否则 MakePackage 会写出界");
 

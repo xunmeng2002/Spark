@@ -8,7 +8,7 @@
 #include <chrono>
 #include <atomic>
 
-namespace spark::network
+namespace Spark::Network
 {
 class NETWORK_EXPORTS TcpConnect : public Connect
 {

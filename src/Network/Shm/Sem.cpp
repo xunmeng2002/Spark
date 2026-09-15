@@ -12,9 +12,9 @@
 #endif
 
 using namespace std;
-using namespace spark::core;
+using namespace Spark::Core;
 
-namespace spark::network
+namespace Spark::Network
 {
 Sem::Sem(const char* name, ServerTypeType serverType, unsigned timeOutMilliSecond)
 	:m_SemName(name), m_Sem(nullptr), m_ServerType(serverType)

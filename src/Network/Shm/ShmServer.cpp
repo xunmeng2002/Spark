@@ -4,7 +4,7 @@
 
 using namespace std;
 
-namespace spark::network
+namespace Spark::Network
 {
 ShmServer::ShmServer(const char* shmName, int milliSeconds)
 	:ShmBase(ServerTypeType::Server, shmName, milliSeconds), m_ConnectCount(0)

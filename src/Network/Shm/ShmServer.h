@@ -3,7 +3,7 @@
 #include <chrono>
 
 
-namespace spark::network
+namespace Spark::Network
 {
 class ShmServer : public ShmBase
 {

@@ -2,7 +2,7 @@
 #include <Spark/Core/Logger/Logger.h>
 
 
-namespace spark::core
+namespace Spark::Core
 {
 void AspectLogger::Before(const char* funcName)
 {

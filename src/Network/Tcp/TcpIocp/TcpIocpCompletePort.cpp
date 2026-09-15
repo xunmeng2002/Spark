@@ -2,7 +2,7 @@
 
 #ifdef _WIN32
 
-namespace spark::network
+namespace Spark::Network
 {
 IOCompletePort::IOCompletePort()
 {

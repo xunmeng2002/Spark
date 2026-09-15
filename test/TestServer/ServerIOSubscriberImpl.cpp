@@ -4,8 +4,8 @@
 #include <string.h>
 #include <iostream>
 
-using namespace spark::core;
-using namespace spark::network;
+using namespace Spark::Core;
+using namespace Spark::Network;
 
 ServerIOSubscriberImpl::ServerIOSubscriberImpl(IOBase* io, IOThread* ioThread)
     :m_IO(io), m_IOThread(ioThread)

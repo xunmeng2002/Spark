@@ -7,7 +7,7 @@
 #include <Spark/Network/IO/IOThread.h>
 #include <map>
 
-namespace spark::network
+namespace Spark::Network
 {
 class NETWORK_EXPORTS Protocol : public IOSubscriber
 {

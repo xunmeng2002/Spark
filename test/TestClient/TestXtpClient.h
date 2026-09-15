@@ -3,7 +3,7 @@
 #include <Spark/Network/Protocol/Protocol.h>
 #include <chrono>
 
-class XtpClient : public spark::network::Protocol, public spark::network::ProtocolSubscriber
+class XtpClient : public Spark::Network::Protocol, public Spark::Network::ProtocolSubscriber
 {
 public:
 	XtpClient();
@@ -20,7 +20,7 @@ public:
 
 	std::chrono::steady_clock::time_point m_StartTime;
 	int m_RecvCount;
-    spark::packages::ReqInsertOrderPackage* m_ReqInsertOrder;
+    Spark::Packages::ReqInsertOrderPackage* m_ReqInsertOrder;
 };
 
 

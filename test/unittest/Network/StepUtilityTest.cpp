@@ -10,7 +10,7 @@
 #include <limits>
 #include <string>
 #include <vector>
-using namespace spark::network;
+using namespace Spark::Network;
 // ============================================================
 // StepUtility 测试
 // STEP 协议缓冲解析/序列化：字段定位、报文头/尾流式转换

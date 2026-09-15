@@ -3,7 +3,7 @@
 #include <Spark/Network/IO/IOBase.h>
 
 
-namespace spark::network
+namespace Spark::Network
 {
 class NETWORK_EXPORTS IOFactory
 {

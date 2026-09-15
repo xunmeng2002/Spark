@@ -2,7 +2,7 @@
 #include <iostream>
 using namespace std;
 
-using namespace spark::core;
+using namespace Spark::Core;
 
 int main()
 {

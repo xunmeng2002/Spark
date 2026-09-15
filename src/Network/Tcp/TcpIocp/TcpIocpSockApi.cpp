@@ -2,9 +2,9 @@
 #include <Spark/Core/Logger/Logger.h>
 
 #ifdef _WIN32
-using namespace spark::core;
+using namespace Spark::Core;
 
-namespace spark::network
+namespace Spark::Network
 {
 SocketApi SocketApi::m_Instance;
 

@@ -3,7 +3,7 @@
 #ifdef __linux__
 #include <errno.h>
 
-namespace spark::core
+namespace Spark::Core
 {
 int CORE_EXPORTS GetLastError();
 int CORE_EXPORTS WSAGetLastError();

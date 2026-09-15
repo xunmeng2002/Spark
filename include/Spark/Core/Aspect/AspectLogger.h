@@ -2,7 +2,7 @@
 #include <Spark/Core/CoreExport.h>
 
 
-namespace spark::core
+namespace Spark::Core
 {
 class CORE_EXPORTS AspectLogger
 {

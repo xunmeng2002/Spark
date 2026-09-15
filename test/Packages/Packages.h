@@ -1,11 +1,11 @@
-﻿// 本文件由 ../Templates/Cpp/Protocol/Packages/Packages.h.tpl 生成；请勿手改，改动请改模板后重跑 pumpall.py
+// 本文件由 ../Templates/Cpp/Protocol/Packages/Packages.h.tpl 生成；请勿手改，改动请改模板后重跑 pumpall.py
 #pragma once
 #include <Spark/Fields.h>
 #include <Spark/Network/Protocol/Package.h>
 
-using spark::network::Package;
+using Spark::Network::Package;
 
-namespace spark::packages
+namespace Spark::Packages
 {
 class NotifyComponentConnectStatusPackage : public Package
 {

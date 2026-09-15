@@ -1,7 +1,7 @@
 #pragma once
 #include <Spark/Serialization/SerializationExport.h>
 
-namespace spark::serialization
+namespace Spark::Serialization
 {
 const int TOKEN_MAX_LEN = 64 * 1024; 
 

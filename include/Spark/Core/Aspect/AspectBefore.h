@@ -3,7 +3,7 @@
 #include <string>
 
 
-namespace spark::core
+namespace Spark::Core
 {
 template <typename Func, typename... Args>
 struct AspectBefore

@@ -3,7 +3,7 @@
 
 using namespace std::chrono;
 
-namespace spark::core
+namespace Spark::Core
 {
 AspectPerformance::AspectPerformance()
 {

@@ -5,7 +5,7 @@
 #include <string>
 
 
-namespace spark::core
+namespace Spark::Core
 {
 class CORE_EXPORTS TimeUtility
 {

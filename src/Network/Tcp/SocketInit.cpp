@@ -2,7 +2,7 @@
 #include <iostream>
 
 
-namespace spark::network
+namespace Spark::Network
 {
 SocketInit SocketInit::_SOCKET_INIT;
 

@@ -6,7 +6,7 @@
 #include <limits>
 #include <type_traits>
 
-namespace spark::network
+namespace Spark::Network
 {
 //协议版本。报文头结构或字段语义变化时必须同步递增，否则两端会按不同的格式解析同一串字节。
 //升到 3：Step 协议的键与整型全部改为定宽大写十六进制，MsgSeqNum 与 CheckSum 改为无符号。

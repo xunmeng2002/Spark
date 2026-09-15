@@ -13,9 +13,9 @@
 #endif
 
 using namespace std;
-using namespace spark::core;
+using namespace Spark::Core;
 
-namespace spark::network
+namespace Spark::Network
 {
 SingleShm::SingleShm(ServerTypeType shmType, const char* shmName)
 	:IOBase(shmType, shmName, 0), m_ShmName(shmName), m_Connected(false), m_SessionID(0LL),

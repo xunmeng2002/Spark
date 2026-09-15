@@ -6,7 +6,7 @@
 #include <condition_variable>
 
 
-namespace spark::core
+namespace Spark::Core
 {
 struct LogData
 {
@@ -16,9 +16,9 @@ struct LogData
 	void PushBuffer();
 
 	FILE* LogFile;
-    spark::Buffer<LogBuffSize>* CurrBuffer;
-	std::list<spark::Buffer<LogBuffSize>*> LogBuffers;
-	std::list<spark::Buffer<LogBuffSize>*> InnerLogBuffers;
+    Spark::Buffer<LogBuffSize>* CurrBuffer;
+	std::list<Spark::Buffer<LogBuffSize>*> LogBuffers;
+	std::list<Spark::Buffer<LogBuffSize>*> InnerLogBuffers;
 
 	std::mutex Mutex;
 	std::condition_variable ConditionVariable;

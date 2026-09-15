@@ -3,7 +3,7 @@
 #include <limits>
 #include <stdlib.h>
 
-namespace spark::serialization
+namespace Spark::Serialization
 {
 CSVRecord::CSVRecord()
 {
@@ -146,7 +146,7 @@ double CSVRecord::GetFieldAsDouble(const char *pszFieldName)
 }
 
 #if 0
-using namespace spark::serialization;
+using namespace Spark::Serialization;
 int main()
 {
 

@@ -1,7 +1,7 @@
 #include <Spark/Serialization/Base64/Base64.h>
 
 
-namespace spark::serialization
+namespace Spark::Serialization
 {
 static const char* g_Codes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 static const unsigned char g_Decodes[256] =

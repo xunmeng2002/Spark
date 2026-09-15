@@ -5,7 +5,7 @@
 #include <Spark/Core/Aspect/AspectPerformance.h>
 #include <iostream>
 using namespace std;
-using namespace spark::core;
+using namespace Spark::Core;
 
 void CalcalateMD5(const char* src, int len)
 {

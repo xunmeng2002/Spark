@@ -4,7 +4,7 @@
 #include <string.h>
 
 
-namespace spark::network
+namespace Spark::Network
 {
 TcpEpollServer::TcpEpollServer(const char* addressName, int milliSeconds)
 	:TcpEpollBase(ServerTypeType::Server, addressName, milliSeconds)

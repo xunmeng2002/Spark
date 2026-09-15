@@ -2,7 +2,7 @@
 #include <Spark/Network/NetworkExport.h>
 #include <string>
 
-namespace spark::network
+namespace Spark::Network
 {
 void NETWORK_EXPORTS ParseAddress(const std::string& addressName, std::string& address, std::string& port);
 }

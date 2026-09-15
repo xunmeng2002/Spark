@@ -12,7 +12,7 @@
 
 
 
-namespace spark::core
+namespace Spark::Core
 {
 bool Dir::IsDir(const char* path)
 {

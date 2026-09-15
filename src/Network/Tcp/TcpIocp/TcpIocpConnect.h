@@ -5,7 +5,7 @@
 #include "Tcp/TcpConnect.h"
 #include <Spark/TemplateLib/Buffer/Buffer.h>
 
-namespace spark::network
+namespace Spark::Network
 {
 enum class IocpEvent : int
 {

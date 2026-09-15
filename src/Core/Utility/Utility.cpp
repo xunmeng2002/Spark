@@ -6,7 +6,7 @@
 #include <fstream>
 
 
-namespace spark::core
+namespace Spark::Core
 {
 void Utility::ParseProcessName(const char* fullProcessName, char* processName, int len)
 {

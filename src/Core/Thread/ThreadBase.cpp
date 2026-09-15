@@ -4,7 +4,7 @@
 #include <assert.h>
 
 
-namespace spark::core
+namespace Spark::Core
 {
 ThreadBase::ThreadBase(const char* name, int milliSeconds)
 	:m_ThreadName(name), m_ShouldRun(false), m_TimeOut(milliSeconds)

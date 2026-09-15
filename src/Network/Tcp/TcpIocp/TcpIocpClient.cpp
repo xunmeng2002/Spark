@@ -7,9 +7,9 @@
 #include <Spark/Core/Logger/Logger.h>
 
 #ifdef _WIN32
-using namespace spark::core;
+using namespace Spark::Core;
 
-namespace spark::network
+namespace Spark::Network
 {
 TcpIocpClient::TcpIocpClient(const char* addressName, int milliSeconds, int backlog)
 	:TcpIocpBase(ServerTypeType::Client, addressName, milliSeconds, backlog)

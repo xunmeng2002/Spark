@@ -6,7 +6,7 @@
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 
 
-namespace spark::network
+namespace Spark::Network
 {
 template<unsigned SIZE>
 class ShmConnect : public Connect
