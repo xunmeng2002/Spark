@@ -35,5 +35,7 @@
 .vs/*
 out/*
 pumptemp.py
+*.pumptmp
 /bin
 /lib
+__pycache__/
