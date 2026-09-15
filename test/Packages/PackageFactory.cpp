@@ -1,4 +1,5 @@
-﻿#include "PackageFactory.h"
+﻿// 本文件由 ../Templates/Cpp/Protocol/Packages/PackageFactory.cpp.tpl 生成；请勿手改，改动请改模板后重跑 pumpall.py
+#include "PackageFactory.h"
 #include "Packages.h"
 
 
