@@ -6,54 +6,54 @@ namespace Spark::Serialization
 {
 CSVParser::CSVParser()
 {
-	m_pszData = nullptr;
-	m_pCurr = nullptr;
-	m_nErrorCode = CPE_END;
+	data_ = nullptr;
+	curr_ = nullptr;
+	errorCode_ = CPE_END;
 
-	m_szCurrWord = new char[TOKEN_MAX_LEN + 1];
+	currWord_ = new char[TOKEN_MAX_LEN + 1];
 }
 
 CSVParser::CSVParser(const char *pszData)
 {
-	m_chSeparator[0] = ',';
-	m_chSeparator[1] = '\0';
-	m_pszData = pszData;
-	m_pCurr = (char *)m_pszData;
+	separator_[0] = ',';
+	separator_[1] = '\0';
+	data_ = pszData;
+	curr_ = (char *)data_;
 	NextChar();
 
-	m_szCurrWord = new char[TOKEN_MAX_LEN + 1];
+	currWord_ = new char[TOKEN_MAX_LEN + 1];
 }
 
 void CSVParser::Parse(const char *pszData)
 {
-	m_pszData = pszData;
-	m_pCurr =  (char *)m_pszData;
-	m_nErrorCode = CPE_HAS_NEXT;
+	data_ = pszData;
+	curr_ =  (char *)data_;
+	errorCode_ = CPE_HAS_NEXT;
 	NextChar();
 
-	m_szCurrWord = new char[TOKEN_MAX_LEN + 1];
+	currWord_ = new char[TOKEN_MAX_LEN + 1];
 }
 
 CSVParser::~CSVParser()
 {
-	delete m_szCurrWord;
+	delete currWord_;
 }
 void CSVParser::SetSeparator(char chSeparator)
 {
-	m_chSeparator[0] = chSeparator;
+	separator_[0] = chSeparator;
 }
 
 void CSVParser::NextChar()
 {
-	m_chC = *m_pCurr;
-	if(m_chC == '\0' || m_chC == '\r' || m_chC == '\n')
+	chC_ = *curr_;
+	if(chC_ == '\0' || chC_ == '\r' || chC_ == '\n')
 	{
-		m_chC = '\0';
-		m_chNC = '\0';
+		chC_ = '\0';
+		chNC_ = '\0';
 	}
 	else{
-		m_pCurr++;
-		m_chNC = *m_pCurr;
+		curr_++;
+		chNC_ = *curr_;
 	}
 }
 
@@ -62,13 +62,13 @@ void CSVParser::MakeWord(const char *pszEnd)
 	int i=0;
 	for (;i<TOKEN_MAX_LEN; i++)
 	{
-		if (m_chC == '\0')
+		if (chC_ == '\0')
 		{
 			break;
 		}
-		if (strchr(pszEnd, m_chC) != nullptr)
+		if (strchr(pszEnd, chC_) != nullptr)
 		{
-			if (m_chC == '"' && m_chNC == '"')
+			if (chC_ == '"' && chNC_ == '"')
 			{
 				NextChar();
 			}
@@ -77,42 +77,42 @@ void CSVParser::MakeWord(const char *pszEnd)
 				break;
 			}
 		}
-		m_szCurrWord[i]=m_chC;
+		currWord_[i]=chC_;
 		NextChar();
 	}
-	m_szCurrWord[i]='\0';
+	currWord_[i]='\0';
 }
 
 char *CSVParser::GetNextToken()
 {
-	switch (m_chC)
+	switch (chC_)
 	{
 	case '"':
 		NextChar();
 		MakeWord("\"");
-		if (m_chC != '"')
+		if (chC_ != '"')
 		{
-			m_nErrorCode = CPE_MARK_NOT_MATCH;
+			errorCode_ = CPE_MARK_NOT_MATCH;
 			return nullptr;
 		}
 		NextChar();
 		break;
 	default:
-		MakeWord(m_chSeparator);
+		MakeWord(separator_);
 	}
-	if (m_chC == m_chSeparator[0])
+	if (chC_ == separator_[0])
 	{
-		m_nErrorCode = CPE_HAS_NEXT;
+		errorCode_ = CPE_HAS_NEXT;
 		NextChar();
-		return m_szCurrWord;
+		return currWord_;
 	}
-	if (m_chC == '\0')
+	if (chC_ == '\0')
 	{
-		m_nErrorCode = CPE_END;
-		return m_szCurrWord;
+		errorCode_ = CPE_END;
+		return currWord_;
 	}
 
-	m_nErrorCode = CPE_TOKEN_TOO_LONG;
+	errorCode_ = CPE_TOKEN_TOO_LONG;
 	return nullptr;
 }
 }

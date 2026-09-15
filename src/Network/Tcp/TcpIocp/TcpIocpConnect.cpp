@@ -14,13 +14,13 @@ TcpIocpConnect::TcpIocpConnect(SessionIDType sessionID, const SOCKET& socketID, 
 TcpIocpConnect::~TcpIocpConnect()
 {
 #ifdef _WIN32
-	shutdown(SocketID, SD_BOTH);
+	shutdown(SocketId, SD_BOTH);
 #endif
 #ifdef __linux__
-	shutdown(SocketID, SHUT_RDWR);
+	shutdown(SocketId, SHUT_RDWR);
 #endif
-	closesocket(SocketID);
-	SocketID = INVALID_SOCKET;
+	closesocket(SocketId);
+	SocketId = INVALID_SOCKET;
 }
 TcpIocpConnect* TcpIocpConnect::Allocate(SessionIDType sessionID, const SOCKET& socketID, const std::string& remoteIP, const std::string& remotePort)
 {
@@ -28,7 +28,7 @@ TcpIocpConnect* TcpIocpConnect::Allocate(SessionIDType sessionID, const SOCKET& 
 }
 void TcpIocpConnect::Deallocate()
 {
-	WriteLog(LogLevel::Info, "TcpIocpConnect::Close SessionID:%lld, Socket:%lld", SessionID, SocketID);
+	WriteLog(LogLevel::Info, "TcpIocpConnect::Close SessionID:%lld, Socket:%lld", SessionID, SocketId);
 	ObjectPool<TcpIocpConnect>::GetInstance().Deallocate(this);
 }
 

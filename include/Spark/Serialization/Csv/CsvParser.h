@@ -27,17 +27,17 @@ private:
 	void NextChar();
 	void MakeWord(const char *pszEnd);
 private:
-	CSV_PARSER_ERROR m_nErrorCode;
-	const char *m_pszData;
-	char* m_szCurrWord;
-	char *m_pCurr;
-	char m_chC;
-	char m_chNC;
-	char m_chSeparator[2];
+	CSV_PARSER_ERROR errorCode_;
+	const char *data_;
+	char* currWord_;
+	char *curr_;
+	char chC_;
+	char chNC_;
+	char separator_[2];
 };
 
 inline CSV_PARSER_ERROR CSVParser::GetErrorCode()
 {
-	return m_nErrorCode;
+	return errorCode_;
 }
 }

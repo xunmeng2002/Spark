@@ -6,7 +6,7 @@ using namespace Spark::Core;
 
 namespace Spark::Network
 {
-SocketApi SocketApi::m_Instance;
+SocketApi SocketApi::instance_;
 
 SocketApi::SocketApi()
 {
@@ -22,7 +22,7 @@ SocketApi::~SocketApi()
 
 SocketApi& SocketApi::GetInstance()
 {
-	return m_Instance;
+	return instance_;
 }
 bool SocketApi::Init(SOCKET sock)
 {

@@ -7,7 +7,7 @@
 namespace Spark::Core
 {
 ThreadBase::ThreadBase(const char* name, int milliSeconds)
-	:m_ThreadName(name), m_ShouldRun(false), m_TimeOut(milliSeconds)
+	:threadName_(name), shouldRun_(false), timeOut_(milliSeconds)
 {
 }
 ThreadBase::~ThreadBase()
@@ -18,31 +18,31 @@ ThreadBase::~ThreadBase()
 
 void ThreadBase::SetTimeOut(int milliSeconds)
 {
-	assert(!m_ShouldRun && "Cannot modify timeout while thread is running");
-	m_TimeOut = std::chrono::milliseconds(milliSeconds);
+	assert(!shouldRun_ && "Cannot modify timeout while thread is running");
+	timeOut_ = std::chrono::milliseconds(milliSeconds);
 }
 bool ThreadBase::Start()
 {
-	if (m_Thread.joinable() || m_ShouldRun)
+	if (thread_.joinable() || shouldRun_)
 		return false;
 
-	m_ShouldRun = true;
-	m_Thread = std::thread(std::bind(&ThreadBase::ThreadFunc, this));
+	shouldRun_ = true;
+	thread_ = std::thread(std::bind(&ThreadBase::ThreadFunc, this));
 	return true;
 }
 void ThreadBase::Stop()
 {
-	m_ShouldRun = false;
+	shouldRun_ = false;
 }
 void ThreadBase::Join()
 {
-	if (m_Thread.joinable())
-		m_Thread.join();
+	if (thread_.joinable())
+		thread_.join();
 }
 std::thread::id ThreadBase::GetThreadId() const
 {
-	if (m_Thread.joinable())
-		return m_Thread.get_id();
+	if (thread_.joinable())
+		return thread_.get_id();
 	else
 		return std::thread::id();
 }
@@ -50,7 +50,7 @@ std::thread::id ThreadBase::GetThreadId() const
 void ThreadBase::ThreadFunc()
 {
 	ThreadInit();
-	while (m_ShouldRun)
+	while (shouldRun_)
 	{
 		Run();
 	}
@@ -58,10 +58,10 @@ void ThreadBase::ThreadFunc()
 }
 void ThreadBase::ThreadInit()
 {
-	WriteLog(LogLevel::Info, "Thread:%s Start", m_ThreadName.c_str());
+	WriteLog(LogLevel::Info, "Thread:%s Start", threadName_.c_str());
 }
 void ThreadBase::ThreadExit()
 {
-	WriteLog(LogLevel::Info, "Thread:%s Exit", m_ThreadName.c_str());
+	WriteLog(LogLevel::Info, "Thread:%s Exit", threadName_.c_str());
 }
 }

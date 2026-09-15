@@ -14,10 +14,10 @@ public:
 	void CheckConnect();
 
 protected:
-	fd_set m_WriteFds;
+	fd_set writeFds_;
 
-	std::map<SessionIDType, TcpConnect*> m_Connectings;
-	std::list<SessionIDType> m_ConnectSuccessedSessions;
-	std::list<SessionIDType> m_ConnectFailedSessions;
+	std::map<SessionIDType, TcpConnect*> connectings_;
+	std::list<SessionIDType> connectSuccessedSessions_;
+	std::list<SessionIDType> connectFailedSessions_;
 };
 }

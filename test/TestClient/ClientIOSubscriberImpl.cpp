@@ -12,13 +12,13 @@ using namespace Spark::Network;
 using namespace Spark::Packages;
 
 ClientIOSubscriberImpl::ClientIOSubscriberImpl(IOBase* io, IOThread* ioThread)
-    :m_IO(io), m_IOThread(ioThread)
+    :io_(io), ioThread_(ioThread)
 {
-    m_IO->Subscribe(this);
+    io_->Subscribe(this);
 }
 ClientIOSubscriberImpl::~ClientIOSubscriberImpl()
 {
-    m_IO->UnSubscribe();
+    io_->UnSubscribe();
 }
 
 
@@ -34,7 +34,7 @@ void ClientIOSubscriberImpl::OnDisConnect(SessionIDType sessionID, const char* i
     WriteLog(LogLevel::Info, "ClientIOSubscriberImpl::OnDisConnect SessionID:[%lld], IP:[%s], Port:[%d]", sessionID, ip, port);
     m_MessageCounts.erase(sessionID);
 
-    m_IOThread->Stop();
+    ioThread_->Stop();
 }
 void ClientIOSubscriberImpl::OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer)
 {
@@ -52,7 +52,7 @@ void ClientIOSubscriberImpl::OnRecv(SessionIDType sessionID, Buffer<BuffSize>* b
         auto duration = TimeUtility::GetDuration<milliseconds>(m_StartSendTime);
         WriteLog(LogLevel::Info, "TimeCost:%lld ms", duration);
 
-        m_IO->DisConnect(sessionID);
+        io_->DisConnect(sessionID);
         buffer->Deallocate();
     }
 }
@@ -79,7 +79,7 @@ void ClientIOSubscriberImpl::Send(SessionIDType sessionID)
     memcpy(data, message, len);
     buffer->SetLength((unsigned)len);
 
-    m_IO->Send(sessionID, buffer);
+    io_->Send(sessionID, buffer);
 }
 void ClientIOSubscriberImpl::SendCommand(SessionIDType sessionID, const char* cmd)
 {
@@ -87,6 +87,6 @@ void ClientIOSubscriberImpl::SendCommand(SessionIDType sessionID, const char* cm
     Buffer<BuffSize>* buffer = Buffer<BuffSize>::Allocate();
     int n = sprintf(buffer->GetData(), "%s\r\n", cmd);
     buffer->SetLength(n);
-    m_IO->Send(sessionID, buffer);
+    io_->Send(sessionID, buffer);
 }
 

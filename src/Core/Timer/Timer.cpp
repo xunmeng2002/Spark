@@ -6,24 +6,24 @@ using namespace std::chrono;
 namespace Spark::Core
 {
 Timer::Timer()
-	:m_TimeInterval(60000), m_EventCount(600), m_CurrentEventCount(0)
+	:timeInterval_(60000), eventCount_(600), currentEventCount_(0)
 {
-	m_LastTimePoint = time_point_cast<milliseconds>(steady_clock::now());
+	lastTimePoint_ = time_point_cast<milliseconds>(steady_clock::now());
 }
 void Timer::SetTimer(int milliSeconds, int eventIntervalMilliSeconds)
 {
-	m_TimeInterval = milliSeconds;
-	m_EventCount = m_TimeInterval / eventIntervalMilliSeconds;
+	timeInterval_ = milliSeconds;
+	eventCount_ = timeInterval_ / eventIntervalMilliSeconds;
 }
 void Timer::CheckTimer()
 {
-	if (++m_CurrentEventCount > m_EventCount)
+	if (++currentEventCount_ > eventCount_)
 	{
 		auto now = time_point_cast<milliseconds>(steady_clock::now());
-		if ((now - m_LastTimePoint).count() > m_TimeInterval)
+		if ((now - lastTimePoint_).count() > timeInterval_)
 		{
-			m_LastTimePoint = now;
-			m_CurrentEventCount = 0;
+			lastTimePoint_ = now;
+			currentEventCount_ = 0;
 			OnTimer();
 		}
 	}

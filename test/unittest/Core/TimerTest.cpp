@@ -20,17 +20,17 @@ namespace
 
         int GetTimeInterval() const
         {
-            return m_TimeInterval;
+            return timeInterval_;
         }
 
         int GetEventCount() const
         {
-            return m_EventCount;
+            return eventCount_;
         }
 
         int GetCurrentEventCount() const
         {
-            return m_CurrentEventCount;
+            return currentEventCount_;
         }
 
     protected:
@@ -171,7 +171,7 @@ TEST(TimerTest, CheckTimer_ResetsCounterAfterFire)
         timer.CheckTimer();
     }
 
-    // 触发后 m_CurrentEventCount 重置为 0（见 Timer.cpp CheckTimer 内 m_CurrentEventCount = 0）
+    // 触发后 currentEventCount_ 重置为 0（见 Timer.cpp CheckTimer 内 currentEventCount_ = 0）
     // 但后续 CheckTimer 会继续递增。10 次调用流程：
     // 第 1-3 次：count=1,2,3（3>3 不成立，不触发）
     // 第 4 次：count=4（4>3 成立，时间已到 → 触发 OnTimer，重置为 0）

@@ -15,21 +15,21 @@ TcpSelectClient::TcpSelectClient(const char* addressName, int milliSeconds)
 
 bool TcpSelectClient::ConnectToServer(const char* ip, unsigned short port)
 {
-	if (m_AddressInfo != nullptr)
+	if (addressInfo_ != nullptr)
 	{
-		freeaddrinfo(m_AddressInfo);
-		m_AddressInfo = nullptr;
+		freeaddrinfo(addressInfo_);
+		addressInfo_ = nullptr;
 	}
-	m_Address = ip;
-	m_Port = std::to_string(port);
-	auto ret = TcpUtility::GetAddrinfo(m_Address.c_str(), m_Port.c_str(), m_AddressInfo);
-	if (ret < 0 || m_AddressInfo == nullptr)
+	address_ = ip;
+	port_ = std::to_string(port);
+	auto ret = TcpUtility::GetAddrinfo(address_.c_str(), port_.c_str(), addressInfo_);
+	if (ret < 0 || addressInfo_ == nullptr)
 	{
-		WriteLog(LogLevel::Info, "GetAddrinfo Failed. Address:%s Port:%s ret:%d, Errno:%d", m_Address.c_str(), m_Port.c_str(), ret, errno);
+		WriteLog(LogLevel::Info, "GetAddrinfo Failed. Address:%s Port:%s ret:%d, Errno:%d", address_.c_str(), port_.c_str(), ret, errno);
 		return false;
 	}
-	auto socketID = TcpUtility::PrepareSocket(m_AddressInfo->ai_family);
-	ret = connect(socketID, m_AddressInfo->ai_addr, int(m_AddressInfo->ai_addrlen));
+	auto socketID = TcpUtility::PrepareSocket(addressInfo_->ai_family);
+	ret = connect(socketID, addressInfo_->ai_addr, int(addressInfo_->ai_addrlen));
 #ifdef _WIN32
 	auto error = WSAGetLastError();
 	if (ret == -1 && error != WSAEWOULDBLOCK && error != WSAEINPROGRESS)
@@ -47,62 +47,62 @@ bool TcpSelectClient::ConnectToServer(const char* ip, unsigned short port)
 		return false;
 	}
 #endif
-	TcpConnect* tcpConnect = TcpConnect::Allocate(GetSessionID(), socketID, m_Address, m_Port);
+	TcpConnect* tcpConnect = TcpConnect::Allocate(GetSessionID(), socketID, address_, port_);
 	if (ret == 0)
 	{
 		AddConnect(tcpConnect);
 	}
 	else
 	{
-		m_Connectings.insert(make_pair(tcpConnect->SessionID, tcpConnect));
+		connectings_.insert(make_pair(tcpConnect->SessionID, tcpConnect));
 	}
 	return true;
 }
 void TcpSelectClient::CheckConnect()
 {
-	if (m_Connectings.empty())
+	if (connectings_.empty())
 		return;
-	FD_ZERO(&m_WriteFds);
-	FD_ZERO(&m_ErrorFds);
-	m_MaxID = 0;
-	for (auto& it : m_Connectings)
+	FD_ZERO(&writeFds_);
+	FD_ZERO(&errorFds_);
+	maxId_ = 0;
+	for (auto& it : connectings_)
 	{
 		auto connect = it.second;
-		FD_SET(connect->SocketID, &m_WriteFds);
-		FD_SET(connect->SocketID, &m_ErrorFds);
-		if (connect->SocketID > m_MaxID)
+		FD_SET(connect->SocketId, &writeFds_);
+		FD_SET(connect->SocketId, &errorFds_);
+		if (connect->SocketId > maxId_)
 		{
-			m_MaxID = connect->SocketID;
+			maxId_ = connect->SocketId;
 		}
 	}
-	++m_MaxID;
+	++maxId_;
 
-	memcpy(&m_SelectSocketTimeOutTemp, &m_SelectSocketTimeOut, sizeof(timeval));
-	::select((int)m_MaxID, nullptr, &m_WriteFds, &m_ErrorFds, &m_SelectSocketTimeOutTemp);
-	for (auto& it : m_Connectings)
+	memcpy(&selectSocketTimeOutTemp_, &selectSocketTimeOut_, sizeof(timeval));
+	::select((int)maxId_, nullptr, &writeFds_, &errorFds_, &selectSocketTimeOutTemp_);
+	for (auto& it : connectings_)
 	{
 		auto connect = (TcpConnect*)it.second;
-		if (FD_ISSET(connect->SocketID, &m_WriteFds))
+		if (FD_ISSET(connect->SocketId, &writeFds_))
 		{
 			AddConnect(connect);
-			m_ConnectSuccessedSessions.push_back(connect->SessionID);
+			connectSuccessedSessions_.push_back(connect->SessionID);
 		}
-		if (FD_ISSET(connect->SocketID, &m_ErrorFds))
+		if (FD_ISSET(connect->SocketId, &errorFds_))
 		{
 			RemoveConnect(connect);
-			m_ConnectFailedSessions.push_back(connect->SessionID);
+			connectFailedSessions_.push_back(connect->SessionID);
 		}
 	}
-	for (auto& sessionID : m_ConnectSuccessedSessions)
+	for (auto& sessionID : connectSuccessedSessions_)
 	{
-		m_Connectings.erase(sessionID);
+		connectings_.erase(sessionID);
 	}
-	m_ConnectSuccessedSessions.clear();
-	for (auto& sessionID : m_ConnectFailedSessions)
+	connectSuccessedSessions_.clear();
+	for (auto& sessionID : connectFailedSessions_)
 	{
-		m_Connectings.erase(sessionID);
+		connectings_.erase(sessionID);
 	}
-	m_ConnectFailedSessions.clear();
+	connectFailedSessions_.clear();
 }
 }
 

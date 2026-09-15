@@ -7,7 +7,7 @@ using namespace std;
 namespace Spark::Network
 {
 ShmServer::ShmServer(const char* shmName, int milliSeconds)
-	:ShmBase(ServerTypeType::Server, shmName, milliSeconds), m_ConnectCount(0)
+	:ShmBase(ServerTypeType::Server, shmName, milliSeconds), connectCount_(0)
 {
 }
 ShmServer::~ShmServer()
@@ -15,37 +15,37 @@ ShmServer::~ShmServer()
 }
 void ShmServer::Accept()
 {
-	switch (m_CommonShmHeader->Status)
+	switch (commonShmHeader_->Status)
 	{
 	case ConnectStatusType::UnConnected:
 		break;
 	case ConnectStatusType::Connecting:
 	{
-		if (m_SemConnect->Lock())
+		if (semConnect_->Lock())
 		{
-			if (m_ConnectCount >= m_MaxConnectSize - 1)
+			if (connectCount_ >= maxConnectSize_ - 1)
 			{
-				m_CommonShmHeader->Status = ConnectStatusType::Rejected;
+				commonShmHeader_->Status = ConnectStatusType::Rejected;
 			}
 			else
 			{
-				for (auto i = 1U; i < m_MaxConnectSize; ++i)
+				for (auto i = 1U; i < maxConnectSize_; ++i)
 				{
-					auto shmHeader = m_CommonShmHeader + i;
+					auto shmHeader = commonShmHeader_ + i;
 					if (shmHeader->Status == ConnectStatusType::UnConnected)
 					{
-						ShmConnect<ShmBuffSize>* shmConnect = ShmConnect<ShmBuffSize>::Allocate(GetSessionID(), m_Address.c_str(), i, m_ServerType, m_ShmAddr, ConnectStatusType::Accepted);
+						ShmConnect<ShmBuffSize>* shmConnect = ShmConnect<ShmBuffSize>::Allocate(GetSessionID(), address_.c_str(), i, serverType_, shmAddr_, ConnectStatusType::Accepted);
 						AddConnect(shmConnect);
 
-						m_CommonShmHeader->Status = ConnectStatusType::Accepted;
-						m_CommonShmHeader->DownWriteCount = i;
-						++m_ConnectCount;
+						commonShmHeader_->Status = ConnectStatusType::Accepted;
+						commonShmHeader_->DownWriteCount = i;
+						++connectCount_;
 						break;
 					}
 				}
 			}
-			m_LastWriteTimePoint = chrono::system_clock::now();
-			m_SemConnect->UnLock();
+			lastWriteTimePoint_ = chrono::system_clock::now();
+			semConnect_->UnLock();
 		}
 		else
 		{
@@ -57,23 +57,23 @@ void ShmServer::Accept()
 	case ConnectStatusType::Rejected:
 	{
 		auto currTimePoint = chrono::system_clock::now();
-		auto t = chrono::duration_cast<chrono::seconds>(currTimePoint - m_LastWriteTimePoint);
+		auto t = chrono::duration_cast<chrono::seconds>(currTimePoint - lastWriteTimePoint_);
 		if (t.count() >= 5)
 		{
-			if (m_SemConnect->Lock())
+			if (semConnect_->Lock())
 			{
-				if (m_CommonShmHeader->Status == ConnectStatusType::Accepted || m_CommonShmHeader->Status == ConnectStatusType::Rejected)
+				if (commonShmHeader_->Status == ConnectStatusType::Accepted || commonShmHeader_->Status == ConnectStatusType::Rejected)
 				{
-					printf("Reset Connect From Server,  Status:%d\n", (int)m_CommonShmHeader->Status);
-					if (m_CommonShmHeader->Status == ConnectStatusType::Accepted)
+					printf("Reset Connect From Server,  Status:%d\n", (int)commonShmHeader_->Status);
+					if (commonShmHeader_->Status == ConnectStatusType::Accepted)
 					{
-						auto index = m_CommonShmHeader->DownWriteCount;
-						auto shmHeader = m_CommonShmHeader + index;
+						auto index = commonShmHeader_->DownWriteCount;
+						auto shmHeader = commonShmHeader_ + index;
 						memset(shmHeader, 0, sizeof(SingleShmHeader));
 					}
-					m_CommonShmHeader->Status = ConnectStatusType::UnConnected;
+					commonShmHeader_->Status = ConnectStatusType::UnConnected;
 				}
-				m_SemConnect->UnLock();
+				semConnect_->UnLock();
 			}
 			else
 			{
@@ -91,32 +91,32 @@ void ShmServer::Accept()
 }
 void ShmServer::CheckConnect()
 {
-	for (auto& it : m_Connects)
+	for (auto& it : connects_)
 	{
 		auto shmConnect = (ShmConnect<ShmBuffSize>*)it.second;
-		if (shmConnect->m_ShmBuffer->m_ShmHeader->Status == ConnectStatusType::DisConnected)
+		if (shmConnect->GetBuffer()->ShmHeader->Status == ConnectStatusType::DisConnected)
 		{
-			lock_guard<mutex> guard(m_DisConnectSessionIDsMutex);
-			m_DisConnectSessionIDs.push_back(shmConnect->SessionID);
+			lock_guard<mutex> guard(disConnectSessionIdsMutex_);
+			disConnectSessionIds_.push_back(shmConnect->SessionID);
 		}
 	}
 }
 void ShmServer::CheckData()
 {
-	for (auto& it : m_Connects)
+	for (auto& it : connects_)
 	{
 		auto shmConnect = (ShmConnect<ShmBuffSize>*)it.second;
-		if (shmConnect->m_ShmBuffer->GetReadBufferSize() > 0)
+		if (shmConnect->GetBuffer()->GetReadBufferSize() > 0)
 			return;
 	}
-	m_Sems[0]->Lock();
+	sems_[0]->Lock();
 }
 void ShmServer::HandleData()
 {
-	for (auto& it : m_Connects)
+	for (auto& it : connects_)
 	{
 		auto shmConnect = (ShmConnect<ShmBuffSize>*)it.second;
-		if (shmConnect->m_ShmBuffer->GetReadBufferSize() > 0)
+		if (shmConnect->GetBuffer()->GetReadBufferSize() > 0)
 		{
 			DoRecv(shmConnect);
 		}
@@ -126,6 +126,6 @@ void ShmServer::HandleData()
 void ShmServer::RemoveConnect(Connect* connect)
 {
 	ShmBase::RemoveConnect(connect);
-	--m_ConnectCount;
+	--connectCount_;
 }
 }

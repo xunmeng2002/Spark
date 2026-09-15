@@ -288,7 +288,7 @@ public:
     // Build and send a buy-to-open order
     void SendReqInsertOrder()
     {
-        m_ReqInsertOrder->Prepare(m_SessionID, false, ++m_MessageSeqNum);
+        m_ReqInsertOrder->Prepare(sessionId_, false, ++m_MessageSeqNum);
         m_ReqInsertOrder->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
         memset(m_ReqInsertOrder->ReqInsertOrder, 0, sizeof(ReqInsertOrderField));
         Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->AccountID, "Xunmeng001");
@@ -304,7 +304,7 @@ public:
     }
 
 private:
-    SessionIDType m_SessionID = 0LL;
+    SessionIDType sessionId_ = 0LL;
     int m_MessageSeqNum = 0;
     ReqInsertOrderPackage* m_ReqInsertOrder;
 };

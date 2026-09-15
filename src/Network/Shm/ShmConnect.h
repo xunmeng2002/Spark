@@ -15,12 +15,12 @@ public:
 	ShmConnect(SessionIDType sessionID, const char* remoteAddress, int remotePort, ServerTypeType serverType, void* shmAddr, ConnectStatusType connectStatus)
 		:Connect(sessionID, remoteAddress, remotePort, connectStatus)
 	{
-		m_ShmBuffer = ShmBuffer<SIZE>::Allocate(serverType, remotePort, shmAddr, connectStatus);
+        shmBuffer_ = ShmBuffer<SIZE>::Allocate(serverType, remotePort, shmAddr, connectStatus);
 	}
 	virtual ~ShmConnect()
 	{
-		m_ShmBuffer->Deallocate();
-		m_ShmBuffer = nullptr;
+        shmBuffer_->Deallocate();
+        shmBuffer_ = nullptr;
 	}
 
 	static ShmConnect* Allocate(SessionIDType sessionID, const char* remoteAddress, int remotePort, ServerTypeType serverType, void* shmAddr, ConnectStatusType connectStatus)
@@ -31,9 +31,13 @@ public:
 	{
 		ObjectPool<ShmConnect<SIZE>>::GetInstance().Deallocate(this);
 	}
+    ShmBuffer<SIZE>* GetBuffer()
+    {
+        return shmBuffer_;
+    }
 
-public:
-	ShmBuffer<SIZE>* m_ShmBuffer;
+private:
+	ShmBuffer<SIZE>* shmBuffer_;
 };
 }
 

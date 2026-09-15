@@ -8,91 +8,91 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 ShmClient::ShmClient(const char* shmName, int milliSeconds)
-	:ShmBase(ServerTypeType::Client, shmName, milliSeconds), m_Connected(false), m_HasSendConnect(false), m_ShmConnect(nullptr)
+	:ShmBase(ServerTypeType::Client, shmName, milliSeconds), connected_(false), hasSendConnect_(false), shmConnect_(nullptr)
 {
 }
 ShmClient::~ShmClient()
 {
-	m_ShmConnect = nullptr;
+	shmConnect_ = nullptr;
 }
 bool ShmClient::ConnectToServer(const char* addressName)
 {
 	string address, port;
 	ParseAddress(addressName, address, port);
-	if (address == m_Address && m_Connected)
+	if (address == address_ && connected_)
 	{
 		return true;
 	}
-	if (address != m_Address)
+	if (address != address_)
 	{
-		RemoveConnect(m_ShmConnect);
-		m_Address = address;
-		m_Port = port;
-		m_Connected = false;
-		m_HasSendConnect = false;
-		m_ShmConnect = nullptr;
-		WriteLog(LogLevel::Info, "Address Changed. Address:%s Port:%s\n", m_Address.c_str(), m_Port.c_str());
+		RemoveConnect(shmConnect_);
+		address_ = address;
+		port_ = port;
+		connected_ = false;
+		hasSendConnect_ = false;
+		shmConnect_ = nullptr;
+		WriteLog(LogLevel::Info, "Address Changed. Address:%s Port:%s\n", address_.c_str(), port_.c_str());
 		if (!Init())
 			return false;
 	}
 	ConnectToServer();
-	while (m_HasSendConnect && m_CommonShmHeader->Status == ConnectStatusType::Connecting)
+	while (hasSendConnect_ && commonShmHeader_->Status == ConnectStatusType::Connecting)
 	{
 		this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
-	return m_Connected;
+	return connected_;
 }
 void ShmClient::ConnectToServer()
 {
-	if (m_Connected)
+	if (connected_)
 		return;
-	if (!m_HasSendConnect && m_CommonShmHeader->Status == ConnectStatusType::UnConnected)
+	if (!hasSendConnect_ && commonShmHeader_->Status == ConnectStatusType::UnConnected)
 	{
 		SendConnect();
 	}
-	else if (m_HasSendConnect && m_CommonShmHeader->Status != ConnectStatusType::Connecting)
+	else if (hasSendConnect_ && commonShmHeader_->Status != ConnectStatusType::Connecting)
 	{
 		CheckConnectResult();
 	}
 }
 void ShmClient::CheckConnect()
 {
-	if (!m_Connected)
+	if (!connected_)
 		return;
-	if (m_ShmConnect->m_ShmBuffer->m_ShmHeader->Status == ConnectStatusType::DisConnected)
+	if (shmConnect_->GetBuffer()->ShmHeader->Status == ConnectStatusType::DisConnected)
 	{
-		RemoveConnect(m_ShmConnect);
+		RemoveConnect(shmConnect_);
 	}
 }
 void ShmClient::CheckData()
 {
-	if (!m_Connected)
+	if (!connected_)
 		return;
-	if (m_ShmConnect->m_ShmBuffer->GetReadBufferSize() > 0)
+	if (shmConnect_->GetBuffer()->GetReadBufferSize() > 0)
 		return;
-	m_Sems[m_ShmConnect->RemotePort]->Lock();
+	sems_[shmConnect_->RemotePort]->Lock();
 }
 void ShmClient::HandleData()
 {
-	if (!m_Connected)
+	if (!connected_)
 		return;
-	if (m_ShmConnect->m_ShmBuffer->GetReadBufferSize() > 0)
+	if (shmConnect_->GetBuffer()->GetReadBufferSize() > 0)
 	{
-		DoRecv(m_ShmConnect);
+		DoRecv(shmConnect_);
 	}
 }
 
 
 void ShmClient::SendConnect()
 {
-	if (m_SemConnect->Lock())
+	if (semConnect_->Lock())
 	{
-		if (m_CommonShmHeader->Status == ConnectStatusType::UnConnected)
+		if (commonShmHeader_->Status == ConnectStatusType::UnConnected)
 		{
-			m_CommonShmHeader->Status = ConnectStatusType::Connecting;
-			m_HasSendConnect = true;
+			commonShmHeader_->Status = ConnectStatusType::Connecting;
+			hasSendConnect_ = true;
 		}
-		m_SemConnect->UnLock();
+		semConnect_->UnLock();
 	}
 	else
 	{
@@ -102,27 +102,27 @@ void ShmClient::SendConnect()
 }
 void ShmClient::CheckConnectResult()
 {
-	if (m_SemConnect->Lock())
+	if (semConnect_->Lock())
 	{
-		m_HasSendConnect = false;
-		if (m_CommonShmHeader->Status == ConnectStatusType::Accepted)
+		hasSendConnect_ = false;
+		if (commonShmHeader_->Status == ConnectStatusType::Accepted)
 		{
-			auto index = m_CommonShmHeader->DownWriteCount;
-			m_ShmConnect = ShmConnect<ShmBuffSize>::Allocate(GetSessionID(), m_Address.c_str(), index, m_ServerType, m_ShmAddr, ConnectStatusType::Connected);
-			AddConnect(m_ShmConnect);
-			m_Connected = true;
-			m_CommonShmHeader->Status = ConnectStatusType::UnConnected;
+			auto index = commonShmHeader_->DownWriteCount;
+			shmConnect_ = ShmConnect<ShmBuffSize>::Allocate(GetSessionID(), address_.c_str(), index, serverType_, shmAddr_, ConnectStatusType::Connected);
+			AddConnect(shmConnect_);
+			connected_ = true;
+			commonShmHeader_->Status = ConnectStatusType::UnConnected;
 		}
-		else if (m_CommonShmHeader->Status == ConnectStatusType::Rejected)
+		else if (commonShmHeader_->Status == ConnectStatusType::Rejected)
 		{
-			m_CommonShmHeader->Status = ConnectStatusType::UnConnected;
+			commonShmHeader_->Status = ConnectStatusType::UnConnected;
 		}
 		else
 		{
-			WriteLog(LogLevel::Info, "UnExpected Status:%d\n", (int)m_CommonShmHeader->Status);
+			WriteLog(LogLevel::Info, "UnExpected Status:%d\n", (int)commonShmHeader_->Status);
 		}
-		m_SemConnect->UnLock();
-		if (!m_Connected)
+		semConnect_->UnLock();
+		if (!connected_)
 		{
 			WriteLog(LogLevel::Info, "Connect Failed. Sleep 1s\n");
 			std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -137,8 +137,8 @@ void ShmClient::CheckConnectResult()
 void ShmClient::RemoveConnect(Connect* connect)
 {
 	ShmBase::RemoveConnect(connect);
-	m_Connected = false;
-	m_HasSendConnect = false;
-	m_ShmConnect = nullptr;
+	connected_ = false;
+	hasSendConnect_ = false;
+	shmConnect_ = nullptr;
 }
 }

@@ -16,9 +16,9 @@ protected:
 	virtual void OnTimer() = 0;
 
 protected:
-	int m_TimeInterval;
-	int m_EventCount;
-	int m_CurrentEventCount;
-	std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds> m_LastTimePoint;
+	int timeInterval_;
+	int eventCount_;
+	int currentEventCount_;
+	std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds> lastTimePoint_;
 };
 }

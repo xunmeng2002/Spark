@@ -9,35 +9,35 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 IOBase::IOBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
-	:m_ServerType(serverType), m_AddressName(addressName), m_TimeOut(chrono::milliseconds(milliSeconds)), m_IOSubscriber(nullptr), m_LastSessionIndex(0LL)
+	:serverType_(serverType), addressName_(addressName), timeOut_(chrono::milliseconds(milliSeconds)), ioSubscriber_(nullptr), lastSessionIndex_(0LL)
 {
-	ParseAddress(m_AddressName, m_Address, m_Port);
+	ParseAddress(addressName_, address_, port_);
 }
 IOBase::~IOBase()
 {
 }
 void IOBase::Subscribe(IOSubscriber* subscriber)
 {
-	m_IOSubscriber = subscriber;
+	ioSubscriber_ = subscriber;
 }
 void IOBase::UnSubscribe()
 {
-	m_IOSubscriber = nullptr;
+	ioSubscriber_ = nullptr;
 }
 void IOBase::SetTimeOut(int milliSeconds)
 {
-	m_TimeOut = std::chrono::milliseconds(milliSeconds);
+	timeOut_ = std::chrono::milliseconds(milliSeconds);
 }
 
 void IOBase::DisConnect(SessionIDType sessionID)
 {
-	lock_guard<mutex> guard(m_DisConnectSessionIDsMutex);
-	m_DisConnectSessionIDs.push_back(sessionID);
+	lock_guard<mutex> guard(disConnectSessionIdsMutex_);
+	disConnectSessionIds_.push_back(sessionID);
 }
 void IOBase::DisConnectAll()
 {
 	WriteLog(LogLevel::Info, "DisConnectAll");
-	std::map<SessionIDType, Connect*> connects(m_Connects.begin(), m_Connects.end());
+	std::map<SessionIDType, Connect*> connects(connects_.begin(), connects_.end());
 	for (auto& it : connects)
 	{
 		RemoveConnect(it.second);
@@ -46,54 +46,54 @@ void IOBase::DisConnectAll()
 
 void IOBase::DoDisConnect()
 {
-	if (m_DisConnectSessionIDs.empty())
+	if (disConnectSessionIds_.empty())
 		return;
 
-	lock_guard<mutex> guard(m_DisConnectSessionIDsMutex);
-	for (auto sessionID : m_DisConnectSessionIDs)
+	lock_guard<mutex> guard(disConnectSessionIdsMutex_);
+	for (auto sessionID : disConnectSessionIds_)
 	{
-		auto connect = m_Connects[sessionID];
+		auto connect = connects_[sessionID];
 		if (connect == nullptr)
 		{
-			m_Connects.erase(sessionID);
+			connects_.erase(sessionID);
 		}
 		else
 		{
 			RemoveConnect(connect);
 		}
 	}
-	m_DisConnectSessionIDs.clear();
+	disConnectSessionIds_.clear();
 }
 void IOBase::AddConnect(Connect* connect)
 {
 	WriteLog(LogLevel::Info, "New Connection. SessionID:%lld, RemoteAddress:%s, RemotePort:%d",
 		connect->SessionID, connect->RemoteAddress, connect->RemotePort);
 	{
-		std::lock_guard<std::mutex> guard(m_ConnectsMutex);
-		m_Connects.insert(std::make_pair(connect->SessionID, connect));
+		std::lock_guard<std::mutex> guard(connectsMutex_);
+		connects_.insert(std::make_pair(connect->SessionID, connect));
 	}
-	if (m_IOSubscriber)
+	if (ioSubscriber_)
 	{
-		m_IOSubscriber->OnConnect(connect->SessionID, connect->RemoteAddress, connect->RemotePort);
+		ioSubscriber_->OnConnect(connect->SessionID, connect->RemoteAddress, connect->RemotePort);
 	}
 }
 void IOBase::RemoveConnect(Connect* connect)
 {
 	WriteLog(LogLevel::Info, "RemoveConnect. SessionID:%lld,  RemoteAddress:%s, RemotePort:%d",
 		connect->SessionID, connect->RemoteAddress, connect->RemotePort);
-	if (m_IOSubscriber)
+	if (ioSubscriber_)
 	{
-		m_IOSubscriber->OnDisConnect(connect->SessionID, connect->RemoteAddress, connect->RemotePort);
+		ioSubscriber_->OnDisConnect(connect->SessionID, connect->RemoteAddress, connect->RemotePort);
 	}
-	std::lock_guard<std::mutex> guard(m_ConnectsMutex);
-	m_Connects.erase(connect->SessionID);
+	std::lock_guard<std::mutex> guard(connectsMutex_);
+	connects_.erase(connect->SessionID);
 	connect->Deallocate();
 }
 Connect* IOBase::GetConnect(SessionIDType sessionID)
 {
-	std::lock_guard<std::mutex> guard(m_ConnectsMutex);
-	auto it = m_Connects.find(sessionID);
-	if (it == m_Connects.end())
+	std::lock_guard<std::mutex> guard(connectsMutex_);
+	auto it = connects_.find(sessionID);
+	if (it == connects_.end())
 	{
 		WriteLog(LogLevel::Warning, "Connect not Exist For SessionID:%lld", sessionID);
 		return nullptr;
@@ -104,7 +104,7 @@ Connect* IOBase::GetConnect(SessionIDType sessionID)
 
 SessionIDType IOBase::GetSessionID()
 {
-	return TimeUtility::GetMilliSecondTimeStamp() * 100LL + (++m_LastSessionIndex) % 100LL;
+	return TimeUtility::GetMilliSecondTimeStamp() * 100LL + (++lastSessionIndex_) % 100LL;
 }
 }
 

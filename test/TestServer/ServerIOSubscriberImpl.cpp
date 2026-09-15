@@ -8,13 +8,13 @@ using namespace Spark::Core;
 using namespace Spark::Network;
 
 ServerIOSubscriberImpl::ServerIOSubscriberImpl(IOBase* io, IOThread* ioThread)
-    :m_IO(io), m_IOThread(ioThread)
+    :io_(io), ioThread_(ioThread)
 {
-    m_IO->Subscribe(this);
+    io_->Subscribe(this);
 }
 ServerIOSubscriberImpl::~ServerIOSubscriberImpl()
 {
-    m_IO->UnSubscribe();
+    io_->UnSubscribe();
 }
 
 void ServerIOSubscriberImpl::OnConnect(SessionIDType sessionID, const char* ip, int port)
@@ -40,5 +40,5 @@ void ServerIOSubscriberImpl::OnRecv(SessionIDType sessionID, Buffer<BuffSize>* b
 
     auto responseBuffer = new Buffer<BuffSize>();
     responseBuffer->Append(buffer->GetData(), buffer->GetLength());
-    m_IO->Send(sessionID, responseBuffer);
+    io_->Send(sessionID, responseBuffer);
 }

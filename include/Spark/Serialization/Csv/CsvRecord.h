@@ -35,11 +35,11 @@ private:
 private:
 	struct TCSVField
 	{
-		char *pFieldName;
-		char *pFieldContent;
+		char *FieldName;
+		char *FieldContent;
 	};
 
-	std::vector<TCSVField> m_CSVFields;
+	std::vector<TCSVField> csvFields_;
 
 	struct ltstr
 	{
@@ -51,25 +51,25 @@ private:
 	typedef std::map<const char*, const char *, ltstr> CCSVFieldMap;
 	CCSVFieldMap m_mapCSVField;
 
-	char* m_chNameBuffer;
-	int m_nNameBufferLen;
-	char* m_chContentBuffer;
-	int m_nContentBufferLen;
-	char m_chSeparator;
+	char* nameBuffer_;
+	int nameBufferLen_;
+	char* contentBuffer_;
+	int contentBufferLen_;
+	char separator_;
 };
 
 inline int CSVRecord::GetFieldCount()
 {
-	return (int)m_CSVFields.size();
+	return (int)csvFields_.size();
 }
 
 inline const char * CSVRecord::GetFieldName(int nIndex)
 {
-	return m_CSVFields[nIndex-1].pFieldName;
+	return csvFields_[nIndex-1].FieldName;
 }
 
 inline const char * CSVRecord::GetFieldContent(int nIndex)
 {
-	return m_CSVFields[nIndex-1].pFieldContent;
+	return csvFields_[nIndex-1].FieldContent;
 }
 }

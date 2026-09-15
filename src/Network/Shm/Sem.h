@@ -22,14 +22,14 @@ private:
 	bool LinuxInit();
 
 private:
-	std::string m_SemName;
-	ServerTypeType m_ServerType;
-	unsigned m_TimeOutMilliSecond;
+	std::string semName_;
+	ServerTypeType serverType_;
+	unsigned timeOutMilliSecond_;
 #ifdef __linux__
-	sem_t* m_Sem;
+	sem_t* sem_;
 #endif
 #ifdef _WIN32
-	void* m_Sem;
+	void* sem_;
 #endif
 };
 }

@@ -33,7 +33,7 @@ struct ShmTestFixture : public ::testing::Test
             ServerTypeType::Server, 1, memory_.data(), ConnectStatusType::Connected));
 
         // header_ 指向 ShmBuffer 实际使用的 header（index=1，偏移 sizeof(SingleShmHeader)）
-        header_ = client_->m_ShmHeader;
+        header_ = client_->ShmHeader;
     }
 
     void TearDown() override
@@ -57,7 +57,7 @@ TEST(ShmBufferTest, StatusConnected)
     h->Status = ConnectStatusType::Connected;
 
     ShmBuffer<kShmSize> buf(ServerTypeType::Server, 1, mem.data(), ConnectStatusType::Connected);
-    ConnectStatusType status = buf.m_ShmHeader->Status;
+    ConnectStatusType status = buf.ShmHeader->Status;
     EXPECT_EQ(status, ConnectStatusType::Connected);
 }
 

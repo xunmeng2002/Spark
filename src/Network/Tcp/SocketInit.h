@@ -31,7 +31,7 @@ public:
 private:
 	void WsaStart();
 private:
-	std::once_flag SocketInitFlag;
-	static SocketInit _SOCKET_INIT;
+	std::once_flag socketInitFlag_;
+	static SocketInit socketInit_;
 };
 }

@@ -19,7 +19,7 @@ bool TcpEpollServer::Init()
 	{
 		return false;
 	}
-	TcpConnect* connect = TcpConnect::Allocate(0, m_Socket, m_Address, m_Port);
+	TcpConnect* connect = TcpConnect::Allocate(0, socket_, address_, port_);
 	AddEpollEvent(connect);
 	return true;
 }

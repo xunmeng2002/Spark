@@ -21,7 +21,7 @@ public:
 
 
 private:
-	HANDLE m_Handle;
+	HANDLE handle_;
 };
 }
 #endif // _WIN32

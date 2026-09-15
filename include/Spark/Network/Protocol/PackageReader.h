@@ -31,7 +31,7 @@ protected:
 private:
 	enum class AlignResult
 	{
-		//已对齐，m_Data 起头就是锚点
+		//已对齐，data_ 起头就是锚点
 		Aligned,
 		//缓冲里还凑不出完整锚点，已丢弃无意义的字节，等下一次收包
 		NeedMoreData,
@@ -43,16 +43,16 @@ private:
 	bool IsBodyLenWithinFrameLimit() const;
 
 protected:
-	ProtocolTypeType m_ProtocolType;
-    PackageFactoryBase* m_PackageFactory;
-	SessionIDType m_SessionID;
-	IPAddressType m_IPAddress;
-	HeadField m_Head;
-	TailField m_Tail;
+	ProtocolTypeType protocolType_;
+    PackageFactoryBase* packageFactory_;
+	SessionIDType sessionId_;
+	IPAddressType ipAddress_;
+	HeadField head_;
+	TailField tail_;
 
-	char m_Buff[MaxPackageSize * 2];
-	char* m_Data;
-	unsigned int m_Length;
-	unsigned int m_DiscardLength;
+	char buff_[MaxPackageSize * 2];
+	char* data_;
+	unsigned int length_;
+	unsigned int discardLength_;
 };
 }

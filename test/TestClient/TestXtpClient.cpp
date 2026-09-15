@@ -16,7 +16,7 @@ using namespace Spark::Network;
 using namespace Spark::Packages;
 
 XtpClient::XtpClient()
-	:Protocol(ProtocolTypeType::Xtp, ServerTypeType::Client, g_IOModel, 0, new PackageFactory()), m_Connected(false), m_SessionID(0LL), m_RecvCount(0)
+	:Protocol(ProtocolTypeType::Xtp, ServerTypeType::Client, g_IOModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), m_RecvCount(0)
 {
 	m_ReqInsertOrder = new ReqInsertOrderPackage();
 	Subscribe(this);
@@ -29,8 +29,8 @@ void XtpClient::OnProtocolConnect(SessionIDType sessionID, const char* ip, int p
 {
 	WriteLog(LogLevel::Info, "XtpClient::OnConnect SessionID:[%lld], IP:[%s], port:[%d]", sessionID, ip, port);
 
-	m_SessionID = sessionID;
-	m_Connected = true;
+	sessionId_ = sessionID;
+	connected_ = true;
 	m_StartTime = chrono::steady_clock::now();
 	SendReqInsertOrder(++m_RecvCount);
 }
@@ -38,7 +38,7 @@ void XtpClient::OnProtocolDisConnect(SessionIDType sessionID, const char* ip, in
 {
 	WriteLog(LogLevel::Info, "XtpClient::OnDisConnect SessionID:[%lld], IP:[%s], port:[%d]", sessionID, ip, port);
 
-	m_Connected = false;
+	connected_ = false;
 	m_RecvCount = 0;
 }
 void XtpClient::OnMessage(Package* package)
@@ -56,13 +56,13 @@ void XtpClient::OnMessage(Package* package)
 	{
 		WriteLog(LogLevel::Info, "OnMessage: %s", package->GetDebugString());
 		WriteLog(LogLevel::Info, "Total Cost: %lld ms", TimeUtility::GetDuration<chrono::milliseconds>(m_StartTime));
-		m_IOThread->Stop();
+		ioThread_->Stop();
 	}
 }
 
 void XtpClient::SendReqInsertOrder(int index)
 {
-	m_ReqInsertOrder->Prepare(m_SessionID, false, index);
+	m_ReqInsertOrder->Prepare(sessionId_, false, index);
 	m_ReqInsertOrder->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
 	memset(m_ReqInsertOrder->ReqInsertOrder, 0, sizeof(ReqInsertOrderField));
 	Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->AccountID, "Xunmeng001");

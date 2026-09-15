@@ -8,24 +8,24 @@ template <typename Func, typename... Args>
 struct Aspect
 {
     Aspect(Func&& f, const std::string& funcName)
-        : m_Func(std::forward<Func>(f)), m_FuncName(funcName)
+        : func_(std::forward<Func>(f)), funcName_(funcName)
     {
     }
 
     void Invoke(Args&&... args)
     {
-        m_Func(std::forward<Args>(args)...);
+        func_(std::forward<Args>(args)...);
     }
     template <typename T, typename... AP>
     void Invoke(Args&&... args, T&& aspect, AP&&... aspects)
     {
-        aspect.Before(m_FuncName.c_str());
+        aspect.Before(funcName_.c_str());
         Invoke(std::forward<Args>(args)..., std::forward<AP>(aspects)...);
-        aspect.After(m_FuncName.c_str());
+        aspect.After(funcName_.c_str());
     }
 private:
-    Func m_Func;
-    std::string m_FuncName;
+    Func func_;
+    std::string funcName_;
 };
 
 template <typename... AP, typename... Args, typename Func>

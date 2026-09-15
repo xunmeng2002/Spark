@@ -28,10 +28,10 @@ protected:
 	
 
 protected:
-	std::thread m_Thread;
-	std::string m_ThreadName;
-	volatile bool m_ShouldRun;
-	std::chrono::milliseconds m_TimeOut;
+	std::thread thread_;
+	std::string threadName_;
+	volatile bool shouldRun_;
+	std::chrono::milliseconds timeOut_;
 };
 }
 

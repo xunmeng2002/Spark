@@ -24,7 +24,7 @@ public:
 
 
 private:
-	static SocketApi m_Instance;
+	static SocketApi instance_;
 };
 }
 #endif // _WIN32

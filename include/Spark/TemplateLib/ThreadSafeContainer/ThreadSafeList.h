@@ -15,29 +15,29 @@ public:
 	}
 	ThreadSafeList(const ThreadSafeList& other)
 	{
-		std::lock_guard<std::mutex> guard(other.m_Mutex);
-		m_Items = other.m_Items;
+		std::lock_guard<std::mutex> guard(other.mutex_);
+		items_ = other.items_;
 	}
 	ThreadSafeList& operator=(const ThreadSafeList&) = delete;
 
 	void PushBack(T* item)
 	{
-		std::lock_guard<std::mutex> guard(m_Mutex);
-		m_Items.push_back(item);
-		m_ConditionVariable.notify_one();
+		std::lock_guard<std::mutex> guard(mutex_);
+		items_.push_back(item);
+		conditionVariable_.notify_one();
 	}
 	T* PopFront()
 	{
-		std::unique_lock<std::mutex> lk(m_Mutex);
-		m_ConditionVariable.wait(lk, [this] {return !m_Items.empty(); });
-		T* item = m_Items.front();
-		m_Items.pop_front();
+		std::unique_lock<std::mutex> lk(mutex_);
+		conditionVariable_.wait(lk, [this] {return !items_.empty(); });
+		T* item = items_.front();
+		items_.pop_front();
 		return item;
 	}
 
 private:
-	mutable std::mutex m_Mutex;
-	std::condition_variable m_ConditionVariable;
-	std::list<T*> m_Items;
+	mutable std::mutex mutex_;
+	std::condition_variable conditionVariable_;
+	std::list<T*> items_;
 };
 }

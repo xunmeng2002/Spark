@@ -77,24 +77,24 @@ bool LocateFieldMarker(char* buff, int startIndex, int endIndex, UInt16Type mark
 }
 
 StepWriteCursor::StepWriteCursor(char* buffer, int capacity)
-	: buffer_begin_(buffer), capacity_(capacity), written_length_(0), is_truncated_(false)
+	: bufferBegin_(buffer), capacity_(capacity), writtenLength_(0), isTruncated_(false)
 {
 }
 int StepWriteCursor::GetWrittenLength() const
 {
-	return written_length_;
+	return writtenLength_;
 }
 bool StepWriteCursor::IsTruncated() const
 {
-	return is_truncated_;
+	return isTruncated_;
 }
 char* StepWriteCursor::GetWritePosition()
 {
-    return buffer_begin_ + written_length_;
+    return bufferBegin_ + writtenLength_;
 }
 int StepWriteCursor::GetRemainingLength() const
 {
-    return capacity_ - written_length_;
+    return capacity_ - writtenLength_;
 }
 
 

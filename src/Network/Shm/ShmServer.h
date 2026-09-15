@@ -19,8 +19,8 @@ private:
 
 	virtual void RemoveConnect(Connect* connect) override;
 protected:
-	unsigned m_ConnectCount;
-	std::chrono::system_clock::time_point m_LastWriteTimePoint;
+	unsigned connectCount_;
+	std::chrono::system_clock::time_point lastWriteTimePoint_;
 };
 }
 

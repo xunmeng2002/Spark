@@ -52,20 +52,20 @@ protected:
 	
 
 protected:
-	ServerTypeType m_ServerType;
-	std::string	m_AddressName;
-	std::string m_Address;
-	std::string m_Port;
-	std::chrono::milliseconds m_TimeOut;
-	IOSubscriber* m_IOSubscriber;
-	SessionIDType m_LastSessionIndex;
+	ServerTypeType serverType_;
+	std::string	addressName_;
+	std::string address_;
+	std::string port_;
+	std::chrono::milliseconds timeOut_;
+	IOSubscriber* ioSubscriber_;
+	SessionIDType lastSessionIndex_;
 
-	std::map<SessionIDType, Connect*> m_Connects;
-	std::mutex m_ConnectsMutex;
-	std::list<SessionIDType> m_DisConnectSessionIDs;
-	std::mutex m_DisConnectSessionIDsMutex;
+	std::map<SessionIDType, Connect*> connects_;
+	std::mutex connectsMutex_;
+	std::list<SessionIDType> disConnectSessionIds_;
+	std::mutex disConnectSessionIdsMutex_;
 
-	std::mutex m_Mutex;
+	std::mutex mutex_;
 };
 }
 

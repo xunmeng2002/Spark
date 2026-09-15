@@ -31,13 +31,13 @@ private:
 
 private:
     ObjectPool()
-        : m_BlockUnitNum(64), m_Blocks(nullptr)
+        : blockUnitNum_(64), blocks_(nullptr)
     {
     }
 
     ~ObjectPool()
     {
-        Block* current = m_Blocks;
+        Block* current = blocks_;
         while (current)
         {
             Block* next = current->Next;
@@ -53,13 +53,13 @@ private:
 public:
     static ObjectPool& GetInstance()
     {
-        static ObjectPool m_Instance;
-        return m_Instance;
+        static ObjectPool instance_;
+        return instance_;
     }
 
     void SetBlockUnitNum(int blockUnitNum)
     {
-        m_BlockUnitNum = blockUnitNum;
+        blockUnitNum_ = blockUnitNum;
     }
 
     template<typename... Args>
@@ -67,13 +67,13 @@ public:
     {
         while (true)
         {
-            FreeNode* oldHead = m_FreeList.load(std::memory_order_acquire);
+            FreeNode* oldHead = freeList_.load(std::memory_order_acquire);
             FreeNode* nextNode = nullptr;
             if (oldHead != nullptr)
             {
                 do {
                     nextNode = oldHead->Next.load(std::memory_order_acquire);
-                } while (!m_FreeList.compare_exchange_weak(oldHead, nextNode, std::memory_order_release, std::memory_order_acquire) && oldHead != nullptr);
+                } while (!freeList_.compare_exchange_weak(oldHead, nextNode, std::memory_order_release, std::memory_order_acquire) && oldHead != nullptr);
                 if (oldHead != nullptr)
                 {
                     T* obj = reinterpret_cast<T*>(oldHead);
@@ -98,21 +98,21 @@ public:
             return;
         item->~T();
         FreeNode* node = reinterpret_cast<FreeNode*>(item);
-        FreeNode* oldHead = m_FreeList.load(std::memory_order_acquire);
+        FreeNode* oldHead = freeList_.load(std::memory_order_acquire);
         do {
             node->Next.store(oldHead, std::memory_order_release);
-        } while (!m_FreeList.compare_exchange_weak(oldHead, node, std::memory_order_release, std::memory_order_acquire));
+        } while (!freeList_.compare_exchange_weak(oldHead, node, std::memory_order_release, std::memory_order_acquire));
     }
 
 private:
     void Expand()
     {
-        std::lock_guard<std::mutex> guard(m_Mutex);
-        T* newObjects = static_cast<T*>(operator new(sizeof(T) * m_BlockUnitNum));
+        std::lock_guard<std::mutex> guard(mutex_);
+        T* newObjects = static_cast<T*>(operator new(sizeof(T) * blockUnitNum_));
         try
         {
-            Block* newBlock = new Block(newObjects, m_Blocks);
-            m_Blocks = newBlock;
+            Block* newBlock = new Block(newObjects, blocks_);
+            blocks_ = newBlock;
         }
         catch (...)
         {
@@ -121,27 +121,27 @@ private:
         }
 
         FreeNode* newFreeList = nullptr;
-        for (int i = 0; i < m_BlockUnitNum; ++i)
+        for (int i = 0; i < blockUnitNum_; ++i)
         {
             FreeNode* node = reinterpret_cast<FreeNode*>(&newObjects[i]);
             node->Next.store(newFreeList, std::memory_order_relaxed);
             newFreeList = node;
         }
 
-        FreeNode* oldHead = m_FreeList.load(std::memory_order_acquire);
+        FreeNode* oldHead = freeList_.load(std::memory_order_acquire);
         FreeNode* newHead = newFreeList;
         FreeNode* tail = reinterpret_cast<FreeNode*>(&newObjects[0]);
         do
         {
             tail->Next.store(oldHead, std::memory_order_relaxed);
-        } while (!m_FreeList.compare_exchange_weak(oldHead, newHead, std::memory_order_release, std::memory_order_acquire));
+        } while (!freeList_.compare_exchange_weak(oldHead, newHead, std::memory_order_release, std::memory_order_acquire));
     }
 
 private:
-    int m_BlockUnitNum;
-    std::mutex m_Mutex;
-    Block* m_Blocks;
-    std::atomic<FreeNode*> m_FreeList = nullptr;
+    int blockUnitNum_;
+    std::mutex mutex_;
+    Block* blocks_;
+    std::atomic<FreeNode*> freeList_ = nullptr;
 };
 
 template<typename T>

@@ -38,18 +38,18 @@ private:
 	bool LinuxInit();
 
 protected:
-	std::string m_ShmName;
-	unsigned m_MaxConnectSize;
-	SingleShmHeader* m_CommonShmHeader;
-	void* m_ShmAddr;
-	Sem* m_SemConnect;
-	std::vector<Sem*> m_Sems;
+	std::string shmName_;
+	unsigned maxConnectSize_;
+	SingleShmHeader* commonShmHeader_;
+	void* shmAddr_;
+	Sem* semConnect_;
+	std::vector<Sem*> sems_;
 
-	std::chrono::steady_clock::time_point m_LastSendTime;
+	std::chrono::steady_clock::time_point lastSendTime_;
 
 #ifdef _WIN32
-	void* m_File;
-	void* m_FileMap;
+	void* file_;
+	void* fileMap_;
 #endif // _WIN32
 };
 }

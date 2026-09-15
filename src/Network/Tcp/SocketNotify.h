@@ -22,12 +22,12 @@ private:
 	bool CreateSocketPair();
 
 private:
-	SOCKET m_Sockets[2];
-	TcpConnect* m_TcpConnect;
+	SOCKET sockets_[2];
+	TcpConnect* tcpConnect_;
 
-	std::string m_IP;
-	addrinfo* m_AddressInfo;
-	char m_ReceiveBuffer[16];
+	std::string ip_;
+	addrinfo* addressInfo_;
+	char receiveBuffer_[16];
 };
 }
 

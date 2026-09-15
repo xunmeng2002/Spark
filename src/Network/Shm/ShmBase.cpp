@@ -16,55 +16,55 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 ShmBase::ShmBase(ServerTypeType serverType, const char* shmName, int milliSeconds)
-	:IOBase(serverType, shmName, milliSeconds), m_CommonShmHeader(nullptr), m_ShmAddr(nullptr)
+	:IOBase(serverType, shmName, milliSeconds), commonShmHeader_(nullptr), shmAddr_(nullptr)
 {
 #ifdef _WIN32
-	m_File = nullptr;
-	m_FileMap = nullptr;
+	file_ = nullptr;
+	fileMap_ = nullptr;
 #endif // _WIN32
 
-	m_ShmName = m_Address;
-	m_MaxConnectSize = atoi(m_Port.c_str());
+	shmName_ = address_;
+	maxConnectSize_ = atoi(port_.c_str());
 
-	m_SemConnect = new Sem((m_ShmName + "SemConnect").c_str(), serverType);
-	for (auto i = 0; i < m_MaxConnectSize; ++i)
+	semConnect_ = new Sem((shmName_ + "SemConnect").c_str(), serverType);
+	for (auto i = 0; i < maxConnectSize_; ++i)
 	{
-		auto sem = new Sem((m_ShmName + "Sem" + to_string(i)).c_str(), serverType);
-		m_Sems.push_back(sem);
+		auto sem = new Sem((shmName_ + "Sem" + to_string(i)).c_str(), serverType);
+		sems_.push_back(sem);
 	}
 }
 ShmBase::~ShmBase()
 {
-	if (m_SemConnect != nullptr)
-		delete m_SemConnect;
-	m_SemConnect = nullptr;
-	for (auto sem : m_Sems)
+	if (semConnect_ != nullptr)
+		delete semConnect_;
+	semConnect_ = nullptr;
+	for (auto sem : sems_)
 	{
 		delete sem;
 	}
-	m_Sems.clear();
+	sems_.clear();
 #ifdef _WIN32
-	UnmapViewOfFile(m_ShmAddr);
-	CloseHandle(m_FileMap);
-	if (m_File != nullptr)
+	UnmapViewOfFile(shmAddr_);
+	CloseHandle(fileMap_);
+	if (file_ != nullptr)
 	{
-		CloseHandle(m_File);
-		m_File = nullptr;
+		CloseHandle(file_);
+		file_ = nullptr;
 	}
-	if (m_ServerType == ServerTypeType::Server)
+	if (serverType_ == ServerTypeType::Server)
 	{
-		DeleteFileA(m_ShmName.c_str());
+		DeleteFileA(shmName_.c_str());
 	}
 #endif
 #ifdef __linux__
-	if (munmap(m_ShmAddr, ShmBuffSize * m_MaxConnectSize * 2) < 0)
+	if (munmap(shmAddr_, ShmBuffSize * maxConnectSize_ * 2) < 0)
 	{
 		perror("shm_unlink");
 		WriteLog(LogLevel::Warning, "munmap Failed. ErrNo:%d", errno);
 	}
-	if (m_ServerType == ServerTypeType::Server)
+	if (serverType_ == ServerTypeType::Server)
 	{
-		if (shm_unlink(m_ShmName.c_str()) < 0)
+		if (shm_unlink(shmName_.c_str()) < 0)
 		{
 			perror("shm_unlink");
 			WriteLog(LogLevel::Warning, "shm_unlink Failed. ErrNo:%d", errno);
@@ -74,11 +74,11 @@ ShmBase::~ShmBase()
 }
 bool ShmBase::Init()
 {
-	if (!m_SemConnect->Init())
+	if (!semConnect_->Init())
 		return false;
-	for (auto i = 0; i < m_MaxConnectSize; ++i)
+	for (auto i = 0; i < maxConnectSize_; ++i)
 	{
-		if (!m_Sems[i]->Init())
+		if (!sems_[i]->Init())
 			return false;
 	}
 #ifdef _WIN32
@@ -89,14 +89,14 @@ bool ShmBase::Init()
 	if (!LinuxInit())
 		return false;
 #endif
-	m_CommonShmHeader = (SingleShmHeader*)m_ShmAddr;
-	if (m_ServerType == ServerTypeType::Server)
+	commonShmHeader_ = (SingleShmHeader*)shmAddr_;
+	if (serverType_ == ServerTypeType::Server)
 	{
-		memset(m_ShmAddr, 0, ShmBuffSize * m_MaxConnectSize * 2);
-		m_CommonShmHeader->Status = ConnectStatusType::UnConnected;
-		for (auto i = 1u; i < m_MaxConnectSize; ++i)
+		memset(shmAddr_, 0, ShmBuffSize * maxConnectSize_ * 2);
+		commonShmHeader_->Status = ConnectStatusType::UnConnected;
+		for (auto i = 1u; i < maxConnectSize_; ++i)
 		{
-			auto shmHeader = m_CommonShmHeader + i;
+			auto shmHeader = commonShmHeader_ + i;
 			shmHeader->Status = ConnectStatusType::UnConnected;
 		}
 	}
@@ -114,17 +114,17 @@ void ShmBase::Send(SessionIDType sessionID, Buffer<BuffSize>* buffer)
 	}
 	while (buffer->GetLength() > 0)
 	{
-		auto len = shmConnect->m_ShmBuffer->Write(buffer->GetData(), buffer->GetLength());
+		auto len = shmConnect->GetBuffer()->Write(buffer->GetData(), buffer->GetLength());
 		if (len > 0)
 		{
 			buffer->Shift(len);
-			if (m_ServerType == ServerTypeType::Server)
+			if (serverType_ == ServerTypeType::Server)
 			{
-				m_Sems[shmConnect->RemotePort]->UnLock();
+				sems_[shmConnect->RemotePort]->UnLock();
 			}
 			else
 			{
-				m_Sems[0]->UnLock();
+				sems_[0]->UnLock();
 			}
 		}
 	}
@@ -133,7 +133,7 @@ void ShmBase::Send(SessionIDType sessionID, Buffer<BuffSize>* buffer)
 
 void ShmBase::HandleIOEvent()
 {
-	if (m_ServerType == ServerTypeType::Client)
+	if (serverType_ == ServerTypeType::Client)
 	{
 		ConnectToServer();
 	}
@@ -152,7 +152,7 @@ void ShmBase::DoSend(Connect* connect)
 	auto buffer = connect->GetNextBuffer();
 	while (buffer != nullptr)
 	{
-		int len = shmConnect->m_ShmBuffer->Write(buffer->GetData(), buffer->GetLength());
+		int len = shmConnect->GetBuffer()->Write(buffer->GetData(), buffer->GetLength());
 		buffer->Shift(len);
 		if (buffer->GetLength() == 0)
 		{
@@ -171,10 +171,10 @@ void ShmBase::DoRecv(Connect* connect)
 	auto shmConnect = (ShmConnect<ShmBuffSize>*)connect;
 
 	Buffer<BuffSize>* buffer = Buffer<BuffSize>::Allocate();
-	auto len = shmConnect->m_ShmBuffer->Read(buffer->GetWritePos(), BuffSize);
+	auto len = shmConnect->GetBuffer()->Read(buffer->GetWritePos(), BuffSize);
 	buffer->SetLength(len);
-	if (m_IOSubscriber != nullptr)
-		m_IOSubscriber->OnRecv(shmConnect->SessionID, buffer);
+	if (ioSubscriber_ != nullptr)
+		ioSubscriber_->OnRecv(shmConnect->SessionID, buffer);
 	else
 		buffer->Deallocate();
 }
@@ -183,27 +183,27 @@ void ShmBase::DoRecv(Connect* connect)
 bool ShmBase::WindowsInit()
 {
 #ifdef _WIN32
-	if (m_ServerType == ServerTypeType::Server)
+	if (serverType_ == ServerTypeType::Server)
 	{
-		m_File = CreateFileA(m_ShmName.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
-		if (m_File == INVALID_HANDLE_VALUE)
+		file_ = CreateFileA(shmName_.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+		if (file_ == INVALID_HANDLE_VALUE)
 		{
 			WriteLog(LogLevel::Warning, "CreateFileA Failed. ErrNo:%d", GetLastError());
 			return false;
 		}
-		m_FileMap = CreateFileMappingA(m_File, NULL, PAGE_READWRITE, 0, ShmBuffSize * m_MaxConnectSize * 2, m_ShmName.c_str());
+		fileMap_ = CreateFileMappingA(file_, NULL, PAGE_READWRITE, 0, ShmBuffSize * maxConnectSize_ * 2, shmName_.c_str());
 	}
 	else
 	{
-		m_FileMap = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, m_ShmName.c_str());
+		fileMap_ = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, shmName_.c_str());
 	}
-	if (m_FileMap == NULL)
+	if (fileMap_ == NULL)
 	{
 		WriteLog(LogLevel::Warning, "Create Or Open FileMapping Failed. ErrNo:%d", GetLastError());
 		return false;
 	}
-	m_ShmAddr = (char*)MapViewOfFile(m_FileMap, FILE_MAP_ALL_ACCESS, 0, 0, ShmBuffSize * m_MaxConnectSize * 2);
-	if (m_ShmAddr == NULL)
+	shmAddr_ = (char*)MapViewOfFile(fileMap_, FILE_MAP_ALL_ACCESS, 0, 0, ShmBuffSize * maxConnectSize_ * 2);
+	if (shmAddr_ == NULL)
 	{
 		WriteLog(LogLevel::Warning, "MapViewOfFile Failed. ErrNo:%d", GetLastError());
 		return false;
@@ -215,26 +215,26 @@ bool ShmBase::LinuxInit()
 {
 #ifdef __linux__
 	int fd;
-	if (m_ServerType == ServerTypeType::Server)
+	if (serverType_ == ServerTypeType::Server)
 	{
-		fd = shm_open(m_ShmName.c_str(), O_CREAT | O_EXCL | O_RDWR, 0666);
+		fd = shm_open(shmName_.c_str(), O_CREAT | O_EXCL | O_RDWR, 0666);
 	}
 	else
 	{
-		fd = shm_open(m_ShmName.c_str(), O_RDWR, 0666);
+		fd = shm_open(shmName_.c_str(), O_RDWR, 0666);
 	}
 	if (fd < 0)
 	{
 		WriteLog(LogLevel::Warning, "shm_open Failed. ErrNo:%d", errno);
 		return false;
 	}
-	if (ftruncate(fd, ShmBuffSize * m_MaxConnectSize * 2) == -1)
+	if (ftruncate(fd, ShmBuffSize * maxConnectSize_ * 2) == -1)
 	{
 		WriteLog(LogLevel::Warning, "ftruncate Failed. ErrNo:%d", errno);
 		return false;
 	}
-	m_ShmAddr = (char*)mmap(nullptr, ShmBuffSize * m_MaxConnectSize * 2, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-	if (m_ShmAddr == MAP_FAILED)
+	shmAddr_ = (char*)mmap(nullptr, ShmBuffSize * maxConnectSize_ * 2, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	if (shmAddr_ == MAP_FAILED)
 	{
 		WriteLog(LogLevel::Warning, "mmap Failed. ErrNo:%d", errno);
 		return false;

@@ -22,8 +22,8 @@ public:
 	void Send(SessionIDType sessionID);
 	void SendCommand(SessionIDType sessionID, const char* cmd);
 private:
-	IOBase* m_IO;
-	IOThread* m_IOThread;
+	IOBase* io_;
+	IOThread* ioThread_;
 	std::map<SessionIDType, int> m_MessageCounts;
 	std::chrono::steady_clock::time_point m_StartSendTime;
 };

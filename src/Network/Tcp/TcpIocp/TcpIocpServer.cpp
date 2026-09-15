@@ -18,15 +18,15 @@ bool TcpIocpServer::Init()
 {
     if (!TcpIocpBase::Init())
         return false;
-    if (!TcpUtility::Bind(m_Socket, m_AddressInfo))
+    if (!TcpUtility::Bind(socket_, addressInfo_))
     {
         return false;
     }
-    if (!TcpUtility::Listen(m_Socket, m_BackLog))
+    if (!TcpUtility::Listen(socket_, backLog_))
     {
         return false;
     }
-    for (auto i = 0; i < m_BackLog; i++)
+    for (auto i = 0; i < backLog_; i++)
     {
         if (!PostAccept())
         {
@@ -50,13 +50,13 @@ bool TcpIocpServer::PostAccept()
     overlapped->EventID = IocpEvent::EventAccept;
     overlapped->Connect = tcpIocpConnect;
 
-    WriteLog(LogLevel::Info, "PostAccept SessionID:%lld, Socket:%lld", tcpIocpConnect->SessionID, tcpIocpConnect->SocketID);
+    WriteLog(LogLevel::Info, "PostAccept SessionID:%lld, Socket:%lld", tcpIocpConnect->SessionID, tcpIocpConnect->SocketId);
     DWORD transBytes = 0;
-    auto ret = SocketApi::GetInstance().AcceptEx(m_Socket, tcpIocpConnect->SocketID, overlapped->WsaBuffer.buf, 0, (sizeof(SOCKADDR_IN) + 16), (sizeof(SOCKADDR_IN) + 16), &transBytes, overlapped);
+    auto ret = SocketApi::GetInstance().AcceptEx(socket_, tcpIocpConnect->SocketId, overlapped->WsaBuffer.buf, 0, (sizeof(SOCKADDR_IN) + 16), (sizeof(SOCKADDR_IN) + 16), &transBytes, overlapped);
     auto lastError = WSAGetLastError();
     if (ret != 0 && lastError != ERROR_IO_PENDING)
     {
-        WriteLog(LogLevel::Error, "Call AcceptEx Failed. SessionID:%lld, Socket:%lld, Errno:%d", tcpIocpConnect->SessionID, tcpIocpConnect->SocketID, lastError);
+        WriteLog(LogLevel::Error, "Call AcceptEx Failed. SessionID:%lld, Socket:%lld, Errno:%d", tcpIocpConnect->SessionID, tcpIocpConnect->SocketId, lastError);
         return false;
     }
     return true;
@@ -72,7 +72,7 @@ void TcpIocpServer::OnAcceptComplete(MyOverlapped* overlapped)
     snprintf(tcpIocpConnect->RemoteAddress, sizeof(tcpIocpConnect->RemoteAddress), inet_ntoa(remoteAddr->sin_addr));
     tcpIocpConnect->RemotePort = ntohs(remoteAddr->sin_port);
 
-    WriteLog(LogLevel::Info, "AcceptComplete: From <%s:%d>, SessionID:%lld, Socket:%lld", tcpIocpConnect->RemoteAddress, tcpIocpConnect->RemotePort, tcpIocpConnect->SessionID, tcpIocpConnect->SocketID);
+    WriteLog(LogLevel::Info, "AcceptComplete: From <%s:%d>, SessionID:%lld, Socket:%lld", tcpIocpConnect->RemoteAddress, tcpIocpConnect->RemotePort, tcpIocpConnect->SessionID, tcpIocpConnect->SocketId);
 
     AddConnect(tcpIocpConnect);
     PostRecv(overlapped);
@@ -85,13 +85,13 @@ void TcpIocpServer::OnAcceptComplete(MyOverlapped* overlapped)
 
 SOCKET TcpIocpServer::PrepareAcceptSocket()
 {
-    SOCKET socketID = WSASocket(m_AddressInfo->ai_family, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
+    SOCKET socketID = WSASocket(addressInfo_->ai_family, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
     if (socketID == INVALID_SOCKET)
     {
         WriteLog(LogLevel::Error, "Create SOCKET Failed.");
         return INVALID_SOCKET;
     }
-    if (!m_IOCompletePort->AssociateDevice((HANDLE)socketID, socketID))
+    if (!ioCompletePort_->AssociateDevice((HANDLE)socketID, socketID))
     {
         WriteLog(LogLevel::Warning, "Associate CompletionPort Failed, Socket:%lld", socketID);
         return INVALID_SOCKET;

@@ -15,7 +15,7 @@ using namespace Spark::Network;
 using namespace Spark::Packages;
 
 StepClient::StepClient()
-	:Protocol(ProtocolTypeType::Step, ServerTypeType::Client, g_IOModel, 0, new PackageFactory()), m_Connected(false), m_SessionID(0LL), m_RecvCount(0)
+	:Protocol(ProtocolTypeType::Step, ServerTypeType::Client, g_IOModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), m_RecvCount(0)
 {
 	m_ReqInsertOrder = new ReqInsertOrderPackage();
 	Subscribe(this);
@@ -29,8 +29,8 @@ void StepClient::OnProtocolConnect(SessionIDType sessionID, const char* ip, int 
 {
 	WriteLog(LogLevel::Info, "StepClient::OnConnect SessionID:[%lld], IP:[%s], port:[%d]", sessionID, ip, port);
 
-	m_SessionID = sessionID;
-	m_Connected = true;
+	sessionId_ = sessionID;
+	connected_ = true;
 	m_StartTime = chrono::steady_clock::now();
 	SendReqInsertOrder(++m_RecvCount);
 }
@@ -38,7 +38,7 @@ void StepClient::OnProtocolDisConnect(SessionIDType sessionID, const char* ip, i
 {
 	WriteLog(LogLevel::Info, "StepClient::OnDisConnect SessionID:[%lld], IP:[%s], port:[%d]", sessionID, ip, port);
 
-	m_Connected = false;
+	connected_ = false;
 	m_RecvCount = 0;
 }
 void StepClient::OnMessage(Package* package)
@@ -55,12 +55,12 @@ void StepClient::OnMessage(Package* package)
 	{
 		WriteLog(LogLevel::Info, "OnMessage: %s", package->GetDebugString());
 		WriteLog(LogLevel::Info, "Total Cost: %lld ms", TimeUtility::GetDuration<chrono::milliseconds>(m_StartTime));
-		m_IOThread->Stop();
+		ioThread_->Stop();
 	}
 }
 void StepClient::SendReqInsertOrder(int index)
 {
-	m_ReqInsertOrder->Prepare(m_SessionID, false, index);
+	m_ReqInsertOrder->Prepare(sessionId_, false, index);
 	m_ReqInsertOrder->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
 	memset(m_ReqInsertOrder->ReqInsertOrder, 0, sizeof(ReqInsertOrderField));
 	Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->AccountID, "Xunmeng001");

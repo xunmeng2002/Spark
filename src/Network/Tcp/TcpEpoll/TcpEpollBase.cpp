@@ -7,29 +7,29 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 TcpEpollBase::TcpEpollBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
-	:TcpBase(serverType, addressName, milliSeconds), m_EpollFd(0)
+	:TcpBase(serverType, addressName, milliSeconds), epollFd_(0)
 {
 #ifdef __linux__
-	m_EpollFd = epoll_create(5);
+	epollFd_ = epoll_create(5);
 #endif
 }
 TcpEpollBase::~TcpEpollBase()
 {
 #ifdef __linux__
-	close(m_EpollFd);
+	close(epollFd_);
 #endif
 }
 bool TcpEpollBase::Init()
 {
 	if (!TcpBase::Init())
 		return false;
-	AddEpollEvent(m_SocketNotify->GetConnect());
+	AddEpollEvent(socketNotify_->GetConnect());
 	return true;
 }
 void TcpEpollBase::HandleTcpEvent()
 {
 #ifdef __linux__
-	int number = epoll_wait(m_EpollFd, m_EpollEvents, EpollEventNumber, m_TimeOut.count());
+	int number = epoll_wait(epollFd_, epollEvents_, EpollEventNumber, timeOut_.count());
 	if (number < 0 && errno != EINTR)
 	{
 		WriteLog(LogLevel::Info, "epoll wait failed. number:%d, errno:%d\n", number, errno);
@@ -37,16 +37,16 @@ void TcpEpollBase::HandleTcpEvent()
 	}
 	for (int i = 0; i < number; i++)
 	{
-		auto epollEvent = m_EpollEvents[i];
-		auto tcpConnect = (TcpConnect*)m_EpollEvents[i].data.ptr;
-		if (m_ServerType == ServerTypeType::Server && tcpConnect->SocketID == m_Socket)
+		auto epollEvent = epollEvents_[i];
+		auto tcpConnect = (TcpConnect*)epollEvents_[i].data.ptr;
+		if (serverType_ == ServerTypeType::Server && tcpConnect->SocketId == socket_)
 		{
 			DoAccept();
 		}
-		else if (tcpConnect == m_SocketNotify->GetConnect())
+		else if (tcpConnect == socketNotify_->GetConnect())
 		{
-			m_SocketNotify->Consume();
-			for (auto& it : m_Connects)
+			socketNotify_->Consume();
+			for (auto& it : connects_)
 			{
 				auto connect = it.second;
 				if (!connect->Buffers.empty())
@@ -65,20 +65,20 @@ void TcpEpollBase::HandleTcpEvent()
 		}
 		else if (epollEvent.events & EPOLLOUT)
 		{
-			if (m_ServerType == ServerTypeType::Client && m_Connects.find(tcpConnect->SessionID) == m_Connects.end())
+			if (serverType_ == ServerTypeType::Client && connects_.find(tcpConnect->SessionID) == connects_.end())
 			{
 				int error = 0;
 				socklen_t len = sizeof(error);
-				int ret = getsockopt(tcpConnect->SocketID, SOL_SOCKET, SO_ERROR, &error, &len);
+				int ret = getsockopt(tcpConnect->SocketId, SOL_SOCKET, SO_ERROR, &error, &len);
 				if (ret == -1)
 				{
-					WriteLog(LogLevel::Warning, "getsockopt Failed. SessionID:%lld, SocketID:%lld", tcpConnect->SessionID, tcpConnect->SocketID);
+					WriteLog(LogLevel::Warning, "getsockopt Failed. SessionID:%lld, SocketId:%lld", tcpConnect->SessionID, tcpConnect->SocketId);
 					RemoveConnect(tcpConnect);
 					continue;
 				}
 				if (errno != 0)
 				{
-					WriteLog(LogLevel::Warning, "Connect Failed. SessionID:%lld, SocketID:%lld, errno:%d", tcpConnect->SessionID, tcpConnect->SocketID, errno);
+					WriteLog(LogLevel::Warning, "Connect Failed. SessionID:%lld, SocketId:%lld, errno:%d", tcpConnect->SessionID, tcpConnect->SocketId, errno);
 					RemoveConnect(tcpConnect);
 					continue;
 				}
@@ -117,13 +117,13 @@ void TcpEpollBase::AddEpollEvent(TcpConnect* connect)
 	epoll_event epollEvent;
 	epollEvent.data.ptr = connect;
 	epollEvent.events = EPOLLIN;
-	epoll_ctl(m_EpollFd, EPOLL_CTL_ADD, connect->SocketID, &epollEvent);
+	epoll_ctl(epollFd_, EPOLL_CTL_ADD, connect->SocketId, &epollEvent);
 #endif
 }
 void TcpEpollBase::RemoveEpollEvent(TcpConnect* connect)
 {
 #ifdef __linux__
-	epoll_ctl(m_EpollFd, EPOLL_CTL_DEL, connect->SocketID, NULL);
+	epoll_ctl(epollFd_, EPOLL_CTL_DEL, connect->SocketId, NULL);
 #endif
 }
 void TcpEpollBase::AddWriteEpollEvent(TcpConnect* connect)
@@ -132,7 +132,7 @@ void TcpEpollBase::AddWriteEpollEvent(TcpConnect* connect)
 	epoll_event epollEvent;
 	epollEvent.data.ptr = connect;
 	epollEvent.events = EPOLLIN | EPOLLOUT;
-	epoll_ctl(m_EpollFd, EPOLL_CTL_MOD, connect->SocketID, &epollEvent);
+	epoll_ctl(epollFd_, EPOLL_CTL_MOD, connect->SocketId, &epollEvent);
 #endif
 }
 void TcpEpollBase::RemoveWriteEpollEvent(TcpConnect* connect)
@@ -141,7 +141,7 @@ void TcpEpollBase::RemoveWriteEpollEvent(TcpConnect* connect)
 	epoll_event epollEvent;
 	epollEvent.data.ptr = connect;
 	epollEvent.events = EPOLLIN;
-	epoll_ctl(m_EpollFd, EPOLL_CTL_MOD, connect->SocketID, &epollEvent);
+	epoll_ctl(epollFd_, EPOLL_CTL_MOD, connect->SocketId, &epollEvent);
 #endif
 }
 }

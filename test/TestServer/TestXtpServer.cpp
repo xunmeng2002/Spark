@@ -11,7 +11,7 @@ using namespace Spark::Network;
 using namespace Spark::Packages;
 
 XtpServer::XtpServer()
-	:Protocol(ProtocolTypeType::Xtp, ServerTypeType::Server, g_IOModel, 0, new PackageFactory()), m_Connected(false), m_SessionID(0LL), m_RecvCount(0)
+	:Protocol(ProtocolTypeType::Xtp, ServerTypeType::Server, g_IOModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), m_RecvCount(0)
 {
 	Subscribe(this);
 	RegisterFront(g_Address);
@@ -24,14 +24,14 @@ void XtpServer::OnProtocolConnect(SessionIDType sessionID, const char* ip, int p
 {
 	WriteLog(LogLevel::Info, "XtpServer::OnConnect SessionID:[%lld], IP:[%s], port:[%d]", sessionID, ip, port);
 
-	m_SessionID = sessionID;
-	m_Connected = true;
+	sessionId_ = sessionID;
+	connected_ = true;
 }
 void XtpServer::OnProtocolDisConnect(SessionIDType sessionID, const char* ip, int port)
 {
 	WriteLog(LogLevel::Info, "XtpServer::OnDisConnect SessionID:[%lld], IP:[%s], port:[%d]", sessionID, ip, port);
 
-	m_Connected = false;
+	connected_ = false;
 }
 void XtpServer::OnMessage(Package* xtpPackage)
 {
@@ -56,7 +56,7 @@ void TestXtpServer()
 		return;
 	ioThread->Start();
 
-	while (!xtpServer.m_Connected)
+	while (!xtpServer.connected_)
 	{
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}

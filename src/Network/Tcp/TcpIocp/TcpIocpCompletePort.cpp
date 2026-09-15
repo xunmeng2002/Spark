@@ -6,7 +6,7 @@ namespace Spark::Network
 {
 IOCompletePort::IOCompletePort()
 {
-	m_Handle = NULL;
+	handle_ = NULL;
 }
 IOCompletePort::~IOCompletePort()
 {
@@ -15,30 +15,30 @@ IOCompletePort::~IOCompletePort()
 
 bool IOCompletePort::Create(int maxConcurrency)
 {
-	m_Handle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, maxConcurrency);
-	return (m_Handle != NULL);
+	handle_ = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, maxConcurrency);
+	return (handle_ != NULL);
 }
 bool IOCompletePort::Close()
 {
 	BOOL result = TRUE;
-	if (m_Handle != NULL)
+	if (handle_ != NULL)
 	{
-		result = CloseHandle(m_Handle);
-		m_Handle = NULL;
+		result = CloseHandle(handle_);
+		handle_ = NULL;
 	}
 	return result;
 }
 bool IOCompletePort::AssociateDevice(HANDLE device, ULONG_PTR completeKey)
 {
-	return (CreateIoCompletionPort(device, m_Handle, completeKey, 0) == m_Handle);
+	return (CreateIoCompletionPort(device, handle_, completeKey, 0) == handle_);
 }
 bool IOCompletePort::PostStatus(DWORD dwNumBytes, ULONG_PTR completeKey, OVERLAPPED* po)
 {
-	return PostQueuedCompletionStatus(m_Handle, dwNumBytes, completeKey, po);
+	return PostQueuedCompletionStatus(handle_, dwNumBytes, completeKey, po);
 }
 bool IOCompletePort::GetStatus(PDWORD pdwNumBytes, ULONG_PTR* pCompKey, OVERLAPPED** ppo, DWORD dwMilliseconds)
 {
-	return GetQueuedCompletionStatus(m_Handle, pdwNumBytes, pCompKey, ppo, dwMilliseconds);
+	return GetQueuedCompletionStatus(handle_, pdwNumBytes, pCompKey, ppo, dwMilliseconds);
 }
 }
 #endif // _WIN32

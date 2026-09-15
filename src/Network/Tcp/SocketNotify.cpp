@@ -8,105 +8,105 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 SocketNotify::SocketNotify()
-	:m_Sockets{ INVALID_SOCKET, INVALID_SOCKET }, m_TcpConnect(nullptr), m_IP("127.0.0.1"), m_AddressInfo(nullptr), m_ReceiveBuffer{0}
+	:sockets_{ INVALID_SOCKET, INVALID_SOCKET }, tcpConnect_(nullptr), ip_("127.0.0.1"), addressInfo_(nullptr), receiveBuffer_{0}
 {
 }
 SocketNotify::~SocketNotify()
 {
-	if (m_Sockets[0] != -1)
+	if (sockets_[0] != -1)
 	{
-		closesocket(m_Sockets[0]);
+		closesocket(sockets_[0]);
 	}
-	if (m_Sockets[1] != -1)
+	if (sockets_[1] != -1)
 	{
-		closesocket(m_Sockets[1]);
+		closesocket(sockets_[1]);
 	}
 }
 bool SocketNotify::Init()
 {
 	if (!CreateSocketPair())
 		return false;
-	TcpUtility::SetSockUnblock(m_Sockets[0]);
-	TcpUtility::SetSockUnblock(m_Sockets[1]);
+	TcpUtility::SetSockUnblock(sockets_[0]);
+	TcpUtility::SetSockUnblock(sockets_[1]);
 
-	m_TcpConnect = TcpConnect::Allocate(0LL, m_Sockets[0], m_IP, "");
+	tcpConnect_ = TcpConnect::Allocate(0LL, sockets_[0], ip_, "");
 	return true;
 }
 bool SocketNotify::Notify()
 {
 	char buffer = 1;
-	int len = send(m_Sockets[1], &buffer, 1, 0);
+	int len = send(sockets_[1], &buffer, 1, 0);
 	return len == 1;
 }
 bool SocketNotify::Consume()
 {
-	int len = recv(m_Sockets[0], m_ReceiveBuffer, sizeof(m_ReceiveBuffer), 0);
+	int len = recv(sockets_[0], receiveBuffer_, sizeof(receiveBuffer_), 0);
 	return len > 0;
 }
 SOCKET SocketNotify::GetReadSocket()
 {
-	return m_Sockets[0];
+	return sockets_[0];
 }
 TcpConnect* SocketNotify::GetConnect()
 {
-	return m_TcpConnect;
+	return tcpConnect_;
 }
 
 
 bool SocketNotify::CreateSocketPair()
 {
 #ifdef _WIN32
-	auto ret = TcpUtility::GetAddrinfo(m_IP.c_str(), 0, m_AddressInfo);
+	auto ret = TcpUtility::GetAddrinfo(ip_.c_str(), 0, addressInfo_);
 	if (ret < 0)
 	{
-		WriteLog(LogLevel::Error, "GetAddrinfo for m_ClientLocalAddressInfo Failed. ret:%d, Errno:%d", ret, WSAGetLastError());
+		WriteLog(LogLevel::Error, "GetAddrinfo for clientLocalAddressInfo_ Failed. ret:%d, Errno:%d", ret, WSAGetLastError());
 		return false;
 	}
-	m_Sockets[0] = TcpUtility::CreateSocket(m_AddressInfo->ai_family);
-	if (m_Sockets[0] == INVALID_SOCKET)
+	sockets_[0] = TcpUtility::CreateSocket(addressInfo_->ai_family);
+	if (sockets_[0] == INVALID_SOCKET)
 	{
 		WriteLog(LogLevel::Error, "Create ReadSocket Failed.");
 		return false;
 	}
-	if (!TcpUtility::Bind(m_Sockets[0], m_AddressInfo))
+	if (!TcpUtility::Bind(sockets_[0], addressInfo_))
 	{
 		WriteLog(LogLevel::Error, "SocketNotify Bind Failed.");
-		closesocket(m_Sockets[0]);
+		closesocket(sockets_[0]);
 		return false;
 	}
-	if (!TcpUtility::Listen(m_Sockets[0]))
+	if (!TcpUtility::Listen(sockets_[0]))
 	{
 		WriteLog(LogLevel::Error, "SocketNotify Listen Failed.");
-		closesocket(m_Sockets[0]);
+		closesocket(sockets_[0]);
 		return false;
 	}
 	sockaddr_in actualAddr;
 	int addrLen = sizeof(actualAddr);
-	if (getsockname(m_Sockets[0], (sockaddr*)&actualAddr, &addrLen) == SOCKET_ERROR)
+	if (getsockname(sockets_[0], (sockaddr*)&actualAddr, &addrLen) == SOCKET_ERROR)
 	{
 		WriteLog(LogLevel::Error, "getsockname failed: %d", WSAGetLastError());
-		closesocket(m_Sockets[0]);
+		closesocket(sockets_[0]);
 		return false;
 	}
 
-	m_Sockets[1] = TcpUtility::CreateSocket(m_AddressInfo->ai_family);
-	if (m_Sockets[1] == INVALID_SOCKET)
+	sockets_[1] = TcpUtility::CreateSocket(addressInfo_->ai_family);
+	if (sockets_[1] == INVALID_SOCKET)
 	{
 		WriteLog(LogLevel::Error, "Create Write Failed.");
-		closesocket(m_Sockets[0]);
+		closesocket(sockets_[0]);
 		return false;
 	}
-	ret = connect(m_Sockets[1], (sockaddr*)&actualAddr, addrLen);
+	ret = connect(sockets_[1], (sockaddr*)&actualAddr, addrLen);
 	if (ret != 0)
 	{
 		WriteLog(LogLevel::Error, "Connect Failed. ret:%d, errorID:%d", ret, WSAGetLastError());
-		closesocket(m_Sockets[0]);
-		closesocket(m_Sockets[1]);
+		closesocket(sockets_[0]);
+		closesocket(sockets_[1]);
 		return false;
 	}
 #endif
 #ifdef __linux__
-	auto ret = socketpair(AF_UNIX, SOCK_STREAM, 0, m_Sockets);
+	auto ret = socketpair(AF_UNIX, SOCK_STREAM, 0, sockets_);
 	if (ret != 0)
 	{
 		WriteLog(LogLevel::Warning, "socketpair failed. ret:%d, errorID:%d", ret, errno);

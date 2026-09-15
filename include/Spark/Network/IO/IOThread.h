@@ -25,6 +25,6 @@ protected:
 	virtual void ThreadExit() override;
 
 private:
-	IOBase* m_IO;
+	IOBase* io_;
 };
 }

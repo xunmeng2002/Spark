@@ -10,39 +10,39 @@ using namespace Spark::Network;
 
 static int g_Count = 0;
 ShmSubscriberImpl::ShmSubscriberImpl(IOBase* io, ServerTypeType serverType)
-	:m_IO(io), m_ServerType(serverType), m_Connected(false), m_SessionID(0LL)
+	:io_(io), serverType_(serverType), connected_(false), sessionId_(0LL)
 {
-	m_Buff = new char[BuffSize];
-	m_Length = 0;
+	buff_ = new char[BuffSize];
+	length_ = 0;
 
-	m_IO->Subscribe(this);
+	io_->Subscribe(this);
 }
 void ShmSubscriberImpl::OnConnect(SessionIDType sessionID, const char* ip, int port)
 {
 	WriteLog(LogLevel::Info, "OnConnect sessionID:%lld, ip:%s, port:%d", sessionID, ip, port);
-	m_Connected = true;
-	m_SessionID = sessionID;
+	connected_ = true;
+	sessionId_ = sessionID;
 }
 void ShmSubscriberImpl::OnDisConnect(SessionIDType sessionID, const char* ip, int port)
 {
 	WriteLog(LogLevel::Info, "OnDisConnect sessionID:%lld, ip:%s, port:%d", sessionID, ip, port);
-	m_Connected = false;
+	connected_ = false;
 }
 void ShmSubscriberImpl::OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer)
 {
 	while (buffer->GetLength() > 0)
 	{
 		ShmPackage* shmPackage = nullptr;
-		if (m_Length > 0)
+		if (length_ > 0)
 		{
-			unsigned len = sizeof(ShmPackage) - m_Length;
+			unsigned len = sizeof(ShmPackage) - length_;
 			len = std::min(len, buffer->GetLength());
-			memcpy(m_Buff + m_Length, buffer->GetData(), len);
-			m_Length += len;
-			if (m_Length == sizeof(ShmPackage))
+			memcpy(buff_ + length_, buffer->GetData(), len);
+			length_ += len;
+			if (length_ == sizeof(ShmPackage))
 			{
-				shmPackage = (ShmPackage*)m_Buff;
-				m_Length = 0;
+				shmPackage = (ShmPackage*)buff_;
+				length_ = 0;
 			}
 			buffer->Shift(len);
 		}
@@ -55,20 +55,20 @@ void ShmSubscriberImpl::OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer
 			}
 			else
 			{
-				memcpy(m_Buff, buffer->GetData(), buffer->GetLength());
-				m_Length += buffer->GetLength();
+				memcpy(buff_, buffer->GetData(), buffer->GetLength());
+				length_ += buffer->GetLength();
 				buffer->Shift(buffer->GetLength());
 			}
 		}
 		if (shmPackage != nullptr)
 		{
 			WriteLog(LogLevel::Info, "ShmSubscriberImpl::OnRecv ShmType[%d], Count[%d], Data[%s]", shmPackage->ShmType, shmPackage->Count, shmPackage->Data);
-			if (m_ServerType == ServerTypeType::Server)
+			if (serverType_ == ServerTypeType::Server)
 			{
 				shmPackage->ShmType = (int)ServerTypeType::Server;
 				auto sendBuff = new Buffer<BuffSize>();
 				sendBuff->Append((char*)shmPackage, sizeof(ShmPackage));
-				m_IO->Send(sessionID, sendBuff);
+				io_->Send(sessionID, sendBuff);
 			}
 		}
 	}

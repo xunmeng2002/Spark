@@ -23,7 +23,7 @@ public:
 	void UpdateLastSendTime();
 
 
-	SOCKET SocketID;
+	SOCKET SocketId;
 	std::chrono::steady_clock::time_point LastSendTimePoint;
 };
 }

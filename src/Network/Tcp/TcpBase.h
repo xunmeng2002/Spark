@@ -37,23 +37,23 @@ protected:
 	void TryAutoReconnect();
 
 protected:
-	addrinfo* m_AddressInfo;
-	SOCKET m_Socket;
-	SocketNotify* m_SocketNotify;
+	addrinfo* addressInfo_;
+	SOCKET socket_;
+	SocketNotify* socketNotify_;
 
 	// 已发起未落定的连接(首连与重连共用):AddConnect/RemoveConnect 落定时复位
-	bool m_AutoConnectPending;
-	std::chrono::steady_clock::time_point m_LastConnectAttemptTime;
+	bool autoConnectPending_;
+	std::chrono::steady_clock::time_point lastConnectAttemptTime_;
 
 
-	std::mutex m_ConnectDataMutex;
+	std::mutex connectDataMutex_;
 	
-	sockaddr_storage m_RemoteAddress;
+	sockaddr_storage remoteAddress_;
 #ifdef _WIN32
-	int m_RemoteAddressLen;
+	int remoteAddressLen_;
 #endif
 #ifdef __linux__
-	unsigned int m_RemoteAddressLen;
+	unsigned int remoteAddressLen_;
 #endif
 };
 }

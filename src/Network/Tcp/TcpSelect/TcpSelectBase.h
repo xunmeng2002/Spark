@@ -17,11 +17,11 @@ protected:
 	virtual void HandleTcpEvent() override;
 
 protected:
-	fd_set m_ReadFds;
-	fd_set m_WriteFds;
-	fd_set m_ErrorFds;
-	SOCKET m_MaxID;
-	timeval m_SelectSocketTimeOut;
-	timeval m_SelectSocketTimeOutTemp;
+	fd_set readFds_;
+	fd_set writeFds_;
+	fd_set errorFds_;
+	SOCKET maxId_;
+	timeval selectSocketTimeOut_;
+	timeval selectSocketTimeOutTemp_;
 };
 }

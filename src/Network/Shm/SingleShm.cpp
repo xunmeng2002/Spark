@@ -18,48 +18,48 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 SingleShm::SingleShm(ServerTypeType shmType, const char* shmName)
-	:IOBase(shmType, shmName, 0), m_ShmName(shmName), m_Connected(false), m_SessionID(0LL),
-	m_ShmAddr(nullptr)
+	:IOBase(shmType, shmName, 0), shmName_(shmName), connected_(false), sessionId_(0LL),
+	shmAddr_(nullptr)
 {
-	m_ShmBuffer = new ShmBuffer<ShmBuffSize>();
+    shmBuffer_ = new ShmBuffer<ShmBuffSize>();
 #ifdef _WIN32
-	m_File = nullptr;
-	m_FileMap = nullptr;
+	file_ = nullptr;
+	fileMap_ = nullptr;
 #endif // _WIN32
 }
 SingleShm::~SingleShm()
 {
 	bool isLast = false;
-	if (m_ShmBuffer->m_ShmHeader->Status == ConnectStatusType::DisConnected)
+	if (shmBuffer_->ShmHeader->Status == ConnectStatusType::DisConnected)
 	{
 		isLast = true;
 	}
 	else
 	{
-		m_ShmBuffer->m_ShmHeader->Status = ConnectStatusType::DisConnected;
+        shmBuffer_->ShmHeader->Status = ConnectStatusType::DisConnected;
 	}
 #ifdef _WIN32
-	UnmapViewOfFile(m_ShmAddr);
-	CloseHandle(m_FileMap);
-	if (m_File != nullptr)
+	UnmapViewOfFile(shmAddr_);
+	CloseHandle(fileMap_);
+	if (file_ != nullptr)
 	{
-		CloseHandle(m_File);
-		m_File = nullptr;
+		CloseHandle(file_);
+		file_ = nullptr;
 	}
 	if (isLast)
 	{
-		DeleteFileA(m_ShmName.c_str());
+		DeleteFileA(shmName_.c_str());
 	}
 #endif
 #ifdef __linux__
-	if (munmap(m_ShmAddr, sizeof(SingleShmHeader) + 2 * ShmBuffSize) < 0)
+	if (munmap(shmAddr_, sizeof(SingleShmHeader) + 2 * ShmBuffSize) < 0)
 	{
 		perror("shm_unlink");
 		WriteLog(LogLevel::Warning, "munmap Failed. ErrNo:%d", errno);
 	}
 	if (isLast)
 	{
-		if (shm_unlink(m_ShmName.c_str()) < 0)
+		if (shm_unlink(shmName_.c_str()) < 0)
 		{
 			perror("shm_unlink");
 			WriteLog(LogLevel::Warning, "shm_unlink Failed. ErrNo:%d", errno);
@@ -71,34 +71,34 @@ bool SingleShm::Init()
 {
 	bool firstOpen = true;
 #ifdef _WIN32
-	m_File = CreateFileA(m_ShmName.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (m_File == INVALID_HANDLE_VALUE)
+	file_ = CreateFileA(shmName_.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (file_ == INVALID_HANDLE_VALUE)
 	{
 		firstOpen = false;
-		m_FileMap = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, m_ShmName.c_str());
+		fileMap_ = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, shmName_.c_str());
 	}
 	else
 	{
-		m_FileMap = CreateFileMappingA(m_File, NULL, PAGE_READWRITE, 0, sizeof(SingleShmHeader) + 2 * ShmBuffSize, m_ShmName.c_str());
+		fileMap_ = CreateFileMappingA(file_, NULL, PAGE_READWRITE, 0, sizeof(SingleShmHeader) + 2 * ShmBuffSize, shmName_.c_str());
 	}
-	if (m_FileMap == NULL)
+	if (fileMap_ == NULL)
 	{
 		WriteLog(LogLevel::Warning, "Create Or Open FileMapping Failed. ErrNo:%d", GetLastError());
 		return false;
 	}
-	m_ShmAddr = (char*)MapViewOfFile(m_FileMap, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(SingleShmHeader) + 2 * ShmBuffSize);
-	if (m_ShmAddr == NULL)
+	shmAddr_ = (char*)MapViewOfFile(fileMap_, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(SingleShmHeader) + 2 * ShmBuffSize);
+	if (shmAddr_ == NULL)
 	{
 		WriteLog(LogLevel::Warning, "MapViewOfFile Failed. ErrNo:%d", GetLastError());
 		return false;
 	}
 #endif
 #ifdef __linux__
-	int fd = shm_open(m_ShmName.c_str(), O_CREAT | O_EXCL | O_RDWR, 0666);
+	int fd = shm_open(shmName_.c_str(), O_CREAT | O_EXCL | O_RDWR, 0666);
 	if (fd < 0)
 	{
 		firstOpen = false;
-		fd = shm_open(m_ShmName.c_str(), O_EXCL | O_RDWR, 0666);
+		fd = shm_open(shmName_.c_str(), O_EXCL | O_RDWR, 0666);
 		if (fd < 0)
 		{
 			WriteLog(LogLevel::Warning, "shm_open Failed. ErrNo:%d", errno);
@@ -110,45 +110,45 @@ bool SingleShm::Init()
 		WriteLog(LogLevel::Warning, "ftruncate Failed. ErrNo:%d", errno);
 		return false;
 	}
-	m_ShmAddr = (char*)mmap(nullptr, sizeof(SingleShmHeader) + 2 * ShmBuffSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-	if (m_ShmAddr == MAP_FAILED)
+	shmAddr_ = (char*)mmap(nullptr, sizeof(SingleShmHeader) + 2 * ShmBuffSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	if (shmAddr_ == MAP_FAILED)
 	{
 		WriteLog(LogLevel::Warning, "mmap Failed. ErrNo:%d", errno);
 		return false;
 	}
 #endif
-	m_ShmBuffer->m_ShmHeader = (SingleShmHeader*)m_ShmAddr;
-	m_ShmBuffer->m_ServerType = m_ServerType;
-	m_ShmBuffer->m_UpBuffer = (char*)m_ShmAddr + sizeof(SingleShmHeader);
-	m_ShmBuffer->m_DownBuffer = (char*)m_ShmAddr + sizeof(SingleShmHeader) + ShmBuffSize;
+	shmBuffer_->ShmHeader = (SingleShmHeader*)shmAddr_;
+	shmBuffer_->ServerType = serverType_;
+	shmBuffer_->UpBuffer = (char*)shmAddr_ + sizeof(SingleShmHeader);
+	shmBuffer_->DownBuffer = (char*)shmAddr_ + sizeof(SingleShmHeader) + ShmBuffSize;
 	if (firstOpen)
 	{
-		m_ShmBuffer->m_ShmHeader->Status = ConnectStatusType::UnConnected;
-		m_ShmBuffer->m_ShmHeader->UpWriteCount = 0;
-		m_ShmBuffer->m_ShmHeader->UpReadCount = 0;
-		m_ShmBuffer->m_ShmHeader->DownWriteCount = 0;
-		m_ShmBuffer->m_ShmHeader->DownReadCount = 0;
+		shmBuffer_->ShmHeader->Status = ConnectStatusType::UnConnected;
+		shmBuffer_->ShmHeader->UpWriteCount = 0;
+		shmBuffer_->ShmHeader->UpReadCount = 0;
+		shmBuffer_->ShmHeader->DownWriteCount = 0;
+		shmBuffer_->ShmHeader->DownReadCount = 0;
 	}
 	else
 	{
-		m_ShmBuffer->m_ShmHeader->Status = ConnectStatusType::Connected;
+		shmBuffer_->ShmHeader->Status = ConnectStatusType::Connected;
 	}
-	WriteLog(LogLevel::Info, "Create Or Open FileMapping Successed. Status:%d", m_ShmBuffer->m_ShmHeader->Status);
+	WriteLog(LogLevel::Info, "Create Or Open FileMapping Successed. Status:%d", shmBuffer_->ShmHeader->Status);
 	return true;
 }
 
 void SingleShm::Send(SessionIDType sessionID, Buffer<BuffSize>* buffer)
 {
-	m_ShmBuffer->Write(buffer->GetData(), buffer->GetLength());
+	shmBuffer_->Write(buffer->GetData(), buffer->GetLength());
 }
 void SingleShm::DoRecv(Connect* connect)
 {
 	Buffer<BuffSize>* buffer = Buffer<BuffSize>::Allocate();
-	auto len = m_ShmBuffer->Read(buffer->GetWritePos(), BuffSize);
+	auto len = shmBuffer_->Read(buffer->GetWritePos(), BuffSize);
 	buffer->SetLength(len);
 
-	if (m_IOSubscriber != nullptr)
-		m_IOSubscriber->OnRecv(m_SessionID, buffer);
+	if (ioSubscriber_ != nullptr)
+		ioSubscriber_->OnRecv(sessionId_, buffer);
 	else
 		buffer->Deallocate();
 }
@@ -161,16 +161,16 @@ void SingleShm::HandleIOEvent()
 
 void SingleShm::CheckConnectStatus()
 {
-	if (!m_Connected && m_ShmBuffer->m_ShmHeader->Status == ConnectStatusType::Connected && m_IOSubscriber != nullptr)
+	if (!connected_ && shmBuffer_->ShmHeader->Status == ConnectStatusType::Connected && ioSubscriber_ != nullptr)
 	{
-		m_Connected = true;
-		m_SessionID = GetSessionID();
-		m_IOSubscriber->OnConnect(m_SessionID, m_ShmName.c_str(), 0);
+		connected_ = true;
+		sessionId_ = GetSessionID();
+		ioSubscriber_->OnConnect(sessionId_, shmName_.c_str(), 0);
 	}
-	if (m_Connected && m_ShmBuffer->m_ShmHeader->Status == ConnectStatusType::UnConnected && m_IOSubscriber != nullptr)
+	if (connected_ && shmBuffer_->ShmHeader->Status == ConnectStatusType::UnConnected && ioSubscriber_ != nullptr)
 	{
-		m_Connected = false;
-		m_IOSubscriber->OnDisConnect(m_SessionID, m_ShmName.c_str(), 0);
+		connected_ = false;
+		ioSubscriber_->OnDisConnect(sessionId_, shmName_.c_str(), 0);
 	}
 }
 void SingleShm::CheckEvent()
@@ -179,9 +179,9 @@ void SingleShm::CheckEvent()
 }
 void SingleShm::HandleEvent()
 {
-	if (m_Connected)
+	if (connected_)
 	{
-		if (m_ShmBuffer->GetReadBufferSize() > 0)
+		if (shmBuffer_->GetReadBufferSize() > 0)
 		{
 			DoRecv(nullptr);
 		}

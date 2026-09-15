@@ -49,14 +49,14 @@ public:
 	template<typename... FieldValues>
 	bool AppendField(std::format_string<FieldValues...> fieldFormat, FieldValues&&... fieldValues)
 	{
-		if (is_truncated_)
+		if (isTruncated_)
 		{
 			return false;
 		}
 		const int remainingLength = GetRemainingLength();
 		if (remainingLength <= 0)
 		{
-			is_truncated_ = true;
+			isTruncated_ = true;
 			return false;
 		}
 		const int writableLength = remainingLength - 1;
@@ -64,12 +64,12 @@ public:
 			std::forward<FieldValues>(fieldValues)...);
 		if (result.size > static_cast<std::ptrdiff_t>(writableLength))
 		{
-			is_truncated_ = true;
+			isTruncated_ = true;
 			return false;
 		}
-		written_length_ += static_cast<int>(result.out - GetWritePosition());
+		writtenLength_ += static_cast<int>(result.out - GetWritePosition());
 		*GetWritePosition() = SOH;
-		written_length_ += 1;
+		writtenLength_ += 1;
 		return true;
 	}
 private:
@@ -77,10 +77,10 @@ private:
     int GetRemainingLength() const;
 
 private:
-	char* buffer_begin_;
+	char* bufferBegin_;
 	int capacity_;
-	int written_length_;
-	bool is_truncated_;
+	int writtenLength_;
+	bool isTruncated_;
 };
 
 class NETWORK_EXPORTS StepUtility

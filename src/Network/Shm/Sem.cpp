@@ -17,25 +17,25 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 Sem::Sem(const char* name, ServerTypeType serverType, unsigned timeOutMilliSecond)
-	:m_SemName(name), m_Sem(nullptr), m_ServerType(serverType)
+	:semName_(name), sem_(nullptr), serverType_(serverType)
 {
-	m_TimeOutMilliSecond = timeOutMilliSecond;
+	timeOutMilliSecond_ = timeOutMilliSecond;
 }
 Sem::~Sem()
 {
-	if (m_Sem != nullptr)
+	if (sem_ != nullptr)
 	{
 #ifdef _WIN32
-		CloseHandle(m_Sem);
+		CloseHandle(sem_);
 #endif
 #ifdef __linux__
-		sem_close(m_Sem);
-		if (m_ServerType == ServerTypeType::Server)
+		sem_close(sem_);
+		if (serverType_ == ServerTypeType::Server)
 		{
-			sem_unlink(m_SemName.c_str());
+			sem_unlink(semName_.c_str());
 		}
 #endif
-		m_Sem = nullptr;
+		sem_ = nullptr;
 	}
 }
 bool Sem::Init()
@@ -50,30 +50,30 @@ bool Sem::Init()
 bool Sem::Lock()
 {
 #ifdef _WIN32
-	return WaitForSingleObject(m_Sem, m_TimeOutMilliSecond) == WAIT_OBJECT_0;
+	return WaitForSingleObject(sem_, timeOutMilliSecond_) == WAIT_OBJECT_0;
 #endif
 	
 #ifdef __linux__
 	struct timespec ts;
 	clock_gettime(CLOCK_REALTIME, &ts);
-	ts.tv_sec += m_TimeOutMilliSecond / 1000;
-	ts.tv_nsec += (m_TimeOutMilliSecond % 1000) * 1000000L;
+	ts.tv_sec += timeOutMilliSecond_ / 1000;
+	ts.tv_nsec += (timeOutMilliSecond_ % 1000) * 1000000L;
 	if (ts.tv_nsec >= 1000000000)
 	{
 		ts.tv_sec += ts.tv_nsec / 1000000000;
 		ts.tv_nsec = ts.tv_nsec % 1000000000;
 	}
-	return sem_timedwait(m_Sem, &ts) == 0;
+	return sem_timedwait(sem_, &ts) == 0;
 #endif
 }
 bool Sem::UnLock()
 {
 	bool result;
 #ifdef _WIN32
-	result = ReleaseSemaphore(m_Sem, 1, NULL);
+	result = ReleaseSemaphore(sem_, 1, NULL);
 #endif
 #ifdef __linux__
-	result = sem_post(m_Sem) == 0;
+	result = sem_post(sem_) == 0;
 #endif
 	if (!result)
 	{
@@ -85,17 +85,17 @@ bool Sem::UnLock()
 bool Sem::WindowsInit()
 {
 #ifdef _WIN32
-	m_Sem = CreateSemaphoreA(NULL, 1, 1, m_SemName.c_str());
-	if (m_Sem == nullptr)
+	sem_ = CreateSemaphoreA(NULL, 1, 1, semName_.c_str());
+	if (sem_ == nullptr)
 	{
 		WriteLog(LogLevel::Error, "CreateSemaphoreA Failed. LastError:%d", GetLastError());
-		m_Sem = OpenSemaphoreA(SEMAPHORE_ALL_ACCESS, FALSE, m_SemName.c_str());
-		if (m_Sem == nullptr)
+		sem_ = OpenSemaphoreA(SEMAPHORE_ALL_ACCESS, FALSE, semName_.c_str());
+		if (sem_ == nullptr)
 		{
 			WriteLog(LogLevel::Error, "OpenSemaphoreA Failed. LastError:%d", GetLastError());
 		}
 	}
-	if (m_Sem == nullptr)
+	if (sem_ == nullptr)
 	{
 		WriteLog(LogLevel::Info, "Create Or Open Semaphore Success.");
 		return false;
@@ -110,13 +110,13 @@ bool Sem::WindowsInit()
 bool Sem::LinuxInit()
 {
 #ifdef __linux__
-	m_Sem = sem_open(m_SemName.c_str(), O_CREAT | O_EXCL, 0666, 1);
-	if (m_Sem == SEM_FAILED)
+	sem_ = sem_open(semName_.c_str(), O_CREAT | O_EXCL, 0666, 1);
+	if (sem_ == SEM_FAILED)
 	{
 		if (errno == EEXIST)
 		{
-			m_Sem = sem_open(m_SemName.c_str(), O_EXCL, 0666, 1);
-			if (m_Sem == SEM_FAILED)
+			sem_ = sem_open(semName_.c_str(), O_EXCL, 0666, 1);
+			if (sem_ == SEM_FAILED)
 			{
 				WriteLog(LogLevel::Warning, "sem_open Failed. ErrNo:%d", errno);
 				return false;

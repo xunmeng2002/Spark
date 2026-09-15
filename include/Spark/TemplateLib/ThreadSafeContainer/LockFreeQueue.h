@@ -17,23 +17,23 @@ private:
         std::shared_ptr<T> data;
         Node* next;
     };
-    std::atomic<Node*> m_Head;
-    std::atomic<Node*> m_Tail;
+    std::atomic<Node*> head_;
+    std::atomic<Node*> tail_;
 
 public:
     LockFreeQueue()
     {
         Node* dummy = new Node();
-        m_Head.store(dummy, std::memory_order_release);
-        m_Tail.store(dummy, std::memory_order_release);
+        head_.store(dummy, std::memory_order_release);
+        tail_.store(dummy, std::memory_order_release);
     }
     LockFreeQueue(const LockFreeQueue&) = delete;
     LockFreeQueue& operator=(const LockFreeQueue&) = delete;
     ~LockFreeQueue()
     {
-        while (Node* oldHead = m_Head.load(std::memory_order_acquire))
+        while (Node* oldHead = head_.load(std::memory_order_acquire))
         {
-            m_Head.store(oldHead->next, std::memory_order_release);
+            head_.store(oldHead->next, std::memory_order_release);
             delete oldHead;
 		}
     }
@@ -41,19 +41,19 @@ public:
     void PushBack(std::shared_ptr<T> data)
     {
         Node* newNode = new Node();
-        Node* oldTail = m_Tail.load(std::memory_order_acquire);
+        Node* oldTail = tail_.load(std::memory_order_acquire);
 		oldTail->data.swap(data);
 		oldTail->next = newNode;
-		m_Tail.store(newNode, std::memory_order_release);
+		tail_.store(newNode, std::memory_order_release);
     }
     std::shared_ptr<T> PopFront()
     {
-        Node* oldHead = m_Head.load(std::memory_order_acquire);
-        if (oldHead == m_Tail.load(std::memory_order_acquire))
+        Node* oldHead = head_.load(std::memory_order_acquire);
+        if (oldHead == tail_.load(std::memory_order_acquire))
         {
             return nullptr;
 		}
-		m_Head.store(oldHead->next, std::memory_order_release);
+		head_.store(oldHead->next, std::memory_order_release);
         if (!oldHead)
         {
             return nullptr;
@@ -64,7 +64,7 @@ public:
     }
     bool Empty() const
     {
-        return m_Head.load(std::memory_order_acquire) == m_Tail.load(std::memory_order_acquire);
+        return head_.load(std::memory_order_acquire) == tail_.load(std::memory_order_acquire);
     }
 };
 }

@@ -9,148 +9,148 @@ namespace Spark::Network
 static_assert(BuffSize >= MaxFrameSize, "IO 层的收发缓冲必须容纳一帧上限，否则 MakePackage 会写出界");
 
 Protocol::Protocol(ProtocolTypeType protocolType, ServerTypeType serverType, IOModelType ioModel, int milliSeconds, PackageFactoryBase* packageFactory)
-	:m_ProtocolType(protocolType), m_ServerType(serverType), m_IOModel(ioModel), m_MilliSeconds(milliSeconds), m_Subscriber(nullptr), m_PackageFactory(packageFactory), m_IOBase(nullptr), m_IOThread(nullptr)
+	:protocolType_(protocolType), serverType_(serverType), ioModel_(ioModel), milliSeconds_(milliSeconds), subscriber_(nullptr), packageFactory_(packageFactory), ioBase_(nullptr), ioThread_(nullptr)
 {
 }
 Protocol::~Protocol()
 {
-	if (m_IOBase != nullptr)
+	if (ioBase_ != nullptr)
 	{
-		delete m_IOBase;
-		m_IOBase = nullptr;
+		delete ioBase_;
+		ioBase_ = nullptr;
 	}
 }
 void Protocol::Subscribe(ProtocolSubscriber* subscriber)
 {
-	m_Subscriber = subscriber;
+	subscriber_ = subscriber;
 }
 void Protocol::UnSubscribe()
 {
-	m_Subscriber = nullptr;
+	subscriber_ = nullptr;
 }
 void Protocol::RegisterFront(const char* address)
 {
-	if (m_IOBase != nullptr)
+	if (ioBase_ != nullptr)
 	{
-		delete m_IOBase;
+		delete ioBase_;
 	}
-	m_IOBase = IOFactory::CreateIO(m_ServerType, address, m_IOModel, m_MilliSeconds);
-	m_IOBase->Subscribe(this);
-	if (m_IOThread != nullptr)
+	ioBase_ = IOFactory::CreateIO(serverType_, address, ioModel_, milliSeconds_);
+	ioBase_->Subscribe(this);
+	if (ioThread_ != nullptr)
 	{
-		m_IOThread->SetIO(m_IOBase);
+		ioThread_->SetIO(ioBase_);
 	}
 }
 void Protocol::SetIOThread(IOThread* ioThread)
 {
-	m_IOThread = ioThread;
-	if (m_IOBase != nullptr)
+	ioThread_ = ioThread;
+	if (ioBase_ != nullptr)
 	{
-		m_IOThread->SetIO(m_IOBase);
+		ioThread_->SetIO(ioBase_);
 	}
 }
 void Protocol::SetTimeOut(int milliSeconds)
 {
-	m_MilliSeconds = milliSeconds;
-	if (m_IOBase != nullptr)
+	milliSeconds_ = milliSeconds;
+	if (ioBase_ != nullptr)
 	{
-		m_IOBase->SetTimeOut(milliSeconds);
+		ioBase_->SetTimeOut(milliSeconds);
 	}
 }
 bool Protocol::Start()
 {
-	if (m_IOThread != nullptr)
+	if (ioThread_ != nullptr)
 	{
-		return m_IOThread->Start();
+		return ioThread_->Start();
 	}
 	return false;
 }
 void Protocol::Stop()
 {
-	if (m_IOThread != nullptr)
+	if (ioThread_ != nullptr)
 	{
-		m_IOThread->Stop();
+		ioThread_->Stop();
 	}
 }
 void Protocol::Join()
 {
-	if (m_IOThread != nullptr)
+	if (ioThread_ != nullptr)
 	{
-		m_IOThread->Join();
+		ioThread_->Join();
 	}
 }
 bool Protocol::Init()
 {
-	if (m_IOBase == nullptr)
+	if (ioBase_ == nullptr)
 		return false;
-	return m_IOBase->Init();
+	return ioBase_->Init();
 }
 IOBase* Protocol::GetIO()
 {
-	return m_IOBase;
+	return ioBase_;
 }
 IOThread* Protocol::GetIOThread()
 {
-	return m_IOThread;
+	return ioThread_;
 }
 
 void Protocol::DisConnect(SessionIDType sessionID)
 {
-	if (m_IOBase == nullptr)
+	if (ioBase_ == nullptr)
 		return;
-	m_IOBase->DisConnect(sessionID);
+	ioBase_->DisConnect(sessionID);
 }
 bool Protocol::Send(Package* package)
 {
-	if (m_IOBase == nullptr)
+	if (ioBase_ == nullptr)
 		return false;
 	Buffer<BuffSize>* buffer = Buffer<BuffSize>::Allocate();
-	auto len = package->MakePackage(m_ProtocolType, buffer->GetData(), BuffSize);
+	auto len = package->MakePackage(protocolType_, buffer->GetData(), BuffSize);
 	if (len <= 0)
 	{
 		WriteLog(LogLevel::Info, "MakePackage len is 0");
 	}
 	buffer->SetLength(len);
-	m_IOBase->Send(package->SessionID, buffer);
+	ioBase_->Send(package->SessionID, buffer);
 	return true;
 }
 
 void Protocol::OnConnect(SessionIDType sessionID, const char* ip, int port)
 {
 	WriteLog(LogLevel::Info, "Protocol::OnConnect SessionID:%lld, IP:%s, Port:%d", sessionID, ip, port);
-	m_SessionPackageReaders.insert(std::make_pair(sessionID, PackageReader::Allocate(m_ProtocolType, m_PackageFactory, sessionID, ip)));
-	if (m_Subscriber)
+	sessionPackageReaders_.insert(std::make_pair(sessionID, PackageReader::Allocate(protocolType_, packageFactory_, sessionID, ip)));
+	if (subscriber_)
 	{
-		m_Subscriber->OnProtocolConnect(sessionID, ip, port);
+		subscriber_->OnProtocolConnect(sessionID, ip, port);
 	}
 }
 void Protocol::OnDisConnect(SessionIDType sessionID, const char* ip, int port)
 {
 	WriteLog(LogLevel::Info, "Protocol::OnDisConnect SessionID:%lld, IP:%s, Port:%d", sessionID, ip, port);
-	auto it = m_SessionPackageReaders.find(sessionID);
-	if (it != m_SessionPackageReaders.end())
+	auto it = sessionPackageReaders_.find(sessionID);
+	if (it != sessionPackageReaders_.end())
 	{
 		it->second->Deallocate();
-		m_SessionPackageReaders.erase(it);
+		sessionPackageReaders_.erase(it);
 	}
-	if (m_Subscriber)
+	if (subscriber_)
 	{
-		m_Subscriber->OnProtocolDisConnect(sessionID, ip, port);
+		subscriber_->OnProtocolDisConnect(sessionID, ip, port);
 	}
 }
 void Protocol::OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer)
 {
-	if (m_IOBase == nullptr)
+	if (ioBase_ == nullptr)
 	{
 		buffer->Deallocate();
 		return;
 	}
-	auto it = m_SessionPackageReaders.find(sessionID);
-	if (it == m_SessionPackageReaders.end() || it->second == nullptr)
+	auto it = sessionPackageReaders_.find(sessionID);
+	if (it == sessionPackageReaders_.end() || it->second == nullptr)
 	{
 		WriteLog(LogLevel::Error, "Cannot Find PackageReader for SessionID:%lld", sessionID);
 		buffer->Deallocate();
-		m_IOBase->DisConnect(sessionID);
+		ioBase_->DisConnect(sessionID);
 		return;
 	}
 	auto packageReader = it->second;
@@ -162,16 +162,16 @@ void Protocol::OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer)
 		Package* package = nullptr;
 		if (!packageReader->ParsePackage(package))
 		{
-			m_IOBase->DisConnect(sessionID);
+			ioBase_->DisConnect(sessionID);
 			break;
 		}
 		else if (package == nullptr)
 		{
 			break;
 		}
-		else if (m_Subscriber != nullptr)
+		else if (subscriber_ != nullptr)
 		{
-			m_Subscriber->OnMessage(package);
+			subscriber_->OnMessage(package);
 		}
 	}
 }

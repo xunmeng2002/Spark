@@ -12,7 +12,7 @@ using namespace std::chrono;
 
 namespace Spark::Core
 {
-thread_local char t_DateTimeBuff[32];
+thread_local char DateTimeBuff[32];
 time_t TimeUtility::GetTime()
 {
 	std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
@@ -207,22 +207,22 @@ std::string TimeUtility::GetUtcDate()
 {
 	auto t = GetTime();
 	auto localTm = gmtime(&t);
-	strftime(t_DateTimeBuff, 32, "%Y%m%d", localTm);
-	return std::string(t_DateTimeBuff);
+	strftime(DateTimeBuff, 32, "%Y%m%d", localTm);
+	return std::string(DateTimeBuff);
 }
 std::string TimeUtility::GetUtcTime()
 {
 	auto t = GetTime();
 	auto localTm = gmtime(&t);
-	strftime(t_DateTimeBuff, 32, "%H:%M:%S", localTm);
-	return std::string(t_DateTimeBuff);
+	strftime(DateTimeBuff, 32, "%H:%M:%S", localTm);
+	return std::string(DateTimeBuff);
 }
 std::string TimeUtility::GetUtcDateTime()
 {
 	auto t = GetTime();
 	auto localTm = gmtime(&t);
-	strftime(t_DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", localTm);
-	return std::string(t_DateTimeBuff);
+	strftime(DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", localTm);
+	return std::string(DateTimeBuff);
 }
 std::string TimeUtility::GetUtcDateTimeWithMilliSecond()
 {
@@ -230,31 +230,31 @@ std::string TimeUtility::GetUtcDateTimeWithMilliSecond()
 	time_t t = std::chrono::system_clock::to_time_t(now);
 	int milliSecond = now.time_since_epoch().count() % 1000;
 	auto localTm = gmtime(&t);
-	auto len = strftime(t_DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", localTm);
-	std::format_to_n(t_DateTimeBuff + len, 32 - len, ".{:03}", milliSecond);
-	return std::string(t_DateTimeBuff);
+	auto len = strftime(DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", localTm);
+	std::format_to_n(DateTimeBuff + len, 32 - len, ".{:03}", milliSecond);
+	return std::string(DateTimeBuff);
 }
 
 std::string TimeUtility::GetLocalDate()
 {
 	auto t = GetTime();
 	auto localTm = localtime(&t);
-	strftime(t_DateTimeBuff, 32, "%Y%m%d", localTm);
-	return std::string(t_DateTimeBuff);
+	strftime(DateTimeBuff, 32, "%Y%m%d", localTm);
+	return std::string(DateTimeBuff);
 }
 std::string TimeUtility::GetLocalTime()
 {
 	auto t = GetTime();
 	auto localTm = localtime(&t);
-	strftime(t_DateTimeBuff, 32, "%H:%M:%S", localTm);
-	return std::string(t_DateTimeBuff);
+	strftime(DateTimeBuff, 32, "%H:%M:%S", localTm);
+	return std::string(DateTimeBuff);
 }
 std::string TimeUtility::GetLocalDateTime()
 {
 	auto t = GetTime();
 	auto localTm = localtime(&t);
-	strftime(t_DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", localTm);
-	return std::string(t_DateTimeBuff);
+	strftime(DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", localTm);
+	return std::string(DateTimeBuff);
 }
 void TimeUtility::GetLocalDateTime(char* date, char* time)
 {
@@ -269,18 +269,18 @@ std::string TimeUtility::GetLocalDateTimeWithMilliSecond()
 	time_t t = std::chrono::system_clock::to_time_t(now);
 	int milliSecond = now.time_since_epoch().count() % 1000;
 	auto localTm = localtime(&t);
-	auto len = strftime(t_DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", localTm);
-	std::format_to_n(t_DateTimeBuff + len, 32 - len, ".{:03}", milliSecond);
-	return std::string(t_DateTimeBuff);
+	auto len = strftime(DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", localTm);
+	std::format_to_n(DateTimeBuff + len, 32 - len, ".{:03}", milliSecond);
+	return std::string(DateTimeBuff);
 }
 long long TimeUtility::GetMilliSecondTimeStamp()
 {
 	time_point<system_clock, milliseconds> startTime = time_point_cast<milliseconds>(system_clock::now());
 	time_t time = startTime.time_since_epoch().count() / 1000;
 	int ms = startTime.time_since_epoch().count() % 1000;
-	auto len = strftime(t_DateTimeBuff, 32, "%Y%m%d%H%M%S", localtime(&time));
-	std::format_to_n(t_DateTimeBuff + len, 32 - len, "{:03}", ms);
-	return atoll(t_DateTimeBuff);
+	auto len = strftime(DateTimeBuff, 32, "%Y%m%d%H%M%S", localtime(&time));
+	std::format_to_n(DateTimeBuff + len, 32 - len, "{:03}", ms);
+	return atoll(DateTimeBuff);
 }
 void TimeUtility::GetDateTimeFromTimeStamp(const Int64Type& timeStamp, DateType& date, TimeType& time)
 {
@@ -307,33 +307,33 @@ time_t TimeUtility::GetTimeFromString(std::string dateTime, std::string format)
 }
 std::string TimeUtility::ToUtcDate(time_t* time)
 {
-	strftime(t_DateTimeBuff, 32, "%Y%m%d", gmtime(time));
-	return std::string(t_DateTimeBuff);
+	strftime(DateTimeBuff, 32, "%Y%m%d", gmtime(time));
+	return std::string(DateTimeBuff);
 }
 std::string TimeUtility::ToUtcTime(time_t* time)
 {
-	strftime(t_DateTimeBuff, 32, "%H:%M:%S", gmtime(time));
-	return std::string(t_DateTimeBuff);
+	strftime(DateTimeBuff, 32, "%H:%M:%S", gmtime(time));
+	return std::string(DateTimeBuff);
 }
 std::string TimeUtility::ToUtcDateTime(time_t* time)
 {
-	strftime(t_DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", gmtime(time));
-	return std::string(t_DateTimeBuff);
+	strftime(DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", gmtime(time));
+	return std::string(DateTimeBuff);
 }
 std::string TimeUtility::ToLocalDate(time_t* time)
 {
-	strftime(t_DateTimeBuff, 32, "%Y%m%d", localtime(time));
-	return std::string(t_DateTimeBuff);
+	strftime(DateTimeBuff, 32, "%Y%m%d", localtime(time));
+	return std::string(DateTimeBuff);
 }
 std::string TimeUtility::ToLocalTime(time_t* time)
 {
-	strftime(t_DateTimeBuff, 32, "%H:%M:%S", localtime(time));
-	return std::string(t_DateTimeBuff);
+	strftime(DateTimeBuff, 32, "%H:%M:%S", localtime(time));
+	return std::string(DateTimeBuff);
 }
 std::string TimeUtility::ToLocalDateTime(time_t* time)
 {
-	strftime(t_DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", localtime(time));
-	return std::string(t_DateTimeBuff);
+	strftime(DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", localtime(time));
+	return std::string(DateTimeBuff);
 }
 
 

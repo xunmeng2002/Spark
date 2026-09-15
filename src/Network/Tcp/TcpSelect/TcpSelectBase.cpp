@@ -9,85 +9,85 @@ namespace Spark::Network
 TcpSelectBase::TcpSelectBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
 	:TcpBase(serverType, addressName, milliSeconds)
 {
-	FD_ZERO(&m_ReadFds);
-	FD_ZERO(&m_WriteFds);
-	FD_ZERO(&m_ErrorFds);
-	m_MaxID = 0;
-	m_SelectSocketTimeOut.tv_sec = milliSeconds / 1000;
-	m_SelectSocketTimeOut.tv_usec = (milliSeconds % 1000) * 1000;
-	memcpy(&m_SelectSocketTimeOutTemp, &m_SelectSocketTimeOut, sizeof(timeval));
+	FD_ZERO(&readFds_);
+	FD_ZERO(&writeFds_);
+	FD_ZERO(&errorFds_);
+	maxId_ = 0;
+	selectSocketTimeOut_.tv_sec = milliSeconds / 1000;
+	selectSocketTimeOut_.tv_usec = (milliSeconds % 1000) * 1000;
+	memcpy(&selectSocketTimeOutTemp_, &selectSocketTimeOut_, sizeof(timeval));
 }
 void TcpSelectBase::SetTimeOut(int milliSeconds)
 {
 	IOBase::SetTimeOut(milliSeconds);
 
-	m_SelectSocketTimeOut.tv_sec = milliSeconds / 1000;
-	m_SelectSocketTimeOut.tv_usec = (milliSeconds % 1000) * 1000;
-	memcpy(&m_SelectSocketTimeOutTemp, &m_SelectSocketTimeOut, sizeof(timeval));
+	selectSocketTimeOut_.tv_sec = milliSeconds / 1000;
+	selectSocketTimeOut_.tv_usec = (milliSeconds % 1000) * 1000;
+	memcpy(&selectSocketTimeOutTemp_, &selectSocketTimeOut_, sizeof(timeval));
 }
 void TcpSelectBase::PrepareFds()
 {
-	FD_ZERO(&m_ReadFds);
-	FD_ZERO(&m_WriteFds);
-	FD_ZERO(&m_ErrorFds);
-	m_MaxID = 0;
-	FD_SET(m_SocketNotify->GetReadSocket(), &m_ReadFds);
-	for (auto& it : m_Connects)
+	FD_ZERO(&readFds_);
+	FD_ZERO(&writeFds_);
+	FD_ZERO(&errorFds_);
+	maxId_ = 0;
+	FD_SET(socketNotify_->GetReadSocket(), &readFds_);
+	for (auto& it : connects_)
 	{
 		auto connect = (TcpConnect*)it.second;
-		FD_SET(connect->SocketID, &m_ReadFds);
-		FD_SET(connect->SocketID, &m_ErrorFds);
+		FD_SET(connect->SocketId, &readFds_);
+		FD_SET(connect->SocketId, &errorFds_);
 		if (!connect->Buffers.empty())
 		{
-			FD_SET(connect->SocketID, &m_WriteFds);
+			FD_SET(connect->SocketId, &writeFds_);
 		}
-		if (connect->SocketID > m_MaxID)
+		if (connect->SocketId > maxId_)
 		{
-			m_MaxID = connect->SocketID;
+			maxId_ = connect->SocketId;
 		}
 	}
-	if (m_ServerType == ServerTypeType::Server)
+	if (serverType_ == ServerTypeType::Server)
 	{
-		FD_SET(m_Socket, &m_ReadFds);
-		if (m_Socket > m_MaxID)
+		FD_SET(socket_, &readFds_);
+		if (socket_ > maxId_)
 		{
-			m_MaxID = m_Socket;
+			maxId_ = socket_;
 		}
 	}
-	++m_MaxID;
+	++maxId_;
 }
 void TcpSelectBase::HandleTcpEvent()
 {
 	PrepareFds();
-	memcpy(&m_SelectSocketTimeOutTemp, &m_SelectSocketTimeOut, sizeof(timeval));
-	::select((int)m_MaxID, &m_ReadFds, &m_WriteFds, &m_ErrorFds, &m_SelectSocketTimeOutTemp);
-	if (FD_ISSET(m_SocketNotify->GetReadSocket(), &m_ReadFds))
+	memcpy(&selectSocketTimeOutTemp_, &selectSocketTimeOut_, sizeof(timeval));
+	::select((int)maxId_, &readFds_, &writeFds_, &errorFds_, &selectSocketTimeOutTemp_);
+	if (FD_ISSET(socketNotify_->GetReadSocket(), &readFds_))
 	{
-		m_SocketNotify->Consume();
+		socketNotify_->Consume();
 	}
-	for (auto& it : m_Connects)
+	for (auto& it : connects_)
 	{
 		auto connect = (TcpConnect*)it.second;
-		if (FD_ISSET(connect->SocketID, &m_WriteFds))
+		if (FD_ISSET(connect->SocketId, &writeFds_))
 		{
 			DoSend(connect);
 		}
-		if (FD_ISSET(connect->SocketID, &m_ReadFds))
+		if (FD_ISSET(connect->SocketId, &readFds_))
 		{
 			DoRecv(connect);
 		}
 	}
-	for (auto& it : m_Connects)
+	for (auto& it : connects_)
 	{
 		auto connect = (TcpConnect*)it.second;
-		if (FD_ISSET(connect->SocketID, &m_ErrorFds))
+		if (FD_ISSET(connect->SocketId, &errorFds_))
 		{
 			DisConnect(connect->SessionID);
 		}
 	}
-	if (m_ServerType == ServerTypeType::Server)
+	if (serverType_ == ServerTypeType::Server)
 	{
-		if (FD_ISSET(m_Socket, &m_ReadFds))
+		if (FD_ISSET(socket_, &readFds_))
 		{
 			DoAccept();
 		}

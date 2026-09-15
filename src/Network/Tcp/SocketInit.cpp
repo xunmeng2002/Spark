@@ -4,7 +4,7 @@
 
 namespace Spark::Network
 {
-SocketInit SocketInit::_SOCKET_INIT;
+SocketInit SocketInit::socketInit_;
 
 
 SocketInit::~SocketInit()
@@ -15,11 +15,11 @@ SocketInit::~SocketInit()
 }
 SocketInit& SocketInit::GetInstance()
 {
-	return _SOCKET_INIT;
+	return socketInit_;
 }
 void SocketInit::Init()
 {
-	std::call_once(SocketInitFlag, &SocketInit::WsaStart, this);
+	std::call_once(socketInitFlag_, &SocketInit::WsaStart, this);
 }
 void SocketInit::WsaStart()
 {

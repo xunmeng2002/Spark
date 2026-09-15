@@ -16,14 +16,14 @@ public:
 
 
 public:
-	bool m_Connected;
-	SessionIDType m_SessionID;
+	bool connected_;
+	SessionIDType sessionId_;
 private:
-	IOBase* m_IO;
-	ServerTypeType m_ServerType;
+	IOBase* io_;
+	ServerTypeType serverType_;
 
-	char* m_Buff;
-	int m_Length;
+	char* buff_;
+	int length_;
 };
 
 

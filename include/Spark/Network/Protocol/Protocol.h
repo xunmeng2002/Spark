@@ -34,14 +34,14 @@ public:
 	virtual void OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer) override;
 
 protected:
-	ProtocolTypeType m_ProtocolType;
-	ServerTypeType m_ServerType;
-	IOModelType m_IOModel;
-	int m_MilliSeconds;
-	IOBase* m_IOBase;
-	IOThread* m_IOThread;
-    PackageFactoryBase* m_PackageFactory;
-	ProtocolSubscriber* m_Subscriber;
-	std::map<SessionIDType, PackageReader*> m_SessionPackageReaders;
+	ProtocolTypeType protocolType_;
+	ServerTypeType serverType_;
+	IOModelType ioModel_;
+	int milliSeconds_;
+	IOBase* ioBase_;
+	IOThread* ioThread_;
+    PackageFactoryBase* packageFactory_;
+	ProtocolSubscriber* subscriber_;
+	std::map<SessionIDType, PackageReader*> sessionPackageReaders_;
 };
 }

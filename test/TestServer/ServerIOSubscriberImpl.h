@@ -17,8 +17,8 @@ public:
 	virtual void OnRecv(SessionIDType sessionID, Spark::Buffer<Spark::BuffSize>* buffer) override;
 
 private:
-	IOBase* m_IO;
-	IOThread* m_IOThread;
+	IOBase* io_;
+	IOThread* ioThread_;
 
 	std::map<SessionIDType, int> m_MessageCounts;
 };

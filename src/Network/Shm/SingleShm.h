@@ -25,15 +25,15 @@ protected:
 	virtual void HandleEvent();
 
 public:
-	std::string m_ShmName;
+	std::string shmName_;
 protected:
-	bool m_Connected;
-	SessionIDType m_SessionID;
-	void* m_ShmAddr;
-	ShmBuffer<ShmBuffSize>* m_ShmBuffer;
+	bool connected_;
+	SessionIDType sessionId_;
+	void* shmAddr_;
+	ShmBuffer<ShmBuffSize>* shmBuffer_;
 #ifdef _WIN32
-	void* m_File;
-	void* m_FileMap;
+	void* file_;
+	void* fileMap_;
 #endif // _WIN32
 };
 }

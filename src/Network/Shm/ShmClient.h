@@ -22,8 +22,8 @@ protected:
 	void CheckConnectResult();
 	virtual void RemoveConnect(Connect* connect) override;
 protected:
-	bool m_Connected;
-	bool m_HasSendConnect;
-	ShmConnect<ShmBuffSize>* m_ShmConnect;
+	bool connected_;
+	bool hasSendConnect_;
+	ShmConnect<ShmBuffSize>* shmConnect_;
 };
 }

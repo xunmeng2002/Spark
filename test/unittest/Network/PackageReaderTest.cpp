@@ -87,7 +87,7 @@ TEST(PackageReaderTest, PopFrontClampsToLength)
     const char testData[] = "Short";
     reader.Append(const_cast<char*>(testData), (unsigned int)strlen(testData));
 
-    // PopFront 超过实际长度——应 clamp 到 m_Length
+    // PopFront 超过实际长度——应 clamp 到 length_
     reader.PopFront(100);
     EXPECT_EQ(reader.Length(), 0);
 }
@@ -107,7 +107,7 @@ TEST(PackageReaderTest, PopFrontMovesDataToBufferStart)
 {
     PackageReader reader = MakeReader();
 
-    // 连续 Append 和 PopFront 后数据应始终位于 m_Buff 起始
+    // 连续 Append 和 PopFront 后数据应始终位于 buff_ 起始
     const char data1[] = "ABCDE";
     const char data2[] = "FGH";
 

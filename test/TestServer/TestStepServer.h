@@ -13,8 +13,8 @@ public:
 	virtual void OnProtocolDisConnect(SessionIDType sessionID, const char* ip, int port) override;
 	virtual void OnMessage(Package* package) override;
 
-	bool m_Connected;
-	SessionIDType m_SessionID;
+	bool connected_;
+	SessionIDType sessionId_;
 	int m_RecvCount;
 };
 

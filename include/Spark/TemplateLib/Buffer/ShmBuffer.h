@@ -21,32 +21,32 @@ template<unsigned SIZE>
 class ShmBuffer
 {
 public:
-	SingleShmHeader* m_ShmHeader;
-	ServerTypeType m_ServerType;
-	int m_Index;
-	char* m_UpBuffer;
-	char* m_DownBuffer;
+	SingleShmHeader* ShmHeader;
+	ServerTypeType ServerType;
+	int Index;
+	char* UpBuffer;
+	char* DownBuffer;
 
 	ShmBuffer()
 	{
-		m_ShmHeader = nullptr;
-		m_UpBuffer = nullptr;
-		m_DownBuffer = nullptr;
+		ShmHeader = nullptr;
+		UpBuffer = nullptr;
+		DownBuffer = nullptr;
 	}
 	ShmBuffer(ServerTypeType serverType, int index, void* shmAddr, ConnectStatusType connectStatus)
 	{
-		m_ServerType = serverType;
-		m_Index = index;
-		m_ShmHeader = (SingleShmHeader*)shmAddr + index;
-		m_ShmHeader->Status = connectStatus;
-		m_UpBuffer = (char*)shmAddr + SIZE * index * 2;
-		m_DownBuffer = (char*)shmAddr + SIZE * (index * 2 + 1);
+		ServerType = serverType;
+		Index = index;
+		ShmHeader = (SingleShmHeader*)shmAddr + index;
+		ShmHeader->Status = connectStatus;
+		UpBuffer = (char*)shmAddr + SIZE * index * 2;
+		DownBuffer = (char*)shmAddr + SIZE * (index * 2 + 1);
 	}
 	~ShmBuffer()
 	{
-		m_ShmHeader = nullptr;
-		m_UpBuffer = nullptr;
-		m_DownBuffer = nullptr;
+		ShmHeader = nullptr;
+		UpBuffer = nullptr;
+		DownBuffer = nullptr;
 	}
 	static ShmBuffer* Allocate(ServerTypeType serverType, int index, void* shmAddr, ConnectStatusType connectStatus)
 	{
@@ -54,43 +54,43 @@ public:
 	}
 	void Deallocate()
 	{
-		if (m_ShmHeader->Status != ConnectStatusType::DisConnected)
+		if (ShmHeader->Status != ConnectStatusType::DisConnected)
 		{
-			m_ShmHeader->Status = ConnectStatusType::DisConnected;
+			ShmHeader->Status = ConnectStatusType::DisConnected;
 		}
 		else
 		{
-			m_ShmHeader->Status = ConnectStatusType::UnConnected;
-			m_ShmHeader->UpWriteCount = 0;
-			m_ShmHeader->UpReadCount = 0;
-			m_ShmHeader->DownWriteCount = 0;
-			m_ShmHeader->DownReadCount = 0;
+			ShmHeader->Status = ConnectStatusType::UnConnected;
+			ShmHeader->UpWriteCount = 0;
+			ShmHeader->UpReadCount = 0;
+			ShmHeader->DownWriteCount = 0;
+			ShmHeader->DownReadCount = 0;
 		}
 		ObjectPool<ShmBuffer<SIZE>>::GetInstance().Deallocate(this);
 	}
 
 	unsigned Write(const char* data, unsigned len)
 	{
-		if (m_ServerType == ServerTypeType::Client)
+		if (ServerType == ServerTypeType::Client)
 			return UpWrite(data, len);
 		return DownWrite(data, len);
 	}
 	unsigned Read(char* buff, unsigned len)
 	{
-		if (m_ServerType == ServerTypeType::Client)
+		if (ServerType == ServerTypeType::Client)
 			return DownRead(buff, len);
 		return UpRead(buff, len);
 	}
 
 	unsigned GetWriteBufferSize()
 	{
-		if (m_ServerType == ServerTypeType::Client)
+		if (ServerType == ServerTypeType::Client)
 			return GetUpWriteBufferSize();
 		return GetDownWriteBufferSize();
 	}
 	unsigned GetReadBufferSize()
 	{
-		if (m_ServerType == ServerTypeType::Client)
+		if (ServerType == ServerTypeType::Client)
 			return GetDownReadBufferSize();
 		return GetUpReadBufferSize();
 	}
@@ -98,126 +98,126 @@ public:
 private:
 	unsigned GetUpWriteBufferSize()
 	{
-		if (m_ShmHeader->UpReadCount > m_ShmHeader->UpWriteCount)
+		if (ShmHeader->UpReadCount > ShmHeader->UpWriteCount)
 		{
-			return m_ShmHeader->UpReadCount - m_ShmHeader->UpWriteCount - 1;
+			return ShmHeader->UpReadCount - ShmHeader->UpWriteCount - 1;
 		}
-		return SIZE - (m_ShmHeader->UpWriteCount - m_ShmHeader->UpReadCount) - 1;
+		return SIZE - (ShmHeader->UpWriteCount - ShmHeader->UpReadCount) - 1;
 	}
 	unsigned GetUpReadBufferSize()
 	{
-		if (m_ShmHeader->UpWriteCount >= m_ShmHeader->UpReadCount)
+		if (ShmHeader->UpWriteCount >= ShmHeader->UpReadCount)
 		{
-			return m_ShmHeader->UpWriteCount - m_ShmHeader->UpReadCount;
+			return ShmHeader->UpWriteCount - ShmHeader->UpReadCount;
 		}
-		return SIZE - (m_ShmHeader->UpReadCount - m_ShmHeader->UpWriteCount);
+		return SIZE - (ShmHeader->UpReadCount - ShmHeader->UpWriteCount);
 	}
 	unsigned GetDownWriteBufferSize()
 	{
-		if (m_ShmHeader->DownReadCount > m_ShmHeader->DownWriteCount)
+		if (ShmHeader->DownReadCount > ShmHeader->DownWriteCount)
 		{
-			return m_ShmHeader->DownReadCount - m_ShmHeader->DownWriteCount - 1;
+			return ShmHeader->DownReadCount - ShmHeader->DownWriteCount - 1;
 		}
-		return SIZE - (m_ShmHeader->DownWriteCount - m_ShmHeader->DownReadCount) - 1;
+		return SIZE - (ShmHeader->DownWriteCount - ShmHeader->DownReadCount) - 1;
 	}
 	unsigned GetDownReadBufferSize()
 	{
-		if (m_ShmHeader->DownWriteCount >= m_ShmHeader->DownReadCount)
+		if (ShmHeader->DownWriteCount >= ShmHeader->DownReadCount)
 		{
-			return m_ShmHeader->DownWriteCount - m_ShmHeader->DownReadCount;
+			return ShmHeader->DownWriteCount - ShmHeader->DownReadCount;
 		}
-		return SIZE - (m_ShmHeader->DownReadCount - m_ShmHeader->DownWriteCount);
+		return SIZE - (ShmHeader->DownReadCount - ShmHeader->DownWriteCount);
 	}
 
 	unsigned UpWrite(const char* data, unsigned len)
 	{
-		if (m_ShmHeader->Status != ConnectStatusType::Connected)
+		if (ShmHeader->Status != ConnectStatusType::Connected)
 			return 0;
 		auto size = GetUpWriteBufferSize();
 		unsigned int currLen = std::min<unsigned>(len, size);
 		if (currLen == 0)
 			return 0;
-		unsigned int tailLen = std::min<unsigned>(currLen, SIZE - m_ShmHeader->UpWriteCount);
-		memcpy(m_UpBuffer + m_ShmHeader->UpWriteCount, data, tailLen);
+		unsigned int tailLen = std::min<unsigned>(currLen, SIZE - ShmHeader->UpWriteCount);
+		memcpy(UpBuffer + ShmHeader->UpWriteCount, data, tailLen);
 		if (tailLen < currLen)
 		{
-			memcpy(m_UpBuffer, data + tailLen, size_t(currLen - tailLen));
+			memcpy(UpBuffer, data + tailLen, size_t(currLen - tailLen));
 			std::atomic_thread_fence(std::memory_order_release);
-			m_ShmHeader->UpWriteCount = currLen - tailLen;
+			ShmHeader->UpWriteCount = currLen - tailLen;
 		}
 		else
 		{
 			std::atomic_thread_fence(std::memory_order_release);
-			m_ShmHeader->UpWriteCount += currLen;
+			ShmHeader->UpWriteCount += currLen;
 		}
 		return currLen;
 	}
 	unsigned UpRead(char* buff, unsigned len)
 	{
-		if (m_ShmHeader->Status != ConnectStatusType::Connected)
+		if (ShmHeader->Status != ConnectStatusType::Connected)
 			return 0;
 		auto size = GetUpReadBufferSize();
 		auto currLen = std::min<unsigned>(len, size);
 		if (currLen == 0)
 			return 0;
-		auto tailLen = std::min<unsigned>(currLen, SIZE - m_ShmHeader->UpReadCount);
-		memcpy(buff, m_UpBuffer + m_ShmHeader->UpReadCount, tailLen);
+		auto tailLen = std::min<unsigned>(currLen, SIZE - ShmHeader->UpReadCount);
+		memcpy(buff, UpBuffer + ShmHeader->UpReadCount, tailLen);
 		if (tailLen < currLen)
 		{
-			memcpy(buff + tailLen, m_UpBuffer, currLen - tailLen);
+			memcpy(buff + tailLen, UpBuffer, currLen - tailLen);
 			std::atomic_thread_fence(std::memory_order_release);
-			m_ShmHeader->UpReadCount = currLen - tailLen;
+			ShmHeader->UpReadCount = currLen - tailLen;
 		}
 		else
 		{
 			std::atomic_thread_fence(std::memory_order_release);
-			m_ShmHeader->UpReadCount += currLen;
+			ShmHeader->UpReadCount += currLen;
 		}
 		return currLen;
 	}
 	unsigned DownWrite(const char* data, unsigned len)
 	{
-		if (m_ShmHeader->Status != ConnectStatusType::Connected)
+		if (ShmHeader->Status != ConnectStatusType::Connected)
 			return 0;
 		auto size = GetDownWriteBufferSize();
 		unsigned int currLen = std::min<unsigned>(len, size);
 		if (currLen == 0)
 			return 0;
-		unsigned int tailLen = std::min<unsigned>(currLen, SIZE - m_ShmHeader->DownWriteCount);
-		memcpy(m_DownBuffer + m_ShmHeader->DownWriteCount, data, tailLen);
+		unsigned int tailLen = std::min<unsigned>(currLen, SIZE - ShmHeader->DownWriteCount);
+		memcpy(DownBuffer + ShmHeader->DownWriteCount, data, tailLen);
 		if (tailLen < currLen)
 		{
-			memcpy(m_DownBuffer, data + tailLen, size_t(currLen - tailLen));
+			memcpy(DownBuffer, data + tailLen, size_t(currLen - tailLen));
 			std::atomic_thread_fence(std::memory_order_release);
-			m_ShmHeader->DownWriteCount = currLen - tailLen;
+			ShmHeader->DownWriteCount = currLen - tailLen;
 		}
 		else
 		{
 			std::atomic_thread_fence(std::memory_order_release);
-			m_ShmHeader->DownWriteCount += currLen;
+			ShmHeader->DownWriteCount += currLen;
 		}
 		return currLen;
 	}
 	unsigned DownRead(char* buff, unsigned len)
 	{
-		if (m_ShmHeader->Status != ConnectStatusType::Connected)
+		if (ShmHeader->Status != ConnectStatusType::Connected)
 			return 0;
 		auto size = GetDownReadBufferSize();
 		auto currLen = std::min<unsigned>(len, size);
 		if (currLen == 0)
 			return 0;
-		auto tailLen = std::min<unsigned>(currLen, SIZE - m_ShmHeader->DownReadCount);
-		memcpy(buff, m_DownBuffer + m_ShmHeader->DownReadCount, tailLen);
+		auto tailLen = std::min<unsigned>(currLen, SIZE - ShmHeader->DownReadCount);
+		memcpy(buff, DownBuffer + ShmHeader->DownReadCount, tailLen);
 		if (tailLen < currLen)
 		{
-			memcpy(buff + tailLen, m_DownBuffer, currLen - tailLen);
+			memcpy(buff + tailLen, DownBuffer, currLen - tailLen);
 			std::atomic_thread_fence(std::memory_order_release);
-			m_ShmHeader->DownReadCount = currLen - tailLen;
+			ShmHeader->DownReadCount = currLen - tailLen;
 		}
 		else
 		{
 			std::atomic_thread_fence(std::memory_order_release);
-			m_ShmHeader->DownReadCount += currLen;
+			ShmHeader->DownReadCount += currLen;
 		}
 		return currLen;
 	}

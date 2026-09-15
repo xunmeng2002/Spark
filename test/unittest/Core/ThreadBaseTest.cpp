@@ -26,7 +26,7 @@ namespace
 
         bool IsJoinable() const
         {
-            return m_Thread.joinable();
+            return thread_.joinable();
         }
 
     protected:

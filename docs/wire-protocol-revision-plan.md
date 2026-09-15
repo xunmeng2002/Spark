@@ -21,7 +21,7 @@ public:
 };
 ```
 
-`Package::MakePackage` 直接 `memcpy(buff, &Head, sizeof(Head))`（`Spark/src/Network/Protocol/Package.cpp:27`），接收侧 `memcpy(&m_Head, m_Data, sizeof(HeadField))`（`Spark/src/Network/Protocol/PackageReader.cpp:98`）。两端用同一份生成的 `Head.h`，所以能对上。
+`Package::MakePackage` 直接 `memcpy(buff, &Head, sizeof(Head))`（`Spark/src/Network/Protocol/Package.cpp:27`），接收侧 `memcpy(&head_, data_, sizeof(HeadField))`（`Spark/src/Network/Protocol/PackageReader.cpp:98`）。两端用同一份生成的 `Head.h`，所以能对上。
 
 这个做法成立的前提有四个，且**全部是隐式的、没有任何检查**：
 

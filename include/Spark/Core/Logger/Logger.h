@@ -58,9 +58,9 @@ protected:
 	long long GetCurrentThreadID();
 
 private:
-	char m_ProcessName[128];
-	tm m_CreateLogFileTime;
-	LogData* m_LogData;
+	char processName_[128];
+	tm createLogFileTime_;
+	LogData* logData_;
 };
 
 

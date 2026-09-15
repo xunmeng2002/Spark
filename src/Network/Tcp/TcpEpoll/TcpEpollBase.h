@@ -32,9 +32,9 @@ protected:
 	void RemoveWriteEpollEvent(TcpConnect* connect);
 	
 protected:
-	int m_EpollFd;
+	int epollFd_;
 #ifdef __linux__
-	epoll_event m_EpollEvents[EpollEventNumber];
+	epoll_event epollEvents_[EpollEventNumber];
 #endif
 };
 }

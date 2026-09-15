@@ -16,8 +16,8 @@ public:
 
 	void SendReqInsertOrder(int index);
 
-	bool m_Connected;
-	SessionIDType m_SessionID;
+	bool connected_;
+	SessionIDType sessionId_;
 
 	std::chrono::steady_clock::time_point m_StartTime;
 	int m_RecvCount;

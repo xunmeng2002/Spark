@@ -8,27 +8,27 @@ template <typename Func, typename... Args>
 struct AspectAfter
 {
     AspectAfter(Func& f, const std::string& funcName)
-        : m_Func(std::forward<Func>(f)), m_FuncName(funcName)
+        : func_(std::forward<Func>(f)), funcName_(funcName)
     {
     }
 
     template <typename T>
     void InvokeAfter(Args&&... args, T&& aspect)
     {
-        m_Func(std::forward<Args>(args)...);
-        aspect.After(m_FuncName.c_str());
+        func_(std::forward<Args>(args)...);
+        aspect.After(funcName_.c_str());
     }
 
     template <typename T, typename... AP>
     void InvokeAfter(Args&&... args, T&& aspectAfter, AP&&... aspectAfters)
     {
         InvokeAfter(std::forward<Args>(args)..., AP()...);
-        aspectAfter.After(m_FuncName.c_str());
+        aspectAfter.After(funcName_.c_str());
     }
 
 private:
-    Func m_Func;
-    std::string m_FuncName;
+    Func func_;
+    std::string funcName_;
 };
 
 

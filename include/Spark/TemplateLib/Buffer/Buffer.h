@@ -15,7 +15,7 @@ class Buffer
 {
 public:
 	Buffer()
-		:m_Buffer{0}, m_Length(0), m_ReadPos(m_Buffer)
+		:buffer_{0}, length_(0), readPos_(buffer_)
 	{}
 	static Buffer* Allocate()
 	{
@@ -29,61 +29,61 @@ public:
 	{
 		auto size = GetWriteBufferSize();
 		len = len > size ? size : len;
-		std::memcpy(m_ReadPos + m_Length, data, len);
-		m_Length += len;
+		std::memcpy(readPos_ + length_, data, len);
+		length_ += len;
 		return len;
 	}
 	char* GetData()
 	{
-		return m_ReadPos;
+		return readPos_;
 	}
 	char* GetWritePos()
 	{
-		return m_ReadPos + m_Length;
+		return readPos_ + length_;
 	}
 	void SetLength(unsigned len)
 	{
 		assert(len <= SIZE);
-		m_Length = len;
+		length_ = len;
 	}
 	unsigned GetLength()
 	{
-		return m_Length;
+		return length_;
 	}
 
 	unsigned GetWriteBufferSize()
 	{
-		return unsigned((m_Buffer + SIZE) - (m_ReadPos + m_Length));
+		return unsigned((buffer_ + SIZE) - (readPos_ + length_));
 	}
 	void Shift(unsigned len)
 	{
-		if (len >= m_Length)
+		if (len >= length_)
 		{
-			m_ReadPos = m_Buffer;
-			m_Length = 0;
+			readPos_ = buffer_;
+			length_ = 0;
 		}
 		else
 		{
-			m_ReadPos += len;
-			m_Length -= len;
+			readPos_ += len;
+			length_ -= len;
 		}
 	}
 	void Reset()
 	{
-		m_ReadPos = m_Buffer;
-		m_Length = 0;
+		readPos_ = buffer_;
+		length_ = 0;
 	}
 	void MemMove()
 	{
-		if (m_Length == 0)
+		if (length_ == 0)
 			return;
-		memmove(m_Buffer, m_ReadPos, m_Length);
-		m_ReadPos = m_Buffer;
+		memmove(buffer_, readPos_, length_);
+		readPos_ = buffer_;
 	}
 
 private:
-	char m_Buffer[SIZE];
-	unsigned m_Length;
-	char* m_ReadPos;
+	char buffer_[SIZE];
+	unsigned length_;
+	char* readPos_;
 };
 }

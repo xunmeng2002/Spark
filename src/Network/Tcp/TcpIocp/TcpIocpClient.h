@@ -19,7 +19,7 @@ protected:
 	SOCKET PrepareConnectSocket();
 
 private:
-	addrinfo* m_ClientLocalAddressInfo;
+	addrinfo* clientLocalAddressInfo_;
 };
 }
 #endif // _WIN32
