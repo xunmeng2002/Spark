@@ -4,10 +4,20 @@
 
 ## ✅ 已完成
 
+- **六仓 C++ 规范对齐 · 批 2 前置：Mdb 停滞生成物补齐（2026-09-15，提交 `0bb5fa6`）**：
+  批 2 开工前先做**生成物可复现性验证**——把 pumplist 引用的 tpl/model 全部 `touch`（只改 mtime、不动内容）后强制全量重 pump，再比对 git 变更。结果：**Spark 9 个产物 0 变更、QT 130 个产物 0 变更、Mdb 29 个产物有 7 个变更**，问题只在 Mdb。
+  - **根因是"改了源头没重 pump"，两层**：①上游共享模型仓 `D:\Gitee\Model`（**六仓之外的独立 git 仓**，各仓以 `../Model/Types.xml` 引用）的提交 `43fc0cc 使用明确位数的整型`（2026-09-13）删掉了 `Int` 类型，`IntType` typedef 不复存在；Mdb 的 `Model/Tables/Tables.xml` 早改成 `type="Int32"`，但 `MdbStructs.h`(2 处) / `MdbPrimaryKeys.h`(1 处) / `MdbPrimaryKeys.cpp`(1 处) 仍写 `IntType` → **实测编译失败**（C3646「未知重写说明符」/ C4430「缺少类型说明符」），即**本仓在这次提交之前是编不过的**。②另 4 个文件落后于模板 `6d12e3d`（2026-08-27）：`MdbTables.cpp`(253 行)、`InitMdbFromCsv.cpp`(22)、`MdbPrimaryKeyComp.cpp`(12)、`FullTableList.h`(8)。
+  - **这 4 个文件不是纯改名，含真实修复与一处内存管理改动**：`InitDB` 的订阅者空指针守卫（HEAD 在该分支是 nullptr 解引用崩溃）、`shared_lock` 作用域收窄到内层花括号、`records->push_back(new TradingDay(**it))` → `TradingDay::Allocate() + memcpy` 的对象池分配、`InitMdbFromCsv` 的裸 `new` 改 `Allocate()`（HEAD 的 `Insert` 失败路径会把堆指针 `Deallocate()` 进 `ObjectPool`，之后同一地址可能被两次发放）、`std::hash<char>()((char)record->PosiDirection)` → `std::hash<PosiDirectionType>()` 去掉一处 C 风格 cast。**内存管理改动已按 Harness §3.2 单独取得用户授权**。
+  - **第三个坑：重 pump 本身会产出编不过的代码。** 模板 `ModuleTableList.h.tpl` 已改用 `@project`/`@module` 生成 `namespace <project>::<module>`，而 Mdb 的 `FullTableNames.xml` 还是旧 schema `<dbtables prefix="Full">`，两个变量解析成空串 → 输出 `namespace ::`、`kTableIDs`、`""`。已迁到 `project="Mdb" module="Full"`（对齐 `QuantTrading/Model/TableNames/MdOfferTableNames.xml` 的 `project="QuantTrading" module="MdOffer"`），消费方 `TestDB.cpp` 随之加 `using namespace mdb::full;` 并把 `FullTableList` 改 `fullTableList`。
+  - **验证**：MSVC x64-Debug/Release 均 rc=0、0 错误（**回退那三处 `IntType` 后同一构建失败**，作对照——故"HEAD 编不过"是实测而非推断）；`pumpall.py` 幂等（两次独立 touch+pump 产出同一 SHA-256 `368b93be…`），**提交后重跑可复现性验证得 0 变更**；`TestDB.exe` 实跑 Sqlite 与 Duckdb 两段全过、写入读回数据正确（这条路径正是 `Allocate()+memcpy` 的位拷贝，POD 结构数据无损）；Mysql 段因本机 33060 无服务被拒（rc=3，与本次无关——HEAD 的 `main()` 同样调 `TestMysql()`）。独立审查 `code-reviewer`：**0 个阻断项**。
+  - **审查的建议 A 已一并处理（中英文 README 的示例同步）**：不再教读者手写 TableList，改为 `#include "FullTableList.h"` + `using namespace mdb::full` + `fullTableList`；另把 README 里的 `model/` 更正为 `Model/`——**非改名所致**，本仓目录自始至终是 `Model/`、`pumplist.xml` 也一直写 `./Model/`，是 README 文档本身写错了。（我起初把这个归因写成"`0219614` 已改目录名"——那是 **Spark 仓**的提交，且 Mdb 根本没有过这个改名；提交说明已 `--amend` 改正，tree hash 未变。）
+  - **三条教训（直接影响后续批次）**：①**"重 pump 就好了"不成立**——生成物与模板一致不等于代码正确，模型 schema 没跟上照样产出坏代码，**可复现 ≠ 正确**；②`git checkout` 回退文件后 `pumpall.py` **不会**重新生成（`NeedPump` 按 mtime 比较，checkout 把 mtime 刷成"现在"、比模板新），**必须 touch 模板/模型才能强制**；③Mdb 提交 `1b823c7`（"模型修正：Tables.xml 的 type=Int 改 Int32；MdbStructs.cpp 重 pump"）正是根因的活标本——当时**只重 pump 了 1 个文件**，这种"局部重 pump"直接制造了自相矛盾的生成态。
+  - **对批 2 的约束（已写入计划 B0-c）**：`Cpp/Mdb/*.tpl` 一改，这 7 个文件必然再变一次。故本批必须先落地、单独 commit，否则批 2 的 Mdb 变更会同时压着三层改动（类型名 / 池化逻辑 / 规范改名），事后无法分别审阅与回退。全族同类症状（`namespace ::` 之类）已扫过，**无第二处**。
+
 - **六仓 C++ 规范对齐 · 批 1 Beacon 完成（2026-09-14/15），批 2–7 待逐仓授权**：
   把 `rules/cpp-style.md` 落到 6 个仓（Spark / Templates / DBAdapters / Beacon / Mdb / QuantTrading）。**主轴是"改模板 → 重 pump → 再改手写"**：这 6 仓约 96,612 行是机器生成的，源头只有 64 个 `.tpl`，直接编辑生成物会被下次 `pumpall.py` 静默回滚。计划文件：`~/.claude/plans/snazzy-chasing-alpaca.md`。
   - **已锁定的 6 项决策（不再重议）**：①全量迁移（命名类 + 安全类）；②**格式类不纳入**（§2 include 顺序、§3 换行/150 阈值）——**注**：该条原先的立论"`.editorconfig` 也没有 `max_line_length`，无法被工具拦下"**是错的**（两仓均声明 150，且真实阈值下本仓本就达标）；2026-09-15 已核实、更正并六仓统一定稿，见下方第三轮；③`m_` 前缀先做 Templates+Spark，QT 存量单独排批；④先全量重测再动手；⑤**公开 API 改名按仓逐一取得授权**；⑥**Python 绑定字符串保留**（Beacon 的 `"kCosine"`/`"kInnerProduct"` 不动，Python API 零破坏）。
-  - **批 1 Beacon 已完成，未提交**：15 个源文件 + `README.md` + 设计文档，**854 增 / 854 删**（完全对称，符合纯改名特征；第一轮 790/790，第二轮补 struct 公有成员与 `Data()` 后增至 854/854）。本仓零生成物，每处都是直接编辑。改动：`namespace beacon`→`Beacon`、私有成员去尾下划线、公开访问器改 PascalCase（`count`→`Count`、`slot_count`→`SlotCount`、`set_data`→`SetData`…）、枚举值 `kCosine`→`Cosine`、常量与局部去 `k` 前缀与蛇形。
+  - **批 1 Beacon 已完成并提交**（Beacon 仓 `bd95bd4`；本仓 `2d83422` 是 PROGRESS 文档提交，非代码）：15 个源文件 + `README.md` + 设计文档，**854 增 / 854 删**（完全对称，符合纯改名特征；第一轮 790/790，第二轮补 struct 公有成员与 `Data()` 后增至 854/854）。本仓零生成物，每处都是直接编辑。改动：`namespace beacon`→`Beacon`、私有成员去尾下划线、公开访问器改 PascalCase（`count`→`Count`、`slot_count`→`SlotCount`、`set_data`→`SetData`…）、枚举值 `kCosine`→`Cosine`、常量与局部去 `k` 前缀与蛇形。
   - **第二轮（2026-09-15，代码审查驱动）：补上「半迁移」缺口** —— 我先前只给 `FileHeader` 改了 struct 公有成员，漏了 `Hit`，而 `Hit` 才是真正对外可见的那个，方向恰好相反。**判定口径定为"按 C++ 成员访问级别"而非"跨 TU 可见性"**（规范 §1 表原文即"公有成员变量(struct) → PascalCase"，`struct` 数据成员默认 public），故一律 PascalCase：`Hit{id,score}`→`{Id,Score}`、`HnswIndex::Candidate{id,score}`→`{Id,Score}`、bench 的 `Dataset`/`BenchParams`/`BenchResult` 全部成员（`m` 顺带语义化为 `MaxNeighbors`，与主代码 `maxNeighbors` 一致，同时消掉审查指出的"`m` 一个字母两种含义"）。共 **127 处使用点 + 5 处声明**。**这是公开 API 改动**（`Hit::Id`/`Hit::Score`），已按批 1 授权范围处理并在提交说明中标注；**Python 侧零破坏已用运行验证**：`repr` 仍为 `<Hit id=1 score=0.993884>`、`h.id`/`h.score`/`Metric.kCosine` 全部原样（绑定层用显式字符串映射，按决策⑥保留）。
   - **第二轮顺带修掉的一处既有缺陷（由审查提出、用户修复）**：`VectorDb::Save` 的 `hasIndex` 标志按 `(index && !indexDirty)` 算，但写出条件却是 `if (index && !index->Write(out))`——**不含 `!indexDirty`**，于是索引脏时 flag 写 0、整段索引字节照写（多则数 MB）；读侧因 flag=0 跳过并忽略尾部字节，**功能正确**，因此 `VectorDbTest` 的 `DirtySaveOmitsIndexSegmentThenLazyRebuild` **修复前也通过**——它当时只证明了"读侧会跳过"，没证明"段真的没写"，用例名是名副其实的。**承自 HEAD，非本批引入**，且属序列化写出条件、落在"命名 + 安全"范围外，我登记后未动；**用户随后亲自改成 `if (hasIndex && !index->Write(out))`**（与标志一致，读写两侧对称）。**我用脚本实测确认**：同一份数据，"无索引基线"与"有索引 + Load 无索引文件 → indexDirty"两条路径保存出的文件**同为 118 字节、逐字节等长**，且该文件能读回、向量与元数据一致 → 索引段确实不再写出。**向后兼容**：旧代码写出的"flag=0 + 尾部带杂散索引字节"的历史文件，新读侧仍只依赖 flag、照常忽略尾部。设计文档「索引脏时不写索引段」一句至此才成为事实。
   - **第二轮同时处置的审查建议**：①**`VectorTable::Data()`→`FlatVectors()`** —— `data` 是 Harness §4 明列的无信息名称，而它是公开访问器；全仓仅 1 个调用点（`VectorDb.cpp` 的 `WriteVectorData`），故改名而非私有化（私有化需 `friend`，属更大改动）。私有成员 `data` **不改**——§4 的约束对象是"公开接口的标识符"。②**删掉我新加的注释**`// 度量按 u8 落盘；不用 Metric 以免遮蔽…`：Harness §4 只允许 workaround/外部库坑/非常规性能技巧三类注释，且须单独确认；字段名 `MetricCode` 本身已自解释，若有人改成 `Metric` 编译器立刻报错，注释无必要。③`MetricToU8(Metric m)`/`U8ToMetric(std::uint8_t v)` 的形参形与 HNSW 的 `M` 同名不同义 → 改 `metric`/`metricCode`。④`README.md:12` 的格式字段名与设计文档对齐（`version+dim+metric+count` → `Version(3)+Dim(u64)+MetricCode(u8)+SlotCount(u64)`）。**⑤审查建议的 `Deleted()`→`IsDeleted()` 我未采纳**——规范里找不到"谓词须加 `Is`"的条文，不按口味改动。**⑥`GetMetric()` 与同级 `Count()/Dim()` 命名不一致是刻意为之**——`Metric Metric() const` 会让成员函数名遮蔽同名 `enum class`，审查亦确认"保持现状即可"，记录在案以防后人当遗漏"统一掉"。
@@ -183,7 +193,7 @@
 
 ## 🔄 进行中
 
-- **六仓 C++ 规范对齐**：批 1（Beacon）**已完成、未提交**，详见上方 ✅ 条目。批 2（Templates）的**非公开 API 部分可开工**（190 处 `m_` 全在 `private:` 段）；批 3–7 **未开工**，各自阻塞见 ✅ 条目与下方 ❓。
+- **六仓 C++ 规范对齐**：批 1（Beacon）**已完成并提交**（`bd95bd4`），详见上方 ✅ 条目。**批 2 的前置已完成**——生成物可复现性验证跑完（Spark 9/0、QT 130/0、Mdb 29/7），Mdb 停滞的 7 个产物已单独修完并提交（`0bb5fa6`），Mdb 的构建与实跑基线已留档（Debug/Release 均 rc=0，TestDB 的 Sqlite/Duckdb 两段全过）。**批 2a（Templates 的非公开 API 部分）进行中**：190 处 `m_`（22 模板，声称全在 `private:` 段——**动手前须重新核实**）、`t_` 前缀 23 处、`in_file` 蛇形局部 4 处（`ServerConfig.cpp.tpl`）、`g_Errors` 2 处（`Error.cpp.tpl:9`）、无界 `sprintf` → 有界 5 处（`Packages.cpp.tpl`/`MdbStructs.cpp.tpl`/`InitMdbFromCsv.cpp.tpl`）、`using namespace std;` 5 处，以及给每个生成物加"本文件由 `<模板路径>` 生成，请勿手改"头。**须分仓、分批 commit**（`Cpp/Mdb/*.tpl` 被 Mdb 与 QT 共用）。**批 2 开工前还缺 QT 的构建/测试基线**（本会话尚未重测）。批 3–7 **未开工**，各自阻塞见 ✅ 条目与下方 ❓。
 
 ## ❓ 待讨论 / 待决策
 
@@ -194,6 +204,23 @@
   - **③批 3 Spark 的 §3 高风险项（须单独确认，与②可分开批）**：裸 `new` 46 处 / 裸 `delete` 20 处 → 智能指针（`LockFreeQueue.h`/`ObjectPool.h` 是分配原语内部，**按设计需保留并登记豁免**，其余可改）；`volatile` **6 处 / 2 文件** → `std::atomic`（§6 禁 `volatile` 作同步；**须先确认这 6 处是否真用于同步**——这是本批唯一的高风险项）。
   - **④批 6 QuantTrading 的公开 API 改名**：`namespace quanttrading` 87 处 / 83 文件 → `QuantTrading`（`mdb` 4 处须与 Mdb 仓同步）；`m_` 1,215 处 / 64 文件（`m_Mdb` 一个名字就 110 处）；`strcpy` 173 处 → 有界替代；裸 `new`/`delete` 81/8 → 智能指针。`namespace std` 的 `hash` 特化**不要动**，`py` 是别名**不动**。
   - **⑤B0-a（DBAdapters 的前置决策，非授权类）**：该仓 5 个生成脚本（`pump.py`/`pumpall.py`/`parseall.py`/`ParseTableModel.py`/`ParsePackageModel.py`）处于**未暂存的删除态**，且该仓**没有 `pumplist.xml`**——其生成的 `MdbStructs.h/.cpp`（1,105 行，占全仓 20%）**没有任何可复现的生成路径**。必须先定：**保留生成**（补 pumplist 并把脚本提交回来）、**转为手写**（删脚本、把 MdbStructs 标记为手写）、还是**从 Spark 复制工具链**。此决定不做，批 4 无法开工。
+
+- **`InitDB` 全量快照的池化对象无人归还（2026-09-15 修 Mdb 时发现，**既有缺陷**，需跨仓决策）**：
+  模板生成的 `TradingDayTable::InitDB`（11 张表同型）从 `ObjectPool` 取一批对象塞进 `std::vector` 交给
+  `OnRecordBatchInsert`，但**没有任何路径把它们还回池**。根因在上游 `DBAdapters`：
+  `AsyncDBWriter::OnRecordBatchInsert` 把它们换进 `DBOperateImpl`，而 `DBOperateImpl::DeallocateRecord()`
+  对 `Insert`/`BatchInsert`/`Truncate` 三类**提前 return**（只对 `Update`/`Delete` 归还）。
+  放大效应：`Mdb::OnDBConnected` **每次重连都会重跑一遍 `InitDB`**，故池是被逐步抽干的。
+  这不在"命名 + 安全"范围内，且修它要动**跨仓的所有权契约**，**未动**。
+  三个可选方向：(i) 由 `DBAdapters` 侧在 `BatchInsert` 后归还（改上游契约，波及全部消费方）；
+  (ii) 由 `InitDB` 侧记录并负责归还（改模板，影响 Mdb 与 QT 的生成物）；
+  (iii) 接受现状并加注释说明这是有意的所有权转移（若上游确实打算长期持有）。
+
+- **`InitDB` 在订阅者为空时静默返回、无任何日志（2026-09-15 修 Mdb 时发现，**既有**，模板级）**：
+  重 pump 带出的 `if (m_MdbSubscriber == nullptr) { m_DBInited = true; return; }` 修掉了 HEAD 上的
+  **空指针解引用崩溃**，但**只是静默返回**——没有 `LOG_WARN` 一类记录，违反 Harness §6「错误路径不得
+  无声吞掉」的精神（那里约束的是 `catch`，但同一意图适用）。改它属**行为变更**（会开始打日志），
+  且模板级改动会波及 **QT 的 5 处**生成物，**须与 QT 一起重 pump**，故登记未动。
 
 - **`ProtocolVersionValue` 要不要按协议类型拆成两个（2026-09-14 由代码审查提出，用户未决）**：
   该常量由 **XTP 与 Step 共用**，两者都在报文头里写它、也都在读侧校验它。本批 Step 的线格式
