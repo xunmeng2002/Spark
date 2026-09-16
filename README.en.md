@@ -354,8 +354,8 @@ The project includes a comprehensive **Google Test**-based unit test suite with 
 | | `PackageReaderTest` | Buffer management: Append/PopFront/Reset |
 | | `PackageSerializationTest` | End-to-end MakePackage ↔ ParsePackage round-trip, resync and version check |
 | **Serialization** | `Base64Test` | Base64 encoding/decoding |
-| | `CSVParserTest` | CSV row/column parsing, quote escaping |
-| | `CSVRecordTest` | CSV record reading/writing |
+| | `CsvParserTest` | CSV row/column parsing, quote escaping |
+| | `CsvRecordTest` | CSV record reading/writing |
 | | `EncodeTest` | GBK/UTF-8/Unicode conversion |
 | **TemplateLib** | `BufferTest` | Buffer read/write and expansion |
 | | `LockFreeQueueTest` | Lock-free queue push/pop |

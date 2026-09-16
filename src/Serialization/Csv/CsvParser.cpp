@@ -4,16 +4,16 @@
 
 namespace Spark::Serialization
 {
-CSVParser::CSVParser()
+CsvParser::CsvParser()
 {
 	data_ = nullptr;
 	curr_ = nullptr;
-	errorCode_ = CPE_END;
+	errorCode_ = CsvParserError::End;
 
-	currWord_ = new char[TOKEN_MAX_LEN + 1];
+	currWord_ = new char[TokenMaxLen + 1];
 }
 
-CSVParser::CSVParser(const char *pszData)
+CsvParser::CsvParser(const char *pszData)
 {
 	separator_[0] = ',';
 	separator_[1] = '\0';
@@ -21,29 +21,29 @@ CSVParser::CSVParser(const char *pszData)
 	curr_ = (char *)data_;
 	NextChar();
 
-	currWord_ = new char[TOKEN_MAX_LEN + 1];
+	currWord_ = new char[TokenMaxLen + 1];
 }
 
-void CSVParser::Parse(const char *pszData)
+void CsvParser::Parse(const char *pszData)
 {
 	data_ = pszData;
 	curr_ =  (char *)data_;
-	errorCode_ = CPE_HAS_NEXT;
+	errorCode_ = CsvParserError::HasNext;
 	NextChar();
 
-	currWord_ = new char[TOKEN_MAX_LEN + 1];
+	currWord_ = new char[TokenMaxLen + 1];
 }
 
-CSVParser::~CSVParser()
+CsvParser::~CsvParser()
 {
 	delete currWord_;
 }
-void CSVParser::SetSeparator(char chSeparator)
+void CsvParser::SetSeparator(char chSeparator)
 {
 	separator_[0] = chSeparator;
 }
 
-void CSVParser::NextChar()
+void CsvParser::NextChar()
 {
 	chC_ = *curr_;
 	if(chC_ == '\0' || chC_ == '\r' || chC_ == '\n')
@@ -57,10 +57,10 @@ void CSVParser::NextChar()
 	}
 }
 
-void CSVParser::MakeWord(const char *pszEnd)
+void CsvParser::MakeWord(const char *pszEnd)
 {
 	int i=0;
-	for (;i<TOKEN_MAX_LEN; i++)
+	for (;i<TokenMaxLen; i++)
 	{
 		if (chC_ == '\0')
 		{
@@ -83,7 +83,7 @@ void CSVParser::MakeWord(const char *pszEnd)
 	currWord_[i]='\0';
 }
 
-char *CSVParser::GetNextToken()
+char *CsvParser::GetNextToken()
 {
 	switch (chC_)
 	{
@@ -92,7 +92,7 @@ char *CSVParser::GetNextToken()
 		MakeWord("\"");
 		if (chC_ != '"')
 		{
-			errorCode_ = CPE_MARK_NOT_MATCH;
+			errorCode_ = CsvParserError::MarkNotMatch;
 			return nullptr;
 		}
 		NextChar();
@@ -102,17 +102,17 @@ char *CSVParser::GetNextToken()
 	}
 	if (chC_ == separator_[0])
 	{
-		errorCode_ = CPE_HAS_NEXT;
+		errorCode_ = CsvParserError::HasNext;
 		NextChar();
 		return currWord_;
 	}
 	if (chC_ == '\0')
 	{
-		errorCode_ = CPE_END;
+		errorCode_ = CsvParserError::End;
 		return currWord_;
 	}
 
-	errorCode_ = CPE_TOKEN_TOO_LONG;
+	errorCode_ = CsvParserError::TokenTooLong;
 	return nullptr;
 }
 }
