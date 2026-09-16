@@ -1,9 +1,9 @@
 #pragma once
-#include <Spark/Network/IO/Connect.h>
-#include <Spark/Network/IO/IOBase.h>
-#include <Spark/Network/IO/IOFactory.h>
-#include <Spark/Network/IO/IOThread.h>
-#include <Spark/Network/IO/IOUtility.h>
+#include <Spark/Network/Io/Connect.h>
+#include <Spark/Network/Io/IoBase.h>
+#include <Spark/Network/Io/IoFactory.h>
+#include <Spark/Network/Io/IoThread.h>
+#include <Spark/Network/Io/IoUtility.h>
 #include <Spark/Network/Protocol/Head.h>
 #include <Spark/Network/Protocol/Items.h>
 #include <Spark/Network/Protocol/Package.h>

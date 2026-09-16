@@ -2,13 +2,13 @@
 #include "Shm/ShmConnect.h"
 #include <Spark/Types.h>
 #include <Spark/TemplateLib/Buffer/Buffer.h>
-#include <Spark/Network/IO/IOBase.h>
+#include <Spark/Network/Io/IoBase.h>
 #include <string>
 
 
 namespace Spark::Network
 {
-class SingleShm : public IOBase
+class SingleShm : public IoBase
 {
 public:
 	SingleShm(ServerTypeType shmType, const char* shmName);
@@ -17,7 +17,7 @@ public:
 	
 	virtual void Send(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
 	virtual void DoRecv(Connect* connect) override;
-	virtual void HandleIOEvent() override;
+	virtual void HandleIoEvent() override;
 
 protected:
 	virtual void CheckConnectStatus();

@@ -19,7 +19,7 @@ TcpSelectBase::TcpSelectBase(ServerTypeType serverType, const char* addressName,
 }
 void TcpSelectBase::SetTimeOut(int milliSeconds)
 {
-	IOBase::SetTimeOut(milliSeconds);
+	IoBase::SetTimeOut(milliSeconds);
 
 	selectSocketTimeOut_.tv_sec = milliSeconds / 1000;
 	selectSocketTimeOut_.tv_usec = (milliSeconds % 1000) * 1000;

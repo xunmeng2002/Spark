@@ -16,7 +16,7 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 ShmBase::ShmBase(ServerTypeType serverType, const char* shmName, int milliSeconds)
-	:IOBase(serverType, shmName, milliSeconds), commonShmHeader_(nullptr), shmAddr_(nullptr)
+	:IoBase(serverType, shmName, milliSeconds), commonShmHeader_(nullptr), shmAddr_(nullptr)
 {
 #ifdef _WIN32
 	file_ = nullptr;
@@ -131,7 +131,7 @@ void ShmBase::Send(SessionIdType sessionId, Buffer<BuffSize>* buffer)
 	buffer->Deallocate();
 }
 
-void ShmBase::HandleIOEvent()
+void ShmBase::HandleIoEvent()
 {
 	if (serverType_ == ServerTypeType::Client)
 	{

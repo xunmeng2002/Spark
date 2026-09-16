@@ -49,7 +49,7 @@ void TestXtpServer()
 {
 	WriteLog(LogLevel::Info, "TestXtpServer");
 
-	IOThread* ioThread = new IOThread("XtpServer");
+	IoThread* ioThread = new IoThread("XtpServer");
 	XtpServer xtpServer;
 	xtpServer.SetIoThread(ioThread);
 	if (!xtpServer.Init())

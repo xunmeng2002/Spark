@@ -1,6 +1,6 @@
 #include <Spark/Network/Protocol/Protocol.h>
 #include <Spark/Core/Logger/Logger.h>
-#include <Spark/Network/IO/IOFactory.h>
+#include <Spark/Network/Io/IoFactory.h>
 #include <stdexcept>
 
 using namespace Spark::Core;
@@ -34,14 +34,14 @@ void Protocol::RegisterFront(const char* address)
 	{
 		delete ioBase_;
 	}
-	ioBase_ = IOFactory::CreateIo(serverType_, address, ioModel_, milliSeconds_);
+	ioBase_ = IoFactory::CreateIo(serverType_, address, ioModel_, milliSeconds_);
 	ioBase_->Subscribe(this);
 	if (ioThread_ != nullptr)
 	{
 		ioThread_->SetIo(ioBase_);
 	}
 }
-void Protocol::SetIoThread(IOThread* ioThread)
+void Protocol::SetIoThread(IoThread* ioThread)
 {
 	ioThread_ = ioThread;
 	if (ioBase_ != nullptr)
@@ -85,11 +85,11 @@ bool Protocol::Init()
 		return false;
 	return ioBase_->Init();
 }
-IOBase* Protocol::GetIO()
+IoBase* Protocol::GetIo()
 {
 	return ioBase_;
 }
-IOThread* Protocol::GetIOThread()
+IoThread* Protocol::GetIoThread()
 {
 	return ioThread_;
 }

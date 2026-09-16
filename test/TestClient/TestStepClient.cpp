@@ -5,7 +5,7 @@
 #include <Spark/Core/Utility/Utility.h>
 #include <Spark/Core/Utility/TimeUtility.h>
 #include <Spark/Core/Logger/Logger.h>
-#include <Spark/Network/IO/IOThread.h>
+#include <Spark/Network/Io/IoThread.h>
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 
 using namespace std;
@@ -80,7 +80,7 @@ void TestStepClient()
 {
 	WriteLog(LogLevel::Info, "TestStepClient");
 
-	IOThread* ioThread = new IOThread("StepClient");
+	IoThread* ioThread = new IoThread("StepClient");
 	StepClient stepClient;
 	stepClient.SetIoThread(ioThread);
 	if (!stepClient.Init())

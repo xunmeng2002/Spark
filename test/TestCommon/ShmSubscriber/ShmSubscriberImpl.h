@@ -1,14 +1,14 @@
 #pragma once
-#include <Spark/Network/IO/IOBase.h>
-#include <Spark/Network/IO/IOThread.h>
+#include <Spark/Network/Io/IoBase.h>
+#include <Spark/Network/Io/IoThread.h>
 #include <Spark/TemplateLib/Buffer/Buffer.h>
 
 using namespace Spark;
 using namespace Spark::Network;
-class ShmSubscriberImpl : public IOSubscriber
+class ShmSubscriberImpl : public IoSubscriber
 {
 public:
-	ShmSubscriberImpl(IOBase* io, ServerTypeType serverType);
+	ShmSubscriberImpl(IoBase* io, ServerTypeType serverType);
 
 	virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) override;
 	virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) override;
@@ -19,7 +19,7 @@ public:
 	bool connected_;
 	SessionIdType sessionId_;
 private:
-	IOBase* io_;
+	IoBase* io_;
 	ServerTypeType serverType_;
 
 	char* buff_;

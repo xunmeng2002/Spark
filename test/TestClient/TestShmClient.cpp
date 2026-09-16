@@ -1,5 +1,5 @@
 #include "TestShmClient.h"
-#include "ClientIOSubscriberImpl.h"
+#include "ClientIoSubscriberImpl.h"
 #include "TestUtility/TestUtility.h"
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Network/Network.h>
@@ -9,9 +9,9 @@ using namespace Spark::Network;
 
 void TestShmClient()
 {
-    IOThread* ioThread = new IOThread("ShmClient");
-    auto io = IOFactory::CreateIo(ServerTypeType::Client, ShmAddress);
-    ClientIOSubscriberImpl clientIOSubscriberImpl(io, ioThread);
+    IoThread* ioThread = new IoThread("ShmClient");
+    auto io = IoFactory::CreateIo(ServerTypeType::Client, ShmAddress);
+    ClientIoSubscriberImpl clientIoSubscriberImpl(io, ioThread);
     ioThread->SetIo(io);
 
     if (!io->Init())

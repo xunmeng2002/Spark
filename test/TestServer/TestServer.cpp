@@ -4,7 +4,7 @@
 #include "TestStepServer.h"
 #include "TestUtility/TestUtility.h"
 #include <Spark/Core/Logger/Logger.h>
-#include <Spark/Network/IO/IOFactory.h>
+#include <Spark/Network/Io/IoFactory.h>
 
 using namespace Spark::Core;
 using namespace Spark::Network;

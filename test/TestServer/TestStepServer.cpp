@@ -47,7 +47,7 @@ void TestStepServer()
 {
 	WriteLog(LogLevel::Info, "TestStepServer");
 
-	IOThread* ioThread = new IOThread("StepServer");
+	IoThread* ioThread = new IoThread("StepServer");
 	StepServer StepServer;
 	StepServer.SetIoThread(ioThread);
 	if (!StepServer.Init())

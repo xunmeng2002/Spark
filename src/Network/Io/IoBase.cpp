@@ -1,5 +1,5 @@
-#include <Spark/Network/IO/IOBase.h>
-#include <Spark/Network/IO/IOUtility.h>
+#include <Spark/Network/Io/IoBase.h>
+#include <Spark/Network/Io/IoUtility.h>
 #include <Spark/Core/Utility/TimeUtility.h>
 #include <Spark/Core/Logger/Logger.h>
 
@@ -8,33 +8,33 @@ using namespace Spark::Core;
 
 namespace Spark::Network
 {
-IOBase::IOBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
+IoBase::IoBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
 	:serverType_(serverType), addressName_(addressName), timeOut_(chrono::milliseconds(milliSeconds)), ioSubscriber_(nullptr), lastSessionIndex_(0LL)
 {
 	ParseAddress(addressName_, address_, port_);
 }
-IOBase::~IOBase()
+IoBase::~IoBase()
 {
 }
-void IOBase::Subscribe(IOSubscriber* subscriber)
+void IoBase::Subscribe(IoSubscriber* subscriber)
 {
 	ioSubscriber_ = subscriber;
 }
-void IOBase::UnSubscribe()
+void IoBase::UnSubscribe()
 {
 	ioSubscriber_ = nullptr;
 }
-void IOBase::SetTimeOut(int milliSeconds)
+void IoBase::SetTimeOut(int milliSeconds)
 {
 	timeOut_ = std::chrono::milliseconds(milliSeconds);
 }
 
-void IOBase::DisConnect(SessionIdType sessionId)
+void IoBase::DisConnect(SessionIdType sessionId)
 {
 	lock_guard<mutex> guard(disConnectSessionIdsMutex_);
 	disConnectSessionIds_.push_back(sessionId);
 }
-void IOBase::DisConnectAll()
+void IoBase::DisConnectAll()
 {
 	WriteLog(LogLevel::Info, "DisConnectAll");
 	std::map<SessionIdType, Connect*> connects(connects_.begin(), connects_.end());
@@ -44,7 +44,7 @@ void IOBase::DisConnectAll()
 	}
 }
 
-void IOBase::DoDisConnect()
+void IoBase::DoDisConnect()
 {
 	if (disConnectSessionIds_.empty())
 		return;
@@ -64,7 +64,7 @@ void IOBase::DoDisConnect()
 	}
 	disConnectSessionIds_.clear();
 }
-void IOBase::AddConnect(Connect* connect)
+void IoBase::AddConnect(Connect* connect)
 {
 	WriteLog(LogLevel::Info, "New Connection. SessionId:%lld, RemoteAddress:%s, RemotePort:%d",
 		connect->SessionId, connect->RemoteAddress, connect->RemotePort);
@@ -77,7 +77,7 @@ void IOBase::AddConnect(Connect* connect)
 		ioSubscriber_->OnConnect(connect->SessionId, connect->RemoteAddress, connect->RemotePort);
 	}
 }
-void IOBase::RemoveConnect(Connect* connect)
+void IoBase::RemoveConnect(Connect* connect)
 {
 	WriteLog(LogLevel::Info, "RemoveConnect. SessionId:%lld,  RemoteAddress:%s, RemotePort:%d",
 		connect->SessionId, connect->RemoteAddress, connect->RemotePort);
@@ -89,7 +89,7 @@ void IOBase::RemoveConnect(Connect* connect)
 	connects_.erase(connect->SessionId);
 	connect->Deallocate();
 }
-Connect* IOBase::GetConnect(SessionIdType sessionId)
+Connect* IoBase::GetConnect(SessionIdType sessionId)
 {
 	std::lock_guard<std::mutex> guard(connectsMutex_);
 	auto it = connects_.find(sessionId);
@@ -102,7 +102,7 @@ Connect* IOBase::GetConnect(SessionIdType sessionId)
 }
 
 
-SessionIdType IOBase::GetSessionId()
+SessionIdType IoBase::GetSessionId()
 {
 	return TimeUtility::GetMilliSecondTimeStamp() * 100LL + (++lastSessionIndex_) % 100LL;
 }

@@ -5,13 +5,13 @@
 
 namespace Spark::Network
 {
-class IOCompletePort
+class IoCompletePort
 {
 public:
-	IOCompletePort();
-	~IOCompletePort();
-	IOCompletePort(const IOCompletePort&) = delete;
-	IOCompletePort& operator=(const IOCompletePort&) = delete;
+	IoCompletePort();
+	~IoCompletePort();
+	IoCompletePort(const IoCompletePort&) = delete;
+	IoCompletePort& operator=(const IoCompletePort&) = delete;
 
 	bool Create(int maxConcurrency = 0);
 	bool Close();

@@ -2,7 +2,7 @@
 #include "Tcp/TcpIocp/TcpIocpCompletePort.h"
 #include "Tcp/TcpIocp/TcpIocpConnect.h"
 #include "Tcp/TcpIocp/TcpIocpSockApi.h"
-#include <Spark/Network/IO/IOUtility.h>
+#include <Spark/Network/Io/IoUtility.h>
 #include "Tcp/TcpUtility.h"
 #include <Spark/Core/Logger/Logger.h>
 
