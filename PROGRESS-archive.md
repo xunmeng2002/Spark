@@ -4,6 +4,23 @@
 
 ## ✅ 原已完成
 
+### D.22
+
+- **六仓 C++ 规范对齐 · 批 2a 三项收口：模板有界化 / `using namespace std;` 清零 / 生成物「勿手改」头（2026-09-15）**：
+  用户定的三项一次做完再动 Spark（「合并成一轮做，churn 只翻一次」）。**批 2a 至此收口**，批 2 只剩 `namespace Spark`/`mdb` → PascalCase 那一段（公开 API，须与批 7 原子改）。
+  - **① `sprintf` 有界化（安全类，本批价值最高的一项）**：最后一处无界写是 `Templates/Cpp/Protocol/Packages/Packages.cpp.tpl` 的 `GetDebugString`——写目标是 `thread_local char DataStringBuffer[10240]`，`offset` 跨全包字段累加、**没有任何上界**。新增文件内 helper `AppendDebugString(int offset, const char* format, ...)`：用 `vsnprintf` 按剩余容量写入并返回新 offset，越界只截断不越写；**264 处**调用点由 `offset += sprintf(...)` 改为 `offset = AppendDebugString(offset, ...)`。同时补 `#include <cstdarg>` / `<cstdio>`。**§5 取舍**：一个 helper 对 264 处调用点，而不是逐点加护栏（`offset` 是跨字段累加的，逐点判断等于把同一段判断抄 264 遍）。至此 `Templates/` 内 `sprintf` **0 处**。
+  - **② `using namespace std;` 清零**：5 处全清（`BackTestApiImpl.cpp.tpl`、`Config.cpp.tpl`、`ServerConfig.cpp.tpl`、`InitMdbFromCsv.cpp.tpl`、`InitMdbFromDb.cpp.tpl`）。随之把因去 `using` 而失去限定的 `printf`/`fstream`/`vector` 改为显式限定，或补 `#include <cstdio>`（`Config.cpp.tpl`、`ServerConfig.cpp.tpl`）。
+  - **③ 生成物「勿手改」头：落在 `pump.py`（三仓各一份），不是改 66 个模板**。`sys.argv[2]` 就是真实模板路径，按目标扩展名选注释符（`.sql` → `-- `，其余 `// `），产物首行写 `// 本文件由 <模板路径> 生成；请勿手改，改动请改模板后重跑 pumpall.py`。落盘编码沿用 `UTF-8-SIG`。**这条是堵历史隐患的**——本仓 96,612 行生成物此前没有任何「勿手改」标记。
+  - **③ 的证明（`pump-header-proof2.py`，两个 168/168）**：①把每个产物的首行去掉后，与「用删掉该块的 `pump.py` 重新生成的无头版本」比对——**168/168 逐字节相同**（即多出来的确实只有那一行）；②恢复后再次强制重 pump——**168/168 逐字节相同**（幂等）。
+  - **churn 逐条核对（不接受「反正是 pump 出来的」）**：首次全量重 pump 后 168 个产物全变（多一行头）。以「头之外是否还有差异」为 oracle：恰好 **20 个**文件有实质变化，且逐一对应到本批改过的模板（`MdbStructs.h/.cpp` ×4、`InitMdbFromCsv/Db` ×4、`Config.cpp` ×9、`BackTestApiImpl.cpp`、`Packages.cpp` ×2）。收尾再 pump 一轮只变 **2 个**（QT 与 Spark 的 `Packages.cpp`）——正是 `Packages.cpp.tpl` 单独的爆炸半径，**反证** `RiskIndex`/`ServerConfig` 的改动只落在 SAMS（不在 pump 范围内）。
+  - **三仓重建重测全绿**：Spark Debug rc=0 / `UnitTests` **392/392** / Release rc=0 / WSL GCC **391/391**；Mdb Debug+Release rc=0、`TestDb.exe` 的 Sqlite + Duckdb 两段通过；QuantTrading Debug+Release rc=0、`UnitTests` **101 用例 / 690 断言全过**、5 个集成 exe **RC=0** 且线程干净退出。**QT 这次能构建，顺带关闭了一条旧登记**：`Libs/DbAdapters/x64-windows` 已由 2026-08-20 的旧副本刷新为 **2026-09-14 09:41**（6321 字节，含 `422e92a` 的 FieldType 扩展），`MdbStatic` 不再失败。
+  - **字符串字面量多重集比对**（承批 1 教训的必跑闸门，本轮覆盖 212 个改动文本文件）：**只有 3 个文件有差异，且全部是「只删不加」**——`MdbStructs.cpp` 三份里 `GetSqlString` 的 SQL 格式串（用户授权的删除，跨仓后果见 ❓ 区）。
+  - **独立审查（`code-reviewer`）严重 4 / 高 4 的处置**：严重 3（新增的 `AppendDebugString` 可能未使用）→ 加 `[[maybe_unused]]`（C++20 已确认，`Spark/CMakeLists.txt:15-16`），WSL GCC 构建复验通过；严重 1（`GetSqlString` 删除）→ 用户已明确授权「删掉该函数」，保留；严重 2（本文档把批 2a 记作「非公开 API 部分」）→ **本条目即更正**，公开成员这轮一并改了；严重 4（批 2a 不是纯改名、无法原子拆分）→ 属实，用户已定「合并成一轮」。高 2 / 高 4 → `ServerConfig` 的 `instance_` → `instance`、`in_file` → `inputFile`；另 `RiskIndex.h.tpl` 的 9 处公开成员 `m_*` → camelCase。
+  - **两处我自行判断的改动（附回退面）**：①`RiskIndex.h.tpl` 公开成员改名，援引的是**同仓既有裁决**「公开成员一律 camelCase 去前缀」（该裁决由用户答；批 2a 的授权原文亦为「连公开成员一起改名」）。回退面：模板 9 处 + SAMS 侧消费点，无逻辑变更。②`Mdb/test/TestMdb/TestDb.cpp:274` 保留 `//TestMysql();` —— HEAD 的第 275 行 `//TestMariadb();` 本来就是注释，属该文件既有约定；且 Mysql 段需要 33060 的活服务，本机没有。回退面：1 行。
+  - **登记（本批未动）**：`m_Protocol` **8 处**保留——它只声明在手写的 `QuantTrading/src/Apis/ApiBase.h`，不在任何模板里，属批 6；`TestDb.cpp` 的 `t_tradingDay`/`t_exchange`/`t_account` 等局部蛇形名属批 5；`LibTest` 与 `SAMS` 消费了本批改过的模板但**未重 pump**（一个已废弃、一个不在范围），存在语义漂移、**无编译错误**；`__pycache__/` 在 Spark/Mdb/QT 三仓未被忽略（`pumpall.py` 的运行副产物），宜补进 `.gitignore`。
+  - **⚠️ 证明阶段 `Mdb/src/Mdb/MdbTableRegistry.h` 被删过一次（741 字节，git 状态 ` D`）**：根因是 `pump.py` 生成失败时**先 `os.remove(out_file_name)` 删目标**，而 `pumpall.py` 的 `DoPump` 用裸 `exit()`（**返回 0**）把失败静默吞掉。已用 `%TEMP%\pump-guard.py` 恢复；随后连续 4 轮全量 pump **未复现**。**这是 `pumpall.py` 的既有缺陷，三仓都有，已登记待决（见 ❓ 区）。**
+  - **本文档的滚动**：本条目入区后 ✅ 达 6 批，按 §8.1 移最旧三条入归档（`D.19`/`D.18`/`D.17`）。搬运对条目边界、脚本从 `git HEAD` 取原文、只移动不删改；半关闭条目（`D.18`/`D.19`）的未决 bullet 抽出后留在 ❓ 区，不随历史一起埋掉。
+
 ### D.21
 
 - **六仓 C++ 规范对齐 · 批 2 前置：Mdb 停滞生成物补齐（2026-09-15，提交 `0bb5fa6`）**：

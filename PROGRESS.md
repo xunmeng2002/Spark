@@ -4,6 +4,17 @@
 
 ## ✅ 已完成
 
+- **Spark 批 3 子集 · CSV 缩写规范化：`CSVxxx` → `Csvxxx`（目录/类名/枚举/内部偏差，2026-09-16，`4b9ef4d`，合并 `f13cb2f`）**：
+  同 IO 批的判据（§1「缩写按普通单词处理」+ §2「文件名与类名一致」→ 三类只能同批原子改），但**证据策略必须换**：CSV 不满足等长不变式（`TOKEN_MAX_LEN`→`TokenMaxLen`、`TCSVField`→`CsvField`、`ltstr`→`CsvFieldLess` 都变长），IO 批「断言等长把偏移漂移变成不可能」那层保护在此失效。
+  - **范围（9 文件，185 增 / 185 删，完全对称 = 纯改名特征）**：路径 `src/Serialization/CSV/`→`Csv/`、`CSVParserTest.cpp`→`CsvParserTest.cpp`、`CSVRecordTest.cpp`→`CsvRecordTest.cpp`（含 gtest 套件名）；公开类 `CSVParser`/`CSVRecord`→`CsvParser`/`CsvRecord`；枚举 `enum CSV_PARSER_ERROR`→`enum class CsvParserError`（**语义变化**：改为限定作用域，使用点须补 `CsvParserError::`），值 `CPE_*` 去前缀；内部偏差 `TOKEN_MAX_LEN`→`TokenMaxLen`、`CSV_RECORD_MAX_{HEAD,CONTENT}_SIZE`→`CsvRecordMax{Head,Content}Size`、`struct TCSVField`→`CsvField`、`struct ltstr`→`CsvFieldLess`、`CCSVFieldMap`→`CsvFieldMap`、成员 `m_mapCSVField`→`csvFieldMap_`；中英 README 测试表各 2 行。`CSV` 作**文件格式名**的散文与 include 路径原样保留。
+  - **本批最重要的教训：自洽的 oracle 证明不了规则表完整。** 我漏了枚举**类型名** `CSV_PARSER_ERROR` 本身（只写了 4 个 `CPE_*` 枚举值），而**闸门 1d 照样报 OK**——它的判据是「拿 HEAD 原文按改名规则机械重推」，**规则表漏了，重推就一起漏**，两边一致地错。与 `PROGRESS.md:17 ⑧`「扫描口径写窄 = 假绿灯」、IO 批漏掉 `HandleIOEvent` 是同一失败型：**判据与被判对象共用同一个盲区**。根治靠加一道**独立口径**（`--scan`：直接搜残留 `CSV[A-Za-z0-9_]*`，不依赖规则表），并**先证明扫描器非空转**——拿 HEAD 原文跑，它确实报出 `CSV_PARSER_ERROR` ×4（1 定义 + 3 使用），与漏掉的那处吻合。
+  - **第二处漏网，同样只有独立口径能抓：右边界断言把自己挡住了。** 残留扫描写成 `(?<![A-Za-z0-9_])(CSVParser|CSVRecord|…)(?![A-Za-z0-9_])`，末尾那个 `(?![A-Za-z0-9_])` 使 `CSVParserTest`/`CSVRecordTest` **结构上不可能匹配**，报 0 处。改成不做边界假设的 `CSV[A-Za-z0-9_]*` 全仓扫，才在两份 README 各抓到 2 处。**两次都是同一类错**：我拿「已想到的名字」造句，而漏掉的必然不在句子里。
+  - **枚举定义体重写必须保 Allman**：第一版把 `enum CSV_PARSER_ERROR {` 合成一行，违 §3「括号独占一行」。改为**只替换 header 类型名与定义体里的枚举值、其余字节（含换行缩进）原样搬运**，并用 `cat -A` 核过 `{` 独占一行、枚举值 tab 缩进。
+  - **注释改动是有意的，与 IO 批相反**：测试文件里 `// CSVParser 测试` 是**自指类名的标签**，不改就成陈旧注释。故本批屏蔽区间只含字符串/字符字面量，注释照改，并逐文件核验注释条目数（`CsvParserTest` 3 / `CsvRecordTest` 5，旧名 0 处）。
+  - **闸门（全绿）**：脚本自测 15/15（含 `// 轻量 CSV 文件解析器` 假阳性语料、Allman 枚举定义体、`CSV_PARSER_ERROR` 类型名三条防回归语料）；闸门 1d 六文件与机械重推**逐字节全等**；`--scan` 独立口径 `CSV*` 清零；字面量多重集**零差异**（0/0/15/19/33/39）；陈旧注释 0；中英 README 正样本保留；`pumpall.py` rc=0、231 个跟踪文件逐字节零 churn、无 `.pumptmp`；`x64-Debug`/`x64-Release` 各 0 error，`UnitTests` **392/392 ×2**。
+  - **重命名的目录/文件由 `GLOB_RECURSE CONFIGURE_DEPENDS` 自动收进构建**（`submodules/CMakeCommon/CMakeCommon.cmake:50,80,98,117`）→ **零 CMake 改动**；构建日志里可见 `Serialization\CsvParserTest.cpp.obj` / `CsvRecordTest.cpp.obj`。`git diff -M` 把 `CsvParserTest.cpp` 报成 delete+create 是相似度跌破 50% 阈值所致，内容本身已由闸门 1d 证明是纯改名。
+  - **工具链踩坑（`%TEMP%\spark-build.py`）**：从 Git Bash 驱动 MSVC 构建有四个坑——①`cmd.exe /c` 会被 MSYS 转成 `C:/`（须 `//c`）；②`cmd.exe` **不认 `\"` 转义**（那是 C runtime 规则），故 subprocess 用 list 传参会因内层引号转义而失败；③bash heredoc/printf 中转 .bat 会被**八进制转义吃掉反斜杠**（`\2022`→0x82 `2`、`\Build`→退格 `uild`、`\v`→VT）；④最终解法是**由 python 亲自写纯 ASCII + CRLF 的 .bat 再以 list 调用**。另：不跑 `vcvars64.bat` 时 `INCLUDE` 未设，报的是 `fatal error C1083: 无法打开包括文件: "string"/"stdint.h"`——**与本批改动无关**，勿误归因。
+
 - **Spark 批 3 子集 · IO 缩写规范化：`IOxxx` → `Ioxxx`（类名/文件名/目录名同批原子改，2026-09-16，`0c95abb`，合并 `9e12009`）**：
   **为什么三类必须同批**：§1「缩写按普通单词处理，只首字母大写」的原文示例就是 `IoBase`，§2 又要求「文件名与类名一致」——只改类名或只改文件名，都是从违反一条规范变成违反另一条。故类名、文件名、目录名只能一个 commit 原子改。
   - **范围（44 文件，166 增 / 166 删，完全对称 = 纯改名特征，与批 1 的 854/854 同型）**：符号 `IOBase`/`IOFactory`/`IOThread`/`IOCompletePort`/`IOSubscriber`/`HandleIOEvent`/`GetIO`/`GetIOThread`/`ClientIOSubscriberImpl`/`ServerIOSubscriberImpl` + 4 处局部变量；目录 `include/Spark/Network/IO`→`Io`、`src/Network/IO`→`Io`；文件 12 个（含 `test/TestClient`、`test/TestServer` 各 2）；7 处「自指类名」日志字面量；中英文 README 代码示例。`IOUtility` 不是符号只是文件名——6 处命中全是 `#include`。
@@ -33,24 +44,9 @@
   - **⑨ 顺带扫出、但不属本批的 4 处 `(T*)ptr`**：`QuantTrading/src/BackTest/SimExchange.cpp:287,290,293,296`，**手写**文件（非 pump 产物）、**HEAD 即已存在**（逐行比对确认非本批引入）→ 归**批 6**，已登记 ❓ 区未动。
   - **登记（本批未动，见 ❓ 区）**：生成物 `*TableList.h` 的 5 头 / 10 个公开常量须授权；工具链三处既有问题（`os.system` 拼串 / 头注释嵌模板路径 / 产物无体检）；**新登记 6 条**（`.cu` 白名单缺口、Mdb README 的 `tradingDay` 未定义示例、pump.py 回退路径四处、README 注释列位）见 ❓ 区同名条目。
 
-- **六仓 C++ 规范对齐 · 批 2a 三项收口：模板有界化 / `using namespace std;` 清零 / 生成物「勿手改」头（2026-09-15）**：
-  用户定的三项一次做完再动 Spark（「合并成一轮做，churn 只翻一次」）。**批 2a 至此收口**，批 2 只剩 `namespace Spark`/`mdb` → PascalCase 那一段（公开 API，须与批 7 原子改）。
-  - **① `sprintf` 有界化（安全类，本批价值最高的一项）**：最后一处无界写是 `Templates/Cpp/Protocol/Packages/Packages.cpp.tpl` 的 `GetDebugString`——写目标是 `thread_local char DataStringBuffer[10240]`，`offset` 跨全包字段累加、**没有任何上界**。新增文件内 helper `AppendDebugString(int offset, const char* format, ...)`：用 `vsnprintf` 按剩余容量写入并返回新 offset，越界只截断不越写；**264 处**调用点由 `offset += sprintf(...)` 改为 `offset = AppendDebugString(offset, ...)`。同时补 `#include <cstdarg>` / `<cstdio>`。**§5 取舍**：一个 helper 对 264 处调用点，而不是逐点加护栏（`offset` 是跨字段累加的，逐点判断等于把同一段判断抄 264 遍）。至此 `Templates/` 内 `sprintf` **0 处**。
-  - **② `using namespace std;` 清零**：5 处全清（`BackTestApiImpl.cpp.tpl`、`Config.cpp.tpl`、`ServerConfig.cpp.tpl`、`InitMdbFromCsv.cpp.tpl`、`InitMdbFromDb.cpp.tpl`）。随之把因去 `using` 而失去限定的 `printf`/`fstream`/`vector` 改为显式限定，或补 `#include <cstdio>`（`Config.cpp.tpl`、`ServerConfig.cpp.tpl`）。
-  - **③ 生成物「勿手改」头：落在 `pump.py`（三仓各一份），不是改 66 个模板**。`sys.argv[2]` 就是真实模板路径，按目标扩展名选注释符（`.sql` → `-- `，其余 `// `），产物首行写 `// 本文件由 <模板路径> 生成；请勿手改，改动请改模板后重跑 pumpall.py`。落盘编码沿用 `UTF-8-SIG`。**这条是堵历史隐患的**——本仓 96,612 行生成物此前没有任何「勿手改」标记。
-  - **③ 的证明（`pump-header-proof2.py`，两个 168/168）**：①把每个产物的首行去掉后，与「用删掉该块的 `pump.py` 重新生成的无头版本」比对——**168/168 逐字节相同**（即多出来的确实只有那一行）；②恢复后再次强制重 pump——**168/168 逐字节相同**（幂等）。
-  - **churn 逐条核对（不接受「反正是 pump 出来的」）**：首次全量重 pump 后 168 个产物全变（多一行头）。以「头之外是否还有差异」为 oracle：恰好 **20 个**文件有实质变化，且逐一对应到本批改过的模板（`MdbStructs.h/.cpp` ×4、`InitMdbFromCsv/Db` ×4、`Config.cpp` ×9、`BackTestApiImpl.cpp`、`Packages.cpp` ×2）。收尾再 pump 一轮只变 **2 个**（QT 与 Spark 的 `Packages.cpp`）——正是 `Packages.cpp.tpl` 单独的爆炸半径，**反证** `RiskIndex`/`ServerConfig` 的改动只落在 SAMS（不在 pump 范围内）。
-  - **三仓重建重测全绿**：Spark Debug rc=0 / `UnitTests` **392/392** / Release rc=0 / WSL GCC **391/391**；Mdb Debug+Release rc=0、`TestDb.exe` 的 Sqlite + Duckdb 两段通过；QuantTrading Debug+Release rc=0、`UnitTests` **101 用例 / 690 断言全过**、5 个集成 exe **RC=0** 且线程干净退出。**QT 这次能构建，顺带关闭了一条旧登记**：`Libs/DbAdapters/x64-windows` 已由 2026-08-20 的旧副本刷新为 **2026-09-14 09:41**（6321 字节，含 `422e92a` 的 FieldType 扩展），`MdbStatic` 不再失败。
-  - **字符串字面量多重集比对**（承批 1 教训的必跑闸门，本轮覆盖 212 个改动文本文件）：**只有 3 个文件有差异，且全部是「只删不加」**——`MdbStructs.cpp` 三份里 `GetSqlString` 的 SQL 格式串（用户授权的删除，跨仓后果见 ❓ 区）。
-  - **独立审查（`code-reviewer`）严重 4 / 高 4 的处置**：严重 3（新增的 `AppendDebugString` 可能未使用）→ 加 `[[maybe_unused]]`（C++20 已确认，`Spark/CMakeLists.txt:15-16`），WSL GCC 构建复验通过；严重 1（`GetSqlString` 删除）→ 用户已明确授权「删掉该函数」，保留；严重 2（本文档把批 2a 记作「非公开 API 部分」）→ **本条目即更正**，公开成员这轮一并改了；严重 4（批 2a 不是纯改名、无法原子拆分）→ 属实，用户已定「合并成一轮」。高 2 / 高 4 → `ServerConfig` 的 `instance_` → `instance`、`in_file` → `inputFile`；另 `RiskIndex.h.tpl` 的 9 处公开成员 `m_*` → camelCase。
-  - **两处我自行判断的改动（附回退面）**：①`RiskIndex.h.tpl` 公开成员改名，援引的是**同仓既有裁决**「公开成员一律 camelCase 去前缀」（该裁决由用户答；批 2a 的授权原文亦为「连公开成员一起改名」）。回退面：模板 9 处 + SAMS 侧消费点，无逻辑变更。②`Mdb/test/TestMdb/TestDb.cpp:274` 保留 `//TestMysql();` —— HEAD 的第 275 行 `//TestMariadb();` 本来就是注释，属该文件既有约定；且 Mysql 段需要 33060 的活服务，本机没有。回退面：1 行。
-  - **登记（本批未动）**：`m_Protocol` **8 处**保留——它只声明在手写的 `QuantTrading/src/Apis/ApiBase.h`，不在任何模板里，属批 6；`TestDb.cpp` 的 `t_tradingDay`/`t_exchange`/`t_account` 等局部蛇形名属批 5；`LibTest` 与 `SAMS` 消费了本批改过的模板但**未重 pump**（一个已废弃、一个不在范围），存在语义漂移、**无编译错误**；`__pycache__/` 在 Spark/Mdb/QT 三仓未被忽略（`pumpall.py` 的运行副产物），宜补进 `.gitignore`。
-  - **⚠️ 证明阶段 `Mdb/src/Mdb/MdbTableRegistry.h` 被删过一次（741 字节，git 状态 ` D`）**：根因是 `pump.py` 生成失败时**先 `os.remove(out_file_name)` 删目标**，而 `pumpall.py` 的 `DoPump` 用裸 `exit()`（**返回 0**）把失败静默吞掉。已用 `%TEMP%\pump-guard.py` 恢复；随后连续 4 轮全量 pump **未复现**。**这是 `pumpall.py` 的既有缺陷，三仓都有，已登记待决（见 ❓ 区）。**
-  - **本文档的滚动**：本条目入区后 ✅ 达 6 批，按 §8.1 移最旧三条入归档（`D.19`/`D.18`/`D.17`）。搬运对条目边界、脚本从 `git HEAD` 取原文、只移动不删改；半关闭条目（`D.18`/`D.19`）的未决 bullet 抽出后留在 ❓ 区，不随历史一起埋掉。
-
 ## 🔄 进行中
 
-- **六仓 C++ 规范对齐**：批 1（Beacon）**已完成并提交**（`bd95bd4`，条目已入归档 `D.20`）；批 2 前置（Mdb 生成物补齐）**已提交**（`0bb5fa6`，条目已入归档 `D.21`）；**批 2a + 批 2b（Templates：有界化 / 公开成员改名 / C 风格 cast 清零 / 生成失败路径加固）已完成**。**批 3 已落地一个子集**：IO 族 `IOxxx` → `Ioxxx`（类名/文件名/目录名同批原子改）**已完成并合并**（`0c95abb` + `9e12009`），见上方 ✅ 条目——该子集能先落地，是因为它**不触碰任何跨仓公开契约**（符号只在 Spark 内部 + 两个测试程序）。**批 3 剩余部分仍阻塞于授权**：`namespace Spark` 112 处、小写访问器与方法约 1,295 处、C 风格 cast 134 处、`k` 前缀 221 处、`g_` 66 处、`enum CSV_PARSER_ERROR` → `enum class`，见 ❓ 区②③。**批 2 剩余部分**仍是 `namespace Spark`/`mdb` → PascalCase——它生成的是被 Mdb / DbAdapters / QT 通过 `find_package` 消费的公开头，**须授权并与批 7 原子改**（见 ❓ 区①）。批 4–7 **未开工**，阻塞见 ❓ 区。**注意**：`Cpp/Mdb/*.tpl` 被 Mdb 与 QT 共用，落地即产生三仓生成物 churn，**须分仓、分批 commit**。
+- **六仓 C++ 规范对齐**：批 1（Beacon）**已完成并提交**（`bd95bd4`，条目已入归档 `D.20`）；批 2 前置（Mdb 生成物补齐）**已提交**（`0bb5fa6`，条目已入归档 `D.21`）；**批 2a + 批 2b（Templates：有界化 / 公开成员改名 / C 风格 cast 清零 / 生成失败路径加固）已完成**。**批 3 已落地两个子集**：IO 族 `IOxxx` → `Ioxxx`（`0c95abb` + `9e12009`）与 **CSV 族 `CSVxxx` → `Csvxxx`（目录/类名/枚举/内部偏差）**（`4b9ef4d` + `f13cb2f`），见上方 ✅ 条目——两者能先落地，都是因为它们**不触碰任何跨仓公开契约**（符号只在 Spark 内部 + 两个测试程序）。**批 3 剩余部分仍阻塞于授权**：`namespace Spark` 112 处、小写访问器与方法约 1,295 处、C 风格 cast 134 处、`k` 前缀 221 处、`g_` 66 处，见 ❓ 区②③。**批 2 剩余部分**仍是 `namespace Spark`/`mdb` → PascalCase——它生成的是被 Mdb / DbAdapters / QT 通过 `find_package` 消费的公开头，**须授权并与批 7 原子改**（见 ❓ 区①）。批 4–7 **未开工**，阻塞见 ❓ 区。**注意**：`Cpp/Mdb/*.tpl` 被 Mdb 与 QT 共用，落地即产生三仓生成物 churn，**须分仓、分批 commit**。
 
 ## ❓ 待讨论 / 待决策
 
@@ -82,7 +78,7 @@
 - **六仓 C++ 规范对齐：批 2–7 的授权（2026-09-15 提出，全部未决）**：
   按 Harness §3，**公开 API 改名与高风险改动须逐仓单独取得授权**，不得援引批 1 Beacon 的授权（计划决策⑤）。批 1 的授权只覆盖 Beacon。以下五项各自独立，可以只批其中几项：
   - **①批 2 Templates 的 `namespace Spark`/`mdb` → PascalCase**：这两个命名空间生成的正是被 Mdb / DbAdapters / QT 通过 `find_package` 消费的**公开头**，改名会让三个消费方立刻编译失败。**必须与批 7 原子改、单独 commit**。`Cpp/Libs/PBApi` 另喂含已废弃 LibTest 的 Libs 仓。
-  - **②批 3 Spark 的公开 API 改名**：`namespace Spark` 112 处 / 112 文件、小写访问器与方法约 1,295 处（最大头是 `length` 1,192 处，需先甄别哪些是我方方法、哪些是标准库——`std::` 一族已滤掉但跨库同名须人工确认）、C 风格 cast 134 处、`k` 前缀 221 处、`g_` 66 处、`enum CSV_PARSER_ERROR` + `CPE_*` → `enum class`。
+  - **②批 3 Spark 的公开 API 改名**：`namespace Spark` 112 处 / 112 文件、小写访问器与方法约 1,295 处（最大头是 `length` 1,192 处，需先甄别哪些是我方方法、哪些是标准库——`std::` 一族已滤掉但跨库同名须人工确认）、C 风格 cast 134 处、`k` 前缀 221 处、`g_` 66 处、~~`enum CSV_PARSER_ERROR` + `CPE_*` → `enum class`~~（已于 2026-09-16 随 CSV 批落地，见 ✅ 区）。
   - **③批 3 Spark 的 §3 高风险项（须单独确认，与②可分开批）**：裸 `new` 46 处 / 裸 `delete` 20 处 → 智能指针（`LockFreeQueue.h`/`ObjectPool.h` 是分配原语内部，**按设计需保留并登记豁免**，其余可改）；`volatile` **6 处 / 2 文件** → `std::atomic`（§6 禁 `volatile` 作同步；**须先确认这 6 处是否真用于同步**——这是本批唯一的高风险项）。
   - **④批 6 QuantTrading 的公开 API 改名**：`namespace quanttrading` 87 处 / 83 文件 → `QuantTrading`（`mdb` 4 处须与 Mdb 仓同步）；`m_` 1,215 处 / 64 文件（`m_Mdb` 一个名字就 110 处）；`strcpy` 173 处 → 有界替代；裸 `new`/`delete` 81/8 → 智能指针。`namespace std` 的 `hash` 特化**不要动**，`py` 是别名**不动**。
   - **⑤B0-a（DbAdapters 的前置决策，非授权类）**：该仓 5 个生成脚本（`pump.py`/`pumpall.py`/`parseall.py`/`ParseTableModel.py`/`ParsePackageModel.py`）处于**未暂存的删除态**，且该仓**没有 `pumplist.xml`**——其生成的 `MdbStructs.h/.cpp`（1,105 行，占全仓 20%）**没有任何可复现的生成路径**。必须先定：**保留生成**（补 pumplist 并把脚本提交回来）、**转为手写**（删脚本、把 MdbStructs 标记为手写）、还是**从 Spark 复制工具链**。此决定不做，批 4 无法开工。
@@ -157,7 +153,12 @@
 
 - **`.gitignore` 的两处缺口（2026-09-16 发现，本批未动）**：`log/`（Logger 的运行时产物目录）与 `TestShm`（Shm 测试落盘文件）**都未被忽略**。证据：本批冒烟实测产出了 `log/TestClient.*.log`、`log/TestServer.*.log` 与一个 8 MB 的 `TestShm`，三者**既不在 `HEAD`、也不被忽略**——一次 `git add -A` 就会把日志与 8 MB 文件连同代码一起提交。**待决：补 `.gitignore`，还是把产物改到已被忽略的路径。**
 
-- **CSV 族的改名（2026-09-16 复核，**本批刻意未动**）**：计划里 CSV 与 IO 同批，但用户明确要求「CSV 文件内容先别动」，故本批只做了 IO。**纯目录改名 `src/Serialization/CSV/` → `Csv/`（零内容改动）可随时执行**，但它与 `include/Spark/Serialization/Csv/` 的不一致属既存状态、非本批引入。**CSV 的类名（`CSVParser`/`CSVRecord`）、枚举（`CSV_PARSER_ERROR` + `CPE_*`）、测试文件名仍需授权**——见本区②。`MD5` 作为算法专名豁免，保留。
+- **CSV 族改名的收尾（2026-09-16，改名已落地；下列三项为新登记）**：CSV 批（`4b9ef4d` + `f13cb2f`）已把目录/类名/测试名/枚举/内部偏差一次做完（见 ✅ 区），`MD5` 作为算法专名豁免保留。**改名过程中读到两处 HEAD 即存在的缺陷**，按 Harness §3「暂停并问」的本意**未动、登记待批**：
+  - **①`delete` 用在了 `new char[]` 上（未定义行为，须授权）**：`src/Serialization/Csv/CsvParser.cpp:39` 的 `delete currWord_;` 与 `src/Serialization/Csv/CsvRecord.cpp:20-21` 的 `delete nameBuffer_; delete contentBuffer_;`——三者均由 `new char[...]` 分配，**必须是 `delete[]`**。属 §3「内存管理」范围。修法机械（3 处加 `[]`），但属行为面改动，**不宜混进纯改名批**。
+  - **②`CsvRecord.cpp:148-178` 整块 `#if 0` 死代码（删它须授权）**：内含对**早已不存在**的 `record.Analysis(...)` 的调用。当前被预处理掉、不影响编译，但会持续误导读者。
+  - **③本批未选的那一项**：授权范围是「决策 #4 + 全部零外部影响的内部偏差」，**不含**匈牙利前缀**标识符**——形参 `pszData`/`pszEnd`/`chSeparator`、私有成员 `chC_`/`chNC_`/`currWord_`/`curr_`。用户明确未选此项，**留作日后可单独开的仓内批次**（`psz`/`ch`/`curr` 三类前缀在别处亦有，宜全仓一次扫清而非只改 CSV）。
+
+- **承自归档 `D.22`（批 2a 的未决部分，2026-09-16 滚动时按 §8.1 抽出，短版）**：①`Mdb/test/TestMdb/TestDb.cpp` 的 `t_tradingDay`/`t_exchange`/`t_account` 等**局部蛇形名**属批 5；②`LibTest` 与 `SAMS` 消费了批 2a 改过的模板但**未重 pump**（一个已废弃、一个不在范围），存在语义漂移、**无编译错误**；③`m_Protocol` 8 处只声明在手写的 `QuantTrading/src/Apis/ApiBase.h`、不在任何模板里，属批 6（本区⑤另载，此处仅存互引）。**批 2a 已关闭的部分**（`sprintf` 有界化、`using namespace std;` 清零、生成物「勿手改」头、`__pycache__/` 补齐、`pumpall.py` 加固）见归档。
 
 ## 备注
 
@@ -166,6 +167,7 @@
 
 ## 归档索引
 
+- `D.22` 六仓 C++ 规范对齐 · 批 2a 三项收口：模板有界化 / `using namespace std;` 清零 / 生成物「勿手改」头（2026-09-15）
 - `D.21` 六仓 C++ 规范对齐 · 批 2 前置：Mdb 停滞生成物补齐（`pumpall.py` 静默吞失败一节的根因，2026-09-15）
 - `D.20` 六仓 C++ 规范对齐 · 批 1 Beacon 完成（含批 2 前置的三条教训、跨仓交付纪律，2026-09-14/15）
 - `D.19` STEP 协议数字化收口：全定宽大写十六进制、`MsgSeqNum`/`CheckSum` 无符号化、两次 `HeadToStream` 塌缩成一次
