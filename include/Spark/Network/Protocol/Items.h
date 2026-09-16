@@ -79,7 +79,7 @@ public:
 	static constexpr UInt16Type Password{0x2801};
 	static constexpr UInt16Type BrokerPassword{0x2802};
 	static constexpr UInt16Type OfferPassword{0x2803};
-	static constexpr UInt16Type PK{0x2901};
+	static constexpr UInt16Type Pk{0x2901};
 	static constexpr UInt16Type Port{0x2902};
 	static constexpr UInt16Type Rank{0x2903};
 	static constexpr UInt16Type TradingDay{0x3001};
@@ -257,7 +257,7 @@ public:
 	static constexpr UInt16Type VolumeMultiple{0x8403};
 	static constexpr UInt16Type CurrencyGroup{0x8801};
 	static constexpr UInt16Type BrokerAddress{0x8802};
-	static constexpr UInt16Type IPAddress{0x8803};
+	static constexpr UInt16Type IpAddress{0x8803};
 	static constexpr UInt16Type InstrumentClass{0x9001};
 	static constexpr UInt16Type AccountType{0x9002};
 	static constexpr UInt16Type AccountStatus{0x9003};

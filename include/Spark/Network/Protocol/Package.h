@@ -15,7 +15,7 @@ class NETWORK_EXPORTS Package
 {
 public:
 	Package()
-		:SessionId(0), IPAddress{ 0 }
+		:SessionId(0), IpAddress{ 0 }
 	{
 	}
 	virtual ~Package();
@@ -30,7 +30,7 @@ public:
 
 public:
 	SessionIdType SessionId;
-	IPAddressType IPAddress;
+	IpAddressType IpAddress;
 
 	HeadField Head;
 	TailField Tail;

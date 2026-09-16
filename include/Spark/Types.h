@@ -192,8 +192,8 @@ typedef char InstrumentIdType[32];
 //合约名称类型
 typedef char InstrumentNameType[64];
 
-//IP地址类型
-typedef char IPAddressType[32];
+//Ip地址类型
+typedef char IpAddressType[32];
 
 //Mac地址类型
 typedef char MacAddressType[32];

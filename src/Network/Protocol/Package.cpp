@@ -23,7 +23,7 @@ void FillProtocolHead(HeadField& head)
 
 Package::~Package() {
 	SessionId = 0;
-	memset(IPAddress, 0, sizeof(IPAddressType));
+	memset(IpAddress, 0, sizeof(IpAddressType));
 	memset(&Head, 0, sizeof(Head));
 	memset(&Tail, 0, sizeof(Tail));
 }

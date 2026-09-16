@@ -46,7 +46,7 @@ protected:
 	ProtocolTypeType protocolType_;
     PackageFactoryBase* packageFactory_;
 	SessionIdType sessionId_;
-	IPAddressType ipAddress_;
+	IpAddressType ipAddress_;
 	HeadField head_;
 	TailField tail_;
 
