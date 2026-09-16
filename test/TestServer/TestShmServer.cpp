@@ -11,9 +11,9 @@ using namespace Spark::Network;
 void TestShmServer()
 {
     IOThread* ioThread = new IOThread("ShmServer");
-    auto io = IOFactory::CreateIo(ServerTypeType::Server, g_ShmAddress);
+    auto io = IOFactory::CreateIo(ServerTypeType::Server, ShmAddress);
     ServerIOSubscriberImpl serverIOSubscriberImpl(io, ioThread);
-    ioThread->SetIO(io);
+    ioThread->SetIo(io);
 
     if (!io->Init())
     {

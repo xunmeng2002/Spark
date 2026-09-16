@@ -15,9 +15,9 @@ namespace
     class TestWorker : public ThreadBase
     {
     public:
-        std::atomic<int> run_count_{0};
-        std::atomic<bool> init_called_{false};
-        std::atomic<bool> exit_called_{false};
+        std::atomic<int> RunCount{0};
+        std::atomic<bool> InitCalled{false};
+        std::atomic<bool> ExitCalled{false};
 
         TestWorker(const char* name, int timeout = 100)
             : ThreadBase(name, timeout)
@@ -32,17 +32,17 @@ namespace
     protected:
         void ThreadInit() override
         {
-            init_called_ = true;
+            InitCalled = true;
         }
 
         void ThreadExit() override
         {
-            exit_called_ = true;
+            ExitCalled = true;
         }
 
         void Run() override
         {
-            ++run_count_;
+            ++RunCount;
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     };
@@ -74,7 +74,7 @@ TEST(ThreadBaseTest, StartAndStop)
     worker.Join();
 
     EXPECT_FALSE(worker.IsJoinable());
-    EXPECT_GT(worker.run_count_, 0);
+    EXPECT_GT(worker.RunCount, 0);
 }
 
 TEST(ThreadBaseTest, StartAndImmediateStop)
@@ -86,7 +86,7 @@ TEST(ThreadBaseTest, StartAndImmediateStop)
     worker.Join();
 
     // 即使立即停止，Run 也可能执行了若干次
-    EXPECT_GE(worker.run_count_, 0);
+    EXPECT_GE(worker.RunCount, 0);
     EXPECT_FALSE(worker.IsJoinable());
 }
 
@@ -142,8 +142,8 @@ TEST(ThreadBaseTest, InitAndExitAreCalled)
     worker.Stop();
     worker.Join();
 
-    EXPECT_TRUE(worker.init_called_);
-    EXPECT_TRUE(worker.exit_called_);
+    EXPECT_TRUE(worker.InitCalled);
+    EXPECT_TRUE(worker.ExitCalled);
 }
 
 // ---------- 析构函数自动 Stop + Join ----------
@@ -183,6 +183,6 @@ TEST(ThreadBaseTest, SetTimeOut_MultipleWorkers)
     worker1.Join();
     worker2.Join();
 
-    EXPECT_GT(worker1.run_count_, 0);
-    EXPECT_GT(worker2.run_count_, 0);
+    EXPECT_GT(worker1.RunCount, 0);
+    EXPECT_GT(worker2.RunCount, 0);
 }

@@ -14,23 +14,23 @@ using namespace Spark::Core;
 namespace
 {
     // 测试辅助：记录最后一次 WriteLog 调用
-    static LogLevel s_last_level = LogLevel::Ignore;
-    static char s_last_message[1024] = {};
+    static LogLevel LastLevel = LogLevel::Ignore;
+    static char LastMessage[1024] = {};
 
     void TestLogCallback(LogLevel level, const char* fileName, int lineNo,
                          const char* funcName, const char* formatStr, ...)
     {
-        s_last_level = level;
+        LastLevel = level;
         va_list va;
         va_start(va, formatStr);
-        vsnprintf(s_last_message, sizeof(s_last_message), formatStr, va);
+        vsnprintf(LastMessage, sizeof(LastMessage), formatStr, va);
         va_end(va);
     }
 
     void ClearTestCallback()
     {
-        s_last_level = LogLevel::Ignore;
-        s_last_message[0] = '\0';
+        LastLevel = LogLevel::Ignore;
+        LastMessage[0] = '\0';
     }
 }
 
@@ -118,8 +118,8 @@ TEST(LoggerTest, SetExternLogger_CallbackIsCalled)
     // 通过 WriteLog 宏调用（设计上日志入口只有宏）
     WriteLog(LogLevel::Info, "Test message %d", 42);
 
-    EXPECT_EQ(s_last_level, LogLevel::Info);
-    EXPECT_NE(std::strlen(s_last_message), 0);
+    EXPECT_EQ(LastLevel, LogLevel::Info);
+    EXPECT_NE(std::strlen(LastMessage), 0);
 
     // 恢复
     Logger::SetExternLogger(saved_func);
@@ -133,13 +133,13 @@ TEST(LoggerTest, SetExternLogger_MultipleLevels)
     Logger::SetExternLogger(TestLogCallback);
 
     WriteLog(LogLevel::Warning, "Warning test");
-    EXPECT_EQ(s_last_level, LogLevel::Warning);
+    EXPECT_EQ(LastLevel, LogLevel::Warning);
 
     WriteLog(LogLevel::Error, "Error test");
-    EXPECT_EQ(s_last_level, LogLevel::Error);
+    EXPECT_EQ(LastLevel, LogLevel::Error);
 
     WriteLog(LogLevel::Debug, "Debug test");
-    EXPECT_EQ(s_last_level, LogLevel::Debug);
+    EXPECT_EQ(LastLevel, LogLevel::Debug);
 
     Logger::SetExternLogger(saved_func);
 }
@@ -156,8 +156,8 @@ TEST(LoggerTest, WriteLogMacro_WithRegisteredCallback)
     // WriteLog 宏在回调存在时调用回调
     WriteLog(LogLevel::Critical, "Macro test %s %d", "hello", 99);
 
-    EXPECT_EQ(s_last_level, LogLevel::Critical);
-    EXPECT_NE(std::strlen(s_last_message), 0);
+    EXPECT_EQ(LastLevel, LogLevel::Critical);
+    EXPECT_NE(std::strlen(LastMessage), 0);
 
     Logger::SetExternLogger(saved_func);
 }
@@ -185,7 +185,7 @@ TEST(LoggerTest, WriteErrorLogMacro)
 
     WriteErrorLog(404, "Not found");
 
-    EXPECT_EQ(s_last_level, LogLevel::Error);
+    EXPECT_EQ(LastLevel, LogLevel::Error);
 
     Logger::SetExternLogger(saved_func);
 }

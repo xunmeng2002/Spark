@@ -15,7 +15,7 @@ int main(int argc, const char* argv[])
     Logger::GetInstance().SetLogLevel(LogLevel::Info, LogLevel::Info);
     Logger::GetInstance().Start();
 
-    switch (g_TestProtocolType)
+    switch (TestProtocol)
     {
     case TestProtocolType::Shm:
         TestShmClient();

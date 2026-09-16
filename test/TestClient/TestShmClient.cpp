@@ -10,9 +10,9 @@ using namespace Spark::Network;
 void TestShmClient()
 {
     IOThread* ioThread = new IOThread("ShmClient");
-    auto io = IOFactory::CreateIo(ServerTypeType::Client, g_ShmAddress);
+    auto io = IOFactory::CreateIo(ServerTypeType::Client, ShmAddress);
     ClientIOSubscriberImpl clientIOSubscriberImpl(io, ioThread);
-    ioThread->SetIO(io);
+    ioThread->SetIo(io);
 
     if (!io->Init())
     {

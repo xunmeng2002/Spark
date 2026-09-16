@@ -17,7 +17,7 @@ public:
 	void Subscribe(ProtocolSubscriber* subscriber);
 	void UnSubscribe();
 	void RegisterFront(const char* address);
-	void SetIOThread(IOThread* ioThread);
+	void SetIoThread(IOThread* ioThread);
 	void SetTimeOut(int milliSeconds);
 	bool Start();
 	void Stop();

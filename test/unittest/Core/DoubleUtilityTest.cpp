@@ -9,7 +9,7 @@ using namespace Spark::Core;
 // 浮点数比较：epsilon = DBL_EPSILON ≈ 2.22e-16
 // ============================================================
 
-static constexpr double kEps = std::numeric_limits<double>::epsilon();
+static constexpr double Epsilon = std::numeric_limits<double>::epsilon();
 
 // ---------- DoubleEqual ----------
 
@@ -23,14 +23,14 @@ TEST(DoubleUtilityTest, DoubleEqual_ExactEqual)
 TEST(DoubleUtilityTest, DoubleEqual_WithinEpsilon)
 {
     // 差值刚好在 epsilon 内
-    EXPECT_TRUE(DoubleUtility::DoubleEqual(1.0, 1.0 + kEps * 0.5));
-    EXPECT_TRUE(DoubleUtility::DoubleEqual(1.0 - kEps * 0.5, 1.0));
+    EXPECT_TRUE(DoubleUtility::DoubleEqual(1.0, 1.0 + Epsilon * 0.5));
+    EXPECT_TRUE(DoubleUtility::DoubleEqual(1.0 - Epsilon * 0.5, 1.0));
 }
 
 TEST(DoubleUtilityTest, DoubleEqual_BarelyOutside)
 {
     // 差值刚好超过 epsilon
-    EXPECT_FALSE(DoubleUtility::DoubleEqual(1.0, 1.0 + kEps * 2.0));
+    EXPECT_FALSE(DoubleUtility::DoubleEqual(1.0, 1.0 + Epsilon * 2.0));
 }
 
 TEST(DoubleUtilityTest, DoubleEqual_OppositeSign)
@@ -57,7 +57,7 @@ TEST(DoubleUtilityTest, DoubleLess)
 TEST(DoubleUtilityTest, DoubleLess_NearEqual)
 {
     // 差值在 epsilon 内时不算 less
-    EXPECT_FALSE(DoubleUtility::DoubleLess(1.0, 1.0 + kEps * 0.5));
+    EXPECT_FALSE(DoubleUtility::DoubleLess(1.0, 1.0 + Epsilon * 0.5));
 }
 
 // ---------- DoubleLessEqual ----------
@@ -72,7 +72,7 @@ TEST(DoubleUtilityTest, DoubleLessEqual)
 TEST(DoubleUtilityTest, DoubleLessEqual_NearEqual)
 {
     // 差值在 epsilon 内也算 equal
-    EXPECT_TRUE(DoubleUtility::DoubleLessEqual(1.0, 1.0 + kEps * 0.5));
+    EXPECT_TRUE(DoubleUtility::DoubleLessEqual(1.0, 1.0 + Epsilon * 0.5));
 }
 
 // ---------- DoubleGreat ----------
@@ -85,7 +85,7 @@ TEST(DoubleUtilityTest, DoubleGreat)
 
 TEST(DoubleUtilityTest, DoubleGreat_NearEqual)
 {
-    EXPECT_FALSE(DoubleUtility::DoubleGreat(1.0 + kEps * 0.5, 1.0));
+    EXPECT_FALSE(DoubleUtility::DoubleGreat(1.0 + Epsilon * 0.5, 1.0));
 }
 
 // ---------- DoubleGreatEqual ----------
@@ -99,7 +99,7 @@ TEST(DoubleUtilityTest, DoubleGreatEqual)
 
 TEST(DoubleUtilityTest, DoubleGreatEqual_NearEqual)
 {
-    EXPECT_TRUE(DoubleUtility::DoubleGreatEqual(1.0 + kEps * 0.5, 1.0));
+    EXPECT_TRUE(DoubleUtility::DoubleGreatEqual(1.0 + Epsilon * 0.5, 1.0));
 }
 
 // ---------- GetDoubleValue ----------

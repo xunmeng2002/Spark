@@ -16,7 +16,7 @@ public:
 
 	bool connected_;
 	SessionIdType sessionId_;
-	int m_RecvCount;
+	int recvCount_;
 };
 
 

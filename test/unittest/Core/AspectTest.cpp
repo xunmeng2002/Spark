@@ -33,12 +33,12 @@ namespace
         }
     };
 
-    int g_aspect_value = 0;
-    std::string g_aspect_trace;
+    int AspectValue = 0;
+    std::string AspectTrace;
 
     void SetAspectValue(int x)
     {
-        g_aspect_value = x;
+        AspectValue = x;
     }
 
     int DoubleAspectValue(int x)
@@ -48,7 +48,7 @@ namespace
 
     void AppendTrace(const std::string& tag)
     {
-        g_aspect_trace += tag;
+        AspectTrace += tag;
     }
 }
 
@@ -58,14 +58,14 @@ namespace
 
 TEST(AspectTest, SingleAspect_CallOrder)
 {
-    g_aspect_value = 0;
+    AspectValue = 0;
     CallTracer tracer;
 
     auto wrapper = [](int x) { SetAspectValue(x); };
     Aspect<decltype(wrapper), int> aspect(std::move(wrapper), "SetValue");
     aspect.Invoke(42, tracer);
 
-    EXPECT_EQ(g_aspect_value, 42);
+    EXPECT_EQ(AspectValue, 42);
     ASSERT_EQ(tracer.calls.size(), 2);
     EXPECT_EQ(tracer.calls[0], "SetValue_Before");
     EXPECT_EQ(tracer.calls[1], "SetValue_After");
@@ -73,7 +73,7 @@ TEST(AspectTest, SingleAspect_CallOrder)
 
 TEST(AspectTest, MultipleAspects_NestingOrder)
 {
-    g_aspect_trace.clear();
+    AspectTrace.clear();
     CallTracer outer;
     CallTracer inner;
 
@@ -91,27 +91,27 @@ TEST(AspectTest, MultipleAspects_NestingOrder)
     EXPECT_EQ(inner.calls[0], "Multi_Before");
     EXPECT_EQ(inner.calls[1], "Multi_After");
 
-    EXPECT_EQ(g_aspect_trace, "func");
+    EXPECT_EQ(AspectTrace, "func");
 }
 
 TEST(AspectTest, InvokeFreeFunction_SingleAspect)
 {
-    g_aspect_value = 0;
+    AspectValue = 0;
 
     auto wrapper = [](int x) { SetAspectValue(x); };
     Invoke<CallTracer>(wrapper, "FreeInvoke", 99);
 
-    EXPECT_EQ(g_aspect_value, 99);
+    EXPECT_EQ(AspectValue, 99);
 }
 
 TEST(AspectTest, InvokeFreeFunction_MultipleAspects)
 {
-    g_aspect_trace.clear();
+    AspectTrace.clear();
 
     auto wrapper = [](const std::string& tag) { AppendTrace(tag); };
     Invoke<CallTracer, CallTracer>(wrapper, "FreeMulti", "trace");
 
-    EXPECT_EQ(g_aspect_trace, "trace");
+    EXPECT_EQ(AspectTrace, "trace");
 }
 
 TEST(AspectTest, FunctionWithReturnValue)
@@ -135,37 +135,37 @@ TEST(AspectTest, FunctionWithReturnValue)
 
 TEST(AspectTest, AspectBefore_Single)
 {
-    g_aspect_value = 0;
+    AspectValue = 0;
     CallTracer tracer;
 
     auto wrapper = [](int x) { SetAspectValue(x); };
     AspectBefore<decltype(wrapper), int> aspect(wrapper, "BeforeOnly");
     aspect.InvokeBefore(77, tracer);
 
-    EXPECT_EQ(g_aspect_value, 77);
+    EXPECT_EQ(AspectValue, 77);
     ASSERT_EQ(tracer.calls.size(), 1);
     EXPECT_EQ(tracer.calls[0], "BeforeOnly_Before");
 }
 
 TEST(AspectTest, AspectBefore_Multiple)
 {
-    g_aspect_trace.clear();
+    AspectTrace.clear();
 
     // AP... 推演为非引用类型，自由函数避免了传左值引用导致 AP() 构造失败的问题
     auto wrapper = [](const std::string& tag) { AppendTrace(tag); };
     InvokeBefore<CallTracer, CallTracer>(wrapper, "MultiBefore", "ok");
 
-    EXPECT_EQ(g_aspect_trace, "ok");
+    EXPECT_EQ(AspectTrace, "ok");
 }
 
 TEST(AspectTest, InvokeBeforeFreeFunction)
 {
-    g_aspect_value = 0;
+    AspectValue = 0;
 
     auto wrapper = [](int x) { SetAspectValue(x); };
     InvokeBefore<CallTracer>(wrapper, "InvokeBefore", 55);
 
-    EXPECT_EQ(g_aspect_value, 55);
+    EXPECT_EQ(AspectValue, 55);
 }
 
 // ============================================================
@@ -174,37 +174,37 @@ TEST(AspectTest, InvokeBeforeFreeFunction)
 
 TEST(AspectTest, AspectAfter_Single)
 {
-    g_aspect_value = 0;
+    AspectValue = 0;
     CallTracer tracer;
 
     auto wrapper = [](int x) { SetAspectValue(x); };
     AspectAfter<decltype(wrapper), int> aspect(wrapper, "AfterOnly");
     aspect.InvokeAfter(33, tracer);
 
-    EXPECT_EQ(g_aspect_value, 33);
+    EXPECT_EQ(AspectValue, 33);
     ASSERT_EQ(tracer.calls.size(), 1);
     EXPECT_EQ(tracer.calls[0], "AfterOnly_After");
 }
 
 TEST(AspectTest, AspectAfter_Multiple)
 {
-    g_aspect_trace.clear();
+    AspectTrace.clear();
 
     // 自由函数创建右值切面实例
     auto wrapper = [](const std::string& tag) { AppendTrace(tag); };
     InvokeAfter<CallTracer, CallTracer>(wrapper, "MultiAfter", "done");
 
-    EXPECT_EQ(g_aspect_trace, "done");
+    EXPECT_EQ(AspectTrace, "done");
 }
 
 TEST(AspectTest, InvokeAfterFreeFunction)
 {
-    g_aspect_value = 0;
+    AspectValue = 0;
 
     auto wrapper = [](int x) { SetAspectValue(x); };
     InvokeAfter<CallTracer>(wrapper, "InvokeAfter", 11);
 
-    EXPECT_EQ(g_aspect_value, 11);
+    EXPECT_EQ(AspectValue, 11);
 }
 
 // ============================================================
@@ -255,10 +255,10 @@ TEST(AspectTest, AspectPerformance_ResetTimeOnBefore)
 
 TEST(AspectTest, CombinedLoggerAndPerformance)
 {
-    g_aspect_value = 0;
+    AspectValue = 0;
 
     auto wrapper = [](int x) { SetAspectValue(x); };
     Invoke<AspectLogger, AspectPerformance>(wrapper, "Combined", 123);
 
-    EXPECT_EQ(g_aspect_value, 123);
+    EXPECT_EQ(AspectValue, 123);
 }

@@ -23,7 +23,7 @@ using namespace Spark::Packages;
 namespace
 {
     constexpr SessionIdType SessionId = 42;
-    constexpr const char* kIP = "192.168.1.100";
+    constexpr const char* IP = "192.168.1.100";
 
     // 构造并填入字段
     NotifyComponentConnectStatusPackage* CreateSamplePackage(int msgSeqNum = 1001)
@@ -109,7 +109,7 @@ TEST(PackageSerializationTest, StepRoundTrip)
 
     // 4. 用 PackageReader 解析
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, kIP);
+    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
     unsigned int appended = reader.Append(buff, totalLen);
     EXPECT_EQ((int)appended, totalLen);
 
@@ -130,7 +130,7 @@ TEST(PackageSerializationTest, StepRoundTrip_MultipleMessages)
 {
     // 连续两条消息验证 Reader 状态正确
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, kIP);
+    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
 
     for (int seq = 1; seq <= 3; ++seq)
     {
@@ -172,7 +172,7 @@ TEST(PackageSerializationTest, XtpRoundTrip)
     pkg->Deallocate();
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, kIP);
+    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, IP);
     reader.Append(buff, totalLen);
 
     Package* parsedRaw = nullptr;
@@ -201,7 +201,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_CheckSumVerify)
     memcpy(buff + totalLen - sizeof(TailField), &tail, sizeof(tail));
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, kIP);
+    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, IP);
     reader.Append(buff, totalLen);
 
     Package* parsedRaw = nullptr;
@@ -225,7 +225,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_WrongVersionIsFatal)
     memcpy(buff, &head, sizeof(head));
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, kIP);
+    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, IP);
     reader.Append(buff, totalLen);
 
     Package* parsedRaw = nullptr;
@@ -243,7 +243,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_CorruptHeadIsDiscarded)
     buff[0] ^= 0x01;
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, kIP);
+    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, IP);
     reader.Append(buff, totalLen);
 
     Package* parsedRaw = nullptr;
@@ -262,7 +262,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_GarbagePrefixIsResynced)
     ASSERT_GT(totalLen, 0);
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, kIP);
+    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, IP);
     EXPECT_EQ(reader.Append(const_cast<char*>(garbage), sizeof(garbage)), sizeof(garbage));
 
     Package* parsedRaw = nullptr;
@@ -290,7 +290,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_ResyncAfterCorruptFrame)
     ASSERT_GT(goodLen, 0);
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, kIP);
+    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, IP);
     reader.Append(corrupt, corruptLen);
     reader.Append(good, goodLen);
 
@@ -314,7 +314,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_MagicSplitAcrossAppend)
     ASSERT_LT(kSplit, (int)sizeof(ProtocolMagicValue));
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, kIP);
+    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, IP);
     EXPECT_EQ(reader.Append(buff, kSplit), (unsigned int)kSplit);
 
     Package* parsedRaw = nullptr;
@@ -343,7 +343,7 @@ TEST(PackageSerializationTest, StepRoundTrip_WrongVersionIsFatal)
     ASSERT_TRUE(PatchStepVersion(frame, static_cast<unsigned short>(ProtocolVersionValue + 1)));
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, kIP);
+    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
     reader.Append(&frame[0], (unsigned int)frame.size());
 
     Package* parsedRaw = nullptr;
@@ -360,7 +360,7 @@ TEST(PackageSerializationTest, StepRoundTrip_GarbagePrefixIsResynced)
     ASSERT_GT(totalLen, 0);
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, kIP);
+    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
     EXPECT_EQ(reader.Append(const_cast<char*>(garbage), sizeof(garbage)), sizeof(garbage));
 
     Package* parsedRaw = nullptr;
@@ -387,7 +387,7 @@ TEST(PackageSerializationTest, StepRoundTrip_ResyncAfterCorruptFrame)
     ASSERT_GT(goodLen, 0);
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, kIP);
+    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
     reader.Append(corrupt, corruptLen);
     reader.Append(good, goodLen);
 
@@ -410,7 +410,7 @@ TEST(PackageSerializationTest, StepRoundTrip_AnchorSplitAcrossAppend)
     ASSERT_LT(kSplit, anchorLen);
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, kIP);
+    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
     EXPECT_EQ(reader.Append(buff, kSplit), (unsigned int)kSplit);
 
     Package* parsedRaw = nullptr;

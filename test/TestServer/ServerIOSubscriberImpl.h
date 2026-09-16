@@ -20,5 +20,5 @@ private:
 	IOBase* io_;
 	IOThread* ioThread_;
 
-	std::map<SessionIdType, int> m_MessageCounts;
+	std::map<SessionIdType, int> messageCounts_;
 };

@@ -18,7 +18,7 @@ IOThread::~IOThread()
 		delete io_;
 }
 
-void IOThread::SetIO(IOBase* io)
+void IOThread::SetIo(IOBase* io)
 {
 	io_ = io;
 }

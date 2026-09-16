@@ -8,11 +8,11 @@ using namespace Spark::Core;
 
 
 
-TestProtocolType g_TestProtocolType = TestProtocolType::Tcp;
+TestProtocolType TestProtocol = TestProtocolType::Tcp;
 
-const char* g_ShmAddress = "shm://TestShm:4";
-const char* g_Address = "tcp://127.0.0.1:20001";
-IoModelType g_IOModel = IoModelType::Select;
+const char* ShmAddress = "shm://TestShm:4";
+const char* TcpAddress = "tcp://127.0.0.1:20001";
+IoModelType IoModel = IoModelType::Select;
 
 
 void PrintTimeCost(const char* name, time_point<system_clock, milliseconds> startTime, time_point<system_clock, milliseconds> endTime)

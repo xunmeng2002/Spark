@@ -10,10 +10,10 @@ using namespace Spark::Network;
 using namespace Spark::Packages;
 
 StepServer::StepServer()
-	:Protocol(ProtocolTypeType::Step, ServerTypeType::Server, g_IOModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), m_RecvCount(0)
+	:Protocol(ProtocolTypeType::Step, ServerTypeType::Server, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
 {
 	Subscribe(this);
-	RegisterFront(g_Address);
+	RegisterFront(TcpAddress);
 }
 StepServer::~StepServer()
 {
@@ -34,7 +34,7 @@ void StepServer::OnProtocolDisConnect(SessionIdType sessionId, const char* ip, i
 }
 void StepServer::OnMessage(Package* stepPackage)
 {
-	if ((++m_RecvCount) % 1000 == 0)
+	if ((++recvCount_) % 1000 == 0)
 	{
 		WriteLog(LogLevel::Info, "OnMessage SessionId:[%lld], %s", stepPackage->SessionId, stepPackage->GetDebugString());
 	}
@@ -49,7 +49,7 @@ void TestStepServer()
 
 	IOThread* ioThread = new IOThread("StepServer");
 	StepServer StepServer;
-	StepServer.SetIOThread(ioThread);
+	StepServer.SetIoThread(ioThread);
 	if (!StepServer.Init())
 		return;
 	ioThread->Start();

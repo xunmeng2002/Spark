@@ -10,7 +10,7 @@ using namespace Spark;
 // 使用 malloc 模拟共享内存，验证数据写入/读取路径
 // ============================================================
 
-static constexpr unsigned kShmSize = 256;
+static constexpr unsigned ShmBufferSize = 256;
 
 // 为 ShmBuffer 分配足够大的模拟内存并初始化 header
 // 使用 index=1 避免 index=0 时 header 与 up_buffer 重叠
@@ -23,13 +23,13 @@ struct ShmTestFixture : public ::testing::Test
         //   [sizeof(SingleShmHeader) .. 2*SIZE) — 填充
         //   [2*SIZE .. 3*SIZE)              — UpBuffer
         //   [3*SIZE .. 4*SIZE)              — DownBuffer
-        size_t total = sizeof(SingleShmHeader) + kShmSize * 4;
+        size_t total = sizeof(SingleShmHeader) + ShmBufferSize * 4;
         memory_.resize(total, 0);
 
         // 使用 index=1 构造 — ShmBuffer 自行定位 header、UpBuffer、DownBuffer
-        client_.reset(new ShmBuffer<kShmSize>(
+        client_.reset(new ShmBuffer<ShmBufferSize>(
             ServerTypeType::Client, 1, memory_.data(), ConnectStatusType::Connected));
-        server_.reset(new ShmBuffer<kShmSize>(
+        server_.reset(new ShmBuffer<ShmBufferSize>(
             ServerTypeType::Server, 1, memory_.data(), ConnectStatusType::Connected));
 
         // header_ 指向 ShmBuffer 实际使用的 header（index=1，偏移 sizeof(SingleShmHeader)）
@@ -44,19 +44,19 @@ struct ShmTestFixture : public ::testing::Test
 
     std::vector<char> memory_;
     SingleShmHeader* header_;
-    std::unique_ptr<ShmBuffer<kShmSize>> client_;
-    std::unique_ptr<ShmBuffer<kShmSize>> server_;
+    std::unique_ptr<ShmBuffer<ShmBufferSize>> client_;
+    std::unique_ptr<ShmBuffer<ShmBufferSize>> server_;
 };
 
 // ========== 构造 ==========
 
 TEST(ShmBufferTest, StatusConnected)
 {
-    std::vector<char> mem(sizeof(SingleShmHeader) + kShmSize * 4, 0);
+    std::vector<char> mem(sizeof(SingleShmHeader) + ShmBufferSize * 4, 0);
     SingleShmHeader* h = reinterpret_cast<SingleShmHeader*>(mem.data());
     h->Status = ConnectStatusType::Connected;
 
-    ShmBuffer<kShmSize> buf(ServerTypeType::Server, 1, mem.data(), ConnectStatusType::Connected);
+    ShmBuffer<ShmBufferSize> buf(ServerTypeType::Server, 1, mem.data(), ConnectStatusType::Connected);
     ConnectStatusType status = buf.ShmHeader->Status;
     EXPECT_EQ(status, ConnectStatusType::Connected);
 }
@@ -70,7 +70,7 @@ TEST_F(ShmTestFixture, ClientWrite_UpBuffer)
     EXPECT_EQ(written, 8u);
 
     // Client Write → UpWrite → data in UpBuffer
-    EXPECT_EQ(std::memcmp(memory_.data() + kShmSize * 2, data, 8), 0);
+    EXPECT_EQ(std::memcmp(memory_.data() + ShmBufferSize * 2, data, 8), 0);
     EXPECT_EQ(header_->UpWriteCount, 8u);
 }
 
@@ -98,7 +98,7 @@ TEST_F(ShmTestFixture, ServerWrite_DownBuffer)
     EXPECT_EQ(written, 10u);
 
     // Server Write → DownWrite → data in DownBuffer
-    EXPECT_EQ(std::memcmp(memory_.data() + kShmSize * 3, data, 10), 0);
+    EXPECT_EQ(std::memcmp(memory_.data() + ShmBufferSize * 3, data, 10), 0);
     EXPECT_EQ(header_->DownWriteCount, 10u);
 }
 
@@ -139,13 +139,13 @@ TEST_F(ShmTestFixture, ReadWhenDisconnected_ReturnsZero)
 TEST_F(ShmTestFixture, GetWriteBufferSize_Client)
 {
     // Client WriteBufferSize = GetUpWriteBufferSize
-    // 初始: SIZE - 0 - 1 = kShmSize - 1
-    EXPECT_EQ(client_->GetWriteBufferSize(), kShmSize - 1);
+    // 初始: SIZE - 0 - 1 = ShmBufferSize - 1
+    EXPECT_EQ(client_->GetWriteBufferSize(), ShmBufferSize - 1);
 
     client_->Write("Hello", 5);
     // UpWriteCount = 5, UpReadCount = 0
     // GetUpWriteBufferSize: Read > Write? no, so SIZE - (5 - 0) - 1 = SIZE - 6
-    EXPECT_EQ(client_->GetWriteBufferSize(), kShmSize - 6);
+    EXPECT_EQ(client_->GetWriteBufferSize(), ShmBufferSize - 6);
 }
 
 TEST_F(ShmTestFixture, GetReadBufferSize_Client)
@@ -159,10 +159,10 @@ TEST_F(ShmTestFixture, GetReadBufferSize_Client)
 
 TEST_F(ShmTestFixture, GetWriteBufferSize_Server)
 {
-    EXPECT_EQ(server_->GetWriteBufferSize(), kShmSize - 1);
+    EXPECT_EQ(server_->GetWriteBufferSize(), ShmBufferSize - 1);
 
     server_->Write("Hello", 5);
-    EXPECT_EQ(server_->GetWriteBufferSize(), kShmSize - 6);
+    EXPECT_EQ(server_->GetWriteBufferSize(), ShmBufferSize - 6);
 }
 
 TEST_F(ShmTestFixture, GetReadBufferSize_Server)
@@ -196,8 +196,8 @@ TEST_F(ShmTestFixture, Write_WrapsAround)
 
     // Step 4: Server 读取全部数据
     //   内存布局: [0..99)=B, [100..250)=A, [250..256)=B
-    char output[kShmSize] = {};
-    unsigned read = server_->Read(output, kShmSize);
+    char output[ShmBufferSize] = {};
+    unsigned read = server_->Read(output, ShmBufferSize);
     EXPECT_EQ(read, 255u);
 
     // 前 150 字节是为读取的 'A' (从位置 100 到 249)

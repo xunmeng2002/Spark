@@ -12,12 +12,12 @@ using namespace Spark::Network;
 namespace
 {
     // 辅助常量
-    constexpr const char* kTestIP = "127.0.0.1";
+    constexpr const char* TestIP = "127.0.0.1";
 
     // 构建一个只测试缓冲管理的 PackageReader
     PackageReader MakeReader()
     {
-        return PackageReader(ProtocolTypeType::Step, nullptr, 0, kTestIP);
+        return PackageReader(ProtocolTypeType::Step, nullptr, 0, TestIP);
     }
 }
 

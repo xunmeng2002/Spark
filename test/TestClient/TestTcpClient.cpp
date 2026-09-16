@@ -11,9 +11,9 @@ void TestTcpClient()
 {
     WriteLog(LogLevel::Info, "TestTcpClient");
     IOThread* ioThread = new IOThread("TestTcpClient");
-    auto io = IOFactory::CreateIo(ServerTypeType::Client, g_Address, g_IOModel);
+    auto io = IOFactory::CreateIo(ServerTypeType::Client, TcpAddress, IoModel);
     ClientIOSubscriberImpl clientIOSubscriberImpl(io, ioThread);
-    ioThread->SetIO(io);
+    ioThread->SetIo(io);
 
     if (!io->Init())
     {

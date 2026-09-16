@@ -18,7 +18,7 @@ class NETWORK_EXPORTS IOThread : public Spark::Core::ThreadBase
 public:
 	IOThread(const char* threadName);
 	~IOThread();
-	void SetIO(IOBase* io);
+	void SetIo(IOBase* io);
 
 protected:
 	virtual void Run() override;

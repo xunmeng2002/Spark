@@ -25,31 +25,31 @@ ClientIOSubscriberImpl::~ClientIOSubscriberImpl()
 void ClientIOSubscriberImpl::OnConnect(SessionIdType sessionId, const char* ip, int port)
 {
     WriteLog(LogLevel::Info, "ClientIOSubscriberImpl::OnConnect SessionId:[%lld], IP:[%s], Port:[%d]", sessionId, ip, port);
-    m_MessageCounts.insert(std::make_pair(sessionId, 0));
-    m_StartSendTime = steady_clock::now();
+    messageCounts_.insert(std::make_pair(sessionId, 0));
+    startSendTime_ = steady_clock::now();
     Send(sessionId);
 }
 void ClientIOSubscriberImpl::OnDisConnect(SessionIdType sessionId, const char* ip, int port)
 {
     WriteLog(LogLevel::Info, "ClientIOSubscriberImpl::OnDisConnect SessionId:[%lld], IP:[%s], Port:[%d]", sessionId, ip, port);
-    m_MessageCounts.erase(sessionId);
+    messageCounts_.erase(sessionId);
 
     ioThread_->Stop();
 }
 void ClientIOSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer)
 {
-    auto count = m_MessageCounts[sessionId];
+    auto count = messageCounts_[sessionId];
     if (count % 100 == 0)
     {
         WriteLog(LogLevel::Info, "ClientIOSubscriberImpl::OnRecv SessionId:[%lld], Length:[%d], Data:[%s]", sessionId, buffer->GetLength(), buffer->GetData());
     }
-    if (m_MessageCounts[sessionId] < 10000)
+    if (messageCounts_[sessionId] < 10000)
     {
         Send(sessionId);
     }
     else
     {
-        auto duration = TimeUtility::GetDuration<milliseconds>(m_StartSendTime);
+        auto duration = TimeUtility::GetDuration<milliseconds>(startSendTime_);
         WriteLog(LogLevel::Info, "TimeCost:%lld ms", duration);
 
         io_->DisConnect(sessionId);
@@ -58,7 +58,7 @@ void ClientIOSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BuffSize>* b
 }
 void ClientIOSubscriberImpl::Send(SessionIdType sessionId)
 {
-    auto count = ++m_MessageCounts[sessionId];
+    auto count = ++messageCounts_[sessionId];
 
     ReqInsertOrderPackage reqInsertOrder;
     reqInsertOrder.ReqInsertOrder = new ReqInsertOrderField();
@@ -83,7 +83,7 @@ void ClientIOSubscriberImpl::Send(SessionIdType sessionId)
 }
 void ClientIOSubscriberImpl::SendCommand(SessionIdType sessionId, const char* cmd)
 {
-    ++m_MessageCounts[sessionId];
+    ++messageCounts_[sessionId];
     Buffer<BuffSize>* buffer = Buffer<BuffSize>::Allocate();
     int n = sprintf(buffer->GetData(), "%s\r\n", cmd);
     buffer->SetLength(n);

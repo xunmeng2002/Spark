@@ -14,7 +14,7 @@ namespace
     class TestTimer : public Timer
     {
     public:
-        int on_timer_call_count_ = 0;
+        int OnTimerCallCount = 0;
 
         using Timer::CheckTimer;
 
@@ -36,7 +36,7 @@ namespace
     protected:
         void OnTimer() override
         {
-            ++on_timer_call_count_;
+            ++OnTimerCallCount;
         }
     };
 }
@@ -96,7 +96,7 @@ TEST(TimerTest, CheckTimer_NotFiredBeforeEventCount)
     {
         timer.CheckTimer();
     }
-    EXPECT_EQ(timer.on_timer_call_count_, 0);
+    EXPECT_EQ(timer.OnTimerCallCount, 0);
 }
 
 TEST(TimerTest, CheckTimer_FiresAfterElapsedTime)
@@ -114,7 +114,7 @@ TEST(TimerTest, CheckTimer_FiresAfterElapsedTime)
         timer.CheckTimer();
     }
 
-    EXPECT_EQ(timer.on_timer_call_count_, 1);
+    EXPECT_EQ(timer.OnTimerCallCount, 1);
 }
 
 // ---------- CheckTimer: 多次触发 ----------
@@ -130,7 +130,7 @@ TEST(TimerTest, CheckTimer_MultipleFires)
     {
         timer.CheckTimer();
     }
-    EXPECT_EQ(timer.on_timer_call_count_, 1);
+    EXPECT_EQ(timer.OnTimerCallCount, 1);
 
     // 第二次触发
     std::this_thread::sleep_for(std::chrono::milliseconds(40));
@@ -138,7 +138,7 @@ TEST(TimerTest, CheckTimer_MultipleFires)
     {
         timer.CheckTimer();
     }
-    EXPECT_EQ(timer.on_timer_call_count_, 2);
+    EXPECT_EQ(timer.OnTimerCallCount, 2);
 }
 
 // ---------- CheckTimer: 时间未到不触发 ----------
@@ -155,7 +155,7 @@ TEST(TimerTest, CheckTimer_DoesNotFireIfTimeNotElapsed)
     }
 
     // 时间远未到 10s，不应触发
-    EXPECT_EQ(timer.on_timer_call_count_, 0);
+    EXPECT_EQ(timer.OnTimerCallCount, 0);
 }
 
 // ---------- CheckTimer: 触发后重置计数值 ----------
@@ -176,6 +176,6 @@ TEST(TimerTest, CheckTimer_ResetsCounterAfterFire)
     // 第 1-3 次：count=1,2,3（3>3 不成立，不触发）
     // 第 4 次：count=4（4>3 成立，时间已到 → 触发 OnTimer，重置为 0）
     // 第 5-10 次：count=1,2,3,4,5,6（时间未再次流逝，不触发）
-    EXPECT_EQ(timer.on_timer_call_count_, 1);
+    EXPECT_EQ(timer.OnTimerCallCount, 1);
     EXPECT_EQ(timer.GetCurrentEventCount(), 6);
 }

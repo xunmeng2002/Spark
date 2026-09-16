@@ -24,6 +24,6 @@ public:
 private:
 	IOBase* io_;
 	IOThread* ioThread_;
-	std::map<SessionIdType, int> m_MessageCounts;
-	std::chrono::steady_clock::time_point m_StartSendTime;
+	std::map<SessionIdType, int> messageCounts_;
+	std::chrono::steady_clock::time_point startSendTime_;
 };

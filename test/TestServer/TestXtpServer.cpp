@@ -11,10 +11,10 @@ using namespace Spark::Network;
 using namespace Spark::Packages;
 
 XtpServer::XtpServer()
-	:Protocol(ProtocolTypeType::Xtp, ServerTypeType::Server, g_IOModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), m_RecvCount(0)
+	:Protocol(ProtocolTypeType::Xtp, ServerTypeType::Server, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
 {
 	Subscribe(this);
-	RegisterFront(g_Address);
+	RegisterFront(TcpAddress);
 }
 XtpServer::~XtpServer()
 {
@@ -35,8 +35,8 @@ void XtpServer::OnProtocolDisConnect(SessionIdType sessionId, const char* ip, in
 }
 void XtpServer::OnMessage(Package* xtpPackage)
 {
-	++m_RecvCount;
-	//if ((m_RecvCount) % 1000 == 0)
+	++recvCount_;
+	//if ((recvCount_) % 1000 == 0)
 	{
 		WriteLog(LogLevel::Info, "OnMessage SessionId:[%lld], %s", xtpPackage->SessionId, xtpPackage->GetDebugString());
 	}
@@ -51,7 +51,7 @@ void TestXtpServer()
 
 	IOThread* ioThread = new IOThread("XtpServer");
 	XtpServer xtpServer;
-	xtpServer.SetIOThread(ioThread);
+	xtpServer.SetIoThread(ioThread);
 	if (!xtpServer.Init())
 		return;
 	ioThread->Start();

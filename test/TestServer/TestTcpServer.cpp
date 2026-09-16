@@ -10,9 +10,9 @@ using namespace Spark::Network;
 void TestTcpServer()
 {
     IOThread* ioThread = new IOThread("TcpServer");
-    auto io = IOFactory::CreateIo(ServerTypeType::Server, g_Address, g_IOModel);
+    auto io = IOFactory::CreateIo(ServerTypeType::Server, TcpAddress, IoModel);
     ServerIOSubscriberImpl serverIOSubscriberImpl(io, ioThread);
-    ioThread->SetIO(io);
+    ioThread->SetIo(io);
 
     if (!io->Init())
     {

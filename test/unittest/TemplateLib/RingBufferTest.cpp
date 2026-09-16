@@ -10,24 +10,24 @@ using namespace Spark;
 // RingBuffer 测试 — 环形缓冲区（Write / Read / Peek / Skip）
 // ============================================================
 
-static constexpr unsigned kBufferSize = 64;
+static constexpr unsigned RingBufferSize = 64;
 
 // ---------- 构造 / 初始状态 ----------
 
 TEST(RingBufferTest, DefaultConstructor)
 {
-    RingBuffer<kBufferSize> buf;
+    RingBuffer<RingBufferSize> buf;
     EXPECT_TRUE(buf.IsEmpty());
     EXPECT_FALSE(buf.IsFull());
     EXPECT_EQ(buf.GetReadBufferSize(), 0u);
-    EXPECT_EQ(buf.GetWriteBufferSize(), kBufferSize);
+    EXPECT_EQ(buf.GetWriteBufferSize(), RingBufferSize);
 }
 
 // ---------- Write / Read ----------
 
 TEST(RingBufferTest, WriteAndRead)
 {
-    RingBuffer<kBufferSize> buf;
+    RingBuffer<RingBufferSize> buf;
     const char* data = "Hello";
     unsigned written = buf.Write(data, 5);
     EXPECT_EQ(written, 5u);
@@ -43,25 +43,25 @@ TEST(RingBufferTest, WriteAndRead)
 
 TEST(RingBufferTest, Write_FillToFull)
 {
-    RingBuffer<kBufferSize> buf;
-    std::string data(kBufferSize, 'X');
-    unsigned written = buf.Write(data.data(), kBufferSize);
-    EXPECT_EQ(written, kBufferSize);
+    RingBuffer<RingBufferSize> buf;
+    std::string data(RingBufferSize, 'X');
+    unsigned written = buf.Write(data.data(), RingBufferSize);
+    EXPECT_EQ(written, RingBufferSize);
     EXPECT_TRUE(buf.IsFull());
 }
 
 TEST(RingBufferTest, Write_Overflow)
 {
-    RingBuffer<kBufferSize> buf;
-    std::string data(kBufferSize + 10, 'X');
+    RingBuffer<RingBufferSize> buf;
+    std::string data(RingBufferSize + 10, 'X');
     unsigned written = buf.Write(data.data(), static_cast<unsigned>(data.size()));
-    EXPECT_EQ(written, kBufferSize); // truncated
+    EXPECT_EQ(written, RingBufferSize); // truncated
     EXPECT_TRUE(buf.IsFull());
 }
 
 TEST(RingBufferTest, Read_Empty)
 {
-    RingBuffer<kBufferSize> buf;
+    RingBuffer<RingBufferSize> buf;
     char output[16] = {};
     EXPECT_EQ(buf.Read(output, 5), 0u);
 }
@@ -70,7 +70,7 @@ TEST(RingBufferTest, Read_Empty)
 
 TEST(RingBufferTest, Peek_DoesNotConsume)
 {
-    RingBuffer<kBufferSize> buf;
+    RingBuffer<RingBufferSize> buf;
     buf.Write("Hello", 5);
 
     char first[16] = {};
@@ -90,7 +90,7 @@ TEST(RingBufferTest, Peek_DoesNotConsume)
 
 TEST(RingBufferTest, Skip)
 {
-    RingBuffer<kBufferSize> buf;
+    RingBuffer<RingBufferSize> buf;
     buf.Write("HelloWorld", 10);
 
     EXPECT_EQ(buf.Skip(5), 5u);
@@ -103,7 +103,7 @@ TEST(RingBufferTest, Skip)
 
 TEST(RingBufferTest, Skip_Excess)
 {
-    RingBuffer<kBufferSize> buf;
+    RingBuffer<RingBufferSize> buf;
     buf.Write("Hello", 5);
     EXPECT_EQ(buf.Skip(100), 5u);
     EXPECT_TRUE(buf.IsEmpty());
@@ -113,10 +113,10 @@ TEST(RingBufferTest, Skip_Excess)
 
 TEST(RingBufferTest, Write_WrapsAround)
 {
-    RingBuffer<kBufferSize> buf;
+    RingBuffer<RingBufferSize> buf;
 
     // Write data that forces wrap-around: fill to near end, then write more
-    std::string first(kBufferSize - 5, 'A');
+    std::string first(RingBufferSize - 5, 'A');
     buf.Write(first.data(), static_cast<unsigned>(first.size()));
     EXPECT_FALSE(buf.IsFull());
 
@@ -125,21 +125,21 @@ TEST(RingBufferTest, Write_WrapsAround)
     EXPECT_TRUE(buf.IsFull());
 
     // Now read all data and verify order
-    std::vector<char> output(kBufferSize);
-    EXPECT_EQ(buf.Read(output.data(), kBufferSize), kBufferSize);
+    std::vector<char> output(RingBufferSize);
+    EXPECT_EQ(buf.Read(output.data(), RingBufferSize), RingBufferSize);
 
-    std::string expected(kBufferSize - 5, 'A');
+    std::string expected(RingBufferSize - 5, 'A');
     expected += "BBBBB";
-    EXPECT_EQ(std::memcmp(output.data(), expected.data(), kBufferSize), 0);
+    EXPECT_EQ(std::memcmp(output.data(), expected.data(), RingBufferSize), 0);
 }
 
 TEST(RingBufferTest, Read_WrapsAround)
 {
-    RingBuffer<kBufferSize> buf;
+    RingBuffer<RingBufferSize> buf;
 
     // Fill entirely
-    std::string payload(kBufferSize, 'X');
-    buf.Write(payload.data(), kBufferSize);
+    std::string payload(RingBufferSize, 'X');
+    buf.Write(payload.data(), RingBufferSize);
     EXPECT_TRUE(buf.IsFull());
 
     // Read 5 from front, freeing 5 bytes
@@ -151,12 +151,12 @@ TEST(RingBufferTest, Read_WrapsAround)
     buf.Write("YYYYY", 5);
     EXPECT_TRUE(buf.IsFull());
 
-    // Read all — first kBufferSize-5 of original 'X', then 5 'Y' at the end
-    std::vector<char> output(kBufferSize);
-    EXPECT_EQ(buf.Read(output.data(), kBufferSize), kBufferSize);
+    // Read all — first RingBufferSize-5 of original 'X', then 5 'Y' at the end
+    std::vector<char> output(RingBufferSize);
+    EXPECT_EQ(buf.Read(output.data(), RingBufferSize), RingBufferSize);
 
     EXPECT_EQ(output[0], 'X'); // still from original fill
-    for (int i = kBufferSize - 5; i < kBufferSize; ++i)
+    for (int i = RingBufferSize - 5; i < RingBufferSize; ++i)
     {
         EXPECT_EQ(output[i], 'Y');
     }
@@ -166,7 +166,7 @@ TEST(RingBufferTest, Read_WrapsAround)
 
 TEST(RingBufferTest, MultiCycle)
 {
-    RingBuffer<kBufferSize> buf;
+    RingBuffer<RingBufferSize> buf;
 
     for (int cycle = 0; cycle < 10; ++cycle)
     {
@@ -186,10 +186,10 @@ TEST(RingBufferTest, MultiCycle)
 
 TEST(RingBufferTest, Reset)
 {
-    RingBuffer<kBufferSize> buf;
+    RingBuffer<RingBufferSize> buf;
     buf.Write("Hello", 5);
     buf.Reset();
     EXPECT_TRUE(buf.IsEmpty());
     EXPECT_FALSE(buf.IsFull());
-    EXPECT_EQ(buf.GetWriteBufferSize(), kBufferSize);
+    EXPECT_EQ(buf.GetWriteBufferSize(), RingBufferSize);
 }

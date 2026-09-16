@@ -259,7 +259,7 @@ public:
         : Protocol(ProtocolTypeType::Step, ServerTypeType::Client,
                    IoModelType::Select, 0, new MyPackageFactory())
     {
-        m_ReqInsertOrder = new ReqInsertOrderPackage(); // auto-generated from the model (see test/Packages)
+        reqInsertOrder_ = new ReqInsertOrderPackage(); // auto-generated from the model (see test/Packages)
         Subscribe(this);                        // Register self as message subscriber
         RegisterFront("tcp://127.0.0.1:20001"); // Connect to server address
         // Shared memory format: RegisterFront("shm://TestShm:4");  // "shm://" + serviceName + ":" + maxConnections
@@ -288,25 +288,25 @@ public:
     // Build and send a buy-to-open order
     void SendReqInsertOrder()
     {
-        m_ReqInsertOrder->Prepare(sessionId_, false, ++m_MessageSeqNum);
-        m_ReqInsertOrder->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
-        memset(m_ReqInsertOrder->ReqInsertOrder, 0, sizeof(ReqInsertOrderField));
-        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->AccountId, "Xunmeng001");
-        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->ExchangeId, "SHSE");
-        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->InstrumentId, "600036");
-        m_ReqInsertOrder->ReqInsertOrder->Direction = DirectionType::Buy;
-        m_ReqInsertOrder->ReqInsertOrder->OffsetFlag = OffsetFlagType::Open;
-        m_ReqInsertOrder->ReqInsertOrder->OrderPriceType = OrderPriceTypeType::LimitPrice;
-        m_ReqInsertOrder->ReqInsertOrder->Price = 100.5;
-        m_ReqInsertOrder->ReqInsertOrder->Volume = 1000;
-        Send(m_ReqInsertOrder);
-        m_ReqInsertOrder->Deallocate();
+        reqInsertOrder_->Prepare(sessionId_, false, ++m_MessageSeqNum);
+        reqInsertOrder_->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
+        memset(reqInsertOrder_->ReqInsertOrder, 0, sizeof(ReqInsertOrderField));
+        Utility::Strcpy(reqInsertOrder_->ReqInsertOrder->AccountId, "Xunmeng001");
+        Utility::Strcpy(reqInsertOrder_->ReqInsertOrder->ExchangeId, "SHSE");
+        Utility::Strcpy(reqInsertOrder_->ReqInsertOrder->InstrumentId, "600036");
+        reqInsertOrder_->ReqInsertOrder->Direction = DirectionType::Buy;
+        reqInsertOrder_->ReqInsertOrder->OffsetFlag = OffsetFlagType::Open;
+        reqInsertOrder_->ReqInsertOrder->OrderPriceType = OrderPriceTypeType::LimitPrice;
+        reqInsertOrder_->ReqInsertOrder->Price = 100.5;
+        reqInsertOrder_->ReqInsertOrder->Volume = 1000;
+        Send(reqInsertOrder_);
+        reqInsertOrder_->Deallocate();
     }
 
 private:
     SessionIdType sessionId_ = 0LL;
     int m_MessageSeqNum = 0;
-    ReqInsertOrderPackage* m_ReqInsertOrder;
+    ReqInsertOrderPackage* reqInsertOrder_;
 };
 
 int main(int argc, const char* argv[])
@@ -319,7 +319,7 @@ int main(int argc, const char* argv[])
     // Create IO thread and start the client
     IOThread* ioThread = new IOThread("StepClient");
     MyStepClient client;
-    client.SetIOThread(ioThread);
+    client.SetIoThread(ioThread);
     if (!client.Init())
         return -1;
 

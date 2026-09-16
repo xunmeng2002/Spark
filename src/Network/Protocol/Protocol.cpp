@@ -38,15 +38,15 @@ void Protocol::RegisterFront(const char* address)
 	ioBase_->Subscribe(this);
 	if (ioThread_ != nullptr)
 	{
-		ioThread_->SetIO(ioBase_);
+		ioThread_->SetIo(ioBase_);
 	}
 }
-void Protocol::SetIOThread(IOThread* ioThread)
+void Protocol::SetIoThread(IOThread* ioThread)
 {
 	ioThread_ = ioThread;
 	if (ioBase_ != nullptr)
 	{
-		ioThread_->SetIO(ioBase_);
+		ioThread_->SetIo(ioBase_);
 	}
 }
 void Protocol::SetTimeOut(int milliSeconds)

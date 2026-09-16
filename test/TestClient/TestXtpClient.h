@@ -18,9 +18,9 @@ public:
 	bool connected_;
 	SessionIdType sessionId_;
 
-	std::chrono::steady_clock::time_point m_StartTime;
-	int m_RecvCount;
-    Spark::Packages::ReqInsertOrderPackage* m_ReqInsertOrder;
+	std::chrono::steady_clock::time_point startTime_;
+	int recvCount_;
+    Spark::Packages::ReqInsertOrderPackage* reqInsertOrder_;
 };
 
 

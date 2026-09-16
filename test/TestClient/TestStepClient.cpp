@@ -15,11 +15,11 @@ using namespace Spark::Network;
 using namespace Spark::Packages;
 
 StepClient::StepClient()
-	:Protocol(ProtocolTypeType::Step, ServerTypeType::Client, g_IOModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), m_RecvCount(0)
+	:Protocol(ProtocolTypeType::Step, ServerTypeType::Client, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
 {
-	m_ReqInsertOrder = new ReqInsertOrderPackage();
+	reqInsertOrder_ = new ReqInsertOrderPackage();
 	Subscribe(this);
-	RegisterFront(g_Address);
+	RegisterFront(TcpAddress);
 }
 StepClient::~StepClient()
 {
@@ -31,49 +31,49 @@ void StepClient::OnProtocolConnect(SessionIdType sessionId, const char* ip, int 
 
 	sessionId_ = sessionId;
 	connected_ = true;
-	m_StartTime = chrono::steady_clock::now();
-	SendReqInsertOrder(++m_RecvCount);
+	startTime_ = chrono::steady_clock::now();
+	SendReqInsertOrder(++recvCount_);
 }
 void StepClient::OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port)
 {
 	WriteLog(LogLevel::Info, "StepClient::OnDisConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
 
 	connected_ = false;
-	m_RecvCount = 0;
+	recvCount_ = 0;
 }
 void StepClient::OnMessage(Package* package)
 {
-	if (++m_RecvCount % 10000 == 0)
+	if (++recvCount_ % 10000 == 0)
 	{
 		WriteLog(LogLevel::Info, "OnMessage: %s", package->GetDebugString());
 	}
-	if (m_RecvCount < 1000000)
+	if (recvCount_ < 1000000)
 	{
-		SendReqInsertOrder(m_RecvCount);
+		SendReqInsertOrder(recvCount_);
 	}
 	else
 	{
 		WriteLog(LogLevel::Info, "OnMessage: %s", package->GetDebugString());
-		WriteLog(LogLevel::Info, "Total Cost: %lld ms", TimeUtility::GetDuration<chrono::milliseconds>(m_StartTime));
+		WriteLog(LogLevel::Info, "Total Cost: %lld ms", TimeUtility::GetDuration<chrono::milliseconds>(startTime_));
 		ioThread_->Stop();
 	}
 }
 void StepClient::SendReqInsertOrder(int index)
 {
-	m_ReqInsertOrder->Prepare(sessionId_, false, index);
-	m_ReqInsertOrder->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
-	memset(m_ReqInsertOrder->ReqInsertOrder, 0, sizeof(ReqInsertOrderField));
-	Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->AccountId, "Xunmeng001");
-	Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->ExchangeId, "SHSE");
-	Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->InstrumentId, "600036");
-	m_ReqInsertOrder->ReqInsertOrder->Direction = DirectionType::Buy;
-	m_ReqInsertOrder->ReqInsertOrder->OffsetFlag = OffsetFlagType::Open;
-	m_ReqInsertOrder->ReqInsertOrder->OrderPriceType = OrderPriceTypeType::LimitPrice;
-	m_ReqInsertOrder->ReqInsertOrder->Price = 100 + index;
-	m_ReqInsertOrder->ReqInsertOrder->Volume = index;
-	m_ReqInsertOrder->ReqInsertOrder->ClientOrderId = index;
-	Send(m_ReqInsertOrder);
-	m_ReqInsertOrder->Deallocate();
+	reqInsertOrder_->Prepare(sessionId_, false, index);
+	reqInsertOrder_->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
+	memset(reqInsertOrder_->ReqInsertOrder, 0, sizeof(ReqInsertOrderField));
+	Utility::Strcpy(reqInsertOrder_->ReqInsertOrder->AccountId, "Xunmeng001");
+	Utility::Strcpy(reqInsertOrder_->ReqInsertOrder->ExchangeId, "SHSE");
+	Utility::Strcpy(reqInsertOrder_->ReqInsertOrder->InstrumentId, "600036");
+	reqInsertOrder_->ReqInsertOrder->Direction = DirectionType::Buy;
+	reqInsertOrder_->ReqInsertOrder->OffsetFlag = OffsetFlagType::Open;
+	reqInsertOrder_->ReqInsertOrder->OrderPriceType = OrderPriceTypeType::LimitPrice;
+	reqInsertOrder_->ReqInsertOrder->Price = 100 + index;
+	reqInsertOrder_->ReqInsertOrder->Volume = index;
+	reqInsertOrder_->ReqInsertOrder->ClientOrderId = index;
+	Send(reqInsertOrder_);
+	reqInsertOrder_->Deallocate();
 }
 
 void TestStepClient()
@@ -82,7 +82,7 @@ void TestStepClient()
 
 	IOThread* ioThread = new IOThread("StepClient");
 	StepClient stepClient;
-	stepClient.SetIOThread(ioThread);
+	stepClient.SetIoThread(ioThread);
 	if (!stepClient.Init())
 		return;
 	ioThread->Start();

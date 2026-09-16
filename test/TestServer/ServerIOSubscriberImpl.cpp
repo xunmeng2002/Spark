@@ -30,7 +30,7 @@ void ServerIOSubscriberImpl::OnDisConnect(SessionIdType sessionId, const char* i
 
 void ServerIOSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer)
 {
-    auto count = ++m_MessageCounts[sessionId];
+    auto count = ++messageCounts_[sessionId];
     //if (count % 1000 == 0)
     {
         char message[2048] = { 0 };
