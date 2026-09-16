@@ -353,8 +353,8 @@ int main(int argc, const char* argv[])
 | | `PackageReaderTest` | 缓冲管理：Append/PopFront/Reset |
 | | `PackageSerializationTest` | MakePackage ↔ ParsePackage 端到端往返、重同步与版本校验 |
 | **Serialization** | `Base64Test` | Base64 编解码 |
-| | `CSVParserTest` | CSV 解析行、列、引号转义 |
-| | `CSVRecordTest` | CSV 记录读写 |
+| | `CsvParserTest` | CSV 解析行、列、引号转义 |
+| | `CsvRecordTest` | CSV 记录读写 |
 | | `EncodeTest` | GBK/UTF-8/Unicode 互转 |
 | **TemplateLib** | `BufferTest` | 缓冲区读写、扩容 |
 | | `LockFreeQueueTest` | 无锁队列入队出队 |

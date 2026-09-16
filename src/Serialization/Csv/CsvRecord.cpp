@@ -5,28 +5,28 @@
 
 namespace Spark::Serialization
 {
-CSVRecord::CSVRecord()
+CsvRecord::CsvRecord()
 {
 	nameBufferLen_ = 0;
 	contentBufferLen_ = 0;
 	separator_ = ',';
 
-	nameBuffer_ = new char[CSV_RECORD_MAX_HEAD_SIZE];
-	contentBuffer_ = new char[CSV_RECORD_MAX_CONTENT_SIZE];
+	nameBuffer_ = new char[CsvRecordMaxHeadSize];
+	contentBuffer_ = new char[CsvRecordMaxContentSize];
 }
 
-CSVRecord::~CSVRecord()
+CsvRecord::~CsvRecord()
 {
 	delete nameBuffer_;
 	delete contentBuffer_;
 }
 
-void CSVRecord::SetSeparator(char chSeparator)
+void CsvRecord::SetSeparator(char chSeparator)
 {
 	separator_ = chSeparator;
 }
 
-char *CSVRecord::AppendNameToken(const char *pszToken)
+char *CsvRecord::AppendNameToken(const char *pszToken)
 {
 	int nTokenLen = (int)strlen(pszToken) + 1;
 	char *pszTarget = nameBuffer_+nameBufferLen_;
@@ -35,7 +35,7 @@ char *CSVRecord::AppendNameToken(const char *pszToken)
 	return pszTarget;
 }
 
-char *CSVRecord::AppendContentToken(const char *pszToken)
+char *CsvRecord::AppendContentToken(const char *pszToken)
 {
 	int nTokenLen = (int)strlen(pszToken) + 1;
 	char *pszTarget = contentBuffer_+contentBufferLen_;
@@ -44,15 +44,15 @@ char *CSVRecord::AppendContentToken(const char *pszToken)
 	return pszTarget;
 }
 
-bool CSVRecord::AnalysisFieldName(const char *pszFieldName)
+bool CsvRecord::AnalysisFieldName(const char *pszFieldName)
 {
 	nameBufferLen_ = 0;
 	csvFields_.clear();
-	m_mapCSVField.clear();
+	csvFieldMap_.clear();
 	
-	CSVParser csvParser(pszFieldName);
+	CsvParser csvParser(pszFieldName);
 	csvParser.SetSeparator(separator_);
-	TCSVField field = {nullptr, nullptr};
+	CsvField field = {nullptr, nullptr};
 
 	do
 	{
@@ -63,16 +63,16 @@ bool CSVRecord::AnalysisFieldName(const char *pszFieldName)
 		}
 		field.FieldName = AppendNameToken(pszToken);
 		csvFields_.push_back(field);
-	}while (csvParser.GetErrorCode() == CPE_HAS_NEXT);
+	}while (csvParser.GetErrorCode() == CsvParserError::HasNext);
 
 	return true;
 }
 
-bool CSVRecord::AnalysisFieldContent(const char *pszFieldContent)
+bool CsvRecord::AnalysisFieldContent(const char *pszFieldContent)
 {
 	contentBufferLen_ = 0;
 	
-	CSVParser csvParser(pszFieldContent);
+	CsvParser csvParser(pszFieldContent);
 	csvParser.SetSeparator(separator_);
 	for (unsigned int i = 0; i<csvFields_.size(); i++)
 	{
@@ -82,16 +82,16 @@ bool CSVRecord::AnalysisFieldContent(const char *pszFieldContent)
 			break;
 		}
 		csvFields_[i].FieldContent = AppendContentToken(pszToken);
-		m_mapCSVField[csvFields_[i].FieldName] = csvFields_[i].FieldContent;
+		csvFieldMap_[csvFields_[i].FieldName] = csvFields_[i].FieldContent;
 	}
 
 	return true;
 }
 
-const char* CSVRecord::GetFieldAsString(const char *pszFieldName)
+const char* CsvRecord::GetFieldAsString(const char *pszFieldName)
 {
-	CCSVFieldMap::iterator itor = m_mapCSVField.find(pszFieldName);
-	if (itor == m_mapCSVField.end())
+	CsvFieldMap::iterator itor = csvFieldMap_.find(pszFieldName);
+	if (itor == csvFieldMap_.end())
 	{
 		return nullptr;
 	}
@@ -99,7 +99,7 @@ const char* CSVRecord::GetFieldAsString(const char *pszFieldName)
 	return (*itor).second;
 }
 
-char CSVRecord::GetFieldAsChar(const char* pszFieldName)
+char CsvRecord::GetFieldAsChar(const char* pszFieldName)
 {
 	const char* pszFieldContent = GetFieldAsString(pszFieldName);
 	if (pszFieldContent == nullptr)
@@ -108,7 +108,7 @@ char CSVRecord::GetFieldAsChar(const char* pszFieldName)
 	}
 	return *pszFieldContent;
 }
-int CSVRecord::GetFieldAsInt(const char *pszFieldName)
+int CsvRecord::GetFieldAsInt(const char *pszFieldName)
 {
 	const char *pszFieldContent = GetFieldAsString(pszFieldName);
 	if (pszFieldContent == nullptr)
@@ -118,7 +118,7 @@ int CSVRecord::GetFieldAsInt(const char *pszFieldName)
 	return atoi(pszFieldContent);
 }
 
-int64_t CSVRecord::GetFieldAsInt64(const char* pszFieldName)
+int64_t CsvRecord::GetFieldAsInt64(const char* pszFieldName)
 {
 	const char* pszFieldContent = GetFieldAsString(pszFieldName);
 	if (pszFieldContent == nullptr)
@@ -129,7 +129,7 @@ int64_t CSVRecord::GetFieldAsInt64(const char* pszFieldName)
 }
 
 
-double CSVRecord::GetFieldAsDouble(const char *pszFieldName)
+double CsvRecord::GetFieldAsDouble(const char *pszFieldName)
 {
 	const char *pszFieldContent = GetFieldAsString(pszFieldName);
 	if (pszFieldContent == nullptr)
@@ -152,7 +152,7 @@ int main()
 
 	char *pszFieldName = "name,age,money";
 	char *pszFieldContent = "\"peter pan\",\"20\",\"123.5\"";
-	CSVRecord record;
+	CsvRecord record;
 	if (!record.Analysis(pszFieldName, pszFieldContent))
 	{
 		printf("Analysis fail\n");

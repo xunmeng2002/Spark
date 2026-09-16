@@ -3,31 +3,31 @@
 
 namespace Spark::Serialization
 {
-const int TOKEN_MAX_LEN = 64 * 1024; 
+const int TokenMaxLen = 64 * 1024; 
 
-enum CSV_PARSER_ERROR
+enum class CsvParserError
 {
-	CPE_HAS_NEXT,
-	CPE_END,
-	CPE_MARK_NOT_MATCH,
-	CPE_TOKEN_TOO_LONG,
+	HasNext,
+	End,
+	MarkNotMatch,
+	TokenTooLong,
 };
 
-class SERIALIZATION_EXPORTS CSVParser
+class SERIALIZATION_EXPORTS CsvParser
 {
 public:
-	CSVParser();
-	CSVParser(const char *pszData);
-	virtual ~CSVParser();
+	CsvParser();
+	CsvParser(const char *pszData);
+	virtual ~CsvParser();
 	void SetSeparator(char chSeparator);
 	char *GetNextToken();
 	void Parse(const char *pszData);
-	inline CSV_PARSER_ERROR GetErrorCode();
+	inline CsvParserError GetErrorCode();
 private:
 	void NextChar();
 	void MakeWord(const char *pszEnd);
 private:
-	CSV_PARSER_ERROR errorCode_;
+	CsvParserError errorCode_;
 	const char *data_;
 	char* currWord_;
 	char *curr_;
@@ -36,7 +36,7 @@ private:
 	char separator_[2];
 };
 
-inline CSV_PARSER_ERROR CSVParser::GetErrorCode()
+inline CsvParserError CsvParser::GetErrorCode()
 {
 	return errorCode_;
 }

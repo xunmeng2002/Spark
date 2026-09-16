@@ -2,12 +2,12 @@
 #include <Spark/Serialization/Csv/CsvRecord.h>
 using namespace Spark::Serialization;
 // ============================================================
-// CSVRecord 测试
+// CsvRecord 测试
 // ============================================================
 
-TEST(CSVRecordTest, BasicAnalysis)
+TEST(CsvRecordTest, BasicAnalysis)
 {
-    CSVRecord record;
+    CsvRecord record;
     ASSERT_TRUE(record.AnalysisFieldName("name,age,money"));
     ASSERT_TRUE(record.AnalysisFieldContent("peter,20,123.5"));
 
@@ -16,16 +16,16 @@ TEST(CSVRecordTest, BasicAnalysis)
     EXPECT_DOUBLE_EQ(record.GetFieldAsDouble("money"), 123.5);
 }
 
-TEST(CSVRecordTest, GetFieldCount)
+TEST(CsvRecordTest, GetFieldCount)
 {
-    CSVRecord record;
+    CsvRecord record;
     record.AnalysisFieldName("a,b,c");
     EXPECT_EQ(record.GetFieldCount(), 3);
 }
 
-TEST(CSVRecordTest, EmptyField)
+TEST(CsvRecordTest, EmptyField)
 {
-    CSVRecord record;
+    CsvRecord record;
     record.AnalysisFieldName("name,age");
     record.AnalysisFieldContent("peter,");
 
@@ -33,27 +33,27 @@ TEST(CSVRecordTest, EmptyField)
     EXPECT_STREQ(record.GetFieldAsString("age"), "");
 }
 
-TEST(CSVRecordTest, MissingFieldReturnsNull)
+TEST(CsvRecordTest, MissingFieldReturnsNull)
 {
-    CSVRecord record;
+    CsvRecord record;
     record.AnalysisFieldName("name,age");
     record.AnalysisFieldContent("peter,20");
 
     EXPECT_EQ(record.GetFieldAsString("nonexistent"), nullptr);
 }
 
-TEST(CSVRecordTest, GetFieldAsInt_Missing)
+TEST(CsvRecordTest, GetFieldAsInt_Missing)
 {
-    CSVRecord record;
+    CsvRecord record;
     record.AnalysisFieldName("name");
     record.AnalysisFieldContent("peter");
 
     EXPECT_EQ(record.GetFieldAsInt("nonexistent"), 0);
 }
 
-TEST(CSVRecordTest, GetFieldAsDouble_Missing)
+TEST(CsvRecordTest, GetFieldAsDouble_Missing)
 {
-    CSVRecord record;
+    CsvRecord record;
     record.AnalysisFieldName("name");
     record.AnalysisFieldContent("peter");
 
@@ -61,9 +61,9 @@ TEST(CSVRecordTest, GetFieldAsDouble_Missing)
     EXPECT_DOUBLE_EQ(record.GetFieldAsDouble("nonexistent"), std::numeric_limits<double>::max());
 }
 
-TEST(CSVRecordTest, GetFieldAsDouble_Empty)
+TEST(CsvRecordTest, GetFieldAsDouble_Empty)
 {
-    CSVRecord record;
+    CsvRecord record;
     record.AnalysisFieldName("value");
     record.AnalysisFieldContent("");
 
@@ -71,27 +71,27 @@ TEST(CSVRecordTest, GetFieldAsDouble_Empty)
     EXPECT_DOUBLE_EQ(record.GetFieldAsDouble("value"), std::numeric_limits<double>::max());
 }
 
-TEST(CSVRecordTest, GetFieldAsChar)
+TEST(CsvRecordTest, GetFieldAsChar)
 {
-    CSVRecord record;
+    CsvRecord record;
     record.AnalysisFieldName("initial");
     record.AnalysisFieldContent("A");
 
     EXPECT_EQ(record.GetFieldAsChar("initial"), 'A');
 }
 
-TEST(CSVRecordTest, GetFieldAsChar_Missing)
+TEST(CsvRecordTest, GetFieldAsChar_Missing)
 {
-    CSVRecord record;
+    CsvRecord record;
     record.AnalysisFieldName("x");
     record.AnalysisFieldContent("y");
 
     EXPECT_EQ(record.GetFieldAsChar("nonexistent"), '\0');
 }
 
-TEST(CSVRecordTest, CustomSeparator)
+TEST(CsvRecordTest, CustomSeparator)
 {
-    CSVRecord record;
+    CsvRecord record;
     record.SetSeparator('|');
     record.AnalysisFieldName("name|age");
     record.AnalysisFieldContent("peter|25");
