@@ -17,8 +17,8 @@ CsvRecord::CsvRecord()
 
 CsvRecord::~CsvRecord()
 {
-	delete nameBuffer_;
-	delete contentBuffer_;
+	delete[] nameBuffer_;
+	delete[] contentBuffer_;
 }
 
 void CsvRecord::SetSeparator(char chSeparator)
@@ -144,35 +144,3 @@ double CsvRecord::GetFieldAsDouble(const char *pszFieldName)
 	return atof(pszFieldContent);
 }
 }
-
-#if 0
-using namespace Spark::Serialization;
-int main()
-{
-
-	char *pszFieldName = "name,age,money";
-	char *pszFieldContent = "\"peter pan\",\"20\",\"123.5\"";
-	CsvRecord record;
-	if (!record.Analysis(pszFieldName, pszFieldContent))
-	{
-		printf("Analysis fail\n");
-		return -1;
-	}
-
-	int i = 0;
-	for (i=1; i<=record.GetFieldCount(); i++)
-	{
-		printf("[%s] : [%s]\n", record.GetFieldName(i), record.GetFieldContent(i));
-	}
-	
-	printf("name = [%s]\n", record.GetFieldAsString("name"));
-	printf("age = [%d]\n", record.GetFieldAsInt("age"));
-	printf("money = [%lf]\n", record.GetFieldAsDouble("money"));
-
-	printf("error str = [%s]\n", record.GetFieldAsString("error str"));
-	printf("error int = [%d]\n", record.GetFieldAsInt("error int"));
-	printf("error double = [%lf]\n", record.GetFieldAsDouble("error double"));
-
-	return 0;
-}
-#endif

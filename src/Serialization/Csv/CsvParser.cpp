@@ -36,7 +36,7 @@ void CsvParser::Parse(const char *pszData)
 
 CsvParser::~CsvParser()
 {
-	delete currWord_;
+	delete[] currWord_;
 }
 void CsvParser::SetSeparator(char chSeparator)
 {
