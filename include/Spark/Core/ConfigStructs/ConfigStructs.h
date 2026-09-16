@@ -20,7 +20,7 @@ struct IPAddressField
 
 struct SubscribeInstrument
 {
-	std::string ExchangeID;
-	std::string InstrumentID;
+	std::string ExchangeId;
+	std::string InstrumentId;
 };
 }

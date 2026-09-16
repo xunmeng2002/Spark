@@ -10,14 +10,14 @@ class ShmSubscriberImpl : public IOSubscriber
 public:
 	ShmSubscriberImpl(IOBase* io, ServerTypeType serverType);
 
-	virtual void OnConnect(SessionIDType sessionID, const char* ip, int port) override;
-	virtual void OnDisConnect(SessionIDType sessionID, const char* ip, int port) override;
-	virtual void OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer) override;
+	virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) override;
+	virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) override;
+	virtual void OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
 
 
 public:
 	bool connected_;
-	SessionIDType sessionId_;
+	SessionIdType sessionId_;
 private:
 	IOBase* io_;
 	ServerTypeType serverType_;

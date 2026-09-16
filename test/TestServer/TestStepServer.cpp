@@ -19,16 +19,16 @@ StepServer::~StepServer()
 {
 }
 
-void StepServer::OnProtocolConnect(SessionIDType sessionID, const char* ip, int port)
+void StepServer::OnProtocolConnect(SessionIdType sessionId, const char* ip, int port)
 {
-	WriteLog(LogLevel::Info, "StepServer::OnConnect SessionID:[%lld], IP:[%s], port:[%d]", sessionID, ip, port);
+	WriteLog(LogLevel::Info, "StepServer::OnConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
 
-	sessionId_ = sessionID;
+	sessionId_ = sessionId;
 	connected_ = true;
 }
-void StepServer::OnProtocolDisConnect(SessionIDType sessionID, const char* ip, int port)
+void StepServer::OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port)
 {
-	WriteLog(LogLevel::Info, "StepServer::OnDisConnect SessionID:[%lld], IP:[%s], port:[%d]", sessionID, ip, port);
+	WriteLog(LogLevel::Info, "StepServer::OnDisConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
 
 	connected_ = false;
 }
@@ -36,7 +36,7 @@ void StepServer::OnMessage(Package* stepPackage)
 {
 	if ((++m_RecvCount) % 1000 == 0)
 	{
-		WriteLog(LogLevel::Info, "OnMessage SessionID:[%lld], %s", stepPackage->SessionID, stepPackage->GetDebugString());
+		WriteLog(LogLevel::Info, "OnMessage SessionId:[%lld], %s", stepPackage->SessionId, stepPackage->GetDebugString());
 	}
 
 	Send(stepPackage);

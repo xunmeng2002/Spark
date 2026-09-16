@@ -44,19 +44,19 @@ bool TcpIocpClient::ConnectToServer(const char* ip, unsigned short port)
 
 bool TcpIocpClient::PostConnect()
 {
-    SOCKET socketID = PrepareConnectSocket();
-    if (socketID == INVALID_SOCKET)
+    SOCKET socketId = PrepareConnectSocket();
+    if (socketId == INVALID_SOCKET)
     {
         WriteLog(LogLevel::Error, "PrepareConnectSocket SOCKET Failed.");
         return false;
     }
-    TcpIocpConnect* tcpIocpConnect = TcpIocpConnect::Allocate(GetSessionID(), socketID, address_, port_);
+    TcpIocpConnect* tcpIocpConnect = TcpIocpConnect::Allocate(GetSessionId(), socketId, address_, port_);
     MyOverlapped* overlapped = MyOverlapped::Allocate();
     overlapped->SetBuffer(Buffer<BuffSize>::Allocate());
-    overlapped->EventID = IocpEvent::EventConnect;
+    overlapped->EventId = IocpEvent::EventConnect;
     overlapped->Connect = tcpIocpConnect;
 
-    WriteLog(LogLevel::Info, "PostConnect For SessionID:%lld, Socket:%lld", tcpIocpConnect->SessionID, tcpIocpConnect->SocketId);
+    WriteLog(LogLevel::Info, "PostConnect For SessionId:%lld, Socket:%lld", tcpIocpConnect->SessionId, tcpIocpConnect->SocketId);
     DWORD transBytes = 0;
     auto ret = SocketApi::GetInstance().ConnectEx(tcpIocpConnect->SocketId, (const sockaddr*)addressInfo_->ai_addr, sizeof(SOCKADDR_IN),
         NULL, 0, &transBytes, overlapped);
@@ -79,32 +79,32 @@ void TcpIocpClient::OnConnectComplete(MyOverlapped* overlapped)
 SOCKET TcpIocpClient::PrepareConnectSocket()
 {
     WriteLog(LogLevel::Info, "AI_Family for clientLocalAddressInfo_:%d, addressInfo_:%d", clientLocalAddressInfo_->ai_family, addressInfo_->ai_family);
-    SOCKET socketID = WSASocket(clientLocalAddressInfo_->ai_family, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
-    if (socketID == INVALID_SOCKET)
+    SOCKET socketId = WSASocket(clientLocalAddressInfo_->ai_family, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
+    if (socketId == INVALID_SOCKET)
     {
         WriteLog(LogLevel::Error, "Create SOCKET Failed.");
-        closesocket(socketID);
+        closesocket(socketId);
         return INVALID_SOCKET;
     }
     int on = 1;
-    if (setsockopt(socketID, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on)) != 0)
+    if (setsockopt(socketId, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on)) != 0)
     {
-        WriteErrorLog(WSAGetLastError(), "setsockopt Failed. ErrorID:%d, result:%d");
-        closesocket(socketID);
+        WriteErrorLog(WSAGetLastError(), "setsockopt Failed. ErrorId:%d, result:%d");
+        closesocket(socketId);
         return INVALID_SOCKET;
     }
-    if (!TcpUtility::Bind(socketID, clientLocalAddressInfo_))
+    if (!TcpUtility::Bind(socketId, clientLocalAddressInfo_))
     {
-        closesocket(socketID);
+        closesocket(socketId);
         return INVALID_SOCKET;
     }
-    if (!ioCompletePort_->AssociateDevice((HANDLE)socketID, socketID))
+    if (!ioCompletePort_->AssociateDevice((HANDLE)socketId, socketId))
     {
         WriteErrorLog(WSAGetLastError(), "AssociateDevice Failed.");
-        closesocket(socketID);
+        closesocket(socketId);
         return INVALID_SOCKET;
     }
-    return socketID;
+    return socketId;
 }
 }
 

@@ -34,7 +34,7 @@ void ShmServer::Accept()
 					auto shmHeader = commonShmHeader_ + i;
 					if (shmHeader->Status == ConnectStatusType::UnConnected)
 					{
-						ShmConnect<ShmBuffSize>* shmConnect = ShmConnect<ShmBuffSize>::Allocate(GetSessionID(), address_.c_str(), i, serverType_, shmAddr_, ConnectStatusType::Accepted);
+						ShmConnect<ShmBuffSize>* shmConnect = ShmConnect<ShmBuffSize>::Allocate(GetSessionId(), address_.c_str(), i, serverType_, shmAddr_, ConnectStatusType::Accepted);
 						AddConnect(shmConnect);
 
 						commonShmHeader_->Status = ConnectStatusType::Accepted;
@@ -97,7 +97,7 @@ void ShmServer::CheckConnect()
 		if (shmConnect->GetBuffer()->ShmHeader->Status == ConnectStatusType::DisConnected)
 		{
 			lock_guard<mutex> guard(disConnectSessionIdsMutex_);
-			disConnectSessionIds_.push_back(shmConnect->SessionID);
+			disConnectSessionIds_.push_back(shmConnect->SessionId);
 		}
 	}
 }

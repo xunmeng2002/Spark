@@ -55,7 +55,7 @@ protected:
 	void WriteToLog(LogLevel level, const char* file, int line, const char* func, const char* format, va_list va);
 	void WriteToConsole(LogLevel level, const char* formatStr, va_list va);
 	void CreateLogFile();
-	long long GetCurrentThreadID();
+	long long GetCurrentThreadId();
 
 private:
 	char processName_[128];
@@ -69,7 +69,7 @@ private:
 		Spark::Core::Logger::GetWriteLogFunc()(level, __FILE__, __LINE__, __func__, formatStr, ##__VA_ARGS__);
 
 
-#define WriteErrorLog(errorID, errorMsg)\
+#define WriteErrorLog(errorId, errorMsg)\
 	if (Spark::Core::Logger::GetWriteLogFunc() != nullptr)\
-		Spark::Core::Logger::GetWriteLogFunc()(Spark::Core::LogLevel::Error, __FILE__, __LINE__, __func__, "ErrorID:[%d], ErrorMsg:[%s].", errorID, errorMsg);
+		Spark::Core::Logger::GetWriteLogFunc()(Spark::Core::LogLevel::Error, __FILE__, __LINE__, __func__, "ErrorId:[%d], ErrorMsg:[%s].", errorId, errorMsg);
 }

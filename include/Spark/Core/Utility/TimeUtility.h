@@ -66,7 +66,7 @@ public:
 	static long long CalculateNextMinuteBarTime(long long updateTs);
 	static long long CalculateNextSecondBarTime(int barPeriod, long long updateTs);
 
-	static void CalculateRealMinuteBarTime(const char* exchangeID, const char* instrumentID, int calculateBarTime, int& realBarTime, int& realUpdateTs);
+	static void CalculateRealMinuteBarTime(const char* exchangeId, const char* instrumentId, int calculateBarTime, int& realBarTime, int& realUpdateTs);
 
 	template<typename T>
 	static long long GetDuration(std::chrono::steady_clock::time_point& start)

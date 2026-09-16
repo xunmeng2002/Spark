@@ -8,7 +8,7 @@ namespace Spark::Network
 {
 static_assert(BuffSize >= MaxFrameSize, "IO 层的收发缓冲必须容纳一帧上限，否则 MakePackage 会写出界");
 
-Protocol::Protocol(ProtocolTypeType protocolType, ServerTypeType serverType, IOModelType ioModel, int milliSeconds, PackageFactoryBase* packageFactory)
+Protocol::Protocol(ProtocolTypeType protocolType, ServerTypeType serverType, IoModelType ioModel, int milliSeconds, PackageFactoryBase* packageFactory)
 	:protocolType_(protocolType), serverType_(serverType), ioModel_(ioModel), milliSeconds_(milliSeconds), subscriber_(nullptr), packageFactory_(packageFactory), ioBase_(nullptr), ioThread_(nullptr)
 {
 }
@@ -34,7 +34,7 @@ void Protocol::RegisterFront(const char* address)
 	{
 		delete ioBase_;
 	}
-	ioBase_ = IOFactory::CreateIO(serverType_, address, ioModel_, milliSeconds_);
+	ioBase_ = IOFactory::CreateIo(serverType_, address, ioModel_, milliSeconds_);
 	ioBase_->Subscribe(this);
 	if (ioThread_ != nullptr)
 	{
@@ -94,11 +94,11 @@ IOThread* Protocol::GetIOThread()
 	return ioThread_;
 }
 
-void Protocol::DisConnect(SessionIDType sessionID)
+void Protocol::DisConnect(SessionIdType sessionId)
 {
 	if (ioBase_ == nullptr)
 		return;
-	ioBase_->DisConnect(sessionID);
+	ioBase_->DisConnect(sessionId);
 }
 bool Protocol::Send(Package* package)
 {
@@ -111,23 +111,23 @@ bool Protocol::Send(Package* package)
 		WriteLog(LogLevel::Info, "MakePackage len is 0");
 	}
 	buffer->SetLength(len);
-	ioBase_->Send(package->SessionID, buffer);
+	ioBase_->Send(package->SessionId, buffer);
 	return true;
 }
 
-void Protocol::OnConnect(SessionIDType sessionID, const char* ip, int port)
+void Protocol::OnConnect(SessionIdType sessionId, const char* ip, int port)
 {
-	WriteLog(LogLevel::Info, "Protocol::OnConnect SessionID:%lld, IP:%s, Port:%d", sessionID, ip, port);
-	sessionPackageReaders_.insert(std::make_pair(sessionID, PackageReader::Allocate(protocolType_, packageFactory_, sessionID, ip)));
+	WriteLog(LogLevel::Info, "Protocol::OnConnect SessionId:%lld, IP:%s, Port:%d", sessionId, ip, port);
+	sessionPackageReaders_.insert(std::make_pair(sessionId, PackageReader::Allocate(protocolType_, packageFactory_, sessionId, ip)));
 	if (subscriber_)
 	{
-		subscriber_->OnProtocolConnect(sessionID, ip, port);
+		subscriber_->OnProtocolConnect(sessionId, ip, port);
 	}
 }
-void Protocol::OnDisConnect(SessionIDType sessionID, const char* ip, int port)
+void Protocol::OnDisConnect(SessionIdType sessionId, const char* ip, int port)
 {
-	WriteLog(LogLevel::Info, "Protocol::OnDisConnect SessionID:%lld, IP:%s, Port:%d", sessionID, ip, port);
-	auto it = sessionPackageReaders_.find(sessionID);
+	WriteLog(LogLevel::Info, "Protocol::OnDisConnect SessionId:%lld, IP:%s, Port:%d", sessionId, ip, port);
+	auto it = sessionPackageReaders_.find(sessionId);
 	if (it != sessionPackageReaders_.end())
 	{
 		it->second->Deallocate();
@@ -135,22 +135,22 @@ void Protocol::OnDisConnect(SessionIDType sessionID, const char* ip, int port)
 	}
 	if (subscriber_)
 	{
-		subscriber_->OnProtocolDisConnect(sessionID, ip, port);
+		subscriber_->OnProtocolDisConnect(sessionId, ip, port);
 	}
 }
-void Protocol::OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer)
+void Protocol::OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer)
 {
 	if (ioBase_ == nullptr)
 	{
 		buffer->Deallocate();
 		return;
 	}
-	auto it = sessionPackageReaders_.find(sessionID);
+	auto it = sessionPackageReaders_.find(sessionId);
 	if (it == sessionPackageReaders_.end() || it->second == nullptr)
 	{
-		WriteLog(LogLevel::Error, "Cannot Find PackageReader for SessionID:%lld", sessionID);
+		WriteLog(LogLevel::Error, "Cannot Find PackageReader for SessionId:%lld", sessionId);
 		buffer->Deallocate();
-		ioBase_->DisConnect(sessionID);
+		ioBase_->DisConnect(sessionId);
 		return;
 	}
 	auto packageReader = it->second;
@@ -162,7 +162,7 @@ void Protocol::OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer)
 		Package* package = nullptr;
 		if (!packageReader->ParsePackage(package))
 		{
-			ioBase_->DisConnect(sessionID);
+			ioBase_->DisConnect(sessionId);
 			break;
 		}
 		else if (package == nullptr)

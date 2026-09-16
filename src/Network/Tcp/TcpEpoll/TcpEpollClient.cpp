@@ -29,15 +29,15 @@ bool TcpEpollClient::ConnectToServer(const char* ip, unsigned short port)
 		WriteLog(LogLevel::Info, "GetAddrinfo Failed. Address:%s Port:%s ret:%d, Errno:%d", address_.c_str(), port_.c_str(), ret, errno);
 		return false;
 	}
-	auto socketID = TcpUtility::PrepareSocket(addressInfo_->ai_family);
-	ret = connect(socketID, addressInfo_->ai_addr, int(addressInfo_->ai_addrlen));
+	auto socketId = TcpUtility::PrepareSocket(addressInfo_->ai_family);
+	ret = connect(socketId, addressInfo_->ai_addr, int(addressInfo_->ai_addrlen));
 	if (ret == -1 && errno != EINPROGRESS)
 	{
 		WriteLog(LogLevel::Warning, "ConnectToServer Failed. IP:%s, Port:%d, errno:%d", ip, port, errno);
-		closesocket(socketID);
+		closesocket(socketId);
 		return false;
 	}
-	TcpConnect* tcpConnect = TcpConnect::Allocate(GetSessionID(), socketID, address_, port_);
+	TcpConnect* tcpConnect = TcpConnect::Allocate(GetSessionId(), socketId, address_, port_);
 	if (ret == 0)
 	{
 		AddConnect(tcpConnect);

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <chrono>
 #include <Spark/Types.h>
 
@@ -20,6 +20,6 @@ struct ShmPackage
 extern TestProtocolType g_TestProtocolType;
 extern const char* g_ShmAddress;
 extern const char* g_Address;
-extern IOModelType g_IOModel;
+extern IoModelType g_IOModel;
 
 void PrintTimeCost(const char* name, std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> startTime, std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> endTime);

@@ -456,9 +456,9 @@ long long TimeUtility::CalculateNextSecondBarTime(int barPeriod, long long updat
 	return date * 1000000000LL + nextBarTimeStamp * 1000LL;
 }
 
-void TimeUtility::CalculateRealMinuteBarTime(const char* exchangeID, const char* instrumentID, int calculateBarTime, int& realBarTime, int& realUpdateTs)
+void TimeUtility::CalculateRealMinuteBarTime(const char* exchangeId, const char* instrumentId, int calculateBarTime, int& realBarTime, int& realUpdateTs)
 {
-	if (strcmp(exchangeID, "SSE") == 0 || strcmp(exchangeID, "SZSE") == 0 || strcmp(exchangeID, "CFFEX") == 0)
+	if (strcmp(exchangeId, "SSE") == 0 || strcmp(exchangeId, "SZSE") == 0 || strcmp(exchangeId, "CFFEX") == 0)
 	{
 		if (calculateBarTime <= 93000)
 		{
@@ -475,12 +475,12 @@ void TimeUtility::CalculateRealMinuteBarTime(const char* exchangeID, const char*
 			realBarTime = 130100;
 			realUpdateTs = 130100;
 		}
-		else if (calculateBarTime == 150000 && instrumentID[0] != 'T')
+		else if (calculateBarTime == 150000 && instrumentId[0] != 'T')
 		{
 			realBarTime = 150000;
 			realUpdateTs = 160000;
 		}
-		else if (calculateBarTime == 151500 && instrumentID[0] == 'T')
+		else if (calculateBarTime == 151500 && instrumentId[0] == 'T')
 		{
 			realBarTime = 151500;
 			realUpdateTs = 160000;

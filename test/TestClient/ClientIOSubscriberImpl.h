@@ -15,15 +15,15 @@ public:
 
 
 
-	virtual void OnConnect(SessionIDType sessionID, const char* ip, int port) override;
-	virtual void OnDisConnect(SessionIDType sessionID, const char* ip, int port) override;
-	virtual void OnRecv(SessionIDType sessionID, Spark::Buffer<Spark::BuffSize>* buffer) override;
+	virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) override;
+	virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) override;
+	virtual void OnRecv(SessionIdType sessionId, Spark::Buffer<Spark::BuffSize>* buffer) override;
 
-	void Send(SessionIDType sessionID);
-	void SendCommand(SessionIDType sessionID, const char* cmd);
+	void Send(SessionIdType sessionId);
+	void SendCommand(SessionIdType sessionId, const char* cmd);
 private:
 	IOBase* io_;
 	IOThread* ioThread_;
-	std::map<SessionIDType, int> m_MessageCounts;
+	std::map<SessionIdType, int> m_MessageCounts;
 	std::chrono::steady_clock::time_point m_StartSendTime;
 };

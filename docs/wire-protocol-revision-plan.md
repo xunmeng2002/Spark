@@ -13,8 +13,8 @@ Xtp 路径当前的报文头是把一个 native C++ 结构体原样 `memcpy` 上
 class HeadField
 {
 public:
-    static constexpr UShortType FieldID = 0x0001;
-    UShortType PackageID;    // 报文代码
+    static constexpr UShortType FieldId = 0x0001;
+    UShortType PackageId;    // 报文代码
     UShortType BodyLen;      // 报文长度
     BoolType   MessageChain; // 报文链标记
     IntType    MsgSeqNum;    // 请求编号
@@ -52,13 +52,13 @@ public:
 | `sizeof(TailField)` | 2 字节 | 仅一个 `UShortType CheckSum` |
 | 单帧固定开销 | 14 字节 | `Package.cpp:31` |
 | `BodyLen` 上限 | 65535（`UShortType` 的天然上限） | `Head.h:12` |
-| `PackageID` 空间 | 65536，当前用 52 个 | `QuantTrading/src/Packages/PackageFactory.cpp` |
+| `PackageId` 空间 | 65536，当前用 52 个 | `QuantTrading/src/Packages/PackageFactory.cpp` |
 
 字段布局（小端）：
 
 ```text
 偏移  长  字段          说明
-0     2   PackageID     报文代码
+0     2   PackageId     报文代码
 2     2   BodyLen       体长，不含头尾
 4     1   MessageChain  报文链标记
 5     3   <填充>        编译器插入，无意义
@@ -113,7 +113,7 @@ Gitee/Templates/Cpp/Spark/Network/Protocol/Head.h.tpl
 
 ### 2.5 遗留文件
 
-`Gitee/Spark/Model/XtpHead.xml` 定义了只有 `PackageID` + `BodyLen` 两项的头，但**没有任何 pumplist 或脚本引用它**（`grep` 全仓仅命中自身）。这是早期 Xtp 独立头设计的残留，先于 `Head.xml` 的统一头。建议在本次改造中一并删除或明确标注为废弃——但按 Harness §1，删除动作需你单独确认。
+`Gitee/Spark/Model/XtpHead.xml` 定义了只有 `PackageId` + `BodyLen` 两项的头，但**没有任何 pumplist 或脚本引用它**（`grep` 全仓仅命中自身）。这是早期 Xtp 独立头设计的残留，先于 `Head.xml` 的统一头。建议在本次改造中一并删除或明确标注为废弃——但按 Harness §1，删除动作需你单独确认。
 
 ## 3. 问题清单
 
@@ -171,7 +171,7 @@ MoldUDP64 的消息长度就是 uint16，上限 65535。本项目的包体是快
 
 - 不引入新依赖（§2）：CRC 用查表实现，不用第三方库。
 - 不改包体格式：`Templates/Cpp/Protocol/Xtp/` 与 `Templates/Cpp/Protocol/Packages/` 不动。
-- 不改业务代码：`HeadField` 的**成员名与类型保持不变**，`QuantTrading` 侧 48 处 `Head.MessageChain`、73 处 `Head.MsgSeqNum`、63 处 `Head.PackageID` 全部零改动编译通过。
+- 不改业务代码：`HeadField` 的**成员名与类型保持不变**，`QuantTrading` 侧 48 处 `Head.MessageChain`、73 处 `Head.MsgSeqNum`、63 处 `Head.PackageId` 全部零改动编译通过。
 - 不新增模型基本类型：`Gitee/Model/Types.xml` 只有 `bool / ushort / int / int64 / double / string / enum` 七组，新增 `uint`/`ubyte` 组会波及所有消费 `Types.xml` 的代码生成器。本方案只用现有类型。
 - 单帧固定开销增幅控制在 6 字节以内。
 
@@ -185,7 +185,7 @@ MoldUDP64 的消息长度就是 uint16，上限 65535。本项目的包体是快
 | :--- | :--- | :--- | :--- | :--- |
 | 0 | 4 | `Magic` | `Int` | 固定 `0x324B5053`（线上小端字节 `53 50 4B 32`，即 `SPK2`） |
 | 4 | 4 | `MsgSeqNum` | `Int` | 请求编号，**不变** |
-| 8 | 2 | `PackageID` | `UShort` | 报文代码，**不变** |
+| 8 | 2 | `PackageId` | `UShort` | 报文代码，**不变** |
 | 10 | 2 | `BodyLen` | `UShort` | 体长，**不变** |
 | 12 | 2 | `Version` | `UShort` | 协议版本，本次为 `2` |
 | 14 | 1 | `MessageChain` | `Bool` | **不变** |
@@ -201,7 +201,7 @@ MoldUDP64 的消息长度就是 uint16，上限 65535。本项目的包体是快
 
 **单帧开销从 14 字节变为 20 字节**（+6）。对一个 300 字节的行情帧是 +2%。
 
-**关键性质：`PackageID`、`BodyLen`、`MessageChain`、`MsgSeqNum` 四个成员的名称与类型一字未改**，只是顺序调整、插入两个新成员。`QuantTrading` 与 `Spark/test/` 的所有访问点无需修改。
+**关键性质：`PackageId`、`BodyLen`、`MessageChain`、`MsgSeqNum` 四个成员的名称与类型一字未改**，只是顺序调整、插入两个新成员。`QuantTrading` 与 `Spark/test/` 的所有访问点无需修改。
 
 ### 6.2 校验算法
 
@@ -225,7 +225,7 @@ MoldUDP64 的消息长度就是 uint16，上限 65535。本项目的包体是快
 3. Version == kProtocolVersion       → 不符：明确报错并断连（见 6.5）
 4. 缓冲长度 >= 16 + BodyLen + 4      → 否则等待更多数据
 5. CheckSum == CRC32C(头 + 体)       → 不符：报错 + 重同步
-6. IsInboundPackageAccepted(ID)      → 不符：报错 + 断连
+6. IsInboundPackageAccepted(Id)      → 不符：报错 + 断连
 7. CreatePackage + FromXtpStream     → 失败：回收 package + 断连
 ```
 
@@ -435,8 +435,8 @@ Step 当前**无任何调用方**——`QuantTrading` 四处 `Protocol` 构造�
 
 ```text
 0  2  blockLength  根块长度
-2  2  templateId   消息模板 ID
-4  2  schemaId     schema ID
+2  2  templateId   消息模板 Id
+4  2  schemaId     schema Id
 6  2  version      schema 版本
 ```
 
@@ -464,10 +464,10 @@ Step 当前**无任何调用方**——`QuantTrading` 四处 `Protocol` 构造�
 
 ```text
 改造前（Xtp，单帧 14 字节开销）
-[PackageID 2][BodyLen 2][Chain 1][填充 3][MsgSeqNum 4][Body][CheckSum 2]
+[PackageId 2][BodyLen 2][Chain 1][填充 3][MsgSeqNum 4][Body][CheckSum 2]
 
 改造后（Xtp，单帧 20 字节开销）
-[Magic 4][MsgSeqNum 4][PackageID 2][BodyLen 2][Version 2][Chain 1][Rsv 1]
+[Magic 4][MsgSeqNum 4][PackageId 2][BodyLen 2][Version 2][Chain 1][Rsv 1]
 [Body]
 [CRC32C 4]
 ```

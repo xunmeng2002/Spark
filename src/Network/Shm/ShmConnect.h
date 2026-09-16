@@ -12,8 +12,8 @@ template<unsigned SIZE>
 class ShmConnect : public Connect
 {
 public:
-	ShmConnect(SessionIDType sessionID, const char* remoteAddress, int remotePort, ServerTypeType serverType, void* shmAddr, ConnectStatusType connectStatus)
-		:Connect(sessionID, remoteAddress, remotePort, connectStatus)
+	ShmConnect(SessionIdType sessionId, const char* remoteAddress, int remotePort, ServerTypeType serverType, void* shmAddr, ConnectStatusType connectStatus)
+		:Connect(sessionId, remoteAddress, remotePort, connectStatus)
 	{
         shmBuffer_ = ShmBuffer<SIZE>::Allocate(serverType, remotePort, shmAddr, connectStatus);
 	}
@@ -23,9 +23,9 @@ public:
         shmBuffer_ = nullptr;
 	}
 
-	static ShmConnect* Allocate(SessionIDType sessionID, const char* remoteAddress, int remotePort, ServerTypeType serverType, void* shmAddr, ConnectStatusType connectStatus)
+	static ShmConnect* Allocate(SessionIdType sessionId, const char* remoteAddress, int remotePort, ServerTypeType serverType, void* shmAddr, ConnectStatusType connectStatus)
 	{
-		return ObjectPool<ShmConnect<SIZE>>::GetInstance().Allocate(sessionID, remoteAddress, remotePort, serverType, shmAddr, connectStatus);
+		return ObjectPool<ShmConnect<SIZE>>::GetInstance().Allocate(sessionId, remoteAddress, remotePort, serverType, shmAddr, connectStatus);
 	}
 	virtual void Deallocate() override
 	{

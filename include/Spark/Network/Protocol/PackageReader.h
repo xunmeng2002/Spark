@@ -9,9 +9,9 @@ namespace Spark::Network
 class NETWORK_EXPORTS PackageReader
 {
 public:
-	PackageReader(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIDType sessionID, const char* ipAddress);
+	PackageReader(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIdType sessionId, const char* ipAddress);
 	~PackageReader();
-	static PackageReader* Allocate(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIDType sessionID, const char* ipAddress);
+	static PackageReader* Allocate(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIdType sessionId, const char* ipAddress);
 	void Deallocate();
 
 	void Reset();
@@ -45,7 +45,7 @@ private:
 protected:
 	ProtocolTypeType protocolType_;
     PackageFactoryBase* packageFactory_;
-	SessionIDType sessionId_;
+	SessionIdType sessionId_;
 	IPAddressType ipAddress_;
 	HeadField head_;
 	TailField tail_;

@@ -7,8 +7,8 @@ using namespace Spark::Core;
 
 namespace Spark::Network
 {
-TcpIocpConnect::TcpIocpConnect(SessionIDType sessionID, const SOCKET& socketID, const std::string& remoteIP, const std::string& remotePort)
-	:TcpConnect(sessionID, socketID, remoteIP, remotePort)
+TcpIocpConnect::TcpIocpConnect(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort)
+	:TcpConnect(sessionId, socketId, remoteIP, remotePort)
 {
 }
 TcpIocpConnect::~TcpIocpConnect()
@@ -22,13 +22,13 @@ TcpIocpConnect::~TcpIocpConnect()
 	closesocket(SocketId);
 	SocketId = INVALID_SOCKET;
 }
-TcpIocpConnect* TcpIocpConnect::Allocate(SessionIDType sessionID, const SOCKET& socketID, const std::string& remoteIP, const std::string& remotePort)
+TcpIocpConnect* TcpIocpConnect::Allocate(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort)
 {
-	return ObjectPool<TcpIocpConnect>::GetInstance().Allocate(sessionID, socketID, remoteIP, remotePort);
+	return ObjectPool<TcpIocpConnect>::GetInstance().Allocate(sessionId, socketId, remoteIP, remotePort);
 }
 void TcpIocpConnect::Deallocate()
 {
-	WriteLog(LogLevel::Info, "TcpIocpConnect::Close SessionID:%lld, Socket:%lld", SessionID, SocketId);
+	WriteLog(LogLevel::Info, "TcpIocpConnect::Close SessionId:%lld, Socket:%lld", SessionId, SocketId);
 	ObjectPool<TcpIocpConnect>::GetInstance().Deallocate(this);
 }
 
@@ -38,7 +38,7 @@ MyOverlapped::MyOverlapped()
 	Offset = OffsetHigh = 0;
 	hEvent = nullptr;
 
-	EventID = IocpEvent::EventNone;
+	EventId = IocpEvent::EventNone;
 	MyBuffer = nullptr;
 	WsaBuffer.buf = nullptr;
 	WsaBuffer.len = 0;
@@ -87,7 +87,7 @@ void MyOverlapped::Reset()
 	Offset = OffsetHigh = 0;
 	hEvent = nullptr;
 
-	EventID = IocpEvent::EventNone;
+	EventId = IocpEvent::EventNone;
 	if (MyBuffer)
 	{
 		MyBuffer->Reset();

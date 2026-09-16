@@ -104,9 +104,9 @@ bool ShmBase::Init()
 	return true;
 }
 
-void ShmBase::Send(SessionIDType sessionID, Buffer<BuffSize>* buffer)
+void ShmBase::Send(SessionIdType sessionId, Buffer<BuffSize>* buffer)
 {
-	auto shmConnect = (ShmConnect<ShmBuffSize>*)GetConnect(sessionID);
+	auto shmConnect = (ShmConnect<ShmBuffSize>*)GetConnect(sessionId);
 	if (shmConnect == nullptr)
 	{
 		buffer->Deallocate();
@@ -174,7 +174,7 @@ void ShmBase::DoRecv(Connect* connect)
 	auto len = shmConnect->GetBuffer()->Read(buffer->GetWritePos(), BuffSize);
 	buffer->SetLength(len);
 	if (ioSubscriber_ != nullptr)
-		ioSubscriber_->OnRecv(shmConnect->SessionID, buffer);
+		ioSubscriber_->OnRecv(shmConnect->SessionId, buffer);
 	else
 		buffer->Deallocate();
 }

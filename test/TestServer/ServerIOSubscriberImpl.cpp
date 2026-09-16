@@ -17,28 +17,28 @@ ServerIOSubscriberImpl::~ServerIOSubscriberImpl()
     io_->UnSubscribe();
 }
 
-void ServerIOSubscriberImpl::OnConnect(SessionIDType sessionID, const char* ip, int port)
+void ServerIOSubscriberImpl::OnConnect(SessionIdType sessionId, const char* ip, int port)
 {
-    WriteLog(LogLevel::Info, "ServerIOSubscriberImpl::OnConnect SessionID:[%lld], IP:[%s], Port:[%d]", sessionID, ip, port);
+    WriteLog(LogLevel::Info, "ServerIOSubscriberImpl::OnConnect SessionId:[%lld], IP:[%s], Port:[%d]", sessionId, ip, port);
 }
-void ServerIOSubscriberImpl::OnDisConnect(SessionIDType sessionID, const char* ip, int port)
+void ServerIOSubscriberImpl::OnDisConnect(SessionIdType sessionId, const char* ip, int port)
 {
-    WriteLog(LogLevel::Info, "ServerIOSubscriberImpl::OnDisConnect SessionID:[%lld], IP:[%s], Port:[%d]", sessionID, ip, port);
+    WriteLog(LogLevel::Info, "ServerIOSubscriberImpl::OnDisConnect SessionId:[%lld], IP:[%s], Port:[%d]", sessionId, ip, port);
 }
 
 
 
-void ServerIOSubscriberImpl::OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer)
+void ServerIOSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer)
 {
-    auto count = ++m_MessageCounts[sessionID];
+    auto count = ++m_MessageCounts[sessionId];
     //if (count % 1000 == 0)
     {
         char message[2048] = { 0 };
-        auto n = sprintf(message, "ServerIOSubscriberImpl::OnRecv SessionID:[%lld], Data:[%s]", (long long)sessionID, buffer->GetData());
+        auto n = sprintf(message, "ServerIOSubscriberImpl::OnRecv SessionId:[%lld], Data:[%s]", (long long)sessionId, buffer->GetData());
         WriteLog(LogLevel::Info, message);
     }
 
     auto responseBuffer = new Buffer<BuffSize>();
     responseBuffer->Append(buffer->GetData(), buffer->GetLength());
-    io_->Send(sessionID, responseBuffer);
+    io_->Send(sessionId, responseBuffer);
 }

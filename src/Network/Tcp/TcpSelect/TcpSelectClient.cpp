@@ -28,14 +28,14 @@ bool TcpSelectClient::ConnectToServer(const char* ip, unsigned short port)
 		WriteLog(LogLevel::Info, "GetAddrinfo Failed. Address:%s Port:%s ret:%d, Errno:%d", address_.c_str(), port_.c_str(), ret, errno);
 		return false;
 	}
-	auto socketID = TcpUtility::PrepareSocket(addressInfo_->ai_family);
-	ret = connect(socketID, addressInfo_->ai_addr, int(addressInfo_->ai_addrlen));
+	auto socketId = TcpUtility::PrepareSocket(addressInfo_->ai_family);
+	ret = connect(socketId, addressInfo_->ai_addr, int(addressInfo_->ai_addrlen));
 #ifdef _WIN32
 	auto error = WSAGetLastError();
 	if (ret == -1 && error != WSAEWOULDBLOCK && error != WSAEINPROGRESS)
 	{
 		WriteLog(LogLevel::Warning, "ConnectToServer Failed. ip:%s, port:%d, errno:%d", ip, port, errno);
-		closesocket(socketID);
+		closesocket(socketId);
 		return false;
 	}
 #endif
@@ -43,18 +43,18 @@ bool TcpSelectClient::ConnectToServer(const char* ip, unsigned short port)
 	if (ret == -1 && errno != EINPROGRESS)
 	{
 		WriteLog(LogLevel::Warning, "ConnectToServer Failed. ip:%s, port:%d, errno:%d", ip, port, errno);
-		closesocket(socketID);
+		closesocket(socketId);
 		return false;
 	}
 #endif
-	TcpConnect* tcpConnect = TcpConnect::Allocate(GetSessionID(), socketID, address_, port_);
+	TcpConnect* tcpConnect = TcpConnect::Allocate(GetSessionId(), socketId, address_, port_);
 	if (ret == 0)
 	{
 		AddConnect(tcpConnect);
 	}
 	else
 	{
-		connectings_.insert(make_pair(tcpConnect->SessionID, tcpConnect));
+		connectings_.insert(make_pair(tcpConnect->SessionId, tcpConnect));
 	}
 	return true;
 }
@@ -85,22 +85,22 @@ void TcpSelectClient::CheckConnect()
 		if (FD_ISSET(connect->SocketId, &writeFds_))
 		{
 			AddConnect(connect);
-			connectSuccessedSessions_.push_back(connect->SessionID);
+			connectSuccessedSessions_.push_back(connect->SessionId);
 		}
 		if (FD_ISSET(connect->SocketId, &errorFds_))
 		{
 			RemoveConnect(connect);
-			connectFailedSessions_.push_back(connect->SessionID);
+			connectFailedSessions_.push_back(connect->SessionId);
 		}
 	}
-	for (auto& sessionID : connectSuccessedSessions_)
+	for (auto& sessionId : connectSuccessedSessions_)
 	{
-		connectings_.erase(sessionID);
+		connectings_.erase(sessionId);
 	}
 	connectSuccessedSessions_.clear();
-	for (auto& sessionID : connectFailedSessions_)
+	for (auto& sessionId : connectFailedSessions_)
 	{
-		connectings_.erase(sessionID);
+		connectings_.erase(sessionId);
 	}
 	connectFailedSessions_.clear();
 }

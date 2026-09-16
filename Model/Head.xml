@@ -3,7 +3,7 @@
 	<field name="Head" 							id="0x0001" desc="报文头">
 		<item name="Magic" type="Int32" desc="魔术字，固定为ProtocolMagicValue"/>
 		<item name="MsgSeqNum" type="UInt32" desc="请求编号，从 0 起单调递增的计数器"/>
-		<item name="PackageID" type="UInt16" desc="报文代码"/>
+		<item name="PackageId" type="UInt16" desc="报文代码"/>
 		<item name="BodyLen" type="UInt16" desc="报文长度"/>
 		<item name="Version" type="UInt16" desc="协议版本，固定为ProtocolVersionValue"/>
 		<item name="MessageChain" type="Bool" desc="报文链标记"/>

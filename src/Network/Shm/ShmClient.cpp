@@ -108,7 +108,7 @@ void ShmClient::CheckConnectResult()
 		if (commonShmHeader_->Status == ConnectStatusType::Accepted)
 		{
 			auto index = commonShmHeader_->DownWriteCount;
-			shmConnect_ = ShmConnect<ShmBuffSize>::Allocate(GetSessionID(), address_.c_str(), index, serverType_, shmAddr_, ConnectStatusType::Connected);
+			shmConnect_ = ShmConnect<ShmBuffSize>::Allocate(GetSessionId(), address_.c_str(), index, serverType_, shmAddr_, ConnectStatusType::Connected);
 			AddConnect(shmConnect_);
 			connected_ = true;
 			commonShmHeader_->Status = ConnectStatusType::UnConnected;

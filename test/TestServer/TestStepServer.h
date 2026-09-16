@@ -9,12 +9,12 @@ public:
 	StepServer();
 	virtual ~StepServer();
 
-	virtual void OnProtocolConnect(SessionIDType sessionID, const char* ip, int port) override;
-	virtual void OnProtocolDisConnect(SessionIDType sessionID, const char* ip, int port) override;
+	virtual void OnProtocolConnect(SessionIdType sessionId, const char* ip, int port) override;
+	virtual void OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port) override;
 	virtual void OnMessage(Package* package) override;
 
 	bool connected_;
-	SessionIDType sessionId_;
+	SessionIdType sessionId_;
 	int m_RecvCount;
 };
 

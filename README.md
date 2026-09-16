@@ -243,11 +243,11 @@ using namespace Spark;
 using namespace Spark::Core;
 using namespace Spark::Network;
 
-// 包工厂：按包 ID 创建对应包对象（本示例省略实现，详见 test/Packages/PackageFactory.cpp）
+// 包工厂：按包 Id 创建对应包对象（本示例省略实现，详见 test/Packages/PackageFactory.cpp）
 class MyPackageFactory : public PackageFactoryBase
 {
 public:
-    virtual Package* CreatePackage(UShortType packageID) override;
+    virtual Package* CreatePackage(UShortType packageId) override;
 };
 
 // Step 协议客户端：继承 Protocol 并实现 ProtocolSubscriber 回调
@@ -256,7 +256,7 @@ class MyStepClient : public Protocol, public ProtocolSubscriber
 public:
     MyStepClient()
         : Protocol(ProtocolTypeType::Step, ServerTypeType::Client,
-                   IOModelType::Select, 0, new MyPackageFactory())
+                   IoModelType::Select, 0, new MyPackageFactory())
     {
         m_ReqInsertOrder = new ReqInsertOrderPackage(); // 由模型自动生成（见 test/Packages）
         Subscribe(this);                        // 注册自身为消息订阅者
@@ -265,16 +265,16 @@ public:
     }
 
     // 连接建立回调
-    void OnProtocolConnect(SessionIDType sessionID, const char* ip, int port) override
+    void OnProtocolConnect(SessionIdType sessionId, const char* ip, int port) override
     {
-        WriteLog(LogLevel::Info, "OnConnect SessionID:[%lld], IP:[%s], port:[%d]", sessionID, ip, port);
+        WriteLog(LogLevel::Info, "OnConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
         SendReqInsertOrder();
     }
 
     // 连接断开回调
-    void OnProtocolDisConnect(SessionIDType sessionID, const char* ip, int port) override
+    void OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port) override
     {
-        WriteLog(LogLevel::Info, "OnDisConnect SessionID:[%lld]", sessionID);
+        WriteLog(LogLevel::Info, "OnDisConnect SessionId:[%lld]", sessionId);
     }
 
     // 消息到达回调
@@ -290,9 +290,9 @@ public:
         m_ReqInsertOrder->Prepare(sessionId_, false, ++m_MessageSeqNum);
         m_ReqInsertOrder->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
         memset(m_ReqInsertOrder->ReqInsertOrder, 0, sizeof(ReqInsertOrderField));
-        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->AccountID, "Xunmeng001");
-        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->ExchangeID, "SHSE");
-        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->InstrumentID, "600036");
+        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->AccountId, "Xunmeng001");
+        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->ExchangeId, "SHSE");
+        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->InstrumentId, "600036");
         m_ReqInsertOrder->ReqInsertOrder->Direction = DirectionType::Buy;
         m_ReqInsertOrder->ReqInsertOrder->OffsetFlag = OffsetFlagType::Open;
         m_ReqInsertOrder->ReqInsertOrder->OrderPriceType = OrderPriceTypeType::LimitPrice;
@@ -303,7 +303,7 @@ public:
     }
 
 private:
-    SessionIDType sessionId_ = 0LL;
+    SessionIdType sessionId_ = 0LL;
     int m_MessageSeqNum = 0;
     ReqInsertOrderPackage* m_ReqInsertOrder;
 };

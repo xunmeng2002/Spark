@@ -12,7 +12,7 @@ TestProtocolType g_TestProtocolType = TestProtocolType::Tcp;
 
 const char* g_ShmAddress = "shm://TestShm:4";
 const char* g_Address = "tcp://127.0.0.1:20001";
-IOModelType g_IOModel = IOModelType::Select;
+IoModelType g_IOModel = IoModelType::Select;
 
 
 void PrintTimeCost(const char* name, time_point<system_clock, milliseconds> startTime, time_point<system_clock, milliseconds> endTime)

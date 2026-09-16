@@ -99,7 +99,7 @@ bool SocketNotify::CreateSocketPair()
 	ret = connect(sockets_[1], (sockaddr*)&actualAddr, addrLen);
 	if (ret != 0)
 	{
-		WriteLog(LogLevel::Error, "Connect Failed. ret:%d, errorID:%d", ret, WSAGetLastError());
+		WriteLog(LogLevel::Error, "Connect Failed. ret:%d, errorId:%d", ret, WSAGetLastError());
 		closesocket(sockets_[0]);
 		closesocket(sockets_[1]);
 		return false;
@@ -109,7 +109,7 @@ bool SocketNotify::CreateSocketPair()
 	auto ret = socketpair(AF_UNIX, SOCK_STREAM, 0, sockets_);
 	if (ret != 0)
 	{
-		WriteLog(LogLevel::Warning, "socketpair failed. ret:%d, errorID:%d", ret, errno);
+		WriteLog(LogLevel::Warning, "socketpair failed. ret:%d, errorId:%d", ret, errno);
 	}
 #endif
 	return true;

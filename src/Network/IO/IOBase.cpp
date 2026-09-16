@@ -29,15 +29,15 @@ void IOBase::SetTimeOut(int milliSeconds)
 	timeOut_ = std::chrono::milliseconds(milliSeconds);
 }
 
-void IOBase::DisConnect(SessionIDType sessionID)
+void IOBase::DisConnect(SessionIdType sessionId)
 {
 	lock_guard<mutex> guard(disConnectSessionIdsMutex_);
-	disConnectSessionIds_.push_back(sessionID);
+	disConnectSessionIds_.push_back(sessionId);
 }
 void IOBase::DisConnectAll()
 {
 	WriteLog(LogLevel::Info, "DisConnectAll");
-	std::map<SessionIDType, Connect*> connects(connects_.begin(), connects_.end());
+	std::map<SessionIdType, Connect*> connects(connects_.begin(), connects_.end());
 	for (auto& it : connects)
 	{
 		RemoveConnect(it.second);
@@ -50,12 +50,12 @@ void IOBase::DoDisConnect()
 		return;
 
 	lock_guard<mutex> guard(disConnectSessionIdsMutex_);
-	for (auto sessionID : disConnectSessionIds_)
+	for (auto sessionId : disConnectSessionIds_)
 	{
-		auto connect = connects_[sessionID];
+		auto connect = connects_[sessionId];
 		if (connect == nullptr)
 		{
-			connects_.erase(sessionID);
+			connects_.erase(sessionId);
 		}
 		else
 		{
@@ -66,43 +66,43 @@ void IOBase::DoDisConnect()
 }
 void IOBase::AddConnect(Connect* connect)
 {
-	WriteLog(LogLevel::Info, "New Connection. SessionID:%lld, RemoteAddress:%s, RemotePort:%d",
-		connect->SessionID, connect->RemoteAddress, connect->RemotePort);
+	WriteLog(LogLevel::Info, "New Connection. SessionId:%lld, RemoteAddress:%s, RemotePort:%d",
+		connect->SessionId, connect->RemoteAddress, connect->RemotePort);
 	{
 		std::lock_guard<std::mutex> guard(connectsMutex_);
-		connects_.insert(std::make_pair(connect->SessionID, connect));
+		connects_.insert(std::make_pair(connect->SessionId, connect));
 	}
 	if (ioSubscriber_)
 	{
-		ioSubscriber_->OnConnect(connect->SessionID, connect->RemoteAddress, connect->RemotePort);
+		ioSubscriber_->OnConnect(connect->SessionId, connect->RemoteAddress, connect->RemotePort);
 	}
 }
 void IOBase::RemoveConnect(Connect* connect)
 {
-	WriteLog(LogLevel::Info, "RemoveConnect. SessionID:%lld,  RemoteAddress:%s, RemotePort:%d",
-		connect->SessionID, connect->RemoteAddress, connect->RemotePort);
+	WriteLog(LogLevel::Info, "RemoveConnect. SessionId:%lld,  RemoteAddress:%s, RemotePort:%d",
+		connect->SessionId, connect->RemoteAddress, connect->RemotePort);
 	if (ioSubscriber_)
 	{
-		ioSubscriber_->OnDisConnect(connect->SessionID, connect->RemoteAddress, connect->RemotePort);
+		ioSubscriber_->OnDisConnect(connect->SessionId, connect->RemoteAddress, connect->RemotePort);
 	}
 	std::lock_guard<std::mutex> guard(connectsMutex_);
-	connects_.erase(connect->SessionID);
+	connects_.erase(connect->SessionId);
 	connect->Deallocate();
 }
-Connect* IOBase::GetConnect(SessionIDType sessionID)
+Connect* IOBase::GetConnect(SessionIdType sessionId)
 {
 	std::lock_guard<std::mutex> guard(connectsMutex_);
-	auto it = connects_.find(sessionID);
+	auto it = connects_.find(sessionId);
 	if (it == connects_.end())
 	{
-		WriteLog(LogLevel::Warning, "Connect not Exist For SessionID:%lld", sessionID);
+		WriteLog(LogLevel::Warning, "Connect not Exist For SessionId:%lld", sessionId);
 		return nullptr;
 	}
 	return it->second;
 }
 
 
-SessionIDType IOBase::GetSessionID()
+SessionIdType IOBase::GetSessionId()
 {
 	return TimeUtility::GetMilliSecondTimeStamp() * 100LL + (++lastSessionIndex_) % 100LL;
 }

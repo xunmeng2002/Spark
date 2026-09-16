@@ -37,7 +37,7 @@ static_assert(sizeof(TailField) == 4, "TailField 布局变化会改变线上格�
 static_assert(FixedFrameOverhead == 20, "单帧固定开销必须是 20 字节");
 //字段偏移与字段宽度同样是线上格式：整块 memcpy 时，重排或改宽都不会被总长断言发现
 static_assert(offsetof(HeadField, Magic) == 0 && offsetof(HeadField, MsgSeqNum) == 4
-	&& offsetof(HeadField, PackageID) == 8 && offsetof(HeadField, BodyLen) == 10
+	&& offsetof(HeadField, PackageId) == 8 && offsetof(HeadField, BodyLen) == 10
 	&& offsetof(HeadField, Version) == 12 && offsetof(HeadField, MessageChain) == 14
 	&& offsetof(HeadField, Reserved) == 15, "HeadField 字段偏移变化会改变线上格式，必须同步升级 ProtocolVersionValue");
 static_assert(offsetof(TailField, CheckSum) == 0, "TailField 字段偏移变化会改变线上格式");

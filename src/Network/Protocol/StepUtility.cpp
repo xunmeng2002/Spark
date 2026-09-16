@@ -47,10 +47,10 @@ bool IsKeyAt(char* buff, int index, int endIndex, UInt16Type expectedKey)
 	return parsedKey == expectedKey;
 }
 
-//扫描标记键（0006 / 0007），回填其后的十六进制 fieldID、标记起始位置、以及标记字段之后的下一个位置。
+//扫描标记键（0006 / 0007），回填其后的十六进制 fieldId、标记起始位置、以及标记字段之后的下一个位置。
 //GetFieldStart 取前者、GetFieldEnd 取后者，两个入口除此以外完全一致
 bool LocateFieldMarker(char* buff, int startIndex, int endIndex, UInt16Type markerKey,
-	UInt16Type& fieldID, int& markerStartIndex, int& afterMarkerIndex)
+	UInt16Type& fieldId, int& markerStartIndex, int& afterMarkerIndex)
 {
 	//标记形如 "SOH + '0006' + '='"；i 指向键的首字节，i 为 0 时前面没有字节，不可能是标记
 	for (int i = startIndex; i < endIndex; ++i)
@@ -59,7 +59,7 @@ bool LocateFieldMarker(char* buff, int startIndex, int endIndex, UInt16Type mark
 		{
 			continue;
 		}
-		if (!TryReadHexField(buff, i + StepKeyTextLen + 1, endIndex, fieldID))
+		if (!TryReadHexField(buff, i + StepKeyTextLen + 1, endIndex, fieldId))
 		{
 			return false;
 		}
@@ -142,30 +142,30 @@ bool StepUtility::GetNext(char* buff, int startIndex, int endIndex, UInt16Type& 
 	value = std::string(buff + equalIndex + 1, buff + sohIndex);
 	return true;
 }
-bool StepUtility::GetFieldStart(char* buff, int startIndex, int endIndex, UInt16Type& fieldID, int& fieldStartIndex)
+bool StepUtility::GetFieldStart(char* buff, int startIndex, int endIndex, UInt16Type& fieldId, int& fieldStartIndex)
 {
 	int afterMarkerIndex = 0;
-	return LocateFieldMarker(buff, startIndex, endIndex, Items::FieldStart, fieldID, fieldStartIndex, afterMarkerIndex);
+	return LocateFieldMarker(buff, startIndex, endIndex, Items::FieldStart, fieldId, fieldStartIndex, afterMarkerIndex);
 }
-bool StepUtility::GetFieldEnd(char* buff, int startIndex, int endIndex, UInt16Type& fieldID, int& fieldEndIndex)
+bool StepUtility::GetFieldEnd(char* buff, int startIndex, int endIndex, UInt16Type& fieldId, int& fieldEndIndex)
 {
 	int markerStartIndex = 0;
-	return LocateFieldMarker(buff, startIndex, endIndex, Items::FieldEnd, fieldID, markerStartIndex, fieldEndIndex);
+	return LocateFieldMarker(buff, startIndex, endIndex, Items::FieldEnd, fieldId, markerStartIndex, fieldEndIndex);
 }
-bool StepUtility::GetNextFieldZone(char* buff, int startIndex, int endIndex, UInt16Type& fieldID, int& fieldStartIndex, int& fieldEndIndex)
+bool StepUtility::GetNextFieldZone(char* buff, int startIndex, int endIndex, UInt16Type& fieldId, int& fieldStartIndex, int& fieldEndIndex)
 {
-	if (!GetFieldStart(buff, startIndex, endIndex, fieldID, fieldStartIndex))
+	if (!GetFieldStart(buff, startIndex, endIndex, fieldId, fieldStartIndex))
 	{
 		return false;
 	}
-	UInt16Type fieldIDEnd;
-	if (!GetFieldEnd(buff, fieldStartIndex, endIndex, fieldIDEnd, fieldEndIndex))
+	UInt16Type fieldIdEnd;
+	if (!GetFieldEnd(buff, fieldStartIndex, endIndex, fieldIdEnd, fieldEndIndex))
 	{
 		return false;
 	}
-	if (fieldID != fieldIDEnd)
+	if (fieldId != fieldIdEnd)
 	{
-		WriteLog(LogLevel::Error, "FieldID not Match. FieldID:0x%X, FieldIDEnd:0x%X", static_cast<unsigned int>(fieldID), static_cast<unsigned int>(fieldIDEnd));
+		WriteLog(LogLevel::Error, "FieldId not Match. FieldId:0x%X, FieldIdEnd:0x%X", static_cast<unsigned int>(fieldId), static_cast<unsigned int>(fieldIdEnd));
 		return false;
 	}
 	return true;
@@ -245,7 +245,7 @@ int StepUtility::HeadToStream(HeadField* head, char* buff, int size)
 	StepWriteCursor cursor(buff, size);
 	if (!AppendPackageMagicField(cursor)
 		|| !cursor.AppendField("{:04X}={:04X}", Items::Version, head->Version)
-		|| !cursor.AppendField("{:04X}={:04X}", Items::PackageID, head->PackageID)
+		|| !cursor.AppendField("{:04X}={:04X}", Items::PackageId, head->PackageId)
 		|| !cursor.AppendField("{:04X}={:04X}", Items::BodyLen, head->BodyLen)
 		|| !cursor.AppendField("{:04X}={:08X}", Items::MsgSeqNum, head->MsgSeqNum)
 		|| !cursor.AppendField("{:04X}={:d}", Items::MessageChain, head->MessageChain))
@@ -289,8 +289,8 @@ bool StepUtility::HeadFromStream(char* buff, int startIndex, int endIndex, HeadF
 				return false;
 			}
 			break;
-		case Items::PackageID:
-			if (!ParseInteger(value, head->PackageID, 16))
+		case Items::PackageId:
+			if (!ParseInteger(value, head->PackageId, 16))
 			{
 				return false;
 			}

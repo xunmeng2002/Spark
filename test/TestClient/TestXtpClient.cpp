@@ -25,18 +25,18 @@ XtpClient::XtpClient()
 XtpClient::~XtpClient()
 {
 }
-void XtpClient::OnProtocolConnect(SessionIDType sessionID, const char* ip, int port)
+void XtpClient::OnProtocolConnect(SessionIdType sessionId, const char* ip, int port)
 {
-	WriteLog(LogLevel::Info, "XtpClient::OnConnect SessionID:[%lld], IP:[%s], port:[%d]", sessionID, ip, port);
+	WriteLog(LogLevel::Info, "XtpClient::OnConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
 
-	sessionId_ = sessionID;
+	sessionId_ = sessionId;
 	connected_ = true;
 	m_StartTime = chrono::steady_clock::now();
 	SendReqInsertOrder(++m_RecvCount);
 }
-void XtpClient::OnProtocolDisConnect(SessionIDType sessionID, const char* ip, int port)
+void XtpClient::OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port)
 {
-	WriteLog(LogLevel::Info, "XtpClient::OnDisConnect SessionID:[%lld], IP:[%s], port:[%d]", sessionID, ip, port);
+	WriteLog(LogLevel::Info, "XtpClient::OnDisConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
 
 	connected_ = false;
 	m_RecvCount = 0;
@@ -65,15 +65,15 @@ void XtpClient::SendReqInsertOrder(int index)
 	m_ReqInsertOrder->Prepare(sessionId_, false, index);
 	m_ReqInsertOrder->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
 	memset(m_ReqInsertOrder->ReqInsertOrder, 0, sizeof(ReqInsertOrderField));
-	Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->AccountID, "Xunmeng001");
-	Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->ExchangeID, "SHSE");
-	Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->InstrumentID, "600036");
+	Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->AccountId, "Xunmeng001");
+	Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->ExchangeId, "SHSE");
+	Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->InstrumentId, "600036");
 	m_ReqInsertOrder->ReqInsertOrder->Direction = DirectionType::Buy;
 	m_ReqInsertOrder->ReqInsertOrder->OffsetFlag = OffsetFlagType::Open;
 	m_ReqInsertOrder->ReqInsertOrder->OrderPriceType = OrderPriceTypeType::LimitPrice;
 	m_ReqInsertOrder->ReqInsertOrder->Price = 100 + index;
 	m_ReqInsertOrder->ReqInsertOrder->Volume = index;
-	m_ReqInsertOrder->ReqInsertOrder->ClientOrderID = index;
+	m_ReqInsertOrder->ReqInsertOrder->ClientOrderId = index;
 	Send(m_ReqInsertOrder);
 	m_ReqInsertOrder->Deallocate();
 }

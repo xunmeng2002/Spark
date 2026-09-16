@@ -219,7 +219,7 @@ void Logger::WriteToLog(LogLevel level, const char* file, int line, const char* 
 	for (auto p = file; *p != '\0'; p++)
 		if (*p == '\\' || *p == '/')
 			file = p + 1;
-	unsigned len1 = std::format_to_n(t_LogBuffer, MaxLogFormatLength, "{} {} {} ", TimeUtility::GetLocalDateTimeWithMilliSecond(), GetCurrentThreadID(), s_LogLevelName[level]).out - t_LogBuffer;
+	unsigned len1 = std::format_to_n(t_LogBuffer, MaxLogFormatLength, "{} {} {} ", TimeUtility::GetLocalDateTimeWithMilliSecond(), GetCurrentThreadId(), s_LogLevelName[level]).out - t_LogBuffer;
 	// vsnprintf 返回的是"本该写入"的长度（负数表示编码错误），内容被截断时该值不会随之变小，
 	// 不收敛到可写区间会让下一行计算剩余空间 LogLineLength - len1 - len2 - 1 发生无符号回绕
 	int formattedContentLength = vsnprintf(t_LogBuffer + len1, MaxLogLineContentLength, format, va);
@@ -237,7 +237,7 @@ void Logger::WriteToLog(LogLevel level, const char* file, int line, const char* 
 void Logger::WriteToConsole(LogLevel level, const char* formatStr, va_list va)
 {
 	static thread_local char logString[LogLineLength] = {0};
-	int len = std::format_to_n(logString, MaxLogFormatLength, "ThreadID[{}] ", GetCurrentThreadID()).out - logString;
+	int len = std::format_to_n(logString, MaxLogFormatLength, "ThreadId[{}] ", GetCurrentThreadId()).out - logString;
 	len += vsnprintf(logString + len, LogLineLength - len - 1, formatStr, va);
 
 	printf("%s\n", logString);
@@ -272,7 +272,7 @@ static int64_t GetCurrentThreadIdSysCall() noexcept {
 	return static_cast<int64_t>(pthread_self());
 #endif
 }
-long long Logger::GetCurrentThreadID()
+long long Logger::GetCurrentThreadId()
 {
 	static thread_local long long tid = GetCurrentThreadIdSysCall();
 	return tid;

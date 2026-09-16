@@ -22,53 +22,53 @@ using namespace Spark::Core;
 
 namespace Spark::Network
 {
-IOBase* IOFactory::CreateIO(ServerTypeType serverType, const char* address, IOModelType ioModel, int milliSeconds)
+IOBase* IOFactory::CreateIo(ServerTypeType serverType, const char* address, IoModelType ioModel, int milliSeconds)
 {
-	IOTypeType ioType;
+	IoTypeType ioType;
 	if (strncmp(address, "tcp", 3) == 0)
 	{
-		ioType = IOTypeType::Tcp;
+		ioType = IoTypeType::Tcp;
 	}
 	else if (strncmp(address, "udp", 3) == 0)
 	{
-		ioType = IOTypeType::Udp;
+		ioType = IoTypeType::Udp;
 	}
 	else if (strncmp(address, "shm", 3) == 0)
 	{
-		ioType = IOTypeType::Shm;
+		ioType = IoTypeType::Shm;
 	}
 	else
 	{
 		throw std::logic_error(std::format("Invalid Address:{}", address));
 	}
 	auto addressName = address + 6;
-	WriteLog(LogLevel::Info, "CreateIO ServerType:%s, Address:%s, IOType:%s, IOModel:%s",
-		GetServerTypeString(serverType), address, GetIOTypeString(ioType), GetIOModelString(ioModel));
+	WriteLog(LogLevel::Info, "CreateIo ServerType:%s, Address:%s, IOType:%s, IOModel:%s",
+		GetServerTypeString(serverType), address, GetIoTypeString(ioType), GetIoModelString(ioModel));
 	if (serverType == ServerTypeType::Client)
 	{
 		switch (ioType)
 		{
-		case IOTypeType::Tcp:
+		case IoTypeType::Tcp:
 		{
 			switch (ioModel)
 			{
-			case IOModelType::Select:
+			case IoModelType::Select:
 				return new TcpSelectClient(addressName, milliSeconds);
 #ifdef __linux__
-			case IOModelType::Epoll:
+			case IoModelType::Epoll:
 				return new TcpEpollClient(addressName, milliSeconds);
 #endif
 #if defined _WIN32
-			case IOModelType::Iocp:
+			case IoModelType::Iocp:
 				return new TcpIocpClient(addressName, milliSeconds);
 #endif
 			default:
 				return new TcpSelectClient(addressName, milliSeconds);
 			}
 		}
-		case IOTypeType::Udp:
+		case IoTypeType::Udp:
 			break;
-		case IOTypeType::Shm:
+		case IoTypeType::Shm:
 			return new ShmClient(addressName, milliSeconds);
 		default:
 			break;
@@ -78,27 +78,27 @@ IOBase* IOFactory::CreateIO(ServerTypeType serverType, const char* address, IOMo
 	{
 		switch (ioType)
 		{
-		case IOTypeType::Tcp:
+		case IoTypeType::Tcp:
 		{
 			switch (ioModel)
 			{
-			case IOModelType::Select:
+			case IoModelType::Select:
 				return new TcpSelectServer(addressName, milliSeconds);
 #ifdef __linux__
-			case IOModelType::Epoll:
+			case IoModelType::Epoll:
 				return new TcpEpollServer(addressName, milliSeconds);
 #endif
 #if defined _WIN32
-			case IOModelType::Iocp:
+			case IoModelType::Iocp:
 				return new TcpIocpServer(addressName, milliSeconds);
 #endif
 			default:
 				return new TcpSelectServer(addressName, milliSeconds);
 			}
 		}
-		case IOTypeType::Udp:
+		case IoTypeType::Udp:
 			break;
-		case IOTypeType::Shm:
+		case IoTypeType::Shm:
 			return new ShmServer(addressName, milliSeconds);
 		default:
 			break;

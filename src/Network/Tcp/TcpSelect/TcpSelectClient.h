@@ -16,8 +16,8 @@ public:
 protected:
 	fd_set writeFds_;
 
-	std::map<SessionIDType, TcpConnect*> connectings_;
-	std::list<SessionIDType> connectSuccessedSessions_;
-	std::list<SessionIDType> connectFailedSessions_;
+	std::map<SessionIdType, TcpConnect*> connectings_;
+	std::list<SessionIdType> connectSuccessedSessions_;
+	std::list<SessionIdType> connectFailedSessions_;
 };
 }

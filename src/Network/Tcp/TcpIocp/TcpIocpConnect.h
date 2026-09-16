@@ -23,9 +23,9 @@ enum class IocpEvent : int
 class TcpIocpConnect : public TcpConnect
 {
 public:
-	TcpIocpConnect(SessionIDType sessionID, const SOCKET& socketID, const std::string& remoteIP, const std::string& remotePort);
+	TcpIocpConnect(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort);
 	~TcpIocpConnect();
-	static TcpIocpConnect* Allocate(SessionIDType sessionID, const SOCKET& socketID, const std::string& remoteIP, const std::string& remotePort);
+	static TcpIocpConnect* Allocate(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort);
 	virtual void Deallocate() override;
 
 	std::atomic<bool> HasPendingSend = false;
@@ -43,7 +43,7 @@ public:
 	void Reset();
 	
 
-	IocpEvent EventID;
+	IocpEvent EventId;
 	WSABUF WsaBuffer;
 	Buffer<BuffSize>* MyBuffer;
 	TcpIocpConnect* Connect;

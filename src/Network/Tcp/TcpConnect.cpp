@@ -7,8 +7,8 @@
 using namespace Spark::Core;
 namespace Spark::Network
 {
-TcpConnect::TcpConnect(SessionIDType sessionID, const SOCKET& socketID, const std::string& remoteIP, const std::string& remotePort)
-	:Connect(sessionID, remoteIP.c_str(), atoi(remotePort.c_str()), ConnectStatusType::Connected), SocketId(socketID)
+TcpConnect::TcpConnect(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort)
+	:Connect(sessionId, remoteIP.c_str(), atoi(remotePort.c_str()), ConnectStatusType::Connected), SocketId(socketId)
 {
 
 }
@@ -23,20 +23,20 @@ TcpConnect::~TcpConnect()
 	closesocket(SocketId);
 	SocketId = INVALID_SOCKET;
 }
-TcpConnect* TcpConnect::Allocate(SessionIDType sessionID, const SOCKET& socketID, const std::string& remoteIP, const std::string& remotePort)
+TcpConnect* TcpConnect::Allocate(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort)
 {
-	return ObjectPool<TcpConnect>::GetInstance().Allocate(sessionID, socketID, remoteIP, remotePort);
+	return ObjectPool<TcpConnect>::GetInstance().Allocate(sessionId, socketId, remoteIP, remotePort);
 }
 void TcpConnect::Deallocate()
 {
-	WriteLog(LogLevel::Info, "TcpConnect::Deallocate SessionID:%lld, Socket:%lld", SessionID, SocketId);
+	WriteLog(LogLevel::Info, "TcpConnect::Deallocate SessionId:%lld, Socket:%lld", SessionId, SocketId);
 	ObjectPool<TcpConnect>::GetInstance().Deallocate(this);
 }
 
-void TcpConnect::Set(SessionIDType sessionID, const SOCKET& socketID, const std::string& remoteIP, const std::string& remotePort)
+void TcpConnect::Set(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort)
 {
-	SessionID = sessionID;
-	SocketId = socketID;
+	SessionId = sessionId;
+	SocketId = socketId;
 	snprintf(RemoteAddress, sizeof(RemoteAddress), "%s", remoteIP.c_str());
 	RemotePort = atoi(remotePort.c_str());
 	LastSendTimePoint = std::chrono::steady_clock::now();

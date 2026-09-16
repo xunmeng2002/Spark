@@ -12,7 +12,7 @@ namespace Spark::Network
 class NETWORK_EXPORTS Protocol : public IOSubscriber
 {
 public:
-	Protocol(ProtocolTypeType protocolType, ServerTypeType serverType, IOModelType ioModel, int milliSeconds, PackageFactoryBase* packageFactory);
+	Protocol(ProtocolTypeType protocolType, ServerTypeType serverType, IoModelType ioModel, int milliSeconds, PackageFactoryBase* packageFactory);
 	~Protocol();
 	void Subscribe(ProtocolSubscriber* subscriber);
 	void UnSubscribe();
@@ -26,22 +26,22 @@ public:
 	IOBase* GetIO();
 	IOThread* GetIOThread();
 
-	void DisConnect(SessionIDType sessionID);
+	void DisConnect(SessionIdType sessionId);
 	virtual bool Send(Package* package);
 
-	virtual void OnConnect(SessionIDType sessionID, const char* ip, int port) override;
-	virtual void OnDisConnect(SessionIDType sessionID, const char* ip, int port) override;
-	virtual void OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer) override;
+	virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) override;
+	virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) override;
+	virtual void OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
 
 protected:
 	ProtocolTypeType protocolType_;
 	ServerTypeType serverType_;
-	IOModelType ioModel_;
+	IoModelType ioModel_;
 	int milliSeconds_;
 	IOBase* ioBase_;
 	IOThread* ioThread_;
     PackageFactoryBase* packageFactory_;
 	ProtocolSubscriber* subscriber_;
-	std::map<SessionIDType, PackageReader*> sessionPackageReaders_;
+	std::map<SessionIdType, PackageReader*> sessionPackageReaders_;
 };
 }

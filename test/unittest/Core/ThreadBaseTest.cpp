@@ -118,7 +118,7 @@ TEST(ThreadBaseTest, JoinWithoutStart)
 
 TEST(ThreadBaseTest, GetThreadId_AfterStart)
 {
-    TestWorker worker("WithID", 100);
+    TestWorker worker("WithId", 100);
 
     EXPECT_EQ(worker.GetThreadId(), std::thread::id());
 

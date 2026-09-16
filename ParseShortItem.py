@@ -6,32 +6,32 @@ import sys
 class Item:
     def  __init__(self):
         self.Name = ""
-        self.ID = 0
+        self.Id = 0
         self.Type = ""
         self.Desc = ""
 
 def GetItems(itemFile, items):
     dom = xml.dom.minidom.parse(itemFile)
     root = dom.documentElement
-    lastID = 0
+    lastId = 0
     for itemNode in root.getElementsByTagName("item"):
         item = Item()
         item.Name = itemNode.getAttribute("name")
-        itemID = itemNode.getAttribute("id")
+        itemId = itemNode.getAttribute("id")
         item.Type = itemNode.getAttribute("type")
         item.Desc = itemNode.getAttribute("desc")
-        if itemID:
-            item.ID = int(itemID, 16)
-            lastID = item.ID
+        if itemId:
+            item.Id = int(itemId, 16)
+            lastId = item.Id
         else:
-            lastID += 1
-            item.ID = lastID
+            lastId += 1
+            item.Id = lastId
         items[item.Name] = item
 	
 def AddItemNode(dom, parentNode, item):
     itemNode = dom.createElement('item')
     itemNode.setAttribute("name", item.Name)
-    itemNode.setAttribute("id", f"0x{item.ID:04X}")
+    itemNode.setAttribute("id", f"0x{item.Id:04X}")
     itemNode.setAttribute("type", item.Type)
     itemNode.setAttribute("desc", item.Desc)
     parentNode.appendChild(itemNode)
@@ -42,7 +42,7 @@ def ReadXml(itemFile):
     return items
     
 def WriteItemsFile(destItemFile, items):
-    sortedItems = sorted(items.values(), key=lambda item : item.ID)
+    sortedItems = sorted(items.values(), key=lambda item : item.Id)
     impl = xml.dom.minidom.getDOMImplementation()
     dom = impl.createDocument(None, 'items', None)
     root = dom.documentElement

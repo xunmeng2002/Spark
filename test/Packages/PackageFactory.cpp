@@ -1,4 +1,4 @@
-// 本文件由 ../Templates/Cpp/Protocol/Packages/PackageFactory.cpp.tpl 生成；请勿手改，改动请改模板后重跑 pumpall.py
+﻿// 本文件由 ../Templates/Cpp/Protocol/Packages/PackageFactory.cpp.tpl 生成；请勿手改，改动请改模板后重跑 pumpall.py
 #include "PackageFactory.h"
 #include "Packages.h"
 
@@ -7,759 +7,759 @@ using namespace Spark::Network;
 
 namespace Spark::Packages
 {
-Package* PackageFactory::CreatePackage(UInt16Type packageID)
+Package* PackageFactory::CreatePackage(UInt16Type packageId)
 {
-	switch (packageID)
+	switch (packageId)
 	{
-	case NotifyComponentConnectStatusPackage::PackageID:
+	case NotifyComponentConnectStatusPackage::PackageId:
 	{
 		return NotifyComponentConnectStatusPackage::Allocate();
 	}
-	case ReqAccountLoginPackage::PackageID:
+	case ReqAccountLoginPackage::PackageId:
 	{
 		return ReqAccountLoginPackage::Allocate();
 	}
-	case RspAccountLoginPackage::PackageID:
+	case RspAccountLoginPackage::PackageId:
 	{
 		return RspAccountLoginPackage::Allocate();
 	}
-	case ReqAccountLogoutPackage::PackageID:
+	case ReqAccountLogoutPackage::PackageId:
 	{
 		return ReqAccountLogoutPackage::Allocate();
 	}
-	case RspAccountLogoutPackage::PackageID:
+	case RspAccountLogoutPackage::PackageId:
 	{
 		return RspAccountLogoutPackage::Allocate();
 	}
-	case ReqQryAccountPackage::PackageID:
+	case ReqQryAccountPackage::PackageId:
 	{
 		return ReqQryAccountPackage::Allocate();
 	}
-	case RspQryAccountPackage::PackageID:
+	case RspQryAccountPackage::PackageId:
 	{
 		return RspQryAccountPackage::Allocate();
 	}
-	case ReqQryHolderAccountPackage::PackageID:
+	case ReqQryHolderAccountPackage::PackageId:
 	{
 		return ReqQryHolderAccountPackage::Allocate();
 	}
-	case RspQryHolderAccountPackage::PackageID:
+	case RspQryHolderAccountPackage::PackageId:
 	{
 		return RspQryHolderAccountPackage::Allocate();
 	}
-	case ReqQryCapitalPackage::PackageID:
+	case ReqQryCapitalPackage::PackageId:
 	{
 		return ReqQryCapitalPackage::Allocate();
 	}
-	case RspQryCapitalPackage::PackageID:
+	case RspQryCapitalPackage::PackageId:
 	{
 		return RspQryCapitalPackage::Allocate();
 	}
-	case ReqQryPositionPackage::PackageID:
+	case ReqQryPositionPackage::PackageId:
 	{
 		return ReqQryPositionPackage::Allocate();
 	}
-	case RspQryPositionPackage::PackageID:
+	case RspQryPositionPackage::PackageId:
 	{
 		return RspQryPositionPackage::Allocate();
 	}
-	case ReqQryOrderPackage::PackageID:
+	case ReqQryOrderPackage::PackageId:
 	{
 		return ReqQryOrderPackage::Allocate();
 	}
-	case RspQryOrderPackage::PackageID:
+	case RspQryOrderPackage::PackageId:
 	{
 		return RspQryOrderPackage::Allocate();
 	}
-	case ReqQryTradePackage::PackageID:
+	case ReqQryTradePackage::PackageId:
 	{
 		return ReqQryTradePackage::Allocate();
 	}
-	case RspQryTradePackage::PackageID:
+	case RspQryTradePackage::PackageId:
 	{
 		return RspQryTradePackage::Allocate();
 	}
-	case ReqQryInstrumentPackage::PackageID:
+	case ReqQryInstrumentPackage::PackageId:
 	{
 		return ReqQryInstrumentPackage::Allocate();
 	}
-	case RspQryInstrumentPackage::PackageID:
+	case RspQryInstrumentPackage::PackageId:
 	{
 		return RspQryInstrumentPackage::Allocate();
 	}
-	case ReqQryOptionInstrumentPackage::PackageID:
+	case ReqQryOptionInstrumentPackage::PackageId:
 	{
 		return ReqQryOptionInstrumentPackage::Allocate();
 	}
-	case RspQryOptionInstrumentPackage::PackageID:
+	case RspQryOptionInstrumentPackage::PackageId:
 	{
 		return RspQryOptionInstrumentPackage::Allocate();
 	}
-	case ReqQryCommissionRatePackage::PackageID:
+	case ReqQryCommissionRatePackage::PackageId:
 	{
 		return ReqQryCommissionRatePackage::Allocate();
 	}
-	case RspQryCommissionRatePackage::PackageID:
+	case RspQryCommissionRatePackage::PackageId:
 	{
 		return RspQryCommissionRatePackage::Allocate();
 	}
-	case ReqQryMoneyTransferPackage::PackageID:
+	case ReqQryMoneyTransferPackage::PackageId:
 	{
 		return ReqQryMoneyTransferPackage::Allocate();
 	}
-	case RspQryMoneyTransferPackage::PackageID:
+	case RspQryMoneyTransferPackage::PackageId:
 	{
 		return RspQryMoneyTransferPackage::Allocate();
 	}
-	case ReqInsertOrderPackage::PackageID:
+	case ReqInsertOrderPackage::PackageId:
 	{
 		return ReqInsertOrderPackage::Allocate();
 	}
-	case RspInsertOrderPackage::PackageID:
+	case RspInsertOrderPackage::PackageId:
 	{
 		return RspInsertOrderPackage::Allocate();
 	}
-	case ReqCancelOrderPackage::PackageID:
+	case ReqCancelOrderPackage::PackageId:
 	{
 		return ReqCancelOrderPackage::Allocate();
 	}
-	case RspCancelOrderPackage::PackageID:
+	case RspCancelOrderPackage::PackageId:
 	{
 		return RspCancelOrderPackage::Allocate();
 	}
-	case RtnOrderPackage::PackageID:
+	case RtnOrderPackage::PackageId:
 	{
 		return RtnOrderPackage::Allocate();
 	}
-	case RtnTradePackage::PackageID:
+	case RtnTradePackage::PackageId:
 	{
 		return RtnTradePackage::Allocate();
 	}
-	case RtnMoneyTransferPackage::PackageID:
+	case RtnMoneyTransferPackage::PackageId:
 	{
 		return RtnMoneyTransferPackage::Allocate();
 	}
-	case RtnAccountLogoutPackage::PackageID:
+	case RtnAccountLogoutPackage::PackageId:
 	{
 		return RtnAccountLogoutPackage::Allocate();
 	}
-	case ReqRiskUserLoginPackage::PackageID:
+	case ReqRiskUserLoginPackage::PackageId:
 	{
 		return ReqRiskUserLoginPackage::Allocate();
 	}
-	case RspRiskUserLoginPackage::PackageID:
+	case RspRiskUserLoginPackage::PackageId:
 	{
 		return RspRiskUserLoginPackage::Allocate();
 	}
-	case ReqRiskUserLogoutPackage::PackageID:
+	case ReqRiskUserLogoutPackage::PackageId:
 	{
 		return ReqRiskUserLogoutPackage::Allocate();
 	}
-	case RspRiskUserLogoutPackage::PackageID:
+	case RspRiskUserLogoutPackage::PackageId:
 	{
 		return RspRiskUserLogoutPackage::Allocate();
 	}
-	case RtnRiskUserLogoutPackage::PackageID:
+	case RtnRiskUserLogoutPackage::PackageId:
 	{
 		return RtnRiskUserLogoutPackage::Allocate();
 	}
-	case RtnAccountPackage::PackageID:
+	case RtnAccountPackage::PackageId:
 	{
 		return RtnAccountPackage::Allocate();
 	}
-	case RtnAccountDeletePackage::PackageID:
+	case RtnAccountDeletePackage::PackageId:
 	{
 		return RtnAccountDeletePackage::Allocate();
 	}
-	case RtnPositionPackage::PackageID:
+	case RtnPositionPackage::PackageId:
 	{
 		return RtnPositionPackage::Allocate();
 	}
-	case RtnAccountRiskPackage::PackageID:
+	case RtnAccountRiskPackage::PackageId:
 	{
 		return RtnAccountRiskPackage::Allocate();
 	}
-	case RtnAccountRiskDeletePackage::PackageID:
+	case RtnAccountRiskDeletePackage::PackageId:
 	{
 		return RtnAccountRiskDeletePackage::Allocate();
 	}
-	case RtnAccountRiskNotifyPackage::PackageID:
+	case RtnAccountRiskNotifyPackage::PackageId:
 	{
 		return RtnAccountRiskNotifyPackage::Allocate();
 	}
-	case ReqQryRiskGroupAccountPackage::PackageID:
+	case ReqQryRiskGroupAccountPackage::PackageId:
 	{
 		return ReqQryRiskGroupAccountPackage::Allocate();
 	}
-	case RspQryRiskGroupAccountPackage::PackageID:
+	case RspQryRiskGroupAccountPackage::PackageId:
 	{
 		return RspQryRiskGroupAccountPackage::Allocate();
 	}
-	case ReqQryRiskGroupCapitalPackage::PackageID:
+	case ReqQryRiskGroupCapitalPackage::PackageId:
 	{
 		return ReqQryRiskGroupCapitalPackage::Allocate();
 	}
-	case RspQryRiskGroupCapitalPackage::PackageID:
+	case RspQryRiskGroupCapitalPackage::PackageId:
 	{
 		return RspQryRiskGroupCapitalPackage::Allocate();
 	}
-	case ReqQryRiskGroupPositionPackage::PackageID:
+	case ReqQryRiskGroupPositionPackage::PackageId:
 	{
 		return ReqQryRiskGroupPositionPackage::Allocate();
 	}
-	case RspQryRiskGroupPositionPackage::PackageID:
+	case RspQryRiskGroupPositionPackage::PackageId:
 	{
 		return RspQryRiskGroupPositionPackage::Allocate();
 	}
-	case ReqQryRiskGroupOrderPackage::PackageID:
+	case ReqQryRiskGroupOrderPackage::PackageId:
 	{
 		return ReqQryRiskGroupOrderPackage::Allocate();
 	}
-	case RspQryRiskGroupOrderPackage::PackageID:
+	case RspQryRiskGroupOrderPackage::PackageId:
 	{
 		return RspQryRiskGroupOrderPackage::Allocate();
 	}
-	case ReqQryRiskGroupTradePackage::PackageID:
+	case ReqQryRiskGroupTradePackage::PackageId:
 	{
 		return ReqQryRiskGroupTradePackage::Allocate();
 	}
-	case RspQryRiskGroupTradePackage::PackageID:
+	case RspQryRiskGroupTradePackage::PackageId:
 	{
 		return RspQryRiskGroupTradePackage::Allocate();
 	}
-	case ReqQryRiskGroupAccountRiskPackage::PackageID:
+	case ReqQryRiskGroupAccountRiskPackage::PackageId:
 	{
 		return ReqQryRiskGroupAccountRiskPackage::Allocate();
 	}
-	case RspQryRiskGroupAccountRiskPackage::PackageID:
+	case RspQryRiskGroupAccountRiskPackage::PackageId:
 	{
 		return RspQryRiskGroupAccountRiskPackage::Allocate();
 	}
-	case ReqQryRiskGroupAccountRiskNotifyPackage::PackageID:
+	case ReqQryRiskGroupAccountRiskNotifyPackage::PackageId:
 	{
 		return ReqQryRiskGroupAccountRiskNotifyPackage::Allocate();
 	}
-	case RspQryRiskGroupAccountRiskNotifyPackage::PackageID:
+	case RspQryRiskGroupAccountRiskNotifyPackage::PackageId:
 	{
 		return RspQryRiskGroupAccountRiskNotifyPackage::Allocate();
 	}
-	case ReqRiskInsertOrderPackage::PackageID:
+	case ReqRiskInsertOrderPackage::PackageId:
 	{
 		return ReqRiskInsertOrderPackage::Allocate();
 	}
-	case RspRiskInsertOrderPackage::PackageID:
+	case RspRiskInsertOrderPackage::PackageId:
 	{
 		return RspRiskInsertOrderPackage::Allocate();
 	}
-	case ReqRiskCancelOrderPackage::PackageID:
+	case ReqRiskCancelOrderPackage::PackageId:
 	{
 		return ReqRiskCancelOrderPackage::Allocate();
 	}
-	case RspRiskCancelOrderPackage::PackageID:
+	case RspRiskCancelOrderPackage::PackageId:
 	{
 		return RspRiskCancelOrderPackage::Allocate();
 	}
-	case ReqMdUserLoginPackage::PackageID:
+	case ReqMdUserLoginPackage::PackageId:
 	{
 		return ReqMdUserLoginPackage::Allocate();
 	}
-	case RspMdUserLoginPackage::PackageID:
+	case RspMdUserLoginPackage::PackageId:
 	{
 		return RspMdUserLoginPackage::Allocate();
 	}
-	case ReqMdUserLogoutPackage::PackageID:
+	case ReqMdUserLogoutPackage::PackageId:
 	{
 		return ReqMdUserLogoutPackage::Allocate();
 	}
-	case RspMdUserLogoutPackage::PackageID:
+	case RspMdUserLogoutPackage::PackageId:
 	{
 		return RspMdUserLogoutPackage::Allocate();
 	}
-	case ReqMdInitPackage::PackageID:
+	case ReqMdInitPackage::PackageId:
 	{
 		return ReqMdInitPackage::Allocate();
 	}
-	case RspMdInitPackage::PackageID:
+	case RspMdInitPackage::PackageId:
 	{
 		return RspMdInitPackage::Allocate();
 	}
-	case ReqSubscribeMdPackage::PackageID:
+	case ReqSubscribeMdPackage::PackageId:
 	{
 		return ReqSubscribeMdPackage::Allocate();
 	}
-	case RspSubscribeMdPackage::PackageID:
+	case RspSubscribeMdPackage::PackageId:
 	{
 		return RspSubscribeMdPackage::Allocate();
 	}
-	case RtnShortMdPackage::PackageID:
+	case RtnShortMdPackage::PackageId:
 	{
 		return RtnShortMdPackage::Allocate();
 	}
-	case RtnExchangeStatusPackage::PackageID:
+	case RtnExchangeStatusPackage::PackageId:
 	{
 		return RtnExchangeStatusPackage::Allocate();
 	}
-	case RtnMdInitCompletedPackage::PackageID:
+	case RtnMdInitCompletedPackage::PackageId:
 	{
 		return RtnMdInitCompletedPackage::Allocate();
 	}
-	case ReqAdminUserLoginPackage::PackageID:
+	case ReqAdminUserLoginPackage::PackageId:
 	{
 		return ReqAdminUserLoginPackage::Allocate();
 	}
-	case RspAdminUserLoginPackage::PackageID:
+	case RspAdminUserLoginPackage::PackageId:
 	{
 		return RspAdminUserLoginPackage::Allocate();
 	}
-	case ReqAdminUserLogoutPackage::PackageID:
+	case ReqAdminUserLogoutPackage::PackageId:
 	{
 		return ReqAdminUserLogoutPackage::Allocate();
 	}
-	case RspAdminUserLogoutPackage::PackageID:
+	case RspAdminUserLogoutPackage::PackageId:
 	{
 		return RspAdminUserLogoutPackage::Allocate();
 	}
-	case RtnAdminUserLogoutPackage::PackageID:
+	case RtnAdminUserLogoutPackage::PackageId:
 	{
 		return RtnAdminUserLogoutPackage::Allocate();
 	}
-	case ReqAddRiskUserPackage::PackageID:
+	case ReqAddRiskUserPackage::PackageId:
 	{
 		return ReqAddRiskUserPackage::Allocate();
 	}
-	case RspAddRiskUserPackage::PackageID:
+	case RspAddRiskUserPackage::PackageId:
 	{
 		return RspAddRiskUserPackage::Allocate();
 	}
-	case ReqUpdateRiskUserPackage::PackageID:
+	case ReqUpdateRiskUserPackage::PackageId:
 	{
 		return ReqUpdateRiskUserPackage::Allocate();
 	}
-	case RspUpdateRiskUserPackage::PackageID:
+	case RspUpdateRiskUserPackage::PackageId:
 	{
 		return RspUpdateRiskUserPackage::Allocate();
 	}
-	case ReqRemoveRiskUserPackage::PackageID:
+	case ReqRemoveRiskUserPackage::PackageId:
 	{
 		return ReqRemoveRiskUserPackage::Allocate();
 	}
-	case RspRemoveRiskUserPackage::PackageID:
+	case RspRemoveRiskUserPackage::PackageId:
 	{
 		return RspRemoveRiskUserPackage::Allocate();
 	}
-	case ReqAddAdminUserPackage::PackageID:
+	case ReqAddAdminUserPackage::PackageId:
 	{
 		return ReqAddAdminUserPackage::Allocate();
 	}
-	case RspAddAdminUserPackage::PackageID:
+	case RspAddAdminUserPackage::PackageId:
 	{
 		return RspAddAdminUserPackage::Allocate();
 	}
-	case ReqUpdateAdminUserPackage::PackageID:
+	case ReqUpdateAdminUserPackage::PackageId:
 	{
 		return ReqUpdateAdminUserPackage::Allocate();
 	}
-	case RspUpdateAdminUserPackage::PackageID:
+	case RspUpdateAdminUserPackage::PackageId:
 	{
 		return RspUpdateAdminUserPackage::Allocate();
 	}
-	case ReqRemoveAdminUserPackage::PackageID:
+	case ReqRemoveAdminUserPackage::PackageId:
 	{
 		return ReqRemoveAdminUserPackage::Allocate();
 	}
-	case RspRemoveAdminUserPackage::PackageID:
+	case RspRemoveAdminUserPackage::PackageId:
 	{
 		return RspRemoveAdminUserPackage::Allocate();
 	}
-	case ReqAddPrimaryAccountPackage::PackageID:
+	case ReqAddPrimaryAccountPackage::PackageId:
 	{
 		return ReqAddPrimaryAccountPackage::Allocate();
 	}
-	case RspAddPrimaryAccountPackage::PackageID:
+	case RspAddPrimaryAccountPackage::PackageId:
 	{
 		return RspAddPrimaryAccountPackage::Allocate();
 	}
-	case ReqUpdatePrimaryAccountPackage::PackageID:
+	case ReqUpdatePrimaryAccountPackage::PackageId:
 	{
 		return ReqUpdatePrimaryAccountPackage::Allocate();
 	}
-	case RspUpdatePrimaryAccountPackage::PackageID:
+	case RspUpdatePrimaryAccountPackage::PackageId:
 	{
 		return RspUpdatePrimaryAccountPackage::Allocate();
 	}
-	case ReqRemovePrimaryAccountPackage::PackageID:
+	case ReqRemovePrimaryAccountPackage::PackageId:
 	{
 		return ReqRemovePrimaryAccountPackage::Allocate();
 	}
-	case RspRemovePrimaryAccountPackage::PackageID:
+	case RspRemovePrimaryAccountPackage::PackageId:
 	{
 		return RspRemovePrimaryAccountPackage::Allocate();
 	}
-	case ReqAddAccountPackage::PackageID:
+	case ReqAddAccountPackage::PackageId:
 	{
 		return ReqAddAccountPackage::Allocate();
 	}
-	case RspAddAccountPackage::PackageID:
+	case RspAddAccountPackage::PackageId:
 	{
 		return RspAddAccountPackage::Allocate();
 	}
-	case ReqUpdateAccountPackage::PackageID:
+	case ReqUpdateAccountPackage::PackageId:
 	{
 		return ReqUpdateAccountPackage::Allocate();
 	}
-	case RspUpdateAccountPackage::PackageID:
+	case RspUpdateAccountPackage::PackageId:
 	{
 		return RspUpdateAccountPackage::Allocate();
 	}
-	case ReqRemoveAccountPackage::PackageID:
+	case ReqRemoveAccountPackage::PackageId:
 	{
 		return ReqRemoveAccountPackage::Allocate();
 	}
-	case RspRemoveAccountPackage::PackageID:
+	case RspRemoveAccountPackage::PackageId:
 	{
 		return RspRemoveAccountPackage::Allocate();
 	}
-	case ReqAddBaseCommissionPackage::PackageID:
+	case ReqAddBaseCommissionPackage::PackageId:
 	{
 		return ReqAddBaseCommissionPackage::Allocate();
 	}
-	case RspAddBaseCommissionPackage::PackageID:
+	case RspAddBaseCommissionPackage::PackageId:
 	{
 		return RspAddBaseCommissionPackage::Allocate();
 	}
-	case ReqUpdateBaseCommissionPackage::PackageID:
+	case ReqUpdateBaseCommissionPackage::PackageId:
 	{
 		return ReqUpdateBaseCommissionPackage::Allocate();
 	}
-	case RspUpdateBaseCommissionPackage::PackageID:
+	case RspUpdateBaseCommissionPackage::PackageId:
 	{
 		return RspUpdateBaseCommissionPackage::Allocate();
 	}
-	case ReqRemoveBaseCommissionPackage::PackageID:
+	case ReqRemoveBaseCommissionPackage::PackageId:
 	{
 		return ReqRemoveBaseCommissionPackage::Allocate();
 	}
-	case RspRemoveBaseCommissionPackage::PackageID:
+	case RspRemoveBaseCommissionPackage::PackageId:
 	{
 		return RspRemoveBaseCommissionPackage::Allocate();
 	}
-	case ReqAddCommissionGroupPackage::PackageID:
+	case ReqAddCommissionGroupPackage::PackageId:
 	{
 		return ReqAddCommissionGroupPackage::Allocate();
 	}
-	case RspAddCommissionGroupPackage::PackageID:
+	case RspAddCommissionGroupPackage::PackageId:
 	{
 		return RspAddCommissionGroupPackage::Allocate();
 	}
-	case ReqUpdateCommissionGroupPackage::PackageID:
+	case ReqUpdateCommissionGroupPackage::PackageId:
 	{
 		return ReqUpdateCommissionGroupPackage::Allocate();
 	}
-	case RspUpdateCommissionGroupPackage::PackageID:
+	case RspUpdateCommissionGroupPackage::PackageId:
 	{
 		return RspUpdateCommissionGroupPackage::Allocate();
 	}
-	case ReqRemoveCommissionGroupPackage::PackageID:
+	case ReqRemoveCommissionGroupPackage::PackageId:
 	{
 		return ReqRemoveCommissionGroupPackage::Allocate();
 	}
-	case RspRemoveCommissionGroupPackage::PackageID:
+	case RspRemoveCommissionGroupPackage::PackageId:
 	{
 		return RspRemoveCommissionGroupPackage::Allocate();
 	}
-	case ReqAddOptionMarginParamPackage::PackageID:
+	case ReqAddOptionMarginParamPackage::PackageId:
 	{
 		return ReqAddOptionMarginParamPackage::Allocate();
 	}
-	case RspAddOptionMarginParamPackage::PackageID:
+	case RspAddOptionMarginParamPackage::PackageId:
 	{
 		return RspAddOptionMarginParamPackage::Allocate();
 	}
-	case ReqUpdateOptionMarginParamPackage::PackageID:
+	case ReqUpdateOptionMarginParamPackage::PackageId:
 	{
 		return ReqUpdateOptionMarginParamPackage::Allocate();
 	}
-	case RspUpdateOptionMarginParamPackage::PackageID:
+	case RspUpdateOptionMarginParamPackage::PackageId:
 	{
 		return RspUpdateOptionMarginParamPackage::Allocate();
 	}
-	case ReqRemoveOptionMarginParamPackage::PackageID:
+	case ReqRemoveOptionMarginParamPackage::PackageId:
 	{
 		return ReqRemoveOptionMarginParamPackage::Allocate();
 	}
-	case RspRemoveOptionMarginParamPackage::PackageID:
+	case RspRemoveOptionMarginParamPackage::PackageId:
 	{
 		return RspRemoveOptionMarginParamPackage::Allocate();
 	}
-	case ReqAddTradeOfferPackage::PackageID:
+	case ReqAddTradeOfferPackage::PackageId:
 	{
 		return ReqAddTradeOfferPackage::Allocate();
 	}
-	case RspAddTradeOfferPackage::PackageID:
+	case RspAddTradeOfferPackage::PackageId:
 	{
 		return RspAddTradeOfferPackage::Allocate();
 	}
-	case ReqUpdateTradeOfferPackage::PackageID:
+	case ReqUpdateTradeOfferPackage::PackageId:
 	{
 		return ReqUpdateTradeOfferPackage::Allocate();
 	}
-	case RspUpdateTradeOfferPackage::PackageID:
+	case RspUpdateTradeOfferPackage::PackageId:
 	{
 		return RspUpdateTradeOfferPackage::Allocate();
 	}
-	case ReqRemoveTradeOfferPackage::PackageID:
+	case ReqRemoveTradeOfferPackage::PackageId:
 	{
 		return ReqRemoveTradeOfferPackage::Allocate();
 	}
-	case RspRemoveTradeOfferPackage::PackageID:
+	case RspRemoveTradeOfferPackage::PackageId:
 	{
 		return RspRemoveTradeOfferPackage::Allocate();
 	}
-	case ReqAddTradeGroupPackage::PackageID:
+	case ReqAddTradeGroupPackage::PackageId:
 	{
 		return ReqAddTradeGroupPackage::Allocate();
 	}
-	case RspAddTradeGroupPackage::PackageID:
+	case RspAddTradeGroupPackage::PackageId:
 	{
 		return RspAddTradeGroupPackage::Allocate();
 	}
-	case ReqUpdateTradeGroupPackage::PackageID:
+	case ReqUpdateTradeGroupPackage::PackageId:
 	{
 		return ReqUpdateTradeGroupPackage::Allocate();
 	}
-	case RspUpdateTradeGroupPackage::PackageID:
+	case RspUpdateTradeGroupPackage::PackageId:
 	{
 		return RspUpdateTradeGroupPackage::Allocate();
 	}
-	case ReqRemoveTradeGroupPackage::PackageID:
+	case ReqRemoveTradeGroupPackage::PackageId:
 	{
 		return ReqRemoveTradeGroupPackage::Allocate();
 	}
-	case RspRemoveTradeGroupPackage::PackageID:
+	case RspRemoveTradeGroupPackage::PackageId:
 	{
 		return RspRemoveTradeGroupPackage::Allocate();
 	}
-	case ReqAddTradeGroupItemPackage::PackageID:
+	case ReqAddTradeGroupItemPackage::PackageId:
 	{
 		return ReqAddTradeGroupItemPackage::Allocate();
 	}
-	case RspAddTradeGroupItemPackage::PackageID:
+	case RspAddTradeGroupItemPackage::PackageId:
 	{
 		return RspAddTradeGroupItemPackage::Allocate();
 	}
-	case ReqUpdateTradeGroupItemPackage::PackageID:
+	case ReqUpdateTradeGroupItemPackage::PackageId:
 	{
 		return ReqUpdateTradeGroupItemPackage::Allocate();
 	}
-	case RspUpdateTradeGroupItemPackage::PackageID:
+	case RspUpdateTradeGroupItemPackage::PackageId:
 	{
 		return RspUpdateTradeGroupItemPackage::Allocate();
 	}
-	case ReqRemoveTradeGroupItemPackage::PackageID:
+	case ReqRemoveTradeGroupItemPackage::PackageId:
 	{
 		return ReqRemoveTradeGroupItemPackage::Allocate();
 	}
-	case RspRemoveTradeGroupItemPackage::PackageID:
+	case RspRemoveTradeGroupItemPackage::PackageId:
 	{
 		return RspRemoveTradeGroupItemPackage::Allocate();
 	}
-	case ReqAddRiskGroupPackage::PackageID:
+	case ReqAddRiskGroupPackage::PackageId:
 	{
 		return ReqAddRiskGroupPackage::Allocate();
 	}
-	case RspAddRiskGroupPackage::PackageID:
+	case RspAddRiskGroupPackage::PackageId:
 	{
 		return RspAddRiskGroupPackage::Allocate();
 	}
-	case ReqUpdateRiskGroupPackage::PackageID:
+	case ReqUpdateRiskGroupPackage::PackageId:
 	{
 		return ReqUpdateRiskGroupPackage::Allocate();
 	}
-	case RspUpdateRiskGroupPackage::PackageID:
+	case RspUpdateRiskGroupPackage::PackageId:
 	{
 		return RspUpdateRiskGroupPackage::Allocate();
 	}
-	case ReqRemoveRiskGroupPackage::PackageID:
+	case ReqRemoveRiskGroupPackage::PackageId:
 	{
 		return ReqRemoveRiskGroupPackage::Allocate();
 	}
-	case RspRemoveRiskGroupPackage::PackageID:
+	case RspRemoveRiskGroupPackage::PackageId:
 	{
 		return RspRemoveRiskGroupPackage::Allocate();
 	}
-	case ReqAddRiskGroupItemPackage::PackageID:
+	case ReqAddRiskGroupItemPackage::PackageId:
 	{
 		return ReqAddRiskGroupItemPackage::Allocate();
 	}
-	case RspAddRiskGroupItemPackage::PackageID:
+	case RspAddRiskGroupItemPackage::PackageId:
 	{
 		return RspAddRiskGroupItemPackage::Allocate();
 	}
-	case ReqUpdateRiskGroupItemPackage::PackageID:
+	case ReqUpdateRiskGroupItemPackage::PackageId:
 	{
 		return ReqUpdateRiskGroupItemPackage::Allocate();
 	}
-	case RspUpdateRiskGroupItemPackage::PackageID:
+	case RspUpdateRiskGroupItemPackage::PackageId:
 	{
 		return RspUpdateRiskGroupItemPackage::Allocate();
 	}
-	case ReqRemoveRiskGroupItemPackage::PackageID:
+	case ReqRemoveRiskGroupItemPackage::PackageId:
 	{
 		return ReqRemoveRiskGroupItemPackage::Allocate();
 	}
-	case RspRemoveRiskGroupItemPackage::PackageID:
+	case RspRemoveRiskGroupItemPackage::PackageId:
 	{
 		return RspRemoveRiskGroupItemPackage::Allocate();
 	}
-	case ReqAddOrUpdateRiskPackage::PackageID:
+	case ReqAddOrUpdateRiskPackage::PackageId:
 	{
 		return ReqAddOrUpdateRiskPackage::Allocate();
 	}
-	case RspAddOrUpdateRiskPackage::PackageID:
+	case RspAddOrUpdateRiskPackage::PackageId:
 	{
 		return RspAddOrUpdateRiskPackage::Allocate();
 	}
-	case ReqRemoveRiskPackage::PackageID:
+	case ReqRemoveRiskPackage::PackageId:
 	{
 		return ReqRemoveRiskPackage::Allocate();
 	}
-	case RspRemoveRiskPackage::PackageID:
+	case RspRemoveRiskPackage::PackageId:
 	{
 		return RspRemoveRiskPackage::Allocate();
 	}
-	case ReqAddRiskRulePackage::PackageID:
+	case ReqAddRiskRulePackage::PackageId:
 	{
 		return ReqAddRiskRulePackage::Allocate();
 	}
-	case RspAddRiskRulePackage::PackageID:
+	case RspAddRiskRulePackage::PackageId:
 	{
 		return RspAddRiskRulePackage::Allocate();
 	}
-	case ReqAddRiskRuleItemPackage::PackageID:
+	case ReqAddRiskRuleItemPackage::PackageId:
 	{
 		return ReqAddRiskRuleItemPackage::Allocate();
 	}
-	case RspAddRiskRuleItemPackage::PackageID:
+	case RspAddRiskRuleItemPackage::PackageId:
 	{
 		return RspAddRiskRuleItemPackage::Allocate();
 	}
-	case ReqAddRiskTradeScopePackage::PackageID:
+	case ReqAddRiskTradeScopePackage::PackageId:
 	{
 		return ReqAddRiskTradeScopePackage::Allocate();
 	}
-	case RspAddRiskTradeScopePackage::PackageID:
+	case RspAddRiskTradeScopePackage::PackageId:
 	{
 		return RspAddRiskTradeScopePackage::Allocate();
 	}
-	case ReqAddAccountRiskPackage::PackageID:
+	case ReqAddAccountRiskPackage::PackageId:
 	{
 		return ReqAddAccountRiskPackage::Allocate();
 	}
-	case RspAddAccountRiskPackage::PackageID:
+	case RspAddAccountRiskPackage::PackageId:
 	{
 		return RspAddAccountRiskPackage::Allocate();
 	}
-	case ReqRemoveAccountRiskPackage::PackageID:
+	case ReqRemoveAccountRiskPackage::PackageId:
 	{
 		return ReqRemoveAccountRiskPackage::Allocate();
 	}
-	case RspRemoveAccountRiskPackage::PackageID:
+	case RspRemoveAccountRiskPackage::PackageId:
 	{
 		return RspRemoveAccountRiskPackage::Allocate();
 	}
-	case ReqMoneyTransferPackage::PackageID:
+	case ReqMoneyTransferPackage::PackageId:
 	{
 		return ReqMoneyTransferPackage::Allocate();
 	}
-	case RspMoneyTransferPackage::PackageID:
+	case RspMoneyTransferPackage::PackageId:
 	{
 		return RspMoneyTransferPackage::Allocate();
 	}
-	case ReqAuditOrderPackage::PackageID:
+	case ReqAuditOrderPackage::PackageId:
 	{
 		return ReqAuditOrderPackage::Allocate();
 	}
-	case RspAuditOrderPackage::PackageID:
+	case RspAuditOrderPackage::PackageId:
 	{
 		return RspAuditOrderPackage::Allocate();
 	}
-	case ReqOfferLoginPackage::PackageID:
+	case ReqOfferLoginPackage::PackageId:
 	{
 		return ReqOfferLoginPackage::Allocate();
 	}
-	case RspOfferLoginPackage::PackageID:
+	case RspOfferLoginPackage::PackageId:
 	{
 		return RspOfferLoginPackage::Allocate();
 	}
-	case ReqPrimaryAccountLoginPackage::PackageID:
+	case ReqPrimaryAccountLoginPackage::PackageId:
 	{
 		return ReqPrimaryAccountLoginPackage::Allocate();
 	}
-	case RspPrimaryAccountLoginPackage::PackageID:
+	case RspPrimaryAccountLoginPackage::PackageId:
 	{
 		return RspPrimaryAccountLoginPackage::Allocate();
 	}
-	case ReqPrimaryAccountLogoutPackage::PackageID:
+	case ReqPrimaryAccountLogoutPackage::PackageId:
 	{
 		return ReqPrimaryAccountLogoutPackage::Allocate();
 	}
-	case RtnPrimaryAccountLogoutPackage::PackageID:
+	case RtnPrimaryAccountLogoutPackage::PackageId:
 	{
 		return RtnPrimaryAccountLogoutPackage::Allocate();
 	}
-	case ReqPrimaryAccountInitPackage::PackageID:
+	case ReqPrimaryAccountInitPackage::PackageId:
 	{
 		return ReqPrimaryAccountInitPackage::Allocate();
 	}
-	case RspPrimaryAccountInitPackage::PackageID:
+	case RspPrimaryAccountInitPackage::PackageId:
 	{
 		return RspPrimaryAccountInitPackage::Allocate();
 	}
-	case ReqPrimaryAccountQueryPackage::PackageID:
+	case ReqPrimaryAccountQueryPackage::PackageId:
 	{
 		return ReqPrimaryAccountQueryPackage::Allocate();
 	}
-	case RspPrimaryAccountQueryPackage::PackageID:
+	case RspPrimaryAccountQueryPackage::PackageId:
 	{
 		return RspPrimaryAccountQueryPackage::Allocate();
 	}
-	case ReqQryOfferOptionInstrumentPackage::PackageID:
+	case ReqQryOfferOptionInstrumentPackage::PackageId:
 	{
 		return ReqQryOfferOptionInstrumentPackage::Allocate();
 	}
-	case RspQryOfferOptionInstrumentPackage::PackageID:
+	case RspQryOfferOptionInstrumentPackage::PackageId:
 	{
 		return RspQryOfferOptionInstrumentPackage::Allocate();
 	}
-	case RtnOfferOptionInstrumentPackage::PackageID:
+	case RtnOfferOptionInstrumentPackage::PackageId:
 	{
 		return RtnOfferOptionInstrumentPackage::Allocate();
 	}
-	case ReqOfferOrderPackage::PackageID:
+	case ReqOfferOrderPackage::PackageId:
 	{
 		return ReqOfferOrderPackage::Allocate();
 	}
-	case ReqOfferCancelOrderPackage::PackageID:
+	case ReqOfferCancelOrderPackage::PackageId:
 	{
 		return ReqOfferCancelOrderPackage::Allocate();
 	}
-	case RtnOfferOrderPackage::PackageID:
+	case RtnOfferOrderPackage::PackageId:
 	{
 		return RtnOfferOrderPackage::Allocate();
 	}
-	case RtnOfferTradePackage::PackageID:
+	case RtnOfferTradePackage::PackageId:
 	{
 		return RtnOfferTradePackage::Allocate();
 	}
-	case RtnOfferErrorCancelOrderPackage::PackageID:
+	case RtnOfferErrorCancelOrderPackage::PackageId:
 	{
 		return RtnOfferErrorCancelOrderPackage::Allocate();
 	}
-	case RtnOfferCapitalPackage::PackageID:
+	case RtnOfferCapitalPackage::PackageId:
 	{
 		return RtnOfferCapitalPackage::Allocate();
 	}
-	case RtnOfferPositionPackage::PackageID:
+	case RtnOfferPositionPackage::PackageId:
 	{
 		return RtnOfferPositionPackage::Allocate();
 	}

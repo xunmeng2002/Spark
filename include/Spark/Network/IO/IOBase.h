@@ -17,9 +17,9 @@ namespace Spark::Network
 class IOSubscriber
 {
 public:
-	virtual void OnConnect(SessionIDType sessionID, const char* ip, int port) = 0;
-	virtual void OnDisConnect(SessionIDType sessionID, const char* ip, int port) = 0;
-	virtual void OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer) = 0;
+	virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) = 0;
+	virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) = 0;
+	virtual void OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer) = 0;
 };
 
 class NETWORK_EXPORTS IOBase
@@ -33,9 +33,9 @@ public:
 
 	virtual bool Init() { return true; }
 	virtual bool ConnectToServer(const char* addressName) { return false; }
-	virtual void DisConnect(SessionIDType sessionID);
+	virtual void DisConnect(SessionIdType sessionId);
 	virtual void DisConnectAll();
-	virtual void Send(SessionIDType sessionID, Buffer<BuffSize>* buffer) = 0;
+	virtual void Send(SessionIdType sessionId, Buffer<BuffSize>* buffer) = 0;
 	
 	virtual void HandleIOEvent() = 0;
 
@@ -46,9 +46,9 @@ protected:
 
 	virtual void AddConnect(Connect* connect);
 	virtual void RemoveConnect(Connect* connect);
-	virtual Connect* GetConnect(SessionIDType sessionID);
+	virtual Connect* GetConnect(SessionIdType sessionId);
 
-	SessionIDType GetSessionID();
+	SessionIdType GetSessionId();
 	
 
 protected:
@@ -58,11 +58,11 @@ protected:
 	std::string port_;
 	std::chrono::milliseconds timeOut_;
 	IOSubscriber* ioSubscriber_;
-	SessionIDType lastSessionIndex_;
+	SessionIdType lastSessionIndex_;
 
-	std::map<SessionIDType, Connect*> connects_;
+	std::map<SessionIdType, Connect*> connects_;
 	std::mutex connectsMutex_;
-	std::list<SessionIDType> disConnectSessionIds_;
+	std::list<SessionIdType> disConnectSessionIds_;
 	std::mutex disConnectSessionIdsMutex_;
 
 	std::mutex mutex_;

@@ -17,7 +17,7 @@
 constexpr int StepKeyTextLen = 4;
 //包头由定宽字段拼成，长度与取值无关，故为编译期常量。每一段都用 StepKeyTextLen 表达，这样键宽一变
 //下面那条 static_assert 就会立刻报红，而不是留下"写侧发 4 位键、读侧找 5 位键"的静默错位。
-//锚点 1+4+1+4+1=11、Version/PackageID/BodyLen 各 4+1+4+1=10、MsgSeqNum 4+1+8+1=14、MessageChain 4+1+1+1=7
+//锚点 1+4+1+4+1=11、Version/PackageId/BodyLen 各 4+1+4+1=10、MsgSeqNum 4+1+8+1=14、MessageChain 4+1+1+1=7
 constexpr unsigned int StepHeadLen = (1u + StepKeyTextLen + 1u + 4u + 1u)
 	+ (StepKeyTextLen + 1u + 4u + 1u) * 3u
 	+ (StepKeyTextLen + 1u + 8u + 1u)
@@ -89,9 +89,9 @@ public:
 	static bool GetNextSoh(char* buff, int startIndex, int endIndex, int& sohIndex);
 	static bool GetNextEqual(char* buff, int startIndex, int endIndex, int& equalIndex);
 	static bool GetNext(char* buff, int startIndex, int endIndex, UInt16Type& key, std::string& value, int& sohIndex);
-	static bool GetFieldStart(char* buff, int startIndex, int endIndex, UInt16Type& fieldID, int& fieldStartIndex);
-	static bool GetFieldEnd(char* buff, int startIndex, int endIndex, UInt16Type& fieldID, int& fieldEndIndex);
-	static bool GetNextFieldZone(char* buff, int startIndex, int endIndex, UInt16Type& fieldID, int& fieldStartIndex, int& fieldEndIndex);
+	static bool GetFieldStart(char* buff, int startIndex, int endIndex, UInt16Type& fieldId, int& fieldStartIndex);
+	static bool GetFieldEnd(char* buff, int startIndex, int endIndex, UInt16Type& fieldId, int& fieldEndIndex);
+	static bool GetNextFieldZone(char* buff, int startIndex, int endIndex, UInt16Type& fieldId, int& fieldStartIndex, int& fieldEndIndex);
 	//报文起始锚点，形如 SOH + "0000=SPK2" + SOH，与 ProtocolVersion.h 的魔术字是同一串字节，
 	//且与 HeadToStream 写出的首字段逐字节相同（两处共用同一次格式化）
 	static const std::string& GetPackageStartAnchor();

@@ -65,20 +65,20 @@ void TcpEpollBase::HandleTcpEvent()
 		}
 		else if (epollEvent.events & EPOLLOUT)
 		{
-			if (serverType_ == ServerTypeType::Client && connects_.find(tcpConnect->SessionID) == connects_.end())
+			if (serverType_ == ServerTypeType::Client && connects_.find(tcpConnect->SessionId) == connects_.end())
 			{
 				int error = 0;
 				socklen_t len = sizeof(error);
 				int ret = getsockopt(tcpConnect->SocketId, SOL_SOCKET, SO_ERROR, &error, &len);
 				if (ret == -1)
 				{
-					WriteLog(LogLevel::Warning, "getsockopt Failed. SessionID:%lld, SocketId:%lld", tcpConnect->SessionID, tcpConnect->SocketId);
+					WriteLog(LogLevel::Warning, "getsockopt Failed. SessionId:%lld, SocketId:%lld", tcpConnect->SessionId, tcpConnect->SocketId);
 					RemoveConnect(tcpConnect);
 					continue;
 				}
 				if (errno != 0)
 				{
-					WriteLog(LogLevel::Warning, "Connect Failed. SessionID:%lld, SocketId:%lld, errno:%d", tcpConnect->SessionID, tcpConnect->SocketId, errno);
+					WriteLog(LogLevel::Warning, "Connect Failed. SessionId:%lld, SocketId:%lld, errno:%d", tcpConnect->SessionId, tcpConnect->SocketId, errno);
 					RemoveConnect(tcpConnect);
 					continue;
 				}

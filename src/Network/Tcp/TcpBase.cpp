@@ -73,12 +73,12 @@ bool TcpBase::Init()
 	}
 	return true;
 }
-void TcpBase::Send(SessionIDType sessionID, Buffer<BuffSize>* buffer)
+void TcpBase::Send(SessionIdType sessionId, Buffer<BuffSize>* buffer)
 {
-	auto connect = (TcpConnect*)GetConnect(sessionID);
+	auto connect = (TcpConnect*)GetConnect(sessionId);
 	if (connect == nullptr)
 	{
-		WriteLog(LogLevel::Warning, "Send Connect Not Exist, Drop Buffer. SessionID:%lld, Len:%d", sessionID, buffer->GetLength());
+		WriteLog(LogLevel::Warning, "Send Connect Not Exist, Drop Buffer. SessionId:%lld, Len:%d", sessionId, buffer->GetLength());
 		buffer->Deallocate();
 		return;
 	}
@@ -150,12 +150,12 @@ void TcpBase::DoSend(Connect* connect)
 		}
 		else
 		{
-			auto errorID = WSAGetLastError();
+			auto errorId = WSAGetLastError();
 #ifdef _WIN32
-			if (errorID == WSAEWOULDBLOCK || errorID == WSAENOBUFS)
+			if (errorId == WSAEWOULDBLOCK || errorId == WSAENOBUFS)
 #endif
 #ifdef __linux__
-			if (errorID == EWOULDBLOCK || errorID == ENOBUFS || errorID == ENOMEM)
+			if (errorId == EWOULDBLOCK || errorId == ENOBUFS || errorId == ENOMEM)
 #endif
 			{
 				connect->PushFront(buffer);
@@ -163,9 +163,9 @@ void TcpBase::DoSend(Connect* connect)
 			}
 			else
 			{
-				WriteLog(LogLevel::Warning, "Tcp send Failed. SessionID:%lld, len:%d, errorID:%d", connect->SessionID, len, errorID);
+				WriteLog(LogLevel::Warning, "Tcp send Failed. SessionId:%lld, len:%d, errorId:%d", connect->SessionId, len, errorId);
 				buffer->Deallocate();
-				DisConnect(connect->SessionID);
+				DisConnect(connect->SessionId);
 			}
 		}
 	}
@@ -178,17 +178,17 @@ void TcpBase::DoRecv(Connect* connect)
 	int len = recv(tcpConnect->SocketId, data, BuffSize - 1, 0);
 	if (len <= 0)
 	{
-		WriteLog(LogLevel::Info, "DisConnect For Recv. SessionID:%lld, Socket:%lld, ErrorID:%d", tcpConnect->SessionID, tcpConnect->SocketId, len);
+		WriteLog(LogLevel::Info, "DisConnect For Recv. SessionId:%lld, Socket:%lld, ErrorId:%d", tcpConnect->SessionId, tcpConnect->SocketId, len);
 		buffer->Deallocate();
-		DisConnect(tcpConnect->SessionID);
+		DisConnect(tcpConnect->SessionId);
 	}
 	else if (ioSubscriber_)
 	{
 		data[len] = '\0';
-		WriteLog(LogLevel::Ignore, "OnRecv: SessionID:%lld, Socket:%lld, RecvLen:%d", tcpConnect->SessionID, tcpConnect->SocketId, len);
+		WriteLog(LogLevel::Ignore, "OnRecv: SessionId:%lld, Socket:%lld, RecvLen:%d", tcpConnect->SessionId, tcpConnect->SocketId, len);
 		buffer->SetLength(len);
 
-		ioSubscriber_->OnRecv(tcpConnect->SessionID, buffer);
+		ioSubscriber_->OnRecv(tcpConnect->SessionId, buffer);
 	}
 	else
 	{
@@ -199,15 +199,15 @@ void TcpBase::DoAccept()
 {
 	for (int i = 0; i < 5; i++)
 	{
-		SOCKET socketID = accept(socket_, (sockaddr*)&remoteAddress_, &remoteAddressLen_);
-		if (socketID == INVALID_SOCKET)
+		SOCKET socketId = accept(socket_, (sockaddr*)&remoteAddress_, &remoteAddressLen_);
+		if (socketId == INVALID_SOCKET)
 		{
 			break;
 		}
 		std::string ip, port;
 		auto ret = TcpUtility::GetNameinfo((sockaddr*)&remoteAddress_, remoteAddressLen_, ip, port);
-		TcpUtility::SetSockNodelay(socketID);
-		auto connect = TcpConnect::Allocate(GetSessionID(), socketID, ip, port);
+		TcpUtility::SetSockNodelay(socketId);
+		auto connect = TcpConnect::Allocate(GetSessionId(), socketId, ip, port);
 		AddConnect(connect);
 	}
 }

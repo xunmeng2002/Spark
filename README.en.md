@@ -243,12 +243,12 @@ using namespace Spark;
 using namespace Spark::Core;
 using namespace Spark::Network;
 
-// Package factory: creates the corresponding package object by package ID
+// Package factory: creates the corresponding package object by packageId
 // (implementation omitted here; see test/Packages/PackageFactory.cpp)
 class MyPackageFactory : public PackageFactoryBase
 {
 public:
-    virtual Package* CreatePackage(UShortType packageID) override;
+    virtual Package* CreatePackage(UShortType packageId) override;
 };
 
 // Step protocol client: inherit Protocol and implement ProtocolSubscriber callbacks
@@ -257,7 +257,7 @@ class MyStepClient : public Protocol, public ProtocolSubscriber
 public:
     MyStepClient()
         : Protocol(ProtocolTypeType::Step, ServerTypeType::Client,
-                   IOModelType::Select, 0, new MyPackageFactory())
+                   IoModelType::Select, 0, new MyPackageFactory())
     {
         m_ReqInsertOrder = new ReqInsertOrderPackage(); // auto-generated from the model (see test/Packages)
         Subscribe(this);                        // Register self as message subscriber
@@ -266,16 +266,16 @@ public:
     }
 
     // Connection established callback
-    void OnProtocolConnect(SessionIDType sessionID, const char* ip, int port) override
+    void OnProtocolConnect(SessionIdType sessionId, const char* ip, int port) override
     {
-        WriteLog(LogLevel::Info, "OnConnect SessionID:[%lld], IP:[%s], port:[%d]", sessionID, ip, port);
+        WriteLog(LogLevel::Info, "OnConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
         SendReqInsertOrder();
     }
 
     // Connection disconnected callback
-    void OnProtocolDisConnect(SessionIDType sessionID, const char* ip, int port) override
+    void OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port) override
     {
-        WriteLog(LogLevel::Info, "OnDisConnect SessionID:[%lld]", sessionID);
+        WriteLog(LogLevel::Info, "OnDisConnect SessionId:[%lld]", sessionId);
     }
 
     // Incoming message callback
@@ -291,9 +291,9 @@ public:
         m_ReqInsertOrder->Prepare(sessionId_, false, ++m_MessageSeqNum);
         m_ReqInsertOrder->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
         memset(m_ReqInsertOrder->ReqInsertOrder, 0, sizeof(ReqInsertOrderField));
-        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->AccountID, "Xunmeng001");
-        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->ExchangeID, "SHSE");
-        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->InstrumentID, "600036");
+        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->AccountId, "Xunmeng001");
+        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->ExchangeId, "SHSE");
+        Utility::Strcpy(m_ReqInsertOrder->ReqInsertOrder->InstrumentId, "600036");
         m_ReqInsertOrder->ReqInsertOrder->Direction = DirectionType::Buy;
         m_ReqInsertOrder->ReqInsertOrder->OffsetFlag = OffsetFlagType::Open;
         m_ReqInsertOrder->ReqInsertOrder->OrderPriceType = OrderPriceTypeType::LimitPrice;
@@ -304,7 +304,7 @@ public:
     }
 
 private:
-    SessionIDType sessionId_ = 0LL;
+    SessionIdType sessionId_ = 0LL;
     int m_MessageSeqNum = 0;
     ReqInsertOrderPackage* m_ReqInsertOrder;
 };

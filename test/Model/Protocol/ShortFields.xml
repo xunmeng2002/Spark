@@ -1,62 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fields>
 	<field name="RspInfo" 						id="0x0003" desc="应答信息">
-		<item name="ErrorID"/>
+		<item name="ErrorId"/>
 		<item name="ErrorMsg"/>
 	</field>
 	<field name="NotifyComponentConnectStatus" 	id="0x0004" desc="组件连接状态通知">
-		<item name="SessionID"/>
+		<item name="SessionId"/>
 		<item name="Component"/>
 		<item name="IsConnected"/>
 	</field>
 	
 	
 	<field name="ReqAccountLogin" 				id="0x1001" desc="账户登录请求">
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 		<item name="Password"/>
 	</field>
 	<field name="RspAccountLogin" 				id="0x1002" desc="账户登录应答">
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 		<item name="LoginDate"/>
 		<item name="LoginTime"/>
-		<item name="SessionID"/>
+		<item name="SessionId"/>
 	</field>
 	<field name="ReqAccountLogout" 				id="0x1003" desc="账户登出请求">
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="RspAccountLogout" 				id="0x1004" desc="账户登出应答">
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="AccountLogout" 				id="0x1005" desc="账户登出">
-		<item name="AccountID"/>
-		<item name="ErrorID"/>
+		<item name="AccountId"/>
+		<item name="ErrorId"/>
 		<item name="ErrorMsg"/>
 	</field>
 	<field name="ReqQryAccount" 				id="0x1006" desc="查询账户请求">
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="Account" 						id="0x1007" desc="账户">
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 		<item name="AccountType"/>
 		<item name="AccountStatus"/>
-		<item name="TradeGroupID"/>
-		<item name="RiskGroupID"/>
-		<item name="CommissionGroupID"/>
+		<item name="TradeGroupId"/>
+		<item name="RiskGroupId"/>
+		<item name="CommissionGroupId"/>
 	</field>
 	<field name="ReqQryHolderAccount" 			id="0x1008" desc="查询股东账户请求">
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="HolderAccount" 				id="0x1009" desc="股东账户">
-		<item name="ExchangeID"/>
-		<item name="HolderAccountID"/>
+		<item name="ExchangeId"/>
+		<item name="HolderAccountId"/>
 		<item name="PrimaryFlag"/>
 	</field>
 	<field name="ReqQryCapital" 				id="0x100A" desc="查询资金请求">
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="Capital" 						id="0x100B" desc="资金">
 		<item name="TradingDay"/>
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 		<item name="AccountType"/>
 		<item name="Asset"/>
 		<item name="PreAsset"/>
@@ -81,14 +81,14 @@
 		<item name="Withdraw"/>
 	</field>
 	<field name="ReqQryPosition" 				id="0x100C" desc="查询持仓请求">
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="Position" 						id="0x100D" desc="持仓">
 		<item name="TradingDay"/>
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 		<item name="AccountType"/>
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
 		<item name="ProductClass"/>
 		<item name="PosiDirection"/>
 		<item name="TotalPosition"/>
@@ -112,16 +112,16 @@
 		<item name="PrePrice"/>
 	</field>
 	<field name="ReqQryOrder" 					id="0x100E" desc="查询委托请求">
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="Order" 						id="0x100F" desc="委托">
 		<item name="TradingDay"/>
-		<item name="AccountID"/>
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
+		<item name="AccountId"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
 		<item name="ProductClass"/>
-		<item name="OrderID"/>
-		<item name="OrderSysID"/>
+		<item name="OrderId"/>
+		<item name="OrderSysId"/>
 		<item name="Direction"/>
 		<item name="OffsetFlag"/>
 		<item name="OrderPriceType"/>
@@ -136,9 +136,9 @@
 		<item name="OrderTime"/>
 		<item name="CancelDate"/>
 		<item name="CancelTime"/>
-		<item name="SessionID"/>
-		<item name="ClientOrderID"/>
-		<item name="RequestID"/>
+		<item name="SessionId"/>
+		<item name="ClientOrderId"/>
+		<item name="RequestId"/>
 		<item name="FrozenCash"/>
 		<item name="FrozenMargin"/>
 		<item name="FrozenCommission"/>
@@ -146,17 +146,17 @@
 		<item name="FrozenTransferFee"/>
 	</field>
 	<field name="ReqQryTrade" 					id="0x1010" desc="查询成交请求">
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="Trade" 						id="0x1011" desc="成交">
 		<item name="TradingDay"/>
-		<item name="AccountID"/>
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
+		<item name="AccountId"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
 		<item name="ProductClass"/>
-		<item name="OrderID"/>
-		<item name="OrderSysID"/>
-		<item name="TradeID"/>
+		<item name="OrderId"/>
+		<item name="OrderSysId"/>
+		<item name="TradeId"/>
 		<item name="Direction"/>
 		<item name="OffsetFlag"/>
 		<item name="Price"/>
@@ -170,29 +170,29 @@
 		<item name="TradeTime"/>
 	</field>
 	<field name="ReqQryInstrument" 				id="0x1012" desc="查询合约请求">
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
 	</field>
 	<field name="Instrument" 					id="0x1013" desc="合约">
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
-		<item name="ExchangeInstID"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
+		<item name="ExchangeInstId"/>
 		<item name="InstrumentName"/>
 		<item name="VolumeMultiple"/>
 		<item name="ProductClass"/>
 	</field>
 	<field name="ReqQryOptionInstrument" 		id="0x1014" desc="查询期权合约请求">
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
 	</field>
 	<field name="OptionInstrument" 				id="0x1015" desc="期权合约">
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
-		<item name="ExchangeInstID"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
+		<item name="ExchangeInstId"/>
 		<item name="InstrumentName"/>
 		<item name="VolumeMultiple"/>
 		<item name="OptionType"/>
-		<item name="UnderlyingInstrumentID"/>
+		<item name="UnderlyingInstrumentId"/>
 		<item name="ExecutePrice"/>
 		<item name="UnitMargin"/>
 		<item name="PriceTick"/>
@@ -201,13 +201,13 @@
 		<item name="ExpiringDate"/>
 	</field>
 	<field name="ReqQryCommissionRate" 			id="0x1016" desc="查询手续费率请求">
-		<item name="AccountID"/>
-		<item name="ExchangeID"/>
+		<item name="AccountId"/>
+		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
 	</field>
 	<field name="CommissionRate" 				id="0x1017" desc="手续费率">
-		<item name="AccountID"/>
-		<item name="ExchangeID"/>
+		<item name="AccountId"/>
+		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
 		<item name="OpenBuyByMoney"/>
 		<item name="OpenSellByMoney"/>
@@ -221,180 +221,180 @@
 		<item name="MaxCommission"/>
 	</field>
 	<field name="ReqQryMoneyTransfer" 			id="0x1018" desc="出入金查询请求">
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="MoneyTransfer" 				id="0x1019" desc="出入金">
 		<item name="TradingDay"/>
-		<item name="AccountID"/>
-		<item name="MoneyTransferID"/>
+		<item name="AccountId"/>
+		<item name="MoneyTransferId"/>
 		<item name="AccountType"/>
 		<item name="TransferDirection"/>
 		<item name="TransferAmount"/>
 		<item name="InfoMessage"/>
-		<item name="UserID"/>
+		<item name="UserId"/>
 		<item name="TransferDate"/>
 		<item name="TransferTime"/>
 	</field>
 	<field name="ReqInsertOrder" 				id="0x101A" desc="委托请求">
-		<item name="AccountID"/>
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
+		<item name="AccountId"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
 		<item name="Direction"/>
 		<item name="OffsetFlag"/>
 		<item name="OrderPriceType"/>
 		<item name="Price"/>
 		<item name="Volume"/>
-		<item name="ClientOrderID"/>
+		<item name="ClientOrderId"/>
 	</field>
 	<field name="ReqCancelOrder" 				id="0x101B" desc="撤单请求">
-		<item name="AccountID"/>
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
-		<item name="ClientCancelOrderID"/>
-		<item name="OrderID"/>
-		<item name="OrderSysID"/>
-		<item name="ClientOrderID"/>
+		<item name="AccountId"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
+		<item name="ClientCancelOrderId"/>
+		<item name="OrderId"/>
+		<item name="OrderSysId"/>
+		<item name="ClientOrderId"/>
 	</field>
 	<field name="CancelOrder" 					id="0x101C" desc="撤单">
-		<item name="AccountID"/>
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
-		<item name="ClientCancelOrderID"/>
-		<item name="OrderID"/>
-		<item name="OrderSysID"/>
-		<item name="ClientOrderID"/>
+		<item name="AccountId"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
+		<item name="ClientCancelOrderId"/>
+		<item name="OrderId"/>
+		<item name="OrderSysId"/>
+		<item name="ClientOrderId"/>
 	</field>
 	
 	<field name="ReqRiskUserLogin" 				id="0x2001" desc="风控用户登录请求">
-		<item name="UserID"/>
+		<item name="UserId"/>
 		<item name="Password"/>
 	</field>
 	<field name="RspRiskUserLogin" 				id="0x2002" desc="风控用户登录请求应答">
-		<item name="UserID"/>
-		<item name="RiskGroupID"/>
+		<item name="UserId"/>
+		<item name="RiskGroupId"/>
 		<item name="LoginDate"/>
 		<item name="LoginTime"/>
-		<item name="SessionID"/>
+		<item name="SessionId"/>
 	</field>
 	<field name="ReqRiskUserLogout" 			id="0x2003" desc="风控用户登出请求">
-		<item name="UserID"/>
+		<item name="UserId"/>
 	</field>
 	<field name="RspRiskUserLogout" 			id="0x2004" desc="风控用户登出请求应答">
-		<item name="UserID"/>
+		<item name="UserId"/>
 	</field>
 	<field name="RiskUserLogout" 				id="0x2005" desc="风控用户登出">
-		<item name="UserID"/>
-		<item name="ErrorID"/>
+		<item name="UserId"/>
+		<item name="ErrorId"/>
 		<item name="ErrorMsg"/>
 	</field>
 	<field name="AccountDelete" 				id="0x2006" desc="账户删除">
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="AccountRisk" 					id="0x2007" desc="账户风控">
-		<item name="AccountID"/>
-		<item name="RiskID"/>
+		<item name="AccountId"/>
+		<item name="RiskId"/>
 		<item name="RiskStatus"/>
 	</field>
 	<field name="AccountRiskDelete" 			id="0x2008" desc="账户风控删除">
-		<item name="AccountID"/>
-		<item name="RiskID"/>
+		<item name="AccountId"/>
+		<item name="RiskId"/>
 	</field>
 	<field name="AccountRiskNotify" 			id="0x2009" desc="账户风控通知">
 		<item name="NotifyDate"/>
 		<item name="NotifyTime"/>
-		<item name="AccountID"/>
-		<item name="RiskID"/>
-		<item name="RiskRuleID"/>
+		<item name="AccountId"/>
+		<item name="RiskId"/>
+		<item name="RiskRuleId"/>
 		<item name="RiskStatus"/>
 		<item name="RiskMessage"/>
 	</field>
 	<field name="ReqQryRiskGroupAccount" 		id="0x200A" desc="查询风控组账户请求">
-		<item name="UserID"/>
+		<item name="UserId"/>
 	</field>
 	<field name="ReqQryRiskGroupCapital" 		id="0x200B" desc="查询风控组资金请求">
-		<item name="UserID"/>
-		<item name="AccountID"/>
+		<item name="UserId"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="ReqQryRiskGroupPosition" 		id="0x200C" desc="查询持仓请求">
-		<item name="UserID"/>
-		<item name="AccountID"/>
+		<item name="UserId"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="ReqQryRiskGroupOrder" 			id="0x200D" desc="查询委托请求">
-		<item name="UserID"/>
-		<item name="AccountID"/>
+		<item name="UserId"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="ReqQryRiskGroupTrade" 			id="0x200E" desc="查询成交请求">
-		<item name="UserID"/>
-		<item name="AccountID"/>
+		<item name="UserId"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="ReqQryRiskGroupAccountRisk" 	id="0x200F" desc="查询风控组账户风控请求">
-		<item name="UserID"/>
-		<item name="AccountID"/>
+		<item name="UserId"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="ReqQryRiskGroupAccountRiskNotify" id="0x2010" desc="查询风控组账户风控通知请求">
-		<item name="UserID"/>
-		<item name="AccountID"/>
+		<item name="UserId"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="ReqRiskInsertOrder" 			id="0x2011" desc="风控委托请求">
-		<item name="UserID"/>
-		<item name="AccountID"/>
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
+		<item name="UserId"/>
+		<item name="AccountId"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
 		<item name="Direction"/>
 		<item name="OffsetFlag"/>
 		<item name="OrderPriceType"/>
 		<item name="Price"/>
 		<item name="Volume"/>
-		<item name="ClientOrderID"/>
+		<item name="ClientOrderId"/>
 		<item name="IsForceClose"/>
 	</field>
 	<field name="ReqRiskCancelOrder" 			id="0x2012" desc="风控撤单请求">
-		<item name="UserID"/>
-		<item name="AccountID"/>
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
-		<item name="ClientCancelOrderID"/>
-		<item name="OrderID"/>
-		<item name="OrderSysID"/>
-		<item name="ClientOrderID"/>
+		<item name="UserId"/>
+		<item name="AccountId"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
+		<item name="ClientCancelOrderId"/>
+		<item name="OrderId"/>
+		<item name="OrderSysId"/>
+		<item name="ClientOrderId"/>
 	</field>
 	
 	<field name="ReqMdUserLogin" 				id="0x3001" desc="行情用户登录请求">
-		<item name="MdUserID"/>
+		<item name="MdUserId"/>
 		<item name="Password"/>
 	</field>
 	<field name="RspMdUserLogin" 				id="0x3002" desc="行情用户登录请求应答">
-		<item name="MdUserID"/>
+		<item name="MdUserId"/>
 		<item name="LoginDate"/>
 		<item name="LoginTime"/>
-		<item name="SessionID"/>
+		<item name="SessionId"/>
 	</field>
 	<field name="ReqMdUserLogout" 				id="0x3003" desc="行情用户登出请求">
-		<item name="MdUserID"/>
+		<item name="MdUserId"/>
 	</field>
 	<field name="RspMdUserLogout" 				id="0x3004" desc="行情用户登出请求应答">
-		<item name="MdUserID"/>
+		<item name="MdUserId"/>
 	</field>
 	<field name="ReqMdInit" 					id="0x3005" desc="行情初始化请求">
-		<item name="ExchangeID"/>
+		<item name="ExchangeId"/>
 		<item name="TradingDay"/>
 	</field>
 	<field name="RspMdInit" 					id="0x3006" desc="行情初始化应答">
-		<item name="ExchangeID"/>
+		<item name="ExchangeId"/>
 		<item name="TradingDay"/>
 	</field>
 	<field name="ReqSubscribeMd" 				id="0x3007" desc="行情订阅请求">
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
 	</field>
 	<field name="RspSubscribeMd" 				id="0x3008" desc="行情订阅应答">
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
 	</field>
 	<field name="ShortMd" 						id="0x3009" desc="简短行情推送">
 		<item name="TradingDay"/>
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
 		<item name="LastPrice"/>
 		<item name="ClosePrice"/>
 		<item name="PreClosePrice"/>
@@ -404,187 +404,187 @@
 		<item name="LowerLimitPrice"/>
 	</field>
 	<field name="RtnExchangeStatus" 			id="0x300A" desc="交易所状态推送">
-		<item name="ExchangeID"/>
+		<item name="ExchangeId"/>
 		<item name="ExchangeDate"/>
 		<item name="ExchangeStatus"/>
 	</field>
 	<field name="MdInitCompleted" 				id="0x300B" desc="行情初始化完成推送">
-		<item name="ExchangeID"/>
+		<item name="ExchangeId"/>
 		<item name="TradingDay"/>
 	</field>
 	
 	
 	<field name="ReqAdminUserLogin" 			id="0x4001" desc="管理用户登录请求">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="Password"/>
 	</field>
 	<field name="RspAdminUserLogin" 			id="0x4002" desc="管理用户登录请求应答">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="LoginDate"/>
 		<item name="LoginTime"/>
-		<item name="SessionID"/>
+		<item name="SessionId"/>
 	</field>
 	<field name="ReqAdminUserLogout" 			id="0x4003" desc="管理用户登出请求">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 	</field>
 	<field name="RspAdminUserLogout" 			id="0x4004" desc="管理用户登出请求应答">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 	</field>
 	<field name="AdminUserLogout" 				id="0x4005" desc="管理用户登出">
-		<item name="UserID"/>
-		<item name="ErrorID"/>
+		<item name="UserId"/>
+		<item name="ErrorId"/>
 		<item name="ErrorMsg"/>
 	</field>
 	<field name="ReqAddRiskUser" 				id="0x4006" desc="添加风控用户请求">
-		<item name="AdminUserID"/>
-		<item name="UserID"/>
+		<item name="AdminUserId"/>
+		<item name="UserId"/>
 		<item name="UserName"/>
 		<item name="Password"/>
-		<item name="RiskGroupID"/>
+		<item name="RiskGroupId"/>
 	</field>
 	<field name="RspAddRiskUser" 				id="0x4007" desc="添加风控用户应答">
-		<item name="AdminUserID"/>
-		<item name="UserID"/>
+		<item name="AdminUserId"/>
+		<item name="UserId"/>
 	</field>
 	<field name="ReqUpdateRiskUser" 			id="0x4008" desc="更新风控用户请求">
-		<item name="AdminUserID"/>
-		<item name="UserID"/>
+		<item name="AdminUserId"/>
+		<item name="UserId"/>
 		<item name="UserName"/>
 		<item name="Password"/>
-		<item name="RiskGroupID"/>
+		<item name="RiskGroupId"/>
 	</field>
 	<field name="RspUpdateRiskUser" 			id="0x4009" desc="更新风控用户应答">
-		<item name="AdminUserID"/>
-		<item name="UserID"/>
+		<item name="AdminUserId"/>
+		<item name="UserId"/>
 	</field>
 	<field name="ReqRemoveRiskUser" 			id="0x400A" desc="删除风控用户请求">
-		<item name="AdminUserID"/>
-		<item name="UserID"/>
+		<item name="AdminUserId"/>
+		<item name="UserId"/>
 	</field>
 	<field name="RspRemoveRiskUser" 			id="0x400B" desc="删除风控用户应答">
-		<item name="AdminUserID"/>
-		<item name="UserID"/>
+		<item name="AdminUserId"/>
+		<item name="UserId"/>
 	</field>
 	<field name="ReqAddAdminUser" 				id="0x400C" desc="添加管理用户请求">
-		<item name="AdminUserID"/>
-		<item name="UserID"/>
+		<item name="AdminUserId"/>
+		<item name="UserId"/>
 		<item name="UserName"/>
 		<item name="Password"/>
 	</field>
 	<field name="RspAddAdminUser" 				id="0x400D" desc="添加管理用户应答">
-		<item name="AdminUserID"/>
-		<item name="UserID"/>
+		<item name="AdminUserId"/>
+		<item name="UserId"/>
 	</field>
 	<field name="ReqUpdateAdminUser" 			id="0x400E" desc="更新管理用户请求">
-		<item name="AdminUserID"/>
-		<item name="UserID"/>
+		<item name="AdminUserId"/>
+		<item name="UserId"/>
 		<item name="UserName"/>
 		<item name="Password"/>
 	</field>
 	<field name="RspUpdateAdminUser" 			id="0x400F" desc="更新管理用户应答">
-		<item name="AdminUserID"/>
-		<item name="UserID"/>
+		<item name="AdminUserId"/>
+		<item name="UserId"/>
 	</field>
 	<field name="ReqRemoveAdminUser" 			id="0x4010" desc="删除管理用户请求">
-		<item name="AdminUserID"/>
-		<item name="UserID"/>
+		<item name="AdminUserId"/>
+		<item name="UserId"/>
 	</field>
 	<field name="RspRemoveAdminUser" 			id="0x4011" desc="删除管理用户应答">
-		<item name="AdminUserID"/>
-		<item name="UserID"/>
+		<item name="AdminUserId"/>
+		<item name="UserId"/>
 	</field>
 	<field name="ReqAddPrimaryAccount" 			id="0x4012" desc="添加主账号请求">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="PrimaryAccountID"/>
+		<item name="PrimaryAccountId"/>
 		<item name="PrimaryAccountName"/>
 		<item name="AccountClass"/>
 		<item name="BrokerPassword"/>
-		<item name="OfferID"/>
+		<item name="OfferId"/>
 		<item name="IsAllowLogin"/>
 		<item name="IsSimulateAccount"/>
 		<item name="AccountStatus"/>
 		<item name="Password"/>
-		<item name="RiskGroupID"/>
-		<item name="CommissionGroupID"/>
+		<item name="RiskGroupId"/>
+		<item name="CommissionGroupId"/>
 		<item name="IsAutoAudit"/>
 	</field>
 	<field name="RspAddPrimaryAccount" 			id="0x4013" desc="添加主账号应答">
-		<item name="AdminUserID"/>
-		<item name="PrimaryAccountID"/>
+		<item name="AdminUserId"/>
+		<item name="PrimaryAccountId"/>
 	</field>
 	<field name="ReqUpdatePrimaryAccount" 		id="0x4014" desc="修改主账号请求">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="PrimaryAccountID"/>
+		<item name="PrimaryAccountId"/>
 		<item name="PrimaryAccountName"/>
 		<item name="AccountClass"/>
 		<item name="BrokerPassword"/>
-		<item name="OfferID"/>
+		<item name="OfferId"/>
 		<item name="IsAllowLogin"/>
 		<item name="IsSimulateAccount"/>
 		<item name="AccountStatus"/>
 		<item name="Password"/>
-		<item name="RiskGroupID"/>
-		<item name="CommissionGroupID"/>
+		<item name="RiskGroupId"/>
+		<item name="CommissionGroupId"/>
 		<item name="IsAutoAudit"/>
 	</field>
 	<field name="RspUpdatePrimaryAccount" 		id="0x4015" desc="修改主账号应答">
-		<item name="AdminUserID"/>
-		<item name="PrimaryAccountID"/>
+		<item name="AdminUserId"/>
+		<item name="PrimaryAccountId"/>
 	</field>
 	<field name="ReqRemovePrimaryAccount" 		id="0x4016" desc="删除主账号应答">
-		<item name="AdminUserID"/>
-		<item name="PrimaryAccountID"/>
+		<item name="AdminUserId"/>
+		<item name="PrimaryAccountId"/>
 	</field>
 	<field name="RspRemovePrimaryAccount" 		id="0x4017" desc="删除主账号应答">
-		<item name="AdminUserID"/>
-		<item name="PrimaryAccountID"/>
+		<item name="AdminUserId"/>
+		<item name="PrimaryAccountId"/>
 	</field>
 	<field name="ReqAddAccount" 				id="0x4018" desc="添加账号请求">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 		<item name="AccountName"/>
 		<item name="AccountStatus"/>
 		<item name="Password"/>
-		<item name="TradeGroupID"/>
-		<item name="RiskGroupID"/>
-		<item name="CommissionGroupID"/>
+		<item name="TradeGroupId"/>
+		<item name="RiskGroupId"/>
+		<item name="CommissionGroupId"/>
 		<item name="IsAutoAudit"/>
 	</field>
 	<field name="RspAddAccount" 				id="0x4019" desc="添加账号应答">
-		<item name="AdminUserID"/>
-		<item name="AccountID"/>
+		<item name="AdminUserId"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="ReqUpdateAccount" 				id="0x401A" desc="修改账号请求">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="AccountID"/>
+		<item name="AccountId"/>
 		<item name="AccountName"/>
 		<item name="AccountStatus"/>
 		<item name="Password"/>
-		<item name="TradeGroupID"/>
-		<item name="RiskGroupID"/>
-		<item name="CommissionGroupID"/>
+		<item name="TradeGroupId"/>
+		<item name="RiskGroupId"/>
+		<item name="CommissionGroupId"/>
 		<item name="IsAutoAudit"/>
 	</field>
 	<field name="RspUpdateAccount" 				id="0x401B" desc="修改账号应答">
-		<item name="AdminUserID"/>
-		<item name="AccountID"/>
+		<item name="AdminUserId"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="ReqRemoveAccount" 				id="0x401C" desc="删除账号请求">
-		<item name="AdminUserID"/>
-		<item name="AccountID"/>
+		<item name="AdminUserId"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="RspRemoveAccount" 				id="0x401D" desc="删除账号应答">
-		<item name="AdminUserID"/>
-		<item name="AccountID"/>
+		<item name="AdminUserId"/>
+		<item name="AccountId"/>
 	</field>
 	<field name="ReqAddBaseCommission" 			id="0x401E" desc="添加基础费率请求">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="ExchangeID"/>
+		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
 		<item name="OpenStampTaxByMoney"/>
 		<item name="CloseStampTaxByMoney"/>
@@ -592,15 +592,15 @@
 		<item name="CloseTransferFeeByMoney"/>
 	</field>
 	<field name="RspAddBaseCommission" 			id="0x401F" desc="添加基础费率应答">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="ExchangeID"/>
+		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
 	</field>
 	<field name="ReqUpdateBaseCommission" 		id="0x4020" desc="更新基础费率请求">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="ExchangeID"/>
+		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
 		<item name="OpenStampTaxByMoney"/>
 		<item name="CloseStampTaxByMoney"/>
@@ -608,29 +608,29 @@
 		<item name="CloseTransferFeeByMoney"/>
 	</field>
 	<field name="RspUpdateBaseCommission" 		id="0x4021" desc="更新基础费率应答">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="ExchangeID"/>
+		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
 	</field>
 	<field name="ReqRemoveBaseCommission" 		id="0x4022" desc="删除基础费率请求">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="ExchangeID"/>
+		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
 	</field>
 	<field name="RspRemoveBaseCommission" 		id="0x4023" desc="删除基础费率应答">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="ExchangeID"/>
+		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
 	</field>
 	<field name="ReqAddCommissionGroup" 		id="0x4024" desc="添加手续费组请求">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="CommissionGroupID"/>
+		<item name="CommissionGroupId"/>
 		<item name="CommissionGroupName"/>
-		<item name="ExchangeID"/>
+		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
 		<item name="OpenBuyByMoney"/>
 		<item name="OpenSellByMoney"/>
@@ -644,18 +644,18 @@
 		<item name="MaxCommission"/>
 	</field>
 	<field name="RspAddCommissionGroup" 		id="0x4025" desc="添加手续费组应答">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="CommissionGroupID"/>
-		<item name="ExchangeID"/>
+		<item name="CommissionGroupId"/>
+		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
 	</field>
 	<field name="ReqUpdateCommissionGroup" 		id="0x4026" desc="更新手续费组请求">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="CommissionGroupID"/>
+		<item name="CommissionGroupId"/>
 		<item name="CommissionGroupName"/>
-		<item name="ExchangeID"/>
+		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
 		<item name="OpenBuyByMoney"/>
 		<item name="OpenSellByMoney"/>
@@ -669,237 +669,237 @@
 		<item name="MaxCommission"/>
 	</field>
 	<field name="RspUpdateCommissionGroup" 		id="0x4027" desc="更新手续费组应答">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="CommissionGroupID"/>
-		<item name="ExchangeID"/>
+		<item name="CommissionGroupId"/>
+		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
 	</field>
 	<field name="ReqRemoveCommissionGroup" 		id="0x4028" desc="删除手续费组请求">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="CommissionGroupID"/>
-		<item name="ExchangeID"/>
+		<item name="CommissionGroupId"/>
+		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
 	</field>
 	<field name="RspRemoveCommissionGroup" 		id="0x4029" desc="删除手续费组应答">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="CommissionGroupID"/>
-		<item name="ExchangeID"/>
+		<item name="CommissionGroupId"/>
+		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
 	</field>
 	<field name="ReqAddOptionMarginParam" 		id="0x402A" desc="添加手续费组请求">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="ExchangeID"/>
+		<item name="ExchangeId"/>
 		<item name="Param1"/>
 		<item name="Param2"/>
 	</field>
 	<field name="RspAddOptionMarginParam" 		id="0x402B" desc="添加保证金参数应答">
-		<item name="AdminUserID"/>
-		<item name="ExchangeID"/>
+		<item name="AdminUserId"/>
+		<item name="ExchangeId"/>
 	</field>
 	<field name="ReqUpdateOptionMarginParam" 	id="0x402C" desc="更新保证金参数请求">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="ExchangeID"/>
+		<item name="ExchangeId"/>
 		<item name="Param1"/>
 		<item name="Param2"/>
 	</field>
 	<field name="RspUpdateOptionMarginParam" 	id="0x402D" desc="更新保证金参数应答">
-		<item name="AdminUserID"/>
-		<item name="ExchangeID"/>
+		<item name="AdminUserId"/>
+		<item name="ExchangeId"/>
 	</field>
 	<field name="ReqRemoveOptionMarginParam" 	id="0x402E" desc="删除保证金参数请求">
-		<item name="AdminUserID"/>
-		<item name="ExchangeID"/>
+		<item name="AdminUserId"/>
+		<item name="ExchangeId"/>
 	</field>
 	<field name="RspRemoveOptionMarginParam" 	id="0x402F" desc="删除保证金参数应答">
-		<item name="AdminUserID"/>
-		<item name="ExchangeID"/>
+		<item name="AdminUserId"/>
+		<item name="ExchangeId"/>
 	</field>
 	<field name="ReqAddTradeOffer" 				id="0x4030" desc="添加交易报盘请求">
-		<item name="AdminUserID"/>
-		<item name="OfferID"/>
+		<item name="AdminUserId"/>
+		<item name="OfferId"/>
 		<item name="OfferName"/>
 		<item name="OfferType"/>
 		<item name="OfferPassword"/>
 	</field>
 	<field name="RspAddTradeOffer" 				id="0x4031" desc="添加交易报盘应答">
-		<item name="AdminUserID"/>
-		<item name="OfferID"/>
+		<item name="AdminUserId"/>
+		<item name="OfferId"/>
 	</field>
 	<field name="ReqUpdateTradeOffer" 			id="0x4032" desc="更新交易报盘请求">
-		<item name="AdminUserID"/>
-		<item name="OfferID"/>
+		<item name="AdminUserId"/>
+		<item name="OfferId"/>
 		<item name="OfferName"/>
 		<item name="OfferType"/>
 		<item name="OfferPassword"/>
 	</field>
 	<field name="RspUpdateTradeOffer" 			id="0x4033" desc="更新交易报盘应答">
-		<item name="AdminUserID"/>
-		<item name="OfferID"/>
+		<item name="AdminUserId"/>
+		<item name="OfferId"/>
 	</field>
 	<field name="ReqRemoveTradeOffer" 			id="0x4034" desc="删除交易报盘请求">
-		<item name="AdminUserID"/>
-		<item name="OfferID"/>
+		<item name="AdminUserId"/>
+		<item name="OfferId"/>
 	</field>
 	<field name="RspRemoveTradeOffer" 			id="0x4035" desc="删除交易报盘应答">
-		<item name="AdminUserID"/>
-		<item name="OfferID"/>
+		<item name="AdminUserId"/>
+		<item name="OfferId"/>
 	</field>
 	<field name="ReqAddTradeGroup" 				id="0x4036" desc="添加交易组请求">
-		<item name="AdminUserID"/>
-		<item name="TradeGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="TradeGroupId"/>
 		<item name="TradeGroupName"/>
 	</field>
 	<field name="RspAddTradeGroup" 				id="0x4037" desc="添加交易组应答">
-		<item name="AdminUserID"/>
-		<item name="TradeGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="TradeGroupId"/>
 	</field>
 	<field name="ReqUpdateTradeGroup" 			id="0x4038" desc="更新交易组请求">
-		<item name="AdminUserID"/>
-		<item name="TradeGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="TradeGroupId"/>
 		<item name="TradeGroupName"/>
 	</field>
 	<field name="RspUpdateTradeGroup" 			id="0x4039" desc="更新交易组应答">
-		<item name="AdminUserID"/>
-		<item name="TradeGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="TradeGroupId"/>
 	</field>
 	<field name="ReqRemoveTradeGroup" 			id="0x403A" desc="删除交易组请求">
-		<item name="AdminUserID"/>
-		<item name="TradeGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="TradeGroupId"/>
 	</field>
 	<field name="RspRemoveTradeGroup" 			id="0x403B" desc="删除交易组应答">
-		<item name="AdminUserID"/>
-		<item name="TradeGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="TradeGroupId"/>
 	</field>
 	<field name="ReqAddTradeGroupItem" 			id="0x403C" desc="添加交易组子项请求">
-		<item name="AdminUserID"/>
-		<item name="TradeGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="TradeGroupId"/>
 		<item name="AccountClass"/>
-		<item name="PrimaryAccountID"/>
+		<item name="PrimaryAccountId"/>
 	</field>
 	<field name="RspAddTradeGroupItem" 			id="0x403D" desc="添加交易组子项应答">
-		<item name="AdminUserID"/>
-		<item name="TradeGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="TradeGroupId"/>
 		<item name="AccountClass"/>
 	</field>
 	<field name="ReqUpdateTradeGroupItem" 		id="0x403E" desc="更新交易组子项请求">
-		<item name="AdminUserID"/>
-		<item name="TradeGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="TradeGroupId"/>
 		<item name="AccountClass"/>
-		<item name="PrimaryAccountID"/>
+		<item name="PrimaryAccountId"/>
 	</field>
 	<field name="RspUpdateTradeGroupItem" 		id="0x403F" desc="更新交易组子项应答">
-		<item name="AdminUserID"/>
-		<item name="TradeGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="TradeGroupId"/>
 		<item name="AccountClass"/>
 	</field>
 	<field name="ReqRemoveTradeGroupItem" 		id="0x4040" desc="删除交易组子项请求">
-		<item name="AdminUserID"/>
-		<item name="TradeGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="TradeGroupId"/>
 		<item name="AccountClass"/>
 	</field>
 	<field name="RspRemoveTradeGroupItem" 		id="0x4041" desc="删除交易组子项应答">
-		<item name="AdminUserID"/>
-		<item name="TradeGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="TradeGroupId"/>
 		<item name="AccountClass"/>
 	</field>
 	<field name="ReqAddRiskGroup" 				id="0x4042" desc="添加风控组请求">
-		<item name="AdminUserID"/>
-		<item name="RiskGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskGroupId"/>
 		<item name="RiskGroupName"/>
 	</field>
 	<field name="RspAddRiskGroup" 				id="0x4043" desc="添加风控组应答">
-		<item name="AdminUserID"/>
-		<item name="RiskGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskGroupId"/>
 	</field>
 	<field name="ReqUpdateRiskGroup" 			id="0x4044" desc="更新风控组请求">
-		<item name="AdminUserID"/>
-		<item name="RiskGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskGroupId"/>
 		<item name="RiskGroupName"/>
 	</field>
 	<field name="RspUpdateRiskGroup" 			id="0x4045" desc="更新风控组应答">
-		<item name="AdminUserID"/>
-		<item name="RiskGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskGroupId"/>
 	</field>
 	<field name="ReqRemoveRiskGroup" 			id="0x4046" desc="删除风控组请求">
-		<item name="AdminUserID"/>
-		<item name="RiskGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskGroupId"/>
 	</field>
 	<field name="RspRemoveRiskGroup" 			id="0x4047" desc="删除风控组应答">
-		<item name="AdminUserID"/>
-		<item name="RiskGroupID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskGroupId"/>
 	</field>
 	<field name="ReqAddRiskGroupItem" 			id="0x4048" desc="添加风控组子项请求">
-		<item name="AdminUserID"/>
-		<item name="RiskGroupID"/>
-		<item name="RiskID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskGroupId"/>
+		<item name="RiskId"/>
 	</field>
 	<field name="RspAddRiskGroupItem" 			id="0x4049" desc="添加风控组子项应答">
-		<item name="AdminUserID"/>
-		<item name="RiskGroupID"/>
-		<item name="RiskID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskGroupId"/>
+		<item name="RiskId"/>
 	</field>
 	<field name="ReqUpdateRiskGroupItem" 		id="0x404A" desc="更新风控组子项请求">
-		<item name="AdminUserID"/>
-		<item name="RiskGroupID"/>
-		<item name="RiskID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskGroupId"/>
+		<item name="RiskId"/>
 	</field>
 	<field name="RspUpdateRiskGroupItem" 		id="0x404B" desc="更新风控组子项应答">
-		<item name="AdminUserID"/>
-		<item name="RiskGroupID"/>
-		<item name="RiskID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskGroupId"/>
+		<item name="RiskId"/>
 	</field>
 	<field name="ReqRemoveRiskGroupItem" 		id="0x404C" desc="删除风控组子项请求">
-		<item name="AdminUserID"/>
-		<item name="RiskGroupID"/>
-		<item name="RiskID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskGroupId"/>
+		<item name="RiskId"/>
 	</field>
 	<field name="RspRemoveRiskGroupItem" 		id="0x404D" desc="删除风控组子项应答">
-		<item name="AdminUserID"/>
-		<item name="RiskGroupID"/>
-		<item name="RiskID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskGroupId"/>
+		<item name="RiskId"/>
 	</field>
 	<field name="ReqAddOrUpdateRisk" 			id="0x404E" desc="添加风控请求">
-		<item name="AdminUserID"/>
-		<item name="RiskID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskId"/>
 		<item name="RiskName"/>
-		<item name="RiskClassID"/>
+		<item name="RiskClassId"/>
 	</field>
 	<field name="RspAddOrUpdateRisk" 			id="0x404F" desc="添加风控应答">
-		<item name="AdminUserID"/>
-		<item name="RiskID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskId"/>
 	</field>
 	<field name="ReqRemoveRisk" 				id="0x4050" desc="删除风控请求">
-		<item name="AdminUserID"/>
-		<item name="RiskID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskId"/>
 	</field>
 	<field name="RspRemoveRisk" 				id="0x4051" desc="删除风控应答">
-		<item name="AdminUserID"/>
-		<item name="RiskID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskId"/>
 	</field>
 	<field name="ReqAddRiskRule" 				id="0x4052" desc="添加风控规则请求">
-		<item name="AdminUserID"/>
-		<item name="RiskID"/>
-		<item name="RiskRuleID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskId"/>
+		<item name="RiskRuleId"/>
 		<item name="RiskRuleStyle"/>
 		<item name="FormatRiskMessage"/>
 	</field>
 	<field name="RspAddRiskRule" 				id="0x4053" desc="添加风控规则应答">
-		<item name="AdminUserID"/>
-		<item name="RiskID"/>
-		<item name="RiskRuleID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskId"/>
+		<item name="RiskRuleId"/>
 	</field>
 	<field name="ReqAddRiskRuleItem" 			id="0x4054" desc="添加风控规则子项请求">
-		<item name="AdminUserID"/>
-		<item name="RiskID"/>
-		<item name="RiskRuleID"/>
-		<item name="RiskRuleItemID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskId"/>
+		<item name="RiskRuleId"/>
+		<item name="RiskRuleItemId"/>
 		<item name="RiskIndexType"/>
-		<item name="RiskIndexID"/>
+		<item name="RiskIndexId"/>
 		<item name="RiskIndexTextRef"/>
 		<item name="IndexParam1"/>
 		<item name="IndexParam2"/>
@@ -916,141 +916,141 @@
 		<item name="LogicParam2TextRef"/>
 	</field>
 	<field name="RspAddRiskRuleItem" 			id="0x4055" desc="添加风控规则子项应答">
-		<item name="AdminUserID"/>
-		<item name="RiskID"/>
-		<item name="RiskRuleID"/>
-		<item name="RiskRuleItemID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskId"/>
+		<item name="RiskRuleId"/>
+		<item name="RiskRuleItemId"/>
 	</field>
 	<field name="ReqAddRiskTradeScope" 			id="0x4056" desc="添加风控交易范围请求">
-		<item name="AdminUserID"/>
-		<item name="RiskID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskId"/>
 		<item name="TradeScopeType"/>
-		<item name="InstrumentGroupID"/>
+		<item name="InstrumentGroupId"/>
 		<item name="FormatRiskMessage"/>
 	</field>
 	<field name="RspAddRiskTradeScope" 			id="0x4057" desc="添加风控交易范围应答">
-		<item name="AdminUserID"/>
-		<item name="RiskID"/>
+		<item name="AdminUserId"/>
+		<item name="RiskId"/>
 	</field>
 	<field name="ReqAddAccountRisk" 			id="0x4058" desc="添加账户风控请求">
-		<item name="AdminUserID"/>
-		<item name="AccountID"/>
-		<item name="RiskID"/>
+		<item name="AdminUserId"/>
+		<item name="AccountId"/>
+		<item name="RiskId"/>
 	</field>
 	<field name="RspAddAccountRisk" 			id="0x4059" desc="添加账户风控应答">
-		<item name="AdminUserID"/>
-		<item name="AccountID"/>
-		<item name="RiskID"/>
+		<item name="AdminUserId"/>
+		<item name="AccountId"/>
+		<item name="RiskId"/>
 	</field>
 	<field name="ReqRemoveAccountRisk" 			id="0x405A" desc="删除账户风控请求">
-		<item name="AdminUserID"/>
-		<item name="AccountID"/>
-		<item name="RiskID"/>
+		<item name="AdminUserId"/>
+		<item name="AccountId"/>
+		<item name="RiskId"/>
 	</field>
 	<field name="RspRemoveAccountRisk" 			id="0x405B" desc="删除账户风控应答">
-		<item name="AdminUserID"/>
-		<item name="AccountID"/>
-		<item name="RiskID"/>
+		<item name="AdminUserId"/>
+		<item name="AccountId"/>
+		<item name="RiskId"/>
 	</field>
 	<field name="ReqMoneyTransfer" 				id="0x405C" desc="出入金请求">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="AccountID"/>
-		<item name="MoneyTransferID"/>
+		<item name="AccountId"/>
+		<item name="MoneyTransferId"/>
 		<item name="AccountType"/>
 		<item name="TransferDirection"/>
 		<item name="TransferAmount"/>
 		<item name="InfoMessage"/>
-		<item name="UserID"/>
+		<item name="UserId"/>
 		<item name="TransferDate"/>
 		<item name="TransferTime"/>
 	</field>
 	<field name="RspMoneyTransfer" 				id="0x405D" desc="出入金应答">
-		<item name="AdminUserID"/>
+		<item name="AdminUserId"/>
 		<item name="TradingDay"/>
-		<item name="AccountID"/>
-		<item name="MoneyTransferID"/>
+		<item name="AccountId"/>
+		<item name="MoneyTransferId"/>
 	</field>
 	<field name="ReqAuditOrder" 				id="0x405E" desc="审核委托请求">
-		<item name="AdminUserID" id="0x1020" type="UserID" desc="管理用户代码"/>
+		<item name="AdminUserId" id="0x1020" type="UserId" desc="管理用户代码"/>
 		<item name="TradingDay" id="0x3001" type="Date" desc="交易日"/>
-		<item name="AccountID" id="0x1002" type="AccountID" desc="账户代码"/>
-		<item name="ExchangeID" id="0x1005" type="ExchangeID" desc="交易所代码"/>
-		<item name="InstrumentID" id="0x1007" type="InstrumentID" desc="合约代码"/>
-		<item name="OrderID" id="0x1009" type="OrderID" desc="委托编号"/>
+		<item name="AccountId" id="0x1002" type="AccountId" desc="账户代码"/>
+		<item name="ExchangeId" id="0x1005" type="ExchangeId" desc="交易所代码"/>
+		<item name="InstrumentId" id="0x1007" type="InstrumentId" desc="合约代码"/>
+		<item name="OrderId" id="0x1009" type="OrderId" desc="委托编号"/>
 		<item name="AuditStatus" id="0x9016" type="AuditStatus" desc="审核状态"/>
 	</field>
 	<field name="RspAuditOrder" 				id="0x405F" desc="审核委托应答">
-		<item name="AdminUserID" id="0x1020" type="UserID" desc="管理用户代码"/>
+		<item name="AdminUserId" id="0x1020" type="UserId" desc="管理用户代码"/>
 		<item name="TradingDay" id="0x3001" type="Date" desc="交易日"/>
-		<item name="AccountID" id="0x1002" type="AccountID" desc="账户代码"/>
-		<item name="ExchangeID" id="0x1005" type="ExchangeID" desc="交易所代码"/>
-		<item name="InstrumentID" id="0x1007" type="InstrumentID" desc="合约代码"/>
-		<item name="OrderID" id="0x1009" type="OrderID" desc="委托编号"/>
+		<item name="AccountId" id="0x1002" type="AccountId" desc="账户代码"/>
+		<item name="ExchangeId" id="0x1005" type="ExchangeId" desc="交易所代码"/>
+		<item name="InstrumentId" id="0x1007" type="InstrumentId" desc="合约代码"/>
+		<item name="OrderId" id="0x1009" type="OrderId" desc="委托编号"/>
 		<item name="AuditStatus" id="0x9016" type="AuditStatus" desc="审核状态"/>
 	</field>
 	
 	<field name="ReqOfferLogin" 				id="0x5001" desc="交易报盘登录请求">
-		<item name="OfferID"/>
+		<item name="OfferId"/>
 		<item name="OfferPassword"/>
 	</field>
 	<field name="RspOfferLogin" 				id="0x5002" desc="交易报盘登录应答">
-		<item name="ErrorID"/>
+		<item name="ErrorId"/>
 		<item name="ErrorMsg"/>
-		<item name="OfferID"/>
+		<item name="OfferId"/>
 		<item name="TradingDay"/>
 	</field>
 	<field name="ReqPrimaryAccountLogin" 		id="0x5003" desc="主账户登录请求">
-		<item name="PrimaryAccountID"/>
+		<item name="PrimaryAccountId"/>
 		<item name="Password"/>
 	</field>
 	<field name="RspPrimaryAccountLogin" 		id="0x5004" desc="主账户登录回报">
-		<item name="ErrorID"/>
+		<item name="ErrorId"/>
 		<item name="ErrorMsg"/>
 		<item name="TradingDay"/>
-		<item name="PrimaryAccountID"/>
+		<item name="PrimaryAccountId"/>
 	</field>
 	<field name="ReqPrimaryAccountLogout" 		id="0x5005" desc="主账户登出请求">
 		<item name="TradingDay"/>
-		<item name="PrimaryAccountID"/>
+		<item name="PrimaryAccountId"/>
 	</field>
 	<field name="RtnPrimaryAccountLogout" 		id="0x5006" desc="主账户登出推送">
 		<item name="TradingDay"/>
-		<item name="PrimaryAccountID"/>
+		<item name="PrimaryAccountId"/>
 	</field>
 	<field name="ReqPrimaryAccountInit" 		id="0x5007" desc="主账户初始化请求">
-		<item name="PrimaryAccountID"/>
+		<item name="PrimaryAccountId"/>
 	</field>
 	<field name="RspPrimaryAccountInit" 		id="0x5008" desc="主账户初始化回报">
-		<item name="ErrorID"/>
+		<item name="ErrorId"/>
 		<item name="ErrorMsg"/>
-		<item name="PrimaryAccountID"/>
+		<item name="PrimaryAccountId"/>
 	</field>
 	<field name="ReqPrimaryAccountQuery" 		id="0x5009" desc="主账户查询请求">
-		<item name="PrimaryAccountID"/>
+		<item name="PrimaryAccountId"/>
 	</field>
 	<field name="RspPrimaryAccountQuery" 		id="0x500A" desc="主账户查询回报">
-		<item name="ErrorID"/>
+		<item name="ErrorId"/>
 		<item name="ErrorMsg"/>
-		<item name="PrimaryAccountID"/>
+		<item name="PrimaryAccountId"/>
 	</field>
 	<field name="ReqQryOfferOptionInstrument" 	id="0x500B" desc="期权合约查询请求">
-		<item name="PrimaryAccountID"/>
+		<item name="PrimaryAccountId"/>
 	</field>
 	<field name="RspQryOfferOptionInstrument" 	id="0x500C" desc="期权合约查询回报">
-		<item name="ErrorID"/>
+		<item name="ErrorId"/>
 		<item name="ErrorMsg"/>
-		<item name="PrimaryAccountID"/>
+		<item name="PrimaryAccountId"/>
 	</field>
 	<field name="OfferOptionInstrument" 		id="0x500D" desc="期权合约推送">
 		<item name="TradingDay"/>
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
-		<item name="ExchangeInstID"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
+		<item name="ExchangeInstId"/>
 		<item name="InstrumentName"/>
 		<item name="VolumeMultiple"/>
 		<item name="OptionType"/>
-		<item name="UnderlyingInstrumentID"/>
+		<item name="UnderlyingInstrumentId"/>
 		<item name="ExecutePrice"/>
 		<item name="UnitMargin"/>
 		<item name="PriceTick"/>
@@ -1060,11 +1060,11 @@
 	</field>
 	<field name="ReqOfferOrder" 				id="0x500E" desc="委托请求">
 		<item name="TradingDay"/>
-		<item name="PrimaryAccountID"/>
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
+		<item name="PrimaryAccountId"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
 		<item name="ProductClass"/>
-		<item name="OrderID"/>
+		<item name="OrderId"/>
 		<item name="Direction"/>
 		<item name="OffsetFlag"/>
 		<item name="OrderPriceType"/>
@@ -1073,22 +1073,22 @@
 	</field>
 	<field name="ReqOfferCancelOrder" 			id="0x500F" desc="撤单请求">
 		<item name="TradingDay"/>
-		<item name="PrimaryAccountID"/>
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
+		<item name="PrimaryAccountId"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
 		<item name="ProductClass"/>
 		<item name="Direction"/>
-		<item name="CancelOrderID"/>
-		<item name="OrderID"/>
-		<item name="OrderSysID"/>
+		<item name="CancelOrderId"/>
+		<item name="OrderId"/>
+		<item name="OrderSysId"/>
 	</field>
 	<field name="OfferOrder" 					id="0x5010" desc="委托推送">
 		<item name="TradingDay"/>
-		<item name="PrimaryAccountID"/>
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
-		<item name="OrderID"/>
-		<item name="OrderSysID"/>
+		<item name="PrimaryAccountId"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
+		<item name="OrderId"/>
+		<item name="OrderSysId"/>
 		<item name="Direction"/>
 		<item name="OffsetFlag"/>
 		<item name="OrderPriceType"/>
@@ -1106,12 +1106,12 @@
 	</field>
 	<field name="OfferTrade" 					id="0x5011" desc="成交推送">
 		<item name="TradingDay"/>
-		<item name="PrimaryAccountID"/>
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
-		<item name="OrderID"/>
-		<item name="OrderSysID"/>
-		<item name="TradeID"/>
+		<item name="PrimaryAccountId"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
+		<item name="OrderId"/>
+		<item name="OrderSysId"/>
+		<item name="TradeId"/>
 		<item name="Direction"/>
 		<item name="OffsetFlag"/>
 		<item name="Price"/>
@@ -1120,27 +1120,27 @@
 		<item name="TradeTime"/>
 	</field>
 	<field name="OfferErrorCancelOrder" 		id="0x5012" desc="撤单错误推送">
-		<item name="ErrorID"/>
+		<item name="ErrorId"/>
 		<item name="ErrorMsg"/>
 		<item name="TradingDay"/>
-		<item name="PrimaryAccountID"/>
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
+		<item name="PrimaryAccountId"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
 		<item name="Direction"/>
-		<item name="CancelOrderID"/>
-		<item name="OrderID"/>
-		<item name="OrderSysID"/>
+		<item name="CancelOrderId"/>
+		<item name="OrderId"/>
+		<item name="OrderSysId"/>
 	</field>
 	<field name="OfferCapital" 					id="0x5013" desc="资金推送">
 		<item name="TradingDay"/>
-		<item name="PrimaryAccountID"/>
+		<item name="PrimaryAccountId"/>
 		<item name="PreCashAsset"/>
 	</field>
 	<field name="OfferPosition" 				id="0x5014" desc="持仓推送">
 		<item name="TradingDay"/>
-		<item name="PrimaryAccountID"/>
-		<item name="ExchangeID"/>
-		<item name="InstrumentID"/>
+		<item name="PrimaryAccountId"/>
+		<item name="ExchangeId"/>
+		<item name="InstrumentId"/>
 		<item name="PosiDirection"/>
 		<item name="TotalPosition"/>
 		<item name="PositionFrozen"/>

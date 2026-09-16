@@ -137,7 +137,7 @@ bool SingleShm::Init()
 	return true;
 }
 
-void SingleShm::Send(SessionIDType sessionID, Buffer<BuffSize>* buffer)
+void SingleShm::Send(SessionIdType sessionId, Buffer<BuffSize>* buffer)
 {
 	shmBuffer_->Write(buffer->GetData(), buffer->GetLength());
 }
@@ -164,7 +164,7 @@ void SingleShm::CheckConnectStatus()
 	if (!connected_ && shmBuffer_->ShmHeader->Status == ConnectStatusType::Connected && ioSubscriber_ != nullptr)
 	{
 		connected_ = true;
-		sessionId_ = GetSessionID();
+		sessionId_ = GetSessionId();
 		ioSubscriber_->OnConnect(sessionId_, shmName_.c_str(), 0);
 	}
 	if (connected_ && shmBuffer_->ShmHeader->Status == ConnectStatusType::UnConnected && ioSubscriber_ != nullptr)

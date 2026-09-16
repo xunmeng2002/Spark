@@ -1,4 +1,4 @@
-// 本文件由 ../Templates/Cpp/Spark/EnumString.h.tpl 生成；请勿手改，改动请改模板后重跑 pumpall.py
+﻿// 本文件由 ../Templates/Cpp/Spark/EnumString.h.tpl 生成；请勿手改，改动请改模板后重跑 pumpall.py
 #pragma once
 #include <Spark/Types.h>
 
@@ -173,27 +173,27 @@ inline const char* GetConnectStatusString(ConnectStatusType value)
 	return "";
 }
 
-inline const char* GetDBOperateString(DBOperateType value)
+inline const char* GetDbOperateString(DbOperateType value)
 {
 	switch (value)
 	{
-		case DBOperateType::CreateTables:
+		case DbOperateType::CreateTables:
 			return "CreateTables";
-		case DBOperateType::DropTables:
+		case DbOperateType::DropTables:
 			return "DropTables";
-		case DBOperateType::TruncateTables:
+		case DbOperateType::TruncateTables:
 			return "TruncateTables";
-		case DBOperateType::Insert:
+		case DbOperateType::Insert:
 			return "Insert";
-		case DBOperateType::Delete:
+		case DbOperateType::Delete:
 			return "Delete";
-		case DBOperateType::DeleteByIndex:
+		case DbOperateType::DeleteByIndex:
 			return "DeleteByIndex";
-		case DBOperateType::Update:
+		case DbOperateType::Update:
 			return "Update";
-		case DBOperateType::BatchInsert:
+		case DbOperateType::BatchInsert:
 			return "BatchInsert";
-		case DBOperateType::Truncate:
+		case DbOperateType::Truncate:
 			return "Truncate";
 		default:
 			return "Unknown";
@@ -201,18 +201,18 @@ inline const char* GetDBOperateString(DBOperateType value)
 	return "";
 }
 
-inline const char* GetDBTypeString(DBTypeType value)
+inline const char* GetDbTypeString(DbTypeType value)
 {
 	switch (value)
 	{
-		case DBTypeType::DuckDB:
-			return "DuckDB";
-		case DBTypeType::SqliteDB:
-			return "SqliteDB";
-		case DBTypeType::MysqlDB:
-			return "MysqlDB";
-		case DBTypeType::MariaDB:
-			return "MariaDB";
+		case DbTypeType::DuckDb:
+			return "DuckDb";
+		case DbTypeType::SqliteDb:
+			return "SqliteDb";
+		case DbTypeType::MysqlDb:
+			return "MysqlDb";
+		case DbTypeType::MariaDb:
+			return "MariaDb";
 		default:
 			return "Unknown";
 	}
@@ -345,15 +345,15 @@ inline const char* GetInstrumentClassString(InstrumentClassType value)
 	return "";
 }
 
-inline const char* GetIOModelString(IOModelType value)
+inline const char* GetIoModelString(IoModelType value)
 {
 	switch (value)
 	{
-		case IOModelType::Select:
+		case IoModelType::Select:
 			return "Select";
-		case IOModelType::Epoll:
+		case IoModelType::Epoll:
 			return "Epoll";
-		case IOModelType::Iocp:
+		case IoModelType::Iocp:
 			return "Iocp";
 		default:
 			return "Unknown";
@@ -361,15 +361,15 @@ inline const char* GetIOModelString(IOModelType value)
 	return "";
 }
 
-inline const char* GetIOTypeString(IOTypeType value)
+inline const char* GetIoTypeString(IoTypeType value)
 {
 	switch (value)
 	{
-		case IOTypeType::Tcp:
+		case IoTypeType::Tcp:
 			return "Tcp";
-		case IOTypeType::Udp:
+		case IoTypeType::Udp:
 			return "Udp";
-		case IOTypeType::Shm:
+		case IoTypeType::Shm:
 			return "Shm";
 		default:
 			return "Unknown";
@@ -743,27 +743,27 @@ inline const char* GetRiskActionString(RiskActionType value)
 	return "";
 }
 
-inline const char* GetRiskClassIDString(RiskClassIDType value)
+inline const char* GetRiskClassIdString(RiskClassIdType value)
 {
 	switch (value)
 	{
-		case RiskClassIDType::TradeScope:
+		case RiskClassIdType::TradeScope:
 			return "TradeScope";
-		case RiskClassIDType::VolumePrice:
+		case RiskClassIdType::VolumePrice:
 			return "VolumePrice";
-		case RiskClassIDType::Position:
+		case RiskClassIdType::Position:
 			return "Position";
-		case RiskClassIDType::NetValueLine:
+		case RiskClassIdType::NetValueLine:
 			return "NetValueLine";
-		case RiskClassIDType::Concentration:
+		case RiskClassIdType::Concentration:
 			return "Concentration";
-		case RiskClassIDType::Profit:
+		case RiskClassIdType::Profit:
 			return "Profit";
-		case RiskClassIDType::Retracement:
+		case RiskClassIdType::Retracement:
 			return "Retracement";
-		case RiskClassIDType::RiskLevel:
+		case RiskClassIdType::RiskLevel:
 			return "RiskLevel";
-		case RiskClassIDType::OptionIndicator:
+		case RiskClassIdType::OptionIndicator:
 			return "OptionIndicator";
 		default:
 			return "Unknown";
@@ -839,8 +839,8 @@ inline const char* GetSecurityDetailTypeString(SecurityDetailTypeType value)
 			return "MainBoard";
 		case SecurityDetailTypeType::Star:
 			return "Star";
-		case SecurityDetailTypeType::SMEBoard:
-			return "SMEBoard";
+		case SecurityDetailTypeType::SmeBoard:
+			return "SmeBoard";
 		case SecurityDetailTypeType::SecondBoard:
 			return "SecondBoard";
 		case SecurityDetailTypeType::BShares:
@@ -949,8 +949,8 @@ inline const char* GetStockOrderPriceTypeString(StockOrderPriceTypeType value)
 			return "FAK";
 		case StockOrderPriceTypeType::FOK:
 			return "FOK";
-		case StockOrderPriceTypeType::DBestPrice:
-			return "DBestPrice";
+		case StockOrderPriceTypeType::DbestPrice:
+			return "DbestPrice";
 		case StockOrderPriceTypeType::WBestPrice:
 			return "WBestPrice";
 		default:

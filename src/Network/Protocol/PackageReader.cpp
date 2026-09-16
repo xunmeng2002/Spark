@@ -11,7 +11,7 @@
 using namespace Spark::Core;
 namespace Spark::Network
 {
-PackageReader::PackageReader(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIDType sessionID, const char* ipAddress)
+PackageReader::PackageReader(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIdType sessionId, const char* ipAddress)
 	:buff_{ 0 }
 {
 	data_ = buff_;
@@ -20,7 +20,7 @@ PackageReader::PackageReader(ProtocolTypeType protocolType, PackageFactoryBase* 
 
 	protocolType_ = protocolType;
 	packageFactory_ = packageFactory;
-	sessionId_ = sessionID;
+	sessionId_ = sessionId;
 	snprintf(ipAddress_, sizeof(IPAddressType), "%s", ipAddress);
 	memset(&(head_), 0, sizeof(HeadField));
 	memset(&(tail_), 0, sizeof(TailField));
@@ -30,9 +30,9 @@ PackageReader::~PackageReader()
 	data_ = nullptr;
 	length_ = 0;
 }
-PackageReader* PackageReader::Allocate(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIDType sessionID, const char* ipAddress)
+PackageReader* PackageReader::Allocate(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIdType sessionId, const char* ipAddress)
 {
-	return ObjectPool<PackageReader>::GetInstance().Allocate(protocolType, packageFactory, sessionID, ipAddress);
+	return ObjectPool<PackageReader>::GetInstance().Allocate(protocolType, packageFactory, sessionId, ipAddress);
 }
 void PackageReader::Deallocate()
 {
@@ -89,7 +89,7 @@ bool PackageReader::IsBodyLenWithinFrameLimit() const
 	{
 		return true;
 	}
-	WriteLog(LogLevel::Warning, "Body Length Exceeds Frame Limit. BodyLen:%u, MaxFrameBodyLen:%u, SessionID:%lld, IP:%s",
+	WriteLog(LogLevel::Warning, "Body Length Exceeds Frame Limit. BodyLen:%u, MaxFrameBodyLen:%u, SessionId:%lld, IP:%s",
 		static_cast<unsigned int>(head_.BodyLen), MaxFrameBodyLen, sessionId_, ipAddress_);
 	return false;
 }
@@ -113,14 +113,14 @@ PackageReader::AlignResult PackageReader::AlignToAnchor(const char* anchor, unsi
 			//首次丢弃说明对端说的可能不是本协议，把这段字节的开头记下来便于定位
 			unsigned int probe = 0;
 			::memcpy(&probe, data_, std::min(length_, unsigned(sizeof(probe))));
-			WriteLog(LogLevel::Warning, "Package Start Not Found, Resync. SessionID:%lld, IP:%s, HeadValue:0x%08X, BufferLen:%u",
+			WriteLog(LogLevel::Warning, "Package Start Not Found, Resync. SessionId:%lld, IP:%s, HeadValue:0x%08X, BufferLen:%u",
 				sessionId_, ipAddress_, probe, length_);
 		}
 		DiscardFront(discardLength);
 	}
 	if (discardLength_ > MaxPackageSize)
 	{
-		WriteLog(LogLevel::Error, "Garbage Stream Detected, DisConnect. SessionID:%lld, IP:%s, DiscardedBytes:%u",
+		WriteLog(LogLevel::Error, "Garbage Stream Detected, DisConnect. SessionId:%lld, IP:%s, DiscardedBytes:%u",
 			sessionId_, ipAddress_, discardLength_);
 		return AlignResult::GarbageStream;
 	}
@@ -155,7 +155,7 @@ bool PackageReader::ParseXtpPackage(Package*& package)
 		//版本先于长度校验：版本不符时 BodyLen 的语义本身就不可信
 		if (head_.Version != ProtocolVersionValue)
 		{
-			WriteLog(LogLevel::Error, "Protocol Version Not Match. RemoteVersion:%u, LocalVersion:%u, SessionID:%lld, IP:%s",
+			WriteLog(LogLevel::Error, "Protocol Version Not Match. RemoteVersion:%u, LocalVersion:%u, SessionId:%lld, IP:%s",
 				static_cast<unsigned int>(head_.Version), static_cast<unsigned int>(ProtocolVersionValue),
 				sessionId_, ipAddress_);
 			return false;
@@ -178,19 +178,19 @@ bool PackageReader::ParseXtpPackage(Package*& package)
 			DiscardFront(1);
 			continue;
 		}
-		if (!packageFactory_->IsInboundPackageAccepted(head_.PackageID))
+		if (!packageFactory_->IsInboundPackageAccepted(head_.PackageId))
 		{
-			WriteLog(LogLevel::Error, "Inbound Package Not Accepted. PackageID:%d, SessionID:%lld, IP:%s", head_.PackageID, sessionId_, ipAddress_);
+			WriteLog(LogLevel::Error, "Inbound Package Not Accepted. PackageId:%d, SessionId:%lld, IP:%s", head_.PackageId, sessionId_, ipAddress_);
 			return false;
 		}
-		package = packageFactory_->CreatePackage(head_.PackageID);
+		package = packageFactory_->CreatePackage(head_.PackageId);
 		if (package == nullptr)
 		{
-			WriteLog(LogLevel::Warning, "CreatePackage Failed. ProtocolType:%d, PackageID:%d", protocolType_, head_.PackageID);
+			WriteLog(LogLevel::Warning, "CreatePackage Failed. ProtocolType:%d, PackageId:%d", protocolType_, head_.PackageId);
 			return false;
 		}
 
-		package->SessionID = sessionId_;
+		package->SessionId = sessionId_;
 		snprintf(package->IPAddress, sizeof(IPAddressType), "%s", ipAddress_);
 		package->Head = head_;
 		package->Tail = tail_;
@@ -198,7 +198,7 @@ bool PackageReader::ParseXtpPackage(Package*& package)
 		PopFront(sizeof(HeadField) + head_.BodyLen + sizeof(TailField));
 		if (!ret)
 		{
-			WriteLog(LogLevel::Warning, "FromXtpStream Failed. ProtocolType:%d, PackageID:%d, BodyLen:%d", protocolType_, head_.PackageID, head_.BodyLen);
+			WriteLog(LogLevel::Warning, "FromXtpStream Failed. ProtocolType:%d, PackageId:%d, BodyLen:%d", protocolType_, head_.PackageId, head_.BodyLen);
 			package->Deallocate();
 			package = nullptr;
 			return false;
@@ -230,13 +230,13 @@ bool PackageReader::ParseStepPackage(Package*& package)
 			{
 				return true;
 			}
-			WriteLog(LogLevel::Warning, "Parse Head Failed. SessionID:%lld, IP:%s, BufferLen:%u", sessionId_, ipAddress_, length_);
+			WriteLog(LogLevel::Warning, "Parse Head Failed. SessionId:%lld, IP:%s, BufferLen:%u", sessionId_, ipAddress_, length_);
 			DiscardFront(1);
 			continue;
 		}
 		if (head_.Version != ProtocolVersionValue)
 		{
-			WriteLog(LogLevel::Error, "Protocol Version Not Match. RemoteVersion:%u, LocalVersion:%u, SessionID:%lld, IP:%s",
+			WriteLog(LogLevel::Error, "Protocol Version Not Match. RemoteVersion:%u, LocalVersion:%u, SessionId:%lld, IP:%s",
 				static_cast<unsigned int>(head_.Version), static_cast<unsigned int>(ProtocolVersionValue),
 				sessionId_, ipAddress_);
 			return false;
@@ -253,7 +253,7 @@ bool PackageReader::ParseStepPackage(Package*& package)
 		}
 		if (!StepUtility::TailFromStream(data_, tailIndex, tailIndex + StepTailLen, &tail_))
 		{
-			WriteLog(LogLevel::Warning, "Parse Tail Failed. SessionID:%lld, IP:%s", sessionId_, ipAddress_);
+			WriteLog(LogLevel::Warning, "Parse Tail Failed. SessionId:%lld, IP:%s", sessionId_, ipAddress_);
 			DiscardFront(1);
 			continue;
 		}
@@ -264,19 +264,19 @@ bool PackageReader::ParseStepPackage(Package*& package)
 			DiscardFront(1);
 			continue;
 		}
-		if (!packageFactory_->IsInboundPackageAccepted(head_.PackageID))
+		if (!packageFactory_->IsInboundPackageAccepted(head_.PackageId))
 		{
-			WriteLog(LogLevel::Error, "Inbound Package Not Accepted. PackageID:%d, SessionID:%lld, IP:%s", head_.PackageID, sessionId_, ipAddress_);
+			WriteLog(LogLevel::Error, "Inbound Package Not Accepted. PackageId:%d, SessionId:%lld, IP:%s", head_.PackageId, sessionId_, ipAddress_);
 			return false;
 		}
-		package = packageFactory_->CreatePackage(head_.PackageID);
+		package = packageFactory_->CreatePackage(head_.PackageId);
 		if (package == nullptr)
 		{
-			WriteLog(LogLevel::Warning, "CreatePackage Failed. ProtocolType:%d, PackageID:%d", protocolType_, head_.PackageID);
+			WriteLog(LogLevel::Warning, "CreatePackage Failed. ProtocolType:%d, PackageId:%d", protocolType_, head_.PackageId);
 			return false;
 		}
 
-		package->SessionID = sessionId_;
+		package->SessionId = sessionId_;
 		snprintf(package->IPAddress, sizeof(IPAddressType), "%s", ipAddress_);
 		memcpy(&package->Head, &head_, sizeof(HeadField));
 		memcpy(&package->Tail, &tail_, sizeof(TailField));
@@ -284,7 +284,7 @@ bool PackageReader::ParseStepPackage(Package*& package)
 		PopFront(tailIndex + StepTailLen);
 		if (!ret)
 		{
-			WriteLog(LogLevel::Warning, "FromStepStream Failed. ProtocolType:%d, PackageID:%d, BodyLen:%d", protocolType_, head_.PackageID, head_.BodyLen);
+			WriteLog(LogLevel::Warning, "FromStepStream Failed. ProtocolType:%d, PackageId:%d, BodyLen:%d", protocolType_, head_.PackageId, head_.BodyLen);
 			package->Deallocate();
 			package = nullptr;
 			return false;

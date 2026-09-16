@@ -65,12 +65,12 @@ namespace
     }
 
     // 按 HeadToStream 的写法造一个完整包头，返回实际写出的字节
-    std::string MakeStepHeadStream(UInt16Type packageID, UInt16Type bodyLen, UInt32Type msgSeqNum, BoolType messageChain)
+    std::string MakeStepHeadStream(UInt16Type packageId, UInt16Type bodyLen, UInt32Type msgSeqNum, BoolType messageChain)
     {
         HeadField head = {};
         head.Magic = ProtocolMagicValue;
         head.Version = ProtocolVersionValue;
-        head.PackageID = packageID;
+        head.PackageId = packageId;
         head.BodyLen = bodyLen;
         head.MsgSeqNum = msgSeqNum;
         head.MessageChain = messageChain;
@@ -85,7 +85,7 @@ namespace
     std::string MakeRawStepHeadStream(
         const std::string& magic = ProtocolMagicText,
         const std::string& version = kStepVersionText,
-        const std::string& packageID = "1001",
+        const std::string& packageId = "1001",
         const std::string& bodyLen = "0008",
         const std::string& msgSeqNum = "00000007",
         const std::string& messageChain = "0",
@@ -94,7 +94,7 @@ namespace
         return std::string(1, SOH)
             + MakeStepField(Items::Magic, magic)
             + MakeStepField(Items::Version, version)
-            + MakeStepField(Items::PackageID, packageID)
+            + MakeStepField(Items::PackageId, packageId)
             + MakeStepField(Items::BodyLen, bodyLen)
             + MakeStepField(Items::MsgSeqNum, msgSeqNum)
             + MakeStepField(Items::MessageChain, messageChain)
@@ -271,36 +271,36 @@ TEST(StepUtilityTest, PackageStartAnchor_MatchesHeadToStream)
 
 TEST(StepUtilityTest, GetFieldStart_Found)
 {
-    // FieldStart marker: SOH + "0006=" + hexFieldID
+    // FieldStart marker: SOH + "0006=" + hexFieldId
     // 0006=100D indicates field 0x100D
     std::string data = std::string(1, SOH) + MakeStepField(6, "100D")
                      + "some_data"
                      + std::string(1, SOH) + MakeStepField(7, "100D");
-    unsigned short fieldID = 0;
+    unsigned short fieldId = 0;
     int startIndex = -1;
 
-    EXPECT_TRUE(StepUtility::GetFieldStart(&data[0], 0, (int)data.size(), fieldID, startIndex));
-    EXPECT_EQ(fieldID, 0x100D);
+    EXPECT_TRUE(StepUtility::GetFieldStart(&data[0], 0, (int)data.size(), fieldId, startIndex));
+    EXPECT_EQ(fieldId, 0x100D);
     EXPECT_GE(startIndex, 0);
 }
 
 TEST(StepUtilityTest, GetFieldStart_NotFound)
 {
     std::string data = std::string(1, SOH) + MakeStepField(2, "0005");  // no field start marker
-    unsigned short fieldID = 0;
+    unsigned short fieldId = 0;
     int startIndex = -1;
 
-    EXPECT_FALSE(StepUtility::GetFieldStart(&data[0], 0, (int)data.size(), fieldID, startIndex));
+    EXPECT_FALSE(StepUtility::GetFieldStart(&data[0], 0, (int)data.size(), fieldId, startIndex));
 }
 
 TEST(StepUtilityTest, GetFieldEnd_Found)
 {
     std::string data = std::string(1, SOH) + MakeStepField(7, "100D");
-    unsigned short fieldID = 0;
+    unsigned short fieldId = 0;
     int endIndex = -1;
 
-    EXPECT_TRUE(StepUtility::GetFieldEnd(&data[0], 0, (int)data.size(), fieldID, endIndex));
-    EXPECT_EQ(fieldID, 0x100D);
+    EXPECT_TRUE(StepUtility::GetFieldEnd(&data[0], 0, (int)data.size(), fieldId, endIndex));
+    EXPECT_EQ(fieldId, 0x100D);
 }
 
 TEST(StepUtilityTest, GetNextFieldZone_Complete)
@@ -308,58 +308,58 @@ TEST(StepUtilityTest, GetNextFieldZone_Complete)
     std::string data = std::string(1, SOH) + MakeStepField(6, "100D")
                      + "content"
                      + std::string(1, SOH) + MakeStepField(7, "100D");
-    unsigned short fieldID = 0;
+    unsigned short fieldId = 0;
     int startIdx = -1, endIdx = -1;
 
-    EXPECT_TRUE(StepUtility::GetNextFieldZone(&data[0], 0, (int)data.size(), fieldID, startIdx, endIdx));
-    EXPECT_EQ(fieldID, 0x100D);
+    EXPECT_TRUE(StepUtility::GetNextFieldZone(&data[0], 0, (int)data.size(), fieldId, startIdx, endIdx));
+    EXPECT_EQ(fieldId, 0x100D);
     EXPECT_GE(startIdx, 0);
     EXPECT_GT(endIdx, startIdx);
 }
 
-TEST(StepUtilityTest, GetNextFieldZone_MismatchedIDs)
+TEST(StepUtilityTest, GetNextFieldZone_MismatchedIds)
 {
-    // FieldID 和 FieldEnd 的 ID 不匹配
+    // FieldId 和 FieldEnd 的 Id 不匹配
     std::string data = std::string(1, SOH) + MakeStepField(6, "100D")
                      + "content"
                      + std::string(1, SOH) + MakeStepField(7, "100E");
-    unsigned short fieldID = 0;
+    unsigned short fieldId = 0;
     int startIdx = -1, endIdx = -1;
 
-    EXPECT_FALSE(StepUtility::GetNextFieldZone(&data[0], 0, (int)data.size(), fieldID, startIdx, endIdx));
+    EXPECT_FALSE(StepUtility::GetNextFieldZone(&data[0], 0, (int)data.size(), fieldId, startIdx, endIdx));
 }
 
-TEST(StepUtilityTest, GetFieldStart_MaxFieldID)
+TEST(StepUtilityTest, GetFieldStart_MaxFieldId)
 {
-    //0xFFFF 是 16 位字段 ID 的上边界，必须仍然合法；范围检查写成越界一个会误拒它
+    //0xFFFF 是 16 位字段 Id 的上边界，必须仍然合法；范围检查写成越界一个会误拒它
     std::string data = std::string(1, SOH) + MakeStepField(6, "FFFF");
-    uint16_t fieldID = 0;
+    uint16_t fieldId = 0;
     int startIndex = -1;
 
-    EXPECT_TRUE(StepUtility::GetFieldStart(&data[0], 0, (int)data.size(), fieldID, startIndex));
-    EXPECT_EQ(fieldID, 0xFFFF);
+    EXPECT_TRUE(StepUtility::GetFieldStart(&data[0], 0, (int)data.size(), fieldId, startIndex));
+    EXPECT_EQ(fieldId, 0xFFFF);
 }
 
-TEST(StepUtilityTest, GetFieldStart_FieldIDOutOfRange)
+TEST(StepUtilityTest, GetFieldStart_FieldIdOutOfRange)
 {
     //0x10000 超出 16 位，截断后是 0x0000，会让畸形帧被当成合法字段
     std::string data = std::string(1, SOH) + MakeStepField(6, "10000");
-    uint16_t fieldID = 0;
+    uint16_t fieldId = 0;
     int startIndex = -1;
 
-    EXPECT_FALSE(StepUtility::GetFieldStart(&data[0], 0, (int)data.size(), fieldID, startIndex));
+    EXPECT_FALSE(StepUtility::GetFieldStart(&data[0], 0, (int)data.size(), fieldId, startIndex));
 }
 
-TEST(StepUtilityTest, GetNextFieldZone_FieldEndIDOutOfRange)
+TEST(StepUtilityTest, GetNextFieldZone_FieldEndIdOutOfRange)
 {
-    //结束 ID 0x1100D 截断后是 0x100D，与起始 ID 相等，会让结束 ID 越界的畸形帧通过 ID 校验
+    //结束 Id 0x1100D 截断后是 0x100D，与起始 Id 相等，会让结束 Id 越界的畸形帧通过 Id 校验
     std::string data = std::string(1, SOH) + MakeStepField(6, "100D")
                      + "content"
                      + std::string(1, SOH) + MakeStepField(7, "1100D");
-    uint16_t fieldID = 0;
+    uint16_t fieldId = 0;
     int startIdx = -1, endIdx = -1;
 
-    EXPECT_FALSE(StepUtility::GetNextFieldZone(&data[0], 0, (int)data.size(), fieldID, startIdx, endIdx));
+    EXPECT_FALSE(StepUtility::GetNextFieldZone(&data[0], 0, (int)data.size(), fieldId, startIdx, endIdx));
 }
 
 // ============================================================
@@ -378,7 +378,7 @@ TEST(StepUtilityTest, WriteString_Char)
 
 TEST(StepUtilityTest, WriteString_UnsignedShort)
 {
-    ExpectStepField(0x0001, static_cast<UInt16Type>(0x0001), "1");  // PackageID
+    ExpectStepField(0x0001, static_cast<UInt16Type>(0x0001), "1");  // PackageId
 }
 
 TEST(StepUtilityTest, WriteString_Int)
@@ -394,7 +394,7 @@ TEST(StepUtilityTest, WriteString_LongLong)
 //钉住 UInt64Type 必须命中 %llu 重载：落到末尾那个 template 重载会按 %s 把整数当 char* 解引用
 TEST(StepUtilityTest, WriteString_UInt64)
 {
-    //0x9999 不占用任何 ItemID：模型里没有 UInt64 字段，本用例只验证重载分派
+    //0x9999 不占用任何 ItemId：模型里没有 UInt64 字段，本用例只验证重载分派
     //取 UInt64 上限，确保不会被 32 位重载静默截断
     ExpectStepField(0x9999, static_cast<UInt64Type>(18446744073709551615ULL), "18446744073709551615");
 }
@@ -406,7 +406,7 @@ TEST(StepUtilityTest, WriteString_Double)
 
 TEST(StepUtilityTest, WriteString_StdString)
 {
-    ExpectStepField(0x100D, std::string("600001"), "600001");  // InstrumentID
+    ExpectStepField(0x100D, std::string("600001"), "600001");  // InstrumentId
 }
 
 TEST(StepUtilityTest, WriteString_CharPtr)
@@ -554,7 +554,7 @@ TEST(StepUtilityTest, HeadToStream_ExactCapacitySucceeds)
     HeadField head = {};
     head.Magic = ProtocolMagicValue;
     head.Version = ProtocolVersionValue;
-    head.PackageID = 0x00A1;
+    head.PackageId = 0x00A1;
     head.BodyLen = 8;
     head.MsgSeqNum = 0xFFFFFFFFu;
     head.MessageChain = 1;
@@ -564,14 +564,14 @@ TEST(StepUtilityTest, HeadToStream_ExactCapacitySucceeds)
 }
 
 //把包头逐字节钉成黄金串。定宽之后每一位都是零填充大写十六进制，长度与取值无关，
-//所以黄金串本身就是 62 字节：Version 写字面量让版本升级成为绊线，PackageID 取 0x00A1
+//所以黄金串本身就是 62 字节：Version 写字面量让版本升级成为绊线，PackageId 取 0x00A1
 //让大写与补零同时可见，MsgSeqNum 取 0xFFFFFFFF 钉住 8 位十六进制的上界
 TEST(StepUtilityTest, HeadToStream_ByteExactGolden)
 {
     HeadField head = {};
     head.Magic = ProtocolMagicValue;
     head.Version = ProtocolVersionValue;
-    head.PackageID = 0x00A1;
+    head.PackageId = 0x00A1;
     head.BodyLen = 8;
     head.MsgSeqNum = 0xFFFFFFFFu;
     head.MessageChain = 1;
@@ -595,7 +595,7 @@ TEST(StepUtilityTest, HeadToStream_ByteExactGolden)
     int headEndIndex = -1;
     EXPECT_TRUE(StepUtility::HeadFromStream(&buff[0], 0, headLen, &parsed, headEndIndex));
     EXPECT_EQ(parsed.MsgSeqNum, 0xFFFFFFFFu);
-    EXPECT_EQ(parsed.PackageID, 0x00A1);
+    EXPECT_EQ(parsed.PackageId, 0x00A1);
 }
 
 TEST(StepUtilityTest, HeadStreamRoundTrip)
@@ -611,7 +611,7 @@ TEST(StepUtilityTest, HeadStreamRoundTrip)
     EXPECT_EQ(headEndIndex, headLen);
     EXPECT_EQ(parsed.Magic, ProtocolMagicValue);
     EXPECT_EQ(parsed.Version, ProtocolVersionValue);
-    EXPECT_EQ(parsed.PackageID, 0x1001);
+    EXPECT_EQ(parsed.PackageId, 0x1001);
     EXPECT_EQ(parsed.BodyLen, 128);
     EXPECT_EQ(parsed.MsgSeqNum, 42);
     EXPECT_EQ(parsed.MessageChain, 0);
@@ -628,7 +628,7 @@ TEST(StepUtilityTest, HeadStreamRoundTrip_MinValues)
     int headEndIndex = -1;
     EXPECT_TRUE(StepUtility::HeadFromStream(&stream[0], 0, headLen, &parsed, headEndIndex));
     EXPECT_EQ(headEndIndex, headLen);
-    EXPECT_EQ(parsed.PackageID, 0x0001);
+    EXPECT_EQ(parsed.PackageId, 0x0001);
     EXPECT_EQ(parsed.BodyLen, 0);
     EXPECT_EQ(parsed.MsgSeqNum, 0u);
     EXPECT_EQ(parsed.MessageChain, 0);
@@ -646,7 +646,7 @@ TEST(StepUtilityTest, HeadStreamRoundTrip_MaxValues)
     HeadField parsed = {};
     int headEndIndex = -1;
     EXPECT_TRUE(StepUtility::HeadFromStream(&stream[0], 0, headLen, &parsed, headEndIndex));
-    EXPECT_EQ(parsed.PackageID, 0xFFFF);
+    EXPECT_EQ(parsed.PackageId, 0xFFFF);
     EXPECT_EQ(parsed.BodyLen, 65535);
     EXPECT_EQ(parsed.MsgSeqNum, 0xFFFFFFFFu);
     EXPECT_EQ(parsed.MessageChain, 1);
@@ -682,7 +682,7 @@ TEST(StepUtilityTest, HeadFromStream_MissingKey)
     std::string stream = std::string(1, SOH)
                        + MakeStepField(Items::Magic, ProtocolMagicText)
                        + MakeStepField(Items::Version, kStepVersionText)
-                       + MakeStepField(Items::PackageID, "1001")
+                       + MakeStepField(Items::PackageId, "1001")
                        + MakeStepField(Items::BodyLen, "0008")
                        + MakeStepField(Items::MsgSeqNum, "00000007")
                        + MakeStepField(0x100D, "600001");
@@ -842,7 +842,7 @@ TEST(StepUtilityTest, CompleteHeadBodyTail)
     HeadField head = {};
     head.Magic = ProtocolMagicValue;
     head.Version = ProtocolVersionValue;
-    head.PackageID = 0x1001;
+    head.PackageId = 0x1001;
     head.BodyLen = static_cast<UInt16Type>(body.size());
     head.MsgSeqNum = 1;
     head.MessageChain = 0;
@@ -861,7 +861,7 @@ TEST(StepUtilityTest, CompleteHeadBodyTail)
     HeadField parsedHead = {};
     int headEndIndex = -1;
     EXPECT_TRUE(StepUtility::HeadFromStream(&message[0], 0, (int)message.size(), &parsedHead, headEndIndex));
-    EXPECT_EQ(parsedHead.PackageID, 0x1001);
+    EXPECT_EQ(parsedHead.PackageId, 0x1001);
     EXPECT_EQ(parsedHead.MsgSeqNum, 1u);
     EXPECT_EQ(headEndIndex, headLen);
     EXPECT_EQ(message.substr(headLen, body.size()), body);

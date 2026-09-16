@@ -15,12 +15,12 @@ class NETWORK_EXPORTS Package
 {
 public:
 	Package()
-		:SessionID(0), IPAddress{ 0 }
+		:SessionId(0), IPAddress{ 0 }
 	{
 	}
 	virtual ~Package();
 	virtual void Deallocate() = 0;
-	virtual void Prepare(SessionIDType sessionID, int messageChain, int msgSeqNum);
+	virtual void Prepare(SessionIdType sessionId, int messageChain, int msgSeqNum);
 	virtual int MakePackage(ProtocolTypeType protocolType, char* buff, int size);
 	virtual int ToStepStream(char* buff, int size) const = 0;
 	virtual bool FromStepStream(char* buff, int startIndex, int endIndex) = 0;
@@ -29,7 +29,7 @@ public:
 	virtual const char* GetDebugString() const = 0;
 
 public:
-	SessionIDType SessionID;
+	SessionIdType SessionId;
 	IPAddressType IPAddress;
 
 	HeadField Head;

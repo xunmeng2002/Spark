@@ -20,16 +20,16 @@ XtpServer::~XtpServer()
 {
 }
 
-void XtpServer::OnProtocolConnect(SessionIDType sessionID, const char* ip, int port)
+void XtpServer::OnProtocolConnect(SessionIdType sessionId, const char* ip, int port)
 {
-	WriteLog(LogLevel::Info, "XtpServer::OnConnect SessionID:[%lld], IP:[%s], port:[%d]", sessionID, ip, port);
+	WriteLog(LogLevel::Info, "XtpServer::OnConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
 
-	sessionId_ = sessionID;
+	sessionId_ = sessionId;
 	connected_ = true;
 }
-void XtpServer::OnProtocolDisConnect(SessionIDType sessionID, const char* ip, int port)
+void XtpServer::OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port)
 {
-	WriteLog(LogLevel::Info, "XtpServer::OnDisConnect SessionID:[%lld], IP:[%s], port:[%d]", sessionID, ip, port);
+	WriteLog(LogLevel::Info, "XtpServer::OnDisConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
 
 	connected_ = false;
 }
@@ -38,7 +38,7 @@ void XtpServer::OnMessage(Package* xtpPackage)
 	++m_RecvCount;
 	//if ((m_RecvCount) % 1000 == 0)
 	{
-		WriteLog(LogLevel::Info, "OnMessage SessionID:[%lld], %s", xtpPackage->SessionID, xtpPackage->GetDebugString());
+		WriteLog(LogLevel::Info, "OnMessage SessionId:[%lld], %s", xtpPackage->SessionId, xtpPackage->GetDebugString());
 	}
 
 	Send(xtpPackage);

@@ -22,16 +22,16 @@ void FillProtocolHead(HeadField& head)
 }
 
 Package::~Package() {
-	SessionID = 0;
+	SessionId = 0;
 	memset(IPAddress, 0, sizeof(IPAddressType));
 	memset(&Head, 0, sizeof(Head));
 	memset(&Tail, 0, sizeof(Tail));
 }
-void Package::Prepare(SessionIDType sessionID, int messageChain, int msgSeqNum)
+void Package::Prepare(SessionIdType sessionId, int messageChain, int msgSeqNum)
 {
 	//MsgSeqNum 是无符号计数器，这里的 int 形参按模 2^32 转换（负值落到 0xFFFFFFFF 附近）。
 	//形参类型本身仍是有符号 int（改它要动公开签名），转换写成显式的是为了让这层取模是有意的
-	SessionID = sessionID;
+	SessionId = sessionId;
 	Head.MsgSeqNum = static_cast<UInt32Type>(msgSeqNum);
 	Head.MessageChain = messageChain;
 }

@@ -22,17 +22,17 @@ using namespace Spark::Packages;
 
 namespace
 {
-    constexpr SessionIDType kSessionID = 42;
+    constexpr SessionIdType SessionId = 42;
     constexpr const char* kIP = "192.168.1.100";
 
     // 构造并填入字段
     NotifyComponentConnectStatusPackage* CreateSamplePackage(int msgSeqNum = 1001)
     {
         auto* pkg = NotifyComponentConnectStatusPackage::Allocate();
-        pkg->Prepare(kSessionID, 0, msgSeqNum);
+        pkg->Prepare(SessionId, 0, msgSeqNum);
 
         auto* field = ObjectPool<NotifyComponentConnectStatusField>::GetInstance().Allocate();
-        field->SessionID = kSessionID;
+        field->SessionId = SessionId;
         field->Component = ComponentType::TradeFront;
         field->IsConnected = true;
 
@@ -71,15 +71,15 @@ namespace
 
     // 验证解析后的包与原始值一致
     void VerifyPackage(const NotifyComponentConnectStatusPackage* parsed,
-                       SessionIDType expectedSessionID,
+                       SessionIdType expectedSessionId,
                        int expectedMsgSeqNum)
     {
         ASSERT_NE(parsed, nullptr);
         ASSERT_NE(parsed->NotifyComponentConnectStatus, nullptr);
-        EXPECT_EQ(parsed->SessionID, expectedSessionID);
+        EXPECT_EQ(parsed->SessionId, expectedSessionId);
         EXPECT_EQ(parsed->Head.MsgSeqNum, expectedMsgSeqNum);
-        EXPECT_EQ(parsed->Head.PackageID, NotifyComponentConnectStatusPackage::PackageID);
-        EXPECT_EQ(parsed->NotifyComponentConnectStatus->SessionID, kSessionID);
+        EXPECT_EQ(parsed->Head.PackageId, NotifyComponentConnectStatusPackage::PackageId);
+        EXPECT_EQ(parsed->NotifyComponentConnectStatus->SessionId, SessionId);
         EXPECT_EQ(static_cast<int>(parsed->NotifyComponentConnectStatus->Component),
                   static_cast<int>(ComponentType::TradeFront));
         EXPECT_EQ(parsed->NotifyComponentConnectStatus->IsConnected, true);
@@ -109,7 +109,7 @@ TEST(PackageSerializationTest, StepRoundTrip)
 
     // 4. 用 PackageReader 解析
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Step, &factory, kSessionID, kIP);
+    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, kIP);
     unsigned int appended = reader.Append(buff, totalLen);
     EXPECT_EQ((int)appended, totalLen);
 
@@ -120,7 +120,7 @@ TEST(PackageSerializationTest, StepRoundTrip)
 
     // 5. 验证字段
     auto* parsed = static_cast<NotifyComponentConnectStatusPackage*>(parsedRaw);
-    VerifyPackage(parsed, kSessionID, 1001);
+    VerifyPackage(parsed, SessionId, 1001);
 
     // 6. 清理
     parsed->Deallocate();
@@ -130,7 +130,7 @@ TEST(PackageSerializationTest, StepRoundTrip_MultipleMessages)
 {
     // 连续两条消息验证 Reader 状态正确
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Step, &factory, kSessionID, kIP);
+    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, kIP);
 
     for (int seq = 1; seq <= 3; ++seq)
     {
@@ -172,7 +172,7 @@ TEST(PackageSerializationTest, XtpRoundTrip)
     pkg->Deallocate();
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Xtp, &factory, kSessionID, kIP);
+    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, kIP);
     reader.Append(buff, totalLen);
 
     Package* parsedRaw = nullptr;
@@ -181,7 +181,7 @@ TEST(PackageSerializationTest, XtpRoundTrip)
     ASSERT_NE(parsedRaw, nullptr);
 
     auto* parsed = static_cast<NotifyComponentConnectStatusPackage*>(parsedRaw);
-    VerifyPackage(parsed, kSessionID, 1001);
+    VerifyPackage(parsed, SessionId, 1001);
 
     parsed->Deallocate();
 }
@@ -201,7 +201,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_CheckSumVerify)
     memcpy(buff + totalLen - sizeof(TailField), &tail, sizeof(tail));
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Xtp, &factory, kSessionID, kIP);
+    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, kIP);
     reader.Append(buff, totalLen);
 
     Package* parsedRaw = nullptr;
@@ -225,7 +225,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_WrongVersionIsFatal)
     memcpy(buff, &head, sizeof(head));
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Xtp, &factory, kSessionID, kIP);
+    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, kIP);
     reader.Append(buff, totalLen);
 
     Package* parsedRaw = nullptr;
@@ -243,7 +243,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_CorruptHeadIsDiscarded)
     buff[0] ^= 0x01;
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Xtp, &factory, kSessionID, kIP);
+    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, kIP);
     reader.Append(buff, totalLen);
 
     Package* parsedRaw = nullptr;
@@ -262,7 +262,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_GarbagePrefixIsResynced)
     ASSERT_GT(totalLen, 0);
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Xtp, &factory, kSessionID, kIP);
+    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, kIP);
     EXPECT_EQ(reader.Append(const_cast<char*>(garbage), sizeof(garbage)), sizeof(garbage));
 
     Package* parsedRaw = nullptr;
@@ -290,7 +290,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_ResyncAfterCorruptFrame)
     ASSERT_GT(goodLen, 0);
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Xtp, &factory, kSessionID, kIP);
+    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, kIP);
     reader.Append(corrupt, corruptLen);
     reader.Append(good, goodLen);
 
@@ -299,7 +299,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_ResyncAfterCorruptFrame)
     ASSERT_NE(parsedRaw, nullptr);
     // 越过坏帧，好帧的字段完整解出
     EXPECT_EQ(parsedRaw->Head.MsgSeqNum, 2);
-    VerifyPackage(static_cast<NotifyComponentConnectStatusPackage*>(parsedRaw), kSessionID, 2);
+    VerifyPackage(static_cast<NotifyComponentConnectStatusPackage*>(parsedRaw), SessionId, 2);
     parsedRaw->Deallocate();
 }
 
@@ -314,7 +314,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_MagicSplitAcrossAppend)
     ASSERT_LT(kSplit, (int)sizeof(ProtocolMagicValue));
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Xtp, &factory, kSessionID, kIP);
+    PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, kIP);
     EXPECT_EQ(reader.Append(buff, kSplit), (unsigned int)kSplit);
 
     Package* parsedRaw = nullptr;
@@ -343,7 +343,7 @@ TEST(PackageSerializationTest, StepRoundTrip_WrongVersionIsFatal)
     ASSERT_TRUE(PatchStepVersion(frame, static_cast<unsigned short>(ProtocolVersionValue + 1)));
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Step, &factory, kSessionID, kIP);
+    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, kIP);
     reader.Append(&frame[0], (unsigned int)frame.size());
 
     Package* parsedRaw = nullptr;
@@ -360,7 +360,7 @@ TEST(PackageSerializationTest, StepRoundTrip_GarbagePrefixIsResynced)
     ASSERT_GT(totalLen, 0);
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Step, &factory, kSessionID, kIP);
+    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, kIP);
     EXPECT_EQ(reader.Append(const_cast<char*>(garbage), sizeof(garbage)), sizeof(garbage));
 
     Package* parsedRaw = nullptr;
@@ -370,7 +370,7 @@ TEST(PackageSerializationTest, StepRoundTrip_GarbagePrefixIsResynced)
     EXPECT_EQ(reader.Append(buff, totalLen), (unsigned int)totalLen);
     EXPECT_TRUE(reader.ParsePackage(parsedRaw));
     ASSERT_NE(parsedRaw, nullptr);
-    VerifyPackage(static_cast<NotifyComponentConnectStatusPackage*>(parsedRaw), kSessionID, 1001);
+    VerifyPackage(static_cast<NotifyComponentConnectStatusPackage*>(parsedRaw), SessionId, 1001);
     parsedRaw->Deallocate();
 }
 
@@ -387,7 +387,7 @@ TEST(PackageSerializationTest, StepRoundTrip_ResyncAfterCorruptFrame)
     ASSERT_GT(goodLen, 0);
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Step, &factory, kSessionID, kIP);
+    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, kIP);
     reader.Append(corrupt, corruptLen);
     reader.Append(good, goodLen);
 
@@ -395,7 +395,7 @@ TEST(PackageSerializationTest, StepRoundTrip_ResyncAfterCorruptFrame)
     EXPECT_TRUE(reader.ParsePackage(parsedRaw));
     ASSERT_NE(parsedRaw, nullptr);
     EXPECT_EQ(parsedRaw->Head.MsgSeqNum, 2);
-    VerifyPackage(static_cast<NotifyComponentConnectStatusPackage*>(parsedRaw), kSessionID, 2);
+    VerifyPackage(static_cast<NotifyComponentConnectStatusPackage*>(parsedRaw), SessionId, 2);
     parsedRaw->Deallocate();
 }
 
@@ -410,7 +410,7 @@ TEST(PackageSerializationTest, StepRoundTrip_AnchorSplitAcrossAppend)
     ASSERT_LT(kSplit, anchorLen);
 
     PackageFactory factory;
-    PackageReader reader(ProtocolTypeType::Step, &factory, kSessionID, kIP);
+    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, kIP);
     EXPECT_EQ(reader.Append(buff, kSplit), (unsigned int)kSplit);
 
     Package* parsedRaw = nullptr;
@@ -421,7 +421,7 @@ TEST(PackageSerializationTest, StepRoundTrip_AnchorSplitAcrossAppend)
     EXPECT_EQ(reader.Append(buff + kSplit, totalLen - kSplit), (unsigned int)(totalLen - kSplit));
     EXPECT_TRUE(reader.ParsePackage(parsedRaw));
     ASSERT_NE(parsedRaw, nullptr);
-    VerifyPackage(static_cast<NotifyComponentConnectStatusPackage*>(parsedRaw), kSessionID, 1001);
+    VerifyPackage(static_cast<NotifyComponentConnectStatusPackage*>(parsedRaw), SessionId, 1001);
     parsedRaw->Deallocate();
 }
 
@@ -432,12 +432,12 @@ TEST(PackageSerializationTest, StepRoundTrip_AnchorSplitAcrossAppend)
 TEST(PackageSerializationTest, PrepareSetsFields)
 {
     NotifyComponentConnectStatusPackage pkg;
-    pkg.Prepare(kSessionID, 1, 999);
+    pkg.Prepare(SessionId, 1, 999);
 
-    EXPECT_EQ(pkg.SessionID, kSessionID);
+    EXPECT_EQ(pkg.SessionId, SessionId);
     EXPECT_EQ(pkg.Head.MsgSeqNum, 999);
     EXPECT_EQ(pkg.Head.MessageChain, 1);
-    EXPECT_EQ(pkg.Head.PackageID, NotifyComponentConnectStatusPackage::PackageID);
+    EXPECT_EQ(pkg.Head.PackageId, NotifyComponentConnectStatusPackage::PackageId);
 }
 
 // ============================================================
@@ -448,7 +448,7 @@ TEST(PackageSerializationTest, EmptyField_NullBody)
 {
     // 字段为 nullptr 时 MakePackage 应仍能产生有效报文（body 为空）
     auto* pkg = NotifyComponentConnectStatusPackage::Allocate();
-    pkg->Prepare(kSessionID, 0, 1);
+    pkg->Prepare(SessionId, 0, 1);
     // 不设置 NotifyComponentConnectStatus
 
     char buff[MaxPackageSize] = {};
@@ -483,7 +483,7 @@ namespace
 TEST(PackageSerializationTest, OversizedBody_RejectedBeforeWrite)
 {
     OversizedBodyPackage pkg;
-    pkg.Prepare(kSessionID, 0, 1);
+    pkg.Prepare(SessionId, 0, 1);
 
     char buff[MaxPackageSize] = {};
     buff[0] = 'X';
@@ -558,7 +558,7 @@ namespace
 TEST(PackageSerializationTest, TruncatedBody_RejectedBeforeWrite)
 {
     TruncatedBodyPackage pkg;
-    pkg.Prepare(kSessionID, 0, 1);
+    pkg.Prepare(SessionId, 0, 1);
 
     char buff[MaxPackageSize] = {};
     buff[0] = 'X';
@@ -615,7 +615,7 @@ TEST(PackageSerializationTest, MakePackage_BufferSmallerThanFixedOverhead)
     for (int size : sizes)
     {
         WriteBeforeMeasurePackage pkg;
-        pkg.Prepare(kSessionID, 0, 1);
+        pkg.Prepare(SessionId, 0, 1);
 
         char buff[MaxPackageSize] = {};
         std::memset(buff, 'S', sizeof(buff));
@@ -634,7 +634,7 @@ TEST(PackageSerializationTest, MakePackage_BufferExactlyFixedOverheadReachesGene
     //闸门边界必须正好落在 20 字节：恰为 20 时 XTP 的包体容量是 0，仍要放行到生成器，
     //由生成器回一个装得进 0 字节的包体长度。闸门写宽一字节就会把这种边界帧误拒
     WriteBeforeMeasurePackage pkg;
-    pkg.Prepare(kSessionID, 0, 1);
+    pkg.Prepare(SessionId, 0, 1);
 
     char buff[MaxPackageSize] = {};
     EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Xtp, buff, FixedFrameOverhead), FixedFrameOverhead);
@@ -649,7 +649,7 @@ TEST(PackageSerializationTest, StepPackage_BufferExactlyHeadPlusTailReachesGener
     const int needed = static_cast<int>(StepHeadLen + StepTailLen);
 
     WriteBeforeMeasurePackage pkg;
-    pkg.Prepare(kSessionID, 0, 1);
+    pkg.Prepare(SessionId, 0, 1);
 
     char buff[MaxPackageSize] = {};
     EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Step, buff, needed - 1), 0);
@@ -666,7 +666,7 @@ TEST(PackageSerializationTest, MakePackage_NullBufferRejected)
     //缓冲为空指针时尺寸再大也无意义：闸门必须按空指针判失败，而不是拿它去做指针算术。
     //这条属新增的正性检查，旧实现会在这里崩
     WriteBeforeMeasurePackage pkg;
-    pkg.Prepare(kSessionID, 0, 1);
+    pkg.Prepare(SessionId, 0, 1);
 
     EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Xtp, nullptr, MaxPackageSize), 0);
     EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Step, nullptr, MaxPackageSize), 0);

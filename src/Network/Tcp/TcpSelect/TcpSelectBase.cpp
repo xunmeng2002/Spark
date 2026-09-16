@@ -82,7 +82,7 @@ void TcpSelectBase::HandleTcpEvent()
 		auto connect = (TcpConnect*)it.second;
 		if (FD_ISSET(connect->SocketId, &errorFds_))
 		{
-			DisConnect(connect->SessionID);
+			DisConnect(connect->SessionId);
 		}
 	}
 	if (serverType_ == ServerTypeType::Server)

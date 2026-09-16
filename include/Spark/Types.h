@@ -30,55 +30,55 @@ typedef uint32_t UInt32Type;
 typedef int32_t Int32Type;
 
 //客户端委托编号类型
-typedef int32_t ClientOrderIDType;
+typedef int32_t ClientOrderIdType;
 
 //指令类型
 typedef int32_t CommandType;
 
 //错误代码类型
-typedef int32_t ErrorIDType;
+typedef int32_t ErrorIdType;
 
 //前置代码类型
-typedef int32_t FrontIDType;
+typedef int32_t FrontIdType;
 
 //组代码类型
-typedef int32_t GroupIDType;
+typedef int32_t GroupIdType;
 
 //最大委托编号类型
-typedef int32_t MaxOrderIDType;
+typedef int32_t MaxOrderIdType;
 
 //整型类型
 typedef int32_t NumberType;
 
 //报盘代码类型
-typedef int32_t OfferIDType;
+typedef int32_t OfferIdType;
 
 //委托编号类型
-typedef int32_t OrderIDType;
+typedef int32_t OrderIdType;
 
 //请求代码类型
-typedef int32_t RequestIDType;
+typedef int32_t RequestIdType;
 
 //风控代码类型
-typedef int32_t RiskIDType;
+typedef int32_t RiskIdType;
 
 //风控指标代码类型
-typedef int32_t RiskIndexIDType;
+typedef int32_t RiskIndexIdType;
 
 //风控等级
 typedef int32_t RiskLevelType;
 
 //风控规则代码类型
-typedef int32_t RiskRuleIDType;
+typedef int32_t RiskRuleIdType;
 
 //风控规则子项代码类型
-typedef int32_t RiskRuleItemIDType;
+typedef int32_t RiskRuleItemIdType;
 
 //风控文本引用序号
 typedef int32_t RiskTextRefType;
 
 //角色代码类型
-typedef int32_t RoleIDType;
+typedef int32_t RoleIdType;
 
 //时间秒数类型
 typedef int32_t SecondType;
@@ -98,7 +98,7 @@ typedef unsigned long long UInt64Type;
 typedef long long Int64Type;
 
 	//会话代码类型
-typedef long long SessionIDType;
+typedef long long SessionIdType;
 
 	//数量类型
 typedef long long VolumeType;
@@ -121,13 +121,13 @@ typedef double LargeVolumeType;
 
 
 //账号类型
-typedef char AccountIDType[32];
+typedef char AccountIdType[32];
 
 //账号名称类型
 typedef char AccountNameType[64];
 
 //App代码类型
-typedef char AppIDType[32];
+typedef char AppIdType[32];
 
 //App版本类型
 typedef char AppVersionType[32];
@@ -136,49 +136,49 @@ typedef char AppVersionType[32];
 typedef char AuthCodeType[64];
 
 //银行卡号类型
-typedef char BankCardIDType[32];
+typedef char BankCardIdType[32];
 
 //主板时间类型
 typedef char BiosTimeType[16];
 
 //经纪公司代码
-typedef char BrokerIDType[16];
+typedef char BrokerIdType[16];
 
 //经纪公司名称
 typedef char BrokerNameType[16];
 
 //经纪公司委托编号类型
-typedef char BrokerOrderIDType[32];
+typedef char BrokerOrderIdType[32];
 
 //币种类型
-typedef char CurrencyIDType[8];
+typedef char CurrencyIdType[8];
 
 //币种组类型
 typedef char CurrencyGroupType[8];
 
 //CPU编号类型
-typedef char CpuIDType[32];
+typedef char CpuIdType[32];
 
 //日期类型
 typedef char DateType[16];
 
 //数据库名称类型
-typedef char DBNameType[32];
+typedef char DbNameType[32];
 
 //磁盘序号类型
-typedef char DiskIDType[64];
+typedef char DiskIdType[64];
 
 //磁盘路径类型
 typedef char DiskPathType[32];
 
 //交易所代码类型
-typedef char ExchangeIDType[8];
+typedef char ExchangeIdType[8];
 
 //交易所名称类型
 typedef char ExchangeNameType[64];
 
 //交易所成交编号类型
-typedef char ExchangeTradeIDType[32];
+typedef char ExchangeTradeIdType[32];
 
 //组名称类型
 typedef char GroupNameType[64];
@@ -187,7 +187,7 @@ typedef char GroupNameType[64];
 typedef char HostNameType[32];
 
 //合约代码类型
-typedef char InstrumentIDType[32];
+typedef char InstrumentIdType[32];
 
 //合约名称类型
 typedef char InstrumentNameType[64];
@@ -208,10 +208,10 @@ typedef char NameType[64];
 typedef char OfferNameType[32];
 
 //机构代码类型
-typedef char OrgIDType[16];
+typedef char OrgIdType[16];
 
 //系统委托编号类型
-typedef char OrderSysIDType[64];
+typedef char OrderSysIdType[64];
 
 //密码类型
 typedef char PasswordType[64];
@@ -223,7 +223,7 @@ typedef char ParamValueType[256];
 typedef char PhoneNumberType[32];
 
 //品种代码类型
-typedef char ProductIDType[32];
+typedef char ProductIdType[32];
 
 //用户产品信息类型
 typedef char ProductInfoType[32];
@@ -256,10 +256,10 @@ typedef char TickBSFlagType[8];
 typedef char TimeType[16];
 
 //成交编号类型
-typedef char TradeIDType[64];
+typedef char TradeIdType[64];
 
 //用户代码类型
-typedef char UserIDType[32];
+typedef char UserIdType[32];
 
 //用户名称类型
 typedef char UserNameType[64];
@@ -380,7 +380,7 @@ enum class ConnectStatusType : int32_t
 };
 
 //数据库操作
-enum class DBOperateType : int32_t
+enum class DbOperateType : int32_t
 {
 	//创建所有表
 	CreateTables = 0,
@@ -403,16 +403,16 @@ enum class DBOperateType : int32_t
 };
 
 //数据库类型
-enum class DBTypeType : int32_t
+enum class DbTypeType : int32_t
 {
 	//duckdb
-	DuckDB = 0,
+	DuckDb = 0,
 	//sqlite
-	SqliteDB = 1,
+	SqliteDb = 1,
 	//mysql
-	MysqlDB = 2,
+	MysqlDb = 2,
 	//maria
-	MariaDB = 3,
+	MariaDb = 3,
 };
 
 //交割方式
@@ -507,7 +507,7 @@ enum class InstrumentClassType : int32_t
 };
 
 //IO模型
-enum class IOModelType : int32_t
+enum class IoModelType : int32_t
 {
 	//Select
 	Select = 0,
@@ -518,7 +518,7 @@ enum class IOModelType : int32_t
 };
 
 //IO类型
-enum class IOTypeType : int32_t
+enum class IoTypeType : int32_t
 {
 	//Tcp
 	Tcp = 0,
@@ -800,7 +800,7 @@ enum class RiskActionType : int32_t
 };
 
 //风控类别代码
-enum class RiskClassIDType : int32_t
+enum class RiskClassIdType : int32_t
 {
 	//交易范围控制
 	TradeScope = 0,
@@ -870,7 +870,7 @@ enum class SecurityDetailTypeType : int32_t
 	//科创板
 	Star = 2,
 	//中小板
-	SMEBoard = 3,
+	SmeBoard = 3,
 	//创业板
 	SecondBoard = 4,
 	//B股
@@ -955,7 +955,7 @@ enum class StockOrderPriceTypeType : int32_t
 	//全额成交或撤销
 	FOK = 4,
 	//对方最优价
-	DBestPrice = 5,
+	DbestPrice = 5,
 	//本方最优价
 	WBestPrice = 6,
 };

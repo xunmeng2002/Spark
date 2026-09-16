@@ -1,4 +1,4 @@
-// 本文件由 ../Templates/Cpp/Spark/Network/Protocol/Items.h.tpl 生成；请勿手改，改动请改模板后重跑 pumpall.py
+﻿// 本文件由 ../Templates/Cpp/Spark/Network/Protocol/Items.h.tpl 生成；请勿手改，改动请改模板后重跑 pumpall.py
 #pragma once
 #include <Spark/Types.h>
 
@@ -8,7 +8,7 @@ class Items
 {
 public:
 	static constexpr UInt16Type Magic{0x0000};
-	static constexpr UInt16Type PackageID{0x0001};
+	static constexpr UInt16Type PackageId{0x0001};
 	static constexpr UInt16Type BodyLen{0x0002};
 	static constexpr UInt16Type MessageChain{0x0003};
 	static constexpr UInt16Type MsgSeqNum{0x0004};
@@ -16,49 +16,49 @@ public:
 	static constexpr UInt16Type FieldStart{0x0006};
 	static constexpr UInt16Type FieldEnd{0x0007};
 	static constexpr UInt16Type Version{0x0008};
-	static constexpr UInt16Type AccountID{0x1001};
-	static constexpr UInt16Type AdminUserID{0x1002};
+	static constexpr UInt16Type AccountId{0x1001};
+	static constexpr UInt16Type AdminUserId{0x1002};
 	static constexpr UInt16Type BarPeriod{0x1003};
-	static constexpr UInt16Type CancelOrderID{0x1004};
-	static constexpr UInt16Type ClientCancelOrderID{0x1005};
-	static constexpr UInt16Type ClientOrderID{0x1006};
-	static constexpr UInt16Type CommissionGroupID{0x1007};
-	static constexpr UInt16Type CurrencyID{0x1008};
-	static constexpr UInt16Type ErrorID{0x1009};
-	static constexpr UInt16Type ExchangeID{0x100A};
-	static constexpr UInt16Type ExchangeInstID{0x100B};
-	static constexpr UInt16Type HolderAccountID{0x100C};
-	static constexpr UInt16Type InstrumentID{0x100D};
-	static constexpr UInt16Type InstrumentGroupID{0x100E};
-	static constexpr UInt16Type MdUserID{0x100F};
-	static constexpr UInt16Type MoneyTransferID{0x1010};
-	static constexpr UInt16Type OfferID{0x1011};
-	static constexpr UInt16Type OrderID{0x1012};
-	static constexpr UInt16Type OrderSysID{0x1013};
-	static constexpr UInt16Type PrimaryAccountID{0x1014};
-	static constexpr UInt16Type ProductID{0x1015};
-	static constexpr UInt16Type RequestID{0x1016};
-	static constexpr UInt16Type RiskClassID{0x1017};
-	static constexpr UInt16Type RiskID{0x1018};
-	static constexpr UInt16Type RiskGroupID{0x1019};
-	static constexpr UInt16Type RiskIndexID{0x101A};
-	static constexpr UInt16Type RiskRuleID{0x101B};
-	static constexpr UInt16Type RiskRuleItemID{0x101C};
-	static constexpr UInt16Type RiskUserID{0x101D};
-	static constexpr UInt16Type SessionID{0x101E};
-	static constexpr UInt16Type TradeID{0x101F};
-	static constexpr UInt16Type TradeGroupID{0x1020};
-	static constexpr UInt16Type UnderlyingInstrumentID{0x1021};
-	static constexpr UInt16Type UserID{0x1022};
-	static constexpr UInt16Type BuyOrderSysID{0x1023};
-	static constexpr UInt16Type SellOrderSysID{0x1024};
-	static constexpr UInt16Type ChannelID{0x1025};
-	static constexpr UInt16Type RealInstrumentID{0x1026};
-	static constexpr UInt16Type BrokerID{0x1027};
+	static constexpr UInt16Type CancelOrderId{0x1004};
+	static constexpr UInt16Type ClientCancelOrderId{0x1005};
+	static constexpr UInt16Type ClientOrderId{0x1006};
+	static constexpr UInt16Type CommissionGroupId{0x1007};
+	static constexpr UInt16Type CurrencyId{0x1008};
+	static constexpr UInt16Type ErrorId{0x1009};
+	static constexpr UInt16Type ExchangeId{0x100A};
+	static constexpr UInt16Type ExchangeInstId{0x100B};
+	static constexpr UInt16Type HolderAccountId{0x100C};
+	static constexpr UInt16Type InstrumentId{0x100D};
+	static constexpr UInt16Type InstrumentGroupId{0x100E};
+	static constexpr UInt16Type MdUserId{0x100F};
+	static constexpr UInt16Type MoneyTransferId{0x1010};
+	static constexpr UInt16Type OfferId{0x1011};
+	static constexpr UInt16Type OrderId{0x1012};
+	static constexpr UInt16Type OrderSysId{0x1013};
+	static constexpr UInt16Type PrimaryAccountId{0x1014};
+	static constexpr UInt16Type ProductId{0x1015};
+	static constexpr UInt16Type RequestId{0x1016};
+	static constexpr UInt16Type RiskClassId{0x1017};
+	static constexpr UInt16Type RiskId{0x1018};
+	static constexpr UInt16Type RiskGroupId{0x1019};
+	static constexpr UInt16Type RiskIndexId{0x101A};
+	static constexpr UInt16Type RiskRuleId{0x101B};
+	static constexpr UInt16Type RiskRuleItemId{0x101C};
+	static constexpr UInt16Type RiskUserId{0x101D};
+	static constexpr UInt16Type SessionId{0x101E};
+	static constexpr UInt16Type TradeId{0x101F};
+	static constexpr UInt16Type TradeGroupId{0x1020};
+	static constexpr UInt16Type UnderlyingInstrumentId{0x1021};
+	static constexpr UInt16Type UserId{0x1022};
+	static constexpr UInt16Type BuyOrderSysId{0x1023};
+	static constexpr UInt16Type SellOrderSysId{0x1024};
+	static constexpr UInt16Type ChannelId{0x1025};
+	static constexpr UInt16Type RealInstrumentId{0x1026};
+	static constexpr UInt16Type BrokerId{0x1027};
 	static constexpr UInt16Type AccountName{0x2001};
 	static constexpr UInt16Type BrokerName{0x2002};
 	static constexpr UInt16Type CommissionGroupName{0x2003};
-	static constexpr UInt16Type DBName{0x2004};
+	static constexpr UInt16Type DbName{0x2004};
 	static constexpr UInt16Type ExchangeName{0x2005};
 	static constexpr UInt16Type InstrumentName{0x2006};
 	static constexpr UInt16Type MdUserName{0x2007};

@@ -17,18 +17,18 @@ ShmSubscriberImpl::ShmSubscriberImpl(IOBase* io, ServerTypeType serverType)
 
 	io_->Subscribe(this);
 }
-void ShmSubscriberImpl::OnConnect(SessionIDType sessionID, const char* ip, int port)
+void ShmSubscriberImpl::OnConnect(SessionIdType sessionId, const char* ip, int port)
 {
-	WriteLog(LogLevel::Info, "OnConnect sessionID:%lld, ip:%s, port:%d", sessionID, ip, port);
+	WriteLog(LogLevel::Info, "OnConnect sessionId:%lld, ip:%s, port:%d", sessionId, ip, port);
 	connected_ = true;
-	sessionId_ = sessionID;
+	sessionId_ = sessionId;
 }
-void ShmSubscriberImpl::OnDisConnect(SessionIDType sessionID, const char* ip, int port)
+void ShmSubscriberImpl::OnDisConnect(SessionIdType sessionId, const char* ip, int port)
 {
-	WriteLog(LogLevel::Info, "OnDisConnect sessionID:%lld, ip:%s, port:%d", sessionID, ip, port);
+	WriteLog(LogLevel::Info, "OnDisConnect sessionId:%lld, ip:%s, port:%d", sessionId, ip, port);
 	connected_ = false;
 }
-void ShmSubscriberImpl::OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer)
+void ShmSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer)
 {
 	while (buffer->GetLength() > 0)
 	{
@@ -68,7 +68,7 @@ void ShmSubscriberImpl::OnRecv(SessionIDType sessionID, Buffer<BuffSize>* buffer
 				shmPackage->ShmType = (int)ServerTypeType::Server;
 				auto sendBuff = new Buffer<BuffSize>();
 				sendBuff->Append((char*)shmPackage, sizeof(ShmPackage));
-				io_->Send(sessionID, sendBuff);
+				io_->Send(sessionId, sendBuff);
 			}
 		}
 	}
