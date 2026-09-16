@@ -1,17 +1,17 @@
 #pragma once
 #include <Spark/Core/Thread/ThreadBase.h>
-#include <Spark/Network/IO/IOBase.h>
-#include <Spark/Network/IO/IOThread.h>
+#include <Spark/Network/Io/IoBase.h>
+#include <Spark/Network/Io/IoThread.h>
 #include <Spark/Core/Utility/TimeUtility.h>
 #include <map>
 #include <chrono>
 
 using namespace Spark::Network;
-class ClientIOSubscriberImpl : public IOSubscriber
+class ClientIoSubscriberImpl : public IoSubscriber
 {
 public:
-	ClientIOSubscriberImpl(IOBase* io, IOThread* ioThread);
-	~ClientIOSubscriberImpl();
+	ClientIoSubscriberImpl(IoBase* io, IoThread* ioThread);
+	~ClientIoSubscriberImpl();
 
 
 
@@ -22,8 +22,8 @@ public:
 	void Send(SessionIdType sessionId);
 	void SendCommand(SessionIdType sessionId, const char* cmd);
 private:
-	IOBase* io_;
-	IOThread* ioThread_;
+	IoBase* io_;
+	IoThread* ioThread_;
 	std::map<SessionIdType, int> messageCounts_;
 	std::chrono::steady_clock::time_point startSendTime_;
 };

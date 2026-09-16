@@ -3,7 +3,7 @@
 #include "Tcp/SocketInit.h"
 #include "Tcp/TcpConnect.h"
 #include "Tcp/SocketNotify.h"
-#include <Spark/Network/IO/IOBase.h>
+#include <Spark/Network/Io/IoBase.h>
 #include <Spark/TemplateLib/Buffer/Buffer.h>
 #include <list>
 #include <map>
@@ -12,7 +12,7 @@
 
 namespace Spark::Network
 {
-class NETWORK_EXPORTS TcpBase : public IOBase
+class NETWORK_EXPORTS TcpBase : public IoBase
 {
 public:
 	TcpBase(ServerTypeType serverType, const char* addressName, int milliSeconds);
@@ -23,7 +23,7 @@ public:
 	virtual void Send(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
 	virtual bool ConnectToServer(const char* address) override;
 	virtual bool ConnectToServer(const char* ip, unsigned short port) { return false; }
-	virtual void HandleIOEvent() override;
+	virtual void HandleIoEvent() override;
 	virtual void AddConnect(Connect* connect) override;
 	virtual void RemoveConnect(Connect* connect) override;
 protected:

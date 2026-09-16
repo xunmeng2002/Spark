@@ -19,7 +19,7 @@ namespace
 }
 
 TcpBase::TcpBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
-	:IOBase(serverType, addressName, milliSeconds), addressInfo_(nullptr), socket_(INVALID_SOCKET), socketNotify_(nullptr), remoteAddressLen_(sizeof(remoteAddress_)),
+	:IoBase(serverType, addressName, milliSeconds), addressInfo_(nullptr), socket_(INVALID_SOCKET), socketNotify_(nullptr), remoteAddressLen_(sizeof(remoteAddress_)),
 	autoConnectPending_(false), lastConnectAttemptTime_{}
 {
 	SocketInit::GetInstance().Init();
@@ -90,7 +90,7 @@ bool TcpBase::ConnectToServer(const char* address)
 	ParseAddress(address, address_, port_);
 	return ConnectToServer(address_.c_str(), atoi(port_.c_str()));
 }
-void TcpBase::HandleIOEvent()
+void TcpBase::HandleIoEvent()
 {
 	if (serverType_ == ServerTypeType::Client)
 	{
@@ -103,12 +103,12 @@ void TcpBase::HandleIOEvent()
 void TcpBase::AddConnect(Connect* connect)
 {
 	autoConnectPending_ = false;
-	IOBase::AddConnect(connect);
+	IoBase::AddConnect(connect);
 }
 void TcpBase::RemoveConnect(Connect* connect)
 {
 	autoConnectPending_ = false;
-	IOBase::RemoveConnect(connect);
+	IoBase::RemoveConnect(connect);
 }
 void TcpBase::TryAutoReconnect()
 {

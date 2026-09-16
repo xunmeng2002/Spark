@@ -3,7 +3,7 @@
 #include "Shm/ShmConnect.h"
 #include <Spark/Types.h>
 #include <Spark/TemplateLib/Buffer/Buffer.h>
-#include <Spark/Network/IO/IOBase.h>
+#include <Spark/Network/Io/IoBase.h>
 #include <string>
 #include <map>
 #include <list>
@@ -13,7 +13,7 @@
 
 namespace Spark::Network
 {
-class ShmBase : public IOBase
+class ShmBase : public IoBase
 {
 public:
 	ShmBase(ServerTypeType shmType, const char* shmName, int milliSeconds);
@@ -22,7 +22,7 @@ public:
 	virtual bool Init() override;
 	virtual void Send(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
 
-	virtual void HandleIOEvent() override;
+	virtual void HandleIoEvent() override;
 protected:
 	virtual void DoSend(Connect* connect) override;
 	virtual void DoRecv(Connect* connect) override;

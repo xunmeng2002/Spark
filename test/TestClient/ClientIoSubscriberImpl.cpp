@@ -1,4 +1,4 @@
-#include "ClientIOSubscriberImpl.h"
+#include "ClientIoSubscriberImpl.h"
 #include "Packages.h"
 #include <Spark/Core/Core.h>
 #include <cstring>
@@ -11,37 +11,37 @@ using namespace Spark::Core;
 using namespace Spark::Network;
 using namespace Spark::Packages;
 
-ClientIOSubscriberImpl::ClientIOSubscriberImpl(IOBase* io, IOThread* ioThread)
+ClientIoSubscriberImpl::ClientIoSubscriberImpl(IoBase* io, IoThread* ioThread)
     :io_(io), ioThread_(ioThread)
 {
     io_->Subscribe(this);
 }
-ClientIOSubscriberImpl::~ClientIOSubscriberImpl()
+ClientIoSubscriberImpl::~ClientIoSubscriberImpl()
 {
     io_->UnSubscribe();
 }
 
 
-void ClientIOSubscriberImpl::OnConnect(SessionIdType sessionId, const char* ip, int port)
+void ClientIoSubscriberImpl::OnConnect(SessionIdType sessionId, const char* ip, int port)
 {
-    WriteLog(LogLevel::Info, "ClientIOSubscriberImpl::OnConnect SessionId:[%lld], IP:[%s], Port:[%d]", sessionId, ip, port);
+    WriteLog(LogLevel::Info, "ClientIoSubscriberImpl::OnConnect SessionId:[%lld], IP:[%s], Port:[%d]", sessionId, ip, port);
     messageCounts_.insert(std::make_pair(sessionId, 0));
     startSendTime_ = steady_clock::now();
     Send(sessionId);
 }
-void ClientIOSubscriberImpl::OnDisConnect(SessionIdType sessionId, const char* ip, int port)
+void ClientIoSubscriberImpl::OnDisConnect(SessionIdType sessionId, const char* ip, int port)
 {
-    WriteLog(LogLevel::Info, "ClientIOSubscriberImpl::OnDisConnect SessionId:[%lld], IP:[%s], Port:[%d]", sessionId, ip, port);
+    WriteLog(LogLevel::Info, "ClientIoSubscriberImpl::OnDisConnect SessionId:[%lld], IP:[%s], Port:[%d]", sessionId, ip, port);
     messageCounts_.erase(sessionId);
 
     ioThread_->Stop();
 }
-void ClientIOSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer)
+void ClientIoSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer)
 {
     auto count = messageCounts_[sessionId];
     if (count % 100 == 0)
     {
-        WriteLog(LogLevel::Info, "ClientIOSubscriberImpl::OnRecv SessionId:[%lld], Length:[%d], Data:[%s]", sessionId, buffer->GetLength(), buffer->GetData());
+        WriteLog(LogLevel::Info, "ClientIoSubscriberImpl::OnRecv SessionId:[%lld], Length:[%d], Data:[%s]", sessionId, buffer->GetLength(), buffer->GetData());
     }
     if (messageCounts_[sessionId] < 10000)
     {
@@ -56,7 +56,7 @@ void ClientIOSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BuffSize>* b
         buffer->Deallocate();
     }
 }
-void ClientIOSubscriberImpl::Send(SessionIdType sessionId)
+void ClientIoSubscriberImpl::Send(SessionIdType sessionId)
 {
     auto count = ++messageCounts_[sessionId];
 
@@ -81,7 +81,7 @@ void ClientIOSubscriberImpl::Send(SessionIdType sessionId)
 
     io_->Send(sessionId, buffer);
 }
-void ClientIOSubscriberImpl::SendCommand(SessionIdType sessionId, const char* cmd)
+void ClientIoSubscriberImpl::SendCommand(SessionIdType sessionId, const char* cmd)
 {
     ++messageCounts_[sessionId];
     Buffer<BuffSize>* buffer = Buffer<BuffSize>::Allocate();

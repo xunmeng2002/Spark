@@ -1,5 +1,5 @@
 #include "TestTcpClient.h"
-#include "ClientIOSubscriberImpl.h"
+#include "ClientIoSubscriberImpl.h"
 #include "TestUtility/TestUtility.h"
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Network/Network.h>
@@ -10,9 +10,9 @@ using namespace Spark::Network;
 void TestTcpClient()
 {
     WriteLog(LogLevel::Info, "TestTcpClient");
-    IOThread* ioThread = new IOThread("TestTcpClient");
-    auto io = IOFactory::CreateIo(ServerTypeType::Client, TcpAddress, IoModel);
-    ClientIOSubscriberImpl clientIOSubscriberImpl(io, ioThread);
+    IoThread* ioThread = new IoThread("TestTcpClient");
+    auto io = IoFactory::CreateIo(ServerTypeType::Client, TcpAddress, IoModel);
+    ClientIoSubscriberImpl clientIoSubscriberImpl(io, ioThread);
     ioThread->SetIo(io);
 
     if (!io->Init())

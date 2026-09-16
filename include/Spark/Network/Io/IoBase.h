@@ -2,8 +2,8 @@
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Types.h>
 #include <Spark/TemplateLib/Buffer/Buffer.h>
-#include <Spark/Network/IO/Connect.h>
-#include <Spark/Network/IO/IOUtility.h>
+#include <Spark/Network/Io/Connect.h>
+#include <Spark/Network/Io/IoUtility.h>
 #include <string>
 #include <chrono>
 #include <mutex>
@@ -14,7 +14,7 @@
 
 namespace Spark::Network
 {
-class IOSubscriber
+class IoSubscriber
 {
 public:
 	virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) = 0;
@@ -22,12 +22,12 @@ public:
 	virtual void OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer) = 0;
 };
 
-class NETWORK_EXPORTS IOBase
+class NETWORK_EXPORTS IoBase
 {
 public:
-	IOBase(ServerTypeType serverType, const char* addressName, int milliSeconds);
-	virtual ~IOBase();
-	void Subscribe(IOSubscriber* subscriber);
+	IoBase(ServerTypeType serverType, const char* addressName, int milliSeconds);
+	virtual ~IoBase();
+	void Subscribe(IoSubscriber* subscriber);
 	void UnSubscribe();
 	virtual void SetTimeOut(int milliSeconds);
 
@@ -37,7 +37,7 @@ public:
 	virtual void DisConnectAll();
 	virtual void Send(SessionIdType sessionId, Buffer<BuffSize>* buffer) = 0;
 	
-	virtual void HandleIOEvent() = 0;
+	virtual void HandleIoEvent() = 0;
 
 protected:
 	virtual void DoDisConnect();
@@ -57,7 +57,7 @@ protected:
 	std::string address_;
 	std::string port_;
 	std::chrono::milliseconds timeOut_;
-	IOSubscriber* ioSubscriber_;
+	IoSubscriber* ioSubscriber_;
 	SessionIdType lastSessionIndex_;
 
 	std::map<SessionIdType, Connect*> connects_;

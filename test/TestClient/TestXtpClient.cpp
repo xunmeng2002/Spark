@@ -5,7 +5,7 @@
 #include <Spark/Core/Utility/Utility.h>
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Core/Utility/TimeUtility.h>
-#include <Spark/Network/IO/IOThread.h>
+#include <Spark/Network/Io/IoThread.h>
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 
 using namespace std;
@@ -83,7 +83,7 @@ void TestXtpClient()
 {
 	WriteLog(LogLevel::Info, "TestXtpClient");
 
-	IOThread* ioThread = new IOThread("XtpClient");
+	IoThread* ioThread = new IoThread("XtpClient");
 	XtpClient xtpClient;
 	xtpClient.SetIoThread(ioThread);
 	if (!xtpClient.Init())

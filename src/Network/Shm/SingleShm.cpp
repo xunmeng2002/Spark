@@ -18,7 +18,7 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 SingleShm::SingleShm(ServerTypeType shmType, const char* shmName)
-	:IOBase(shmType, shmName, 0), shmName_(shmName), connected_(false), sessionId_(0LL),
+	:IoBase(shmType, shmName, 0), shmName_(shmName), connected_(false), sessionId_(0LL),
 	shmAddr_(nullptr)
 {
     shmBuffer_ = new ShmBuffer<ShmBuffSize>();
@@ -152,7 +152,7 @@ void SingleShm::DoRecv(Connect* connect)
 	else
 		buffer->Deallocate();
 }
-void SingleShm::HandleIOEvent()
+void SingleShm::HandleIoEvent()
 {
 	CheckConnectStatus();
 	CheckEvent();

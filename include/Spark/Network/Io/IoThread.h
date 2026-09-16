@@ -2,9 +2,9 @@
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Types.h>
 #include <Spark/Core/Thread/ThreadBase.h>
-#include <Spark/Network/IO/IOBase.h>
+#include <Spark/Network/Io/IoBase.h>
 #include <Spark/TemplateLib/Buffer/Buffer.h>
-#include <Spark/Network/IO/Connect.h>
+#include <Spark/Network/Io/Connect.h>
 #include <string>
 #include <mutex>
 #include <list>
@@ -13,18 +13,18 @@
 
 namespace Spark::Network
 {
-class NETWORK_EXPORTS IOThread : public Spark::Core::ThreadBase
+class NETWORK_EXPORTS IoThread : public Spark::Core::ThreadBase
 {
 public:
-	IOThread(const char* threadName);
-	~IOThread();
-	void SetIo(IOBase* io);
+	IoThread(const char* threadName);
+	~IoThread();
+	void SetIo(IoBase* io);
 
 protected:
 	virtual void Run() override;
 	virtual void ThreadExit() override;
 
 private:
-	IOBase* io_;
+	IoBase* io_;
 };
 }

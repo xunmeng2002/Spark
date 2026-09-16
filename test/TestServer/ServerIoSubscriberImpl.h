@@ -1,24 +1,24 @@
 #pragma once
 #include <Spark/Core/Thread/ThreadBase.h>
-#include <Spark/Network/IO/IOBase.h>
-#include <Spark/Network/IO/IOThread.h>
+#include <Spark/Network/Io/IoBase.h>
+#include <Spark/Network/Io/IoThread.h>
 
 
 using namespace Spark;
 using namespace Spark::Network;
-class ServerIOSubscriberImpl : public IOSubscriber
+class ServerIoSubscriberImpl : public IoSubscriber
 {
 public:
-	ServerIOSubscriberImpl(IOBase* io, IOThread* ioThread);
-	~ServerIOSubscriberImpl();
+	ServerIoSubscriberImpl(IoBase* io, IoThread* ioThread);
+	~ServerIoSubscriberImpl();
 
 	virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) override;
 	virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) override;
 	virtual void OnRecv(SessionIdType sessionId, Spark::Buffer<Spark::BuffSize>* buffer) override;
 
 private:
-	IOBase* io_;
-	IOThread* ioThread_;
+	IoBase* io_;
+	IoThread* ioThread_;
 
 	std::map<SessionIdType, int> messageCounts_;
 };

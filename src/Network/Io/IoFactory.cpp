@@ -1,4 +1,4 @@
-#include <Spark/Network/IO/IOFactory.h>
+#include <Spark/Network/Io/IoFactory.h>
 #include "Tcp/SocketInit.h"
 #ifdef __linux__
 #include "Tcp/TcpEpoll/TcpEpollClient.h"
@@ -22,7 +22,7 @@ using namespace Spark::Core;
 
 namespace Spark::Network
 {
-IOBase* IOFactory::CreateIo(ServerTypeType serverType, const char* address, IoModelType ioModel, int milliSeconds)
+IoBase* IoFactory::CreateIo(ServerTypeType serverType, const char* address, IoModelType ioModel, int milliSeconds)
 {
 	IoTypeType ioType;
 	if (strncmp(address, "tcp", 3) == 0)

@@ -231,7 +231,7 @@ int main()
 ```cpp
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Core/Utility/Utility.h>
-#include <Spark/Network/IO/IOThread.h>
+#include <Spark/Network/Io/IoThread.h>
 #include <Spark/Network/Protocol/Protocol.h>
 #include <Spark/Network/Protocol/ProtocolSubscriber.h>
 #include <Spark/Network/Protocol/PackageFactoryBase.h>
@@ -317,7 +317,7 @@ int main(int argc, const char* argv[])
     Logger::GetInstance().Start();
 
     // Create IO thread and start the client
-    IOThread* ioThread = new IOThread("StepClient");
+    IoThread* ioThread = new IoThread("StepClient");
     MyStepClient client;
     client.SetIoThread(ioThread);
     if (!client.Init())
