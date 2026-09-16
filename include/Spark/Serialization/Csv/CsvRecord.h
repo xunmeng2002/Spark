@@ -28,7 +28,7 @@ public:
 	int GetFieldAsInt(const char *fieldName);
 	int64_t GetFieldAsInt64(const char* fieldName);
 	double GetFieldAsDouble(const char *fieldName);
-	void SetSeparator(char separator);
+	void SetSeparator(char separatorChar);
 private:
 	char *AppendNameToken(const char *token);
 	char *AppendContentToken(const char *token);

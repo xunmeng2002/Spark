@@ -19,7 +19,7 @@ public:
 	CsvParser();
 	CsvParser(const char *csvText);
 	virtual ~CsvParser();
-	void SetSeparator(char separator);
+	void SetSeparator(char separatorChar);
 	char *GetNextToken();
 	void Parse(const char *csvText);
 	inline CsvParserError GetErrorCode();

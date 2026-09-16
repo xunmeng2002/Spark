@@ -38,9 +38,9 @@ CsvParser::~CsvParser()
 {
 	delete[] currentWord_;
 }
-void CsvParser::SetSeparator(char separator)
+void CsvParser::SetSeparator(char separatorChar)
 {
-	separator_[0] = separator;
+	separator_[0] = separatorChar;
 }
 
 void CsvParser::NextChar()

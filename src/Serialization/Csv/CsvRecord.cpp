@@ -21,9 +21,9 @@ CsvRecord::~CsvRecord()
 	delete[] contentBuffer_;
 }
 
-void CsvRecord::SetSeparator(char separator)
+void CsvRecord::SetSeparator(char separatorChar)
 {
-	separator_ = separator;
+	separator_ = separatorChar;
 }
 
 char *CsvRecord::AppendNameToken(const char *token)
@@ -90,13 +90,13 @@ bool CsvRecord::AnalysisFieldContent(const char *fieldContent)
 
 const char* CsvRecord::GetFieldAsString(const char *fieldName)
 {
-	CsvFieldMap::iterator foundField = csvFieldMap_.find(fieldName);
-	if (foundField == csvFieldMap_.end())
+	CsvFieldMap::iterator fieldIterator = csvFieldMap_.find(fieldName);
+	if (fieldIterator == csvFieldMap_.end())
 	{
 		return nullptr;
 	}
 
-	return (*foundField).second;
+	return fieldIterator->second;
 }
 
 char CsvRecord::GetFieldAsChar(const char* fieldName)
