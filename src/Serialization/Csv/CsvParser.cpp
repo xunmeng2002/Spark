@@ -6,69 +6,69 @@ namespace Spark::Serialization
 {
 CsvParser::CsvParser()
 {
-	data_ = nullptr;
-	curr_ = nullptr;
+	csvText_ = nullptr;
+	cursor_ = nullptr;
 	errorCode_ = CsvParserError::End;
 
-	currWord_ = new char[TokenMaxLen + 1];
+	currentWord_ = new char[TokenMaxLen + 1];
 }
 
-CsvParser::CsvParser(const char *pszData)
+CsvParser::CsvParser(const char *csvText)
 {
 	separator_[0] = ',';
 	separator_[1] = '\0';
-	data_ = pszData;
-	curr_ = (char *)data_;
+	csvText_ = csvText;
+	cursor_ = (char *)csvText_;
 	NextChar();
 
-	currWord_ = new char[TokenMaxLen + 1];
+	currentWord_ = new char[TokenMaxLen + 1];
 }
 
-void CsvParser::Parse(const char *pszData)
+void CsvParser::Parse(const char *csvText)
 {
-	data_ = pszData;
-	curr_ =  (char *)data_;
+	csvText_ = csvText;
+	cursor_ =  (char *)csvText_;
 	errorCode_ = CsvParserError::HasNext;
 	NextChar();
 
-	currWord_ = new char[TokenMaxLen + 1];
+	currentWord_ = new char[TokenMaxLen + 1];
 }
 
 CsvParser::~CsvParser()
 {
-	delete[] currWord_;
+	delete[] currentWord_;
 }
-void CsvParser::SetSeparator(char chSeparator)
+void CsvParser::SetSeparator(char separator)
 {
-	separator_[0] = chSeparator;
+	separator_[0] = separator;
 }
 
 void CsvParser::NextChar()
 {
-	chC_ = *curr_;
-	if(chC_ == '\0' || chC_ == '\r' || chC_ == '\n')
+	currentChar_ = *cursor_;
+	if(currentChar_ == '\0' || currentChar_ == '\r' || currentChar_ == '\n')
 	{
-		chC_ = '\0';
-		chNC_ = '\0';
+		currentChar_ = '\0';
+		nextChar_ = '\0';
 	}
 	else{
-		curr_++;
-		chNC_ = *curr_;
+		cursor_++;
+		nextChar_ = *cursor_;
 	}
 }
 
-void CsvParser::MakeWord(const char *pszEnd)
+void CsvParser::MakeWord(const char *stopChars)
 {
 	int i=0;
 	for (;i<TokenMaxLen; i++)
 	{
-		if (chC_ == '\0')
+		if (currentChar_ == '\0')
 		{
 			break;
 		}
-		if (strchr(pszEnd, chC_) != nullptr)
+		if (strchr(stopChars, currentChar_) != nullptr)
 		{
-			if (chC_ == '"' && chNC_ == '"')
+			if (currentChar_ == '"' && nextChar_ == '"')
 			{
 				NextChar();
 			}
@@ -77,20 +77,20 @@ void CsvParser::MakeWord(const char *pszEnd)
 				break;
 			}
 		}
-		currWord_[i]=chC_;
+		currentWord_[i]=currentChar_;
 		NextChar();
 	}
-	currWord_[i]='\0';
+	currentWord_[i]='\0';
 }
 
 char *CsvParser::GetNextToken()
 {
-	switch (chC_)
+	switch (currentChar_)
 	{
 	case '"':
 		NextChar();
 		MakeWord("\"");
-		if (chC_ != '"')
+		if (currentChar_ != '"')
 		{
 			errorCode_ = CsvParserError::MarkNotMatch;
 			return nullptr;
@@ -100,16 +100,16 @@ char *CsvParser::GetNextToken()
 	default:
 		MakeWord(separator_);
 	}
-	if (chC_ == separator_[0])
+	if (currentChar_ == separator_[0])
 	{
 		errorCode_ = CsvParserError::HasNext;
 		NextChar();
-		return currWord_;
+		return currentWord_;
 	}
-	if (chC_ == '\0')
+	if (currentChar_ == '\0')
 	{
 		errorCode_ = CsvParserError::End;
-		return currWord_;
+		return currentWord_;
 	}
 
 	errorCode_ = CsvParserError::TokenTooLong;

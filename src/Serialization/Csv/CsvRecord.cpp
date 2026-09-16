@@ -21,126 +21,126 @@ CsvRecord::~CsvRecord()
 	delete[] contentBuffer_;
 }
 
-void CsvRecord::SetSeparator(char chSeparator)
+void CsvRecord::SetSeparator(char separator)
 {
-	separator_ = chSeparator;
+	separator_ = separator;
 }
 
-char *CsvRecord::AppendNameToken(const char *pszToken)
+char *CsvRecord::AppendNameToken(const char *token)
 {
-	int nTokenLen = (int)strlen(pszToken) + 1;
-	char *pszTarget = nameBuffer_+nameBufferLen_;
-	memcpy(nameBuffer_+nameBufferLen_, pszToken, nTokenLen);
-	nameBufferLen_ += nTokenLen;
-	return pszTarget;
+	int tokenLen = (int)strlen(token) + 1;
+	char *target = nameBuffer_+nameBufferLen_;
+	memcpy(nameBuffer_+nameBufferLen_, token, tokenLen);
+	nameBufferLen_ += tokenLen;
+	return target;
 }
 
-char *CsvRecord::AppendContentToken(const char *pszToken)
+char *CsvRecord::AppendContentToken(const char *token)
 {
-	int nTokenLen = (int)strlen(pszToken) + 1;
-	char *pszTarget = contentBuffer_+contentBufferLen_;
-	memcpy(contentBuffer_+contentBufferLen_, pszToken, nTokenLen);
-	contentBufferLen_ += nTokenLen;
-	return pszTarget;
+	int tokenLen = (int)strlen(token) + 1;
+	char *target = contentBuffer_+contentBufferLen_;
+	memcpy(contentBuffer_+contentBufferLen_, token, tokenLen);
+	contentBufferLen_ += tokenLen;
+	return target;
 }
 
-bool CsvRecord::AnalysisFieldName(const char *pszFieldName)
+bool CsvRecord::AnalysisFieldName(const char *fieldName)
 {
 	nameBufferLen_ = 0;
 	csvFields_.clear();
 	csvFieldMap_.clear();
 	
-	CsvParser csvParser(pszFieldName);
+	CsvParser csvParser(fieldName);
 	csvParser.SetSeparator(separator_);
 	CsvField field = {nullptr, nullptr};
 
 	do
 	{
-		char *pszToken = csvParser.GetNextToken();
-		if (pszToken == nullptr)
+		char *token = csvParser.GetNextToken();
+		if (token == nullptr)
 		{
 			break;
 		}
-		field.FieldName = AppendNameToken(pszToken);
+		field.FieldName = AppendNameToken(token);
 		csvFields_.push_back(field);
 	}while (csvParser.GetErrorCode() == CsvParserError::HasNext);
 
 	return true;
 }
 
-bool CsvRecord::AnalysisFieldContent(const char *pszFieldContent)
+bool CsvRecord::AnalysisFieldContent(const char *fieldContent)
 {
 	contentBufferLen_ = 0;
 	
-	CsvParser csvParser(pszFieldContent);
+	CsvParser csvParser(fieldContent);
 	csvParser.SetSeparator(separator_);
 	for (unsigned int i = 0; i<csvFields_.size(); i++)
 	{
-		char *pszToken = csvParser.GetNextToken();
-		if (pszToken == nullptr)
+		char *token = csvParser.GetNextToken();
+		if (token == nullptr)
 		{
 			break;
 		}
-		csvFields_[i].FieldContent = AppendContentToken(pszToken);
+		csvFields_[i].FieldContent = AppendContentToken(token);
 		csvFieldMap_[csvFields_[i].FieldName] = csvFields_[i].FieldContent;
 	}
 
 	return true;
 }
 
-const char* CsvRecord::GetFieldAsString(const char *pszFieldName)
+const char* CsvRecord::GetFieldAsString(const char *fieldName)
 {
-	CsvFieldMap::iterator itor = csvFieldMap_.find(pszFieldName);
-	if (itor == csvFieldMap_.end())
+	CsvFieldMap::iterator foundField = csvFieldMap_.find(fieldName);
+	if (foundField == csvFieldMap_.end())
 	{
 		return nullptr;
 	}
 
-	return (*itor).second;
+	return (*foundField).second;
 }
 
-char CsvRecord::GetFieldAsChar(const char* pszFieldName)
+char CsvRecord::GetFieldAsChar(const char* fieldName)
 {
-	const char* pszFieldContent = GetFieldAsString(pszFieldName);
-	if (pszFieldContent == nullptr)
+	const char* fieldContent = GetFieldAsString(fieldName);
+	if (fieldContent == nullptr)
 	{
 		return '\0';
 	}
-	return *pszFieldContent;
+	return *fieldContent;
 }
-int CsvRecord::GetFieldAsInt(const char *pszFieldName)
+int CsvRecord::GetFieldAsInt(const char *fieldName)
 {
-	const char *pszFieldContent = GetFieldAsString(pszFieldName);
-	if (pszFieldContent == nullptr)
+	const char *fieldContent = GetFieldAsString(fieldName);
+	if (fieldContent == nullptr)
 	{
 		return 0;
 	}
-	return atoi(pszFieldContent);
+	return atoi(fieldContent);
 }
 
-int64_t CsvRecord::GetFieldAsInt64(const char* pszFieldName)
+int64_t CsvRecord::GetFieldAsInt64(const char* fieldName)
 {
-	const char* pszFieldContent = GetFieldAsString(pszFieldName);
-	if (pszFieldContent == nullptr)
+	const char* fieldContent = GetFieldAsString(fieldName);
+	if (fieldContent == nullptr)
 	{
 		return 0;
 	}
-	return atoll(pszFieldContent);
+	return atoll(fieldContent);
 }
 
 
-double CsvRecord::GetFieldAsDouble(const char *pszFieldName)
+double CsvRecord::GetFieldAsDouble(const char *fieldName)
 {
-	const char *pszFieldContent = GetFieldAsString(pszFieldName);
-	if (pszFieldContent == nullptr)
+	const char *fieldContent = GetFieldAsString(fieldName);
+	if (fieldContent == nullptr)
 	{
 		return std::numeric_limits<double>::max();
 	}
-	if (*pszFieldContent == '\0')
+	if (*fieldContent == '\0')
 	{
 		return std::numeric_limits<double>::max();
 	}
 	
-	return atof(pszFieldContent);
+	return atof(fieldContent);
 }
 }
