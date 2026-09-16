@@ -17,22 +17,22 @@ class SERIALIZATION_EXPORTS CsvParser
 {
 public:
 	CsvParser();
-	CsvParser(const char *pszData);
+	CsvParser(const char *csvText);
 	virtual ~CsvParser();
-	void SetSeparator(char chSeparator);
+	void SetSeparator(char separator);
 	char *GetNextToken();
-	void Parse(const char *pszData);
+	void Parse(const char *csvText);
 	inline CsvParserError GetErrorCode();
 private:
 	void NextChar();
-	void MakeWord(const char *pszEnd);
+	void MakeWord(const char *stopChars);
 private:
 	CsvParserError errorCode_;
-	const char *data_;
-	char* currWord_;
-	char *curr_;
-	char chC_;
-	char chNC_;
+	const char *csvText_;
+	char* currentWord_;
+	char *cursor_;
+	char currentChar_;
+	char nextChar_;
 	char separator_[2];
 };
 

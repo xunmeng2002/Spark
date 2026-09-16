@@ -17,21 +17,21 @@ public:
 	CsvRecord();
 	virtual ~CsvRecord();
 	inline int GetFieldCount();
-	inline const char *GetFieldName(int nIndex);
-	inline const char *GetFieldContent(int nIndex);
+	inline const char *GetFieldName(int fieldIndex);
+	inline const char *GetFieldContent(int fieldIndex);
 
-	bool AnalysisFieldName(const char *pszFieldName);
-	bool AnalysisFieldContent(const char *pszFieldContent);
+	bool AnalysisFieldName(const char *fieldName);
+	bool AnalysisFieldContent(const char *fieldContent);
 
-	const char *GetFieldAsString(const char *pszFieldName);
-	char GetFieldAsChar(const char* pszFieldName);
-	int GetFieldAsInt(const char *pszFieldName);
-	int64_t GetFieldAsInt64(const char* pszFieldName);
-	double GetFieldAsDouble(const char *pszFieldName);
-	void SetSeparator(char chSeparator);
+	const char *GetFieldAsString(const char *fieldName);
+	char GetFieldAsChar(const char* fieldName);
+	int GetFieldAsInt(const char *fieldName);
+	int64_t GetFieldAsInt64(const char* fieldName);
+	double GetFieldAsDouble(const char *fieldName);
+	void SetSeparator(char separator);
 private:
-	char *AppendNameToken(const char *pszToken);
-	char *AppendContentToken(const char *pszToken);
+	char *AppendNameToken(const char *token);
+	char *AppendContentToken(const char *token);
 private:
 	struct CsvField
 	{
@@ -63,13 +63,13 @@ inline int CsvRecord::GetFieldCount()
 	return (int)csvFields_.size();
 }
 
-inline const char * CsvRecord::GetFieldName(int nIndex)
+inline const char * CsvRecord::GetFieldName(int fieldIndex)
 {
-	return csvFields_[nIndex-1].FieldName;
+	return csvFields_[fieldIndex-1].FieldName;
 }
 
-inline const char * CsvRecord::GetFieldContent(int nIndex)
+inline const char * CsvRecord::GetFieldContent(int fieldIndex)
 {
-	return csvFields_[nIndex-1].FieldContent;
+	return csvFields_[fieldIndex-1].FieldContent;
 }
 }
