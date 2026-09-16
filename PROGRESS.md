@@ -170,6 +170,8 @@
 
 - **承自归档 `D.22`（批 2a 的未决部分，2026-09-16 滚动时按 §8.1 抽出，短版）**：①`Mdb/test/TestMdb/TestDb.cpp` 的 `t_tradingDay`/`t_exchange`/`t_account` 等**局部蛇形名**属批 5；②`LibTest` 与 `SAMS` 消费了批 2a 改过的模板但**未重 pump**（一个已废弃、一个不在范围），存在语义漂移、**无编译错误**；③`m_Protocol` 8 处只声明在手写的 `QuantTrading/src/Apis/ApiBase.h`、不在任何模板里，属批 6（本区⑤另载，此处仅存互引）。**批 2a 已关闭的部分**（`sprintf` 有界化、`using namespace std;` 清零、生成物「勿手改」头、`__pycache__/` 补齐、`pumpall.py` 加固）见归档。
 
+- **`out/build/WSL-GCC-*` 是陈旧的（2026-09-16 复核，`out/` 未被 git 跟踪）**：两个 Linux 构建目录里各有 **12 / 9 个文件**仍写着旧路径 `Serialization/CSV/…`、`CSVParserTest`、`CSVRecordTest`（`build.ninja`、`VerifyGlobs.cmake` 一类），因为改名后**从未在 Linux 侧重新 configure**。按「仅 Windows 需通过、Linux 先不管」不影响任何本批结论；但日后若要跑 WSL 构建，**必须先 `cmake --fresh --preset WSL-GCC-*`**，否则它仍按旧文件名去 glob。**对照**：`x64-Debug` 里唯一命中是一份陈旧的 `vc140.pdb`（二进制调试符号库，**非构建输入**），`x64-Release` 为 **0**——**Windows 侧的 glob 与构建图都是干净的**，本批两次构建日志里编译的确实是 `Serialization\CsvParser.cpp.obj` 与 `CsvParserTest.cpp.obj`。
+
 ## 备注
 
 - 宿主必须显式调用 `Logger::Stop()` + `Join()` 收尾，否则最后一次缓冲必丢；这是进程退出时序的**定论**，不是可以靠改析构语义绕过的缺陷——见归档 `Q.17`
