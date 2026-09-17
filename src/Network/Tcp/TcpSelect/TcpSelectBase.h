@@ -10,18 +10,18 @@ namespace Spark::Network
 class TcpSelectBase : public TcpBase
 {
 public:
-	TcpSelectBase(ServerTypeType serverType, const char* addressName, int milliSeconds);
-	virtual void SetTimeOut(int milliSeconds) override;
+    TcpSelectBase(ServerTypeType serverType, const char* addressName, int milliSeconds);
+    virtual void SetTimeOut(int milliSeconds) override;
 
 protected:
-	virtual void PrepareFds();
-	virtual void HandleTcpEvent() override;
+    virtual void PrepareFds();
+    virtual void HandleTcpEvent() override;
 
-	fd_set readFds_;
-	fd_set writeFds_;
-	fd_set errorFds_;
-	SOCKET maxId_;
-	timeval selectSocketTimeOut_;
-	timeval selectSocketTimeOutTemp_;
+    fd_set readFds_;
+    fd_set writeFds_;
+    fd_set errorFds_;
+    SOCKET maxId_;
+    timeval selectSocketTimeOut_;
+    timeval selectSocketTimeOutTemp_;
 };
 }

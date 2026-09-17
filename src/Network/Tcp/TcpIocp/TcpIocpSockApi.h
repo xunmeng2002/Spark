@@ -8,23 +8,23 @@ namespace Spark::Network
 class SocketApi
 {
 private:
-	SocketApi();
-	~SocketApi();
-	SocketApi(const SocketApi&) = delete;
-	SocketApi& operator=(const SocketApi&) = delete;
+    SocketApi();
+    ~SocketApi();
+    SocketApi(const SocketApi&) = delete;
+    SocketApi& operator=(const SocketApi&) = delete;
 
 public:
-	static SocketApi& GetInstance();
-	bool Init(SOCKET sock);
+    static SocketApi& GetInstance();
+    bool Init(SOCKET sock);
 
-	LPFN_ACCEPTEX AcceptEx;
-	LPFN_GETACCEPTEXSOCKADDRS GetAcceptExSockAddrs;
-	LPFN_CONNECTEX ConnectEx;
-	LPFN_DISCONNECTEX DisconnectEx;
+    LPFN_ACCEPTEX AcceptEx;
+    LPFN_GETACCEPTEXSOCKADDRS GetAcceptExSockAddrs;
+    LPFN_CONNECTEX ConnectEx;
+    LPFN_DISCONNECTEX DisconnectEx;
 
 
 private:
-	static SocketApi instance_;
+    static SocketApi instance_;
 };
 }
 #endif // _WIN32

@@ -8,7 +8,7 @@ namespace Spark::Network
 class NETWORK_EXPORTS IoFactory
 {
 public:
-	static IoBase* CreateIo(ServerTypeType serverType, const char* address,  IoModelType ioModel = IoModelType::Select, int milliSeconds = 100);
+    static IoBase* CreateIo(ServerTypeType serverType, const char* address,  IoModelType ioModel = IoModelType::Select, int milliSeconds = 100);
 };
 }
 

@@ -12,7 +12,7 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 TcpIocpClient::TcpIocpClient(const char* addressName, int milliSeconds, int backlog)
-	:TcpIocpBase(ServerTypeType::Client, addressName, milliSeconds, backlog)
+    :TcpIocpBase(ServerTypeType::Client, addressName, milliSeconds, backlog)
 {
 
 }

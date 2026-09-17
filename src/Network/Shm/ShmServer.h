@@ -8,20 +8,20 @@ namespace Spark::Network
 class ShmServer : public ShmBase
 {
 public:
-	ShmServer(const char* shmName, int milliSeconds);
-	~ShmServer();
+    ShmServer(const char* shmName, int milliSeconds);
+    ~ShmServer();
 
 protected:
-	unsigned connectCount_;
-	std::chrono::system_clock::time_point lastWriteTimePoint_;
+    unsigned connectCount_;
+    std::chrono::system_clock::time_point lastWriteTimePoint_;
 
 private:
-	virtual void Accept() override;
-	virtual void CheckConnect() override;
-	virtual void CheckData() override;
-	virtual void HandleData() override;
+    virtual void Accept() override;
+    virtual void CheckConnect() override;
+    virtual void CheckData() override;
+    virtual void HandleData() override;
 
-	virtual void RemoveConnect(Connect* connect) override;
+    virtual void RemoveConnect(Connect* connect) override;
 };
 }
 

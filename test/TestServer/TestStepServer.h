@@ -6,16 +6,16 @@ using namespace Spark::Network;
 class StepServer : public Protocol, public ProtocolSubscriber
 {
 public:
-	StepServer();
-	virtual ~StepServer();
+    StepServer();
+    virtual ~StepServer();
 
-	virtual void OnProtocolConnect(SessionIdType sessionId, const char* ip, int port) override;
-	virtual void OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port) override;
-	virtual void OnMessage(Package* package) override;
+    virtual void OnProtocolConnect(SessionIdType sessionId, const char* ip, int port) override;
+    virtual void OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port) override;
+    virtual void OnMessage(Package* package) override;
 
-	bool connected_;
-	SessionIdType sessionId_;
-	int recvCount_;
+    bool connected_;
+    SessionIdType sessionId_;
+    int recvCount_;
 };
 
 

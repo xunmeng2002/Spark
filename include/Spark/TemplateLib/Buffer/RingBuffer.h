@@ -10,16 +10,16 @@ template<unsigned SIZE>
 class RingBuffer
 {
 public:
-	RingBuffer() : buffer_{0}, length_(0) ,readPos_(buffer_), writePos_(buffer_)
-	{}
-	static RingBuffer* Allocate()
-	{
-		return ObjectPool<RingBuffer<SIZE>>::GetInstance().Allocate();
-	}
-	void Deallocate()
-	{
-		ObjectPool<RingBuffer<SIZE>>::GetInstance().Deallocate(this);
-	}
+    RingBuffer() : buffer_{0}, length_(0) ,readPos_(buffer_), writePos_(buffer_)
+    {}
+    static RingBuffer* Allocate()
+    {
+        return ObjectPool<RingBuffer<SIZE>>::GetInstance().Allocate();
+    }
+    void Deallocate()
+    {
+        ObjectPool<RingBuffer<SIZE>>::GetInstance().Deallocate(this);
+    }
     inline void Reset()
     {
         length_ = 0;
@@ -32,40 +32,40 @@ public:
         len = (std::min)(len, size);
         return CopyToBuffer(buff, len, true);
     }
-	unsigned Write(const char* data, unsigned len)
-	{
-		unsigned size = GetWriteBufferSize();
-		len = (std::min)(len, size);
-		return CopyFromBuffer(data, len);
-	}
-	unsigned Peek(char* buff, unsigned len)
-	{
-		unsigned size = GetReadBufferSize();
-		len = (std::min)(len, size);
-		return CopyToBuffer(buff, len, false);
-	}
-	unsigned Skip(unsigned len)
-	{
-		unsigned size = GetReadBufferSize();
-		len = (std::min)(len, size);
-		return CopyToBuffer(nullptr, len, true);
-	}
-	inline unsigned GetReadBufferSize()
-	{
-		return length_;
-	}
-	inline unsigned GetWriteBufferSize()
-	{
-		return SIZE - length_;
-	}
-	inline bool IsEmpty()
-	{
-		return length_ == 0;
-	}
-	inline bool IsFull()
-	{
-		return length_ == SIZE;
-	}
+    unsigned Write(const char* data, unsigned len)
+    {
+        unsigned size = GetWriteBufferSize();
+        len = (std::min)(len, size);
+        return CopyFromBuffer(data, len);
+    }
+    unsigned Peek(char* buff, unsigned len)
+    {
+        unsigned size = GetReadBufferSize();
+        len = (std::min)(len, size);
+        return CopyToBuffer(buff, len, false);
+    }
+    unsigned Skip(unsigned len)
+    {
+        unsigned size = GetReadBufferSize();
+        len = (std::min)(len, size);
+        return CopyToBuffer(nullptr, len, true);
+    }
+    inline unsigned GetReadBufferSize()
+    {
+        return length_;
+    }
+    inline unsigned GetWriteBufferSize()
+    {
+        return SIZE - length_;
+    }
+    inline bool IsEmpty()
+    {
+        return length_ == 0;
+    }
+    inline bool IsFull()
+    {
+        return length_ == SIZE;
+    }
 
 
 private:
@@ -87,37 +87,37 @@ private:
         length_ += len;
         return len;
     }
-	unsigned CopyToBuffer(char* buff, unsigned len, bool consume)
-	{
-		if (len == 0)
-			return 0;
-		unsigned tailLen = (std::min)(len, unsigned((buffer_ + SIZE) - readPos_));
-		if (buff != nullptr)
-		{
-			memcpy(buff, readPos_, tailLen);
-			if (tailLen < len)
-			{
-				memcpy(buff + tailLen, buffer_, size_t(len - tailLen));
-			}
-		}
-		if (consume)
-		{
-			if (readPos_ + len < buffer_ + SIZE)
-			{
-				readPos_ += len;
-			}
-			else
-			{
-				readPos_ = buffer_ + len - tailLen;
-			}
-			length_ -= len;
-		}
-		return len;
-	}
+    unsigned CopyToBuffer(char* buff, unsigned len, bool consume)
+    {
+        if (len == 0)
+            return 0;
+        unsigned tailLen = (std::min)(len, unsigned((buffer_ + SIZE) - readPos_));
+        if (buff != nullptr)
+        {
+            memcpy(buff, readPos_, tailLen);
+            if (tailLen < len)
+            {
+                memcpy(buff + tailLen, buffer_, size_t(len - tailLen));
+            }
+        }
+        if (consume)
+        {
+            if (readPos_ + len < buffer_ + SIZE)
+            {
+                readPos_ += len;
+            }
+            else
+            {
+                readPos_ = buffer_ + len - tailLen;
+            }
+            length_ -= len;
+        }
+        return len;
+    }
 
     char buffer_[SIZE];
     unsigned length_;
     char* readPos_;
-	char* writePos_;
+    char* writePos_;
 };
 }

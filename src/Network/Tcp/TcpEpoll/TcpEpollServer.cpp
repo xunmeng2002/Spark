@@ -7,7 +7,7 @@
 namespace Spark::Network
 {
 TcpEpollServer::TcpEpollServer(const char* addressName, int milliSeconds)
-	:TcpEpollBase(ServerTypeType::Server, addressName, milliSeconds)
+    :TcpEpollBase(ServerTypeType::Server, addressName, milliSeconds)
 {
 }
 TcpEpollServer::~TcpEpollServer()
@@ -15,13 +15,13 @@ TcpEpollServer::~TcpEpollServer()
 }
 bool TcpEpollServer::Init()
 {
-	if (!TcpEpollBase::Init())
-	{
-		return false;
-	}
-	TcpConnect* connect = TcpConnect::Allocate(0, socket_, address_, port_);
-	AddEpollEvent(connect);
-	return true;
+    if (!TcpEpollBase::Init())
+    {
+        return false;
+    }
+    TcpConnect* connect = TcpConnect::Allocate(0, socket_, address_, port_);
+    AddEpollEvent(connect);
+    return true;
 }
 }
 

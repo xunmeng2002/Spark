@@ -13,7 +13,7 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 TcpIocpBase::TcpIocpBase(ServerTypeType serverType, const char* addressName, int milliSeconds, int backlog)
-	:TcpBase(serverType, addressName, milliSeconds), backLog_(backlog)
+    :TcpBase(serverType, addressName, milliSeconds), backLog_(backlog)
 {
     ioCompletePort_ = new IoCompletePort();
 }

@@ -23,16 +23,16 @@ public:
         {
             head_.store(oldHead->next, std::memory_order_release);
             delete oldHead;
-		}
+        }
     }
     
     void PushBack(std::shared_ptr<T> data)
     {
         Node* newNode = new Node();
         Node* oldTail = tail_.load(std::memory_order_acquire);
-		oldTail->data.swap(data);
-		oldTail->next = newNode;
-		tail_.store(newNode, std::memory_order_release);
+        oldTail->data.swap(data);
+        oldTail->next = newNode;
+        tail_.store(newNode, std::memory_order_release);
     }
     std::shared_ptr<T> PopFront()
     {
@@ -40,15 +40,15 @@ public:
         if (oldHead == tail_.load(std::memory_order_acquire))
         {
             return nullptr;
-		}
-		head_.store(oldHead->next, std::memory_order_release);
+        }
+        head_.store(oldHead->next, std::memory_order_release);
         if (!oldHead)
         {
             return nullptr;
-		}
-		std::shared_ptr<T> result = oldHead->data;
-		delete oldHead;
-		return result;
+        }
+        std::shared_ptr<T> result = oldHead->data;
+        delete oldHead;
+        return result;
     }
     bool Empty() const
     {

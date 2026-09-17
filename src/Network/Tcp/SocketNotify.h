@@ -9,24 +9,24 @@ class TcpConnect;
 class NETWORK_EXPORTS SocketNotify
 {
 public:
-	SocketNotify();
-	~SocketNotify();
+    SocketNotify();
+    ~SocketNotify();
 
-	bool Init();
-	bool Notify();
-	bool Consume();
-	SOCKET GetReadSocket();
-	TcpConnect* GetConnect();
+    bool Init();
+    bool Notify();
+    bool Consume();
+    SOCKET GetReadSocket();
+    TcpConnect* GetConnect();
 
 private:
-	bool CreateSocketPair();
+    bool CreateSocketPair();
 
-	SOCKET sockets_[2];
-	TcpConnect* tcpConnect_;
+    SOCKET sockets_[2];
+    TcpConnect* tcpConnect_;
 
-	std::string ip_;
-	addrinfo* addressInfo_;
-	char receiveBuffer_[16];
+    std::string ip_;
+    addrinfo* addressInfo_;
+    char receiveBuffer_[16];
 };
 }
 

@@ -35,5 +35,5 @@ int main(int argc, const char* argv[])
 
     Logger::GetInstance().Stop();
     Logger::GetInstance().Join();
-	return 0;
+    return 0;
 }

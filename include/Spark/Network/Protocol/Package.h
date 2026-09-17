@@ -14,21 +14,21 @@ static_assert(MaxPackageSize >= MaxFrameSize, "读侧缓冲必须容纳一帧上
 class NETWORK_EXPORTS Package
 {
 public:
-	Package() :SessionId(0), IpAddress{ 0 } { }
-	virtual ~Package();
-	virtual void Deallocate() = 0;
-	virtual void Prepare(SessionIdType sessionId, int messageChain, int msgSeqNum);
-	virtual int MakePackage(ProtocolTypeType protocolType, char* buff, int size);
-	virtual int ToStepStream(char* buff, int size) const = 0;
-	virtual bool FromStepStream(char* buff, int startIndex, int endIndex) = 0;
-	virtual int ToXtpStream(char* buff, int size) const = 0;
-	virtual bool FromXtpStream(char* buff, int startIndex, int endIndex) = 0;
-	virtual const char* GetDebugString() const = 0;
+    Package() :SessionId(0), IpAddress{ 0 } { }
+    virtual ~Package();
+    virtual void Deallocate() = 0;
+    virtual void Prepare(SessionIdType sessionId, int messageChain, int msgSeqNum);
+    virtual int MakePackage(ProtocolTypeType protocolType, char* buff, int size);
+    virtual int ToStepStream(char* buff, int size) const = 0;
+    virtual bool FromStepStream(char* buff, int startIndex, int endIndex) = 0;
+    virtual int ToXtpStream(char* buff, int size) const = 0;
+    virtual bool FromXtpStream(char* buff, int startIndex, int endIndex) = 0;
+    virtual const char* GetDebugString() const = 0;
 
-	SessionIdType SessionId;
-	IpAddressType IpAddress;
+    SessionIdType SessionId;
+    IpAddressType IpAddress;
 
-	HeadField Head;
-	TailField Tail;
+    HeadField Head;
+    TailField Tail;
 };
 }

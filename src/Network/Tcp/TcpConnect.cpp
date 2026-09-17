@@ -8,41 +8,41 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 TcpConnect::TcpConnect(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort)
-	:Connect(sessionId, remoteIP.c_str(), atoi(remotePort.c_str()), ConnectStatusType::Connected), SocketId(socketId)
+    :Connect(sessionId, remoteIP.c_str(), atoi(remotePort.c_str()), ConnectStatusType::Connected), SocketId(socketId)
 {
 
 }
 TcpConnect::~TcpConnect()
 {
 #ifdef _WIN32
-	shutdown(SocketId, SD_BOTH);
+    shutdown(SocketId, SD_BOTH);
 #endif
 #ifdef __linux__
-	shutdown(SocketId, SHUT_RDWR);
+    shutdown(SocketId, SHUT_RDWR);
 #endif
-	closesocket(SocketId);
-	SocketId = INVALID_SOCKET;
+    closesocket(SocketId);
+    SocketId = INVALID_SOCKET;
 }
 TcpConnect* TcpConnect::Allocate(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort)
 {
-	return ObjectPool<TcpConnect>::GetInstance().Allocate(sessionId, socketId, remoteIP, remotePort);
+    return ObjectPool<TcpConnect>::GetInstance().Allocate(sessionId, socketId, remoteIP, remotePort);
 }
 void TcpConnect::Deallocate()
 {
-	WriteLog(LogLevel::Info, "TcpConnect::Deallocate SessionId:%lld, Socket:%lld", SessionId, SocketId);
-	ObjectPool<TcpConnect>::GetInstance().Deallocate(this);
+    WriteLog(LogLevel::Info, "TcpConnect::Deallocate SessionId:%lld, Socket:%lld", SessionId, SocketId);
+    ObjectPool<TcpConnect>::GetInstance().Deallocate(this);
 }
 
 void TcpConnect::Set(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort)
 {
-	SessionId = sessionId;
-	SocketId = socketId;
-	snprintf(RemoteAddress, sizeof(RemoteAddress), "%s", remoteIP.c_str());
-	RemotePort = atoi(remotePort.c_str());
-	LastSendTimePoint = std::chrono::steady_clock::now();
+    SessionId = sessionId;
+    SocketId = socketId;
+    snprintf(RemoteAddress, sizeof(RemoteAddress), "%s", remoteIP.c_str());
+    RemotePort = atoi(remotePort.c_str());
+    LastSendTimePoint = std::chrono::steady_clock::now();
 }
 void TcpConnect::UpdateLastSendTime()
 {
-	LastSendTimePoint = std::chrono::steady_clock::now();
+    LastSendTimePoint = std::chrono::steady_clock::now();
 }
 }

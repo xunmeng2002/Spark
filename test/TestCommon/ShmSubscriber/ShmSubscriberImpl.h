@@ -8,21 +8,21 @@ using namespace Spark::Network;
 class ShmSubscriberImpl : public IoSubscriber
 {
 public:
-	ShmSubscriberImpl(IoBase* io, ServerTypeType serverType);
+    ShmSubscriberImpl(IoBase* io, ServerTypeType serverType);
 
-	virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) override;
-	virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) override;
-	virtual void OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
+    virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) override;
+    virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) override;
+    virtual void OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
 
-	bool connected_;
-	SessionIdType sessionId_;
+    bool connected_;
+    SessionIdType sessionId_;
 
 private:
-	IoBase* io_;
-	ServerTypeType serverType_;
+    IoBase* io_;
+    ServerTypeType serverType_;
 
-	char* buff_;
-	int length_;
+    char* buff_;
+    int length_;
 };
 
 

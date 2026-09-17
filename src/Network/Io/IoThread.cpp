@@ -9,28 +9,28 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 IoThread::IoThread(const char* threadName)
-	:ThreadBase(threadName), io_(nullptr)
+    :ThreadBase(threadName), io_(nullptr)
 {
 }
 IoThread::~IoThread()
 {
-	if (io_)
-		delete io_;
+    if (io_)
+        delete io_;
 }
 
 void IoThread::SetIo(IoBase* io)
 {
-	io_ = io;
+    io_ = io;
 }
 void IoThread::Run()
 {
-	if (io_)
-		io_->HandleIoEvent();
+    if (io_)
+        io_->HandleIoEvent();
 }
 void IoThread::ThreadExit()
 {
-	ThreadBase::ThreadExit();
-	io_->DisConnectAll();
+    ThreadBase::ThreadExit();
+    io_->DisConnectAll();
 }
 }
 

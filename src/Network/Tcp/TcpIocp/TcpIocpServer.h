@@ -7,14 +7,14 @@ namespace Spark::Network
 class TcpIocpServer : public TcpIocpBase
 {
 public:
-	TcpIocpServer(const char* addressName, int milliSeconds, int backlog = 5);
-	virtual bool Init() override;
+    TcpIocpServer(const char* addressName, int milliSeconds, int backlog = 5);
+    virtual bool Init() override;
 
 protected:
-	virtual bool PostAccept() override;
-	virtual void OnAcceptComplete(MyOverlapped* overlapped) override;
+    virtual bool PostAccept() override;
+    virtual void OnAcceptComplete(MyOverlapped* overlapped) override;
 
-	SOCKET PrepareAcceptSocket();
+    SOCKET PrepareAcceptSocket();
 };
 }
 #endif // _WIN32

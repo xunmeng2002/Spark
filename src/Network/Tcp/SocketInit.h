@@ -25,14 +25,14 @@ namespace Spark::Network
 class NETWORK_EXPORTS SocketInit
 {
 public:
-	~SocketInit();
-	static SocketInit& GetInstance();
-	void Init();
+    ~SocketInit();
+    static SocketInit& GetInstance();
+    void Init();
 
 private:
-	void WsaStart();
+    void WsaStart();
 
-	std::once_flag socketInitFlag_;
-	static SocketInit socketInit_;
+    std::once_flag socketInitFlag_;
+    static SocketInit socketInit_;
 };
 }

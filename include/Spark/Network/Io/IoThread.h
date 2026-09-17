@@ -16,15 +16,15 @@ namespace Spark::Network
 class NETWORK_EXPORTS IoThread : public Spark::Core::ThreadBase
 {
 public:
-	IoThread(const char* threadName);
-	~IoThread();
-	void SetIo(IoBase* io);
+    IoThread(const char* threadName);
+    ~IoThread();
+    void SetIo(IoBase* io);
 
 protected:
-	virtual void Run() override;
-	virtual void ThreadExit() override;
+    virtual void Run() override;
+    virtual void ThreadExit() override;
 
 private:
-	IoBase* io_;
+    IoBase* io_;
 };
 }

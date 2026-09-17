@@ -10,17 +10,17 @@ namespace Spark::Core
 {
 struct LogData
 {
-	LogData();
-	~LogData();
+    LogData();
+    ~LogData();
 
-	void PushBuffer();
+    void PushBuffer();
 
-	FILE* LogFile;
+    FILE* LogFile;
     Spark::Buffer<LogBuffSize>* CurrBuffer;
-	std::list<Spark::Buffer<LogBuffSize>*> LogBuffers;
-	std::list<Spark::Buffer<LogBuffSize>*> InnerLogBuffers;
+    std::list<Spark::Buffer<LogBuffSize>*> LogBuffers;
+    std::list<Spark::Buffer<LogBuffSize>*> InnerLogBuffers;
 
-	std::mutex Mutex;
-	std::condition_variable ConditionVariable;
+    std::mutex Mutex;
+    std::condition_variable ConditionVariable;
 };
 }

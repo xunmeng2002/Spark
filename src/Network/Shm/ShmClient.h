@@ -7,24 +7,24 @@ namespace Spark::Network
 class ShmClient : public ShmBase
 {
 public:
-	ShmClient(const char* shmName, int milliSeconds);
-	virtual ~ShmClient();
+    ShmClient(const char* shmName, int milliSeconds);
+    virtual ~ShmClient();
 
-	virtual bool ConnectToServer(const char* addressName) override;
+    virtual bool ConnectToServer(const char* addressName) override;
 
 protected:
-	virtual void ConnectToServer() override;
-	virtual void CheckConnect() override;
-	virtual void CheckData() override;
-	virtual void HandleData() override;
+    virtual void ConnectToServer() override;
+    virtual void CheckConnect() override;
+    virtual void CheckData() override;
+    virtual void HandleData() override;
 
 
-	void SendConnect();
-	void CheckConnectResult();
-	virtual void RemoveConnect(Connect* connect) override;
+    void SendConnect();
+    void CheckConnectResult();
+    virtual void RemoveConnect(Connect* connect) override;
 
-	bool connected_;
-	bool hasSendConnect_;
-	ShmConnect<ShmBuffSize>* shmConnect_;
+    bool connected_;
+    bool hasSendConnect_;
+    ShmConnect<ShmBuffSize>* shmConnect_;
 };
 }

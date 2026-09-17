@@ -7,17 +7,17 @@ namespace Spark::Network
 class TcpSelectClient : public TcpSelectBase
 {
 public:
-	TcpSelectClient(const char* addressName, int milliSeconds);
+    TcpSelectClient(const char* addressName, int milliSeconds);
 
-	virtual bool ConnectToServer(const char* ip, unsigned short port) override;
+    virtual bool ConnectToServer(const char* ip, unsigned short port) override;
 
-	void CheckConnect();
+    void CheckConnect();
 
 protected:
-	fd_set writeFds_;
+    fd_set writeFds_;
 
-	std::map<SessionIdType, TcpConnect*> connectings_;
-	std::list<SessionIdType> connectSuccessedSessions_;
-	std::list<SessionIdType> connectFailedSessions_;
+    std::map<SessionIdType, TcpConnect*> connectings_;
+    std::list<SessionIdType> connectSuccessedSessions_;
+    std::list<SessionIdType> connectFailedSessions_;
 };
 }

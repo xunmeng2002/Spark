@@ -16,41 +16,41 @@ namespace Spark::Network
 class ShmBase : public IoBase
 {
 public:
-	ShmBase(ServerTypeType shmType, const char* shmName, int milliSeconds);
-	virtual ~ShmBase();
+    ShmBase(ServerTypeType shmType, const char* shmName, int milliSeconds);
+    virtual ~ShmBase();
 
-	virtual bool Init() override;
-	virtual void Send(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
+    virtual bool Init() override;
+    virtual void Send(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
 
-	virtual void HandleIoEvent() override;
+    virtual void HandleIoEvent() override;
 
 protected:
-	virtual void DoSend(Connect* connect) override;
-	virtual void DoRecv(Connect* connect) override;
+    virtual void DoSend(Connect* connect) override;
+    virtual void DoRecv(Connect* connect) override;
 
-	virtual void ConnectToServer() {}
-	virtual void Accept() {}
-	virtual void CheckConnect() = 0;
-	virtual void CheckData() = 0;
-	virtual void HandleData() = 0;
+    virtual void ConnectToServer() {}
+    virtual void Accept() {}
+    virtual void CheckConnect() = 0;
+    virtual void CheckData() = 0;
+    virtual void HandleData() = 0;
 
-	std::string shmName_;
-	unsigned maxConnectSize_;
-	SingleShmHeader* commonShmHeader_;
-	void* shmAddr_;
-	Sem* semConnect_;
-	std::vector<Sem*> sems_;
+    std::string shmName_;
+    unsigned maxConnectSize_;
+    SingleShmHeader* commonShmHeader_;
+    void* shmAddr_;
+    Sem* semConnect_;
+    std::vector<Sem*> sems_;
 
-	std::chrono::steady_clock::time_point lastSendTime_;
+    std::chrono::steady_clock::time_point lastSendTime_;
 
 #ifdef _WIN32
-	void* file_;
-	void* fileMap_;
+    void* file_;
+    void* fileMap_;
 #endif // _WIN32
 
 private:
-	bool WindowsInit();
-	bool LinuxInit();
+    bool WindowsInit();
+    bool LinuxInit();
 };
 }
 

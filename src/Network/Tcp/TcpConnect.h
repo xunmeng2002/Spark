@@ -13,17 +13,17 @@ namespace Spark::Network
 class NETWORK_EXPORTS TcpConnect : public Connect
 {
 public:
-	TcpConnect(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort);
-	virtual ~TcpConnect();
+    TcpConnect(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort);
+    virtual ~TcpConnect();
 
-	static TcpConnect* Allocate(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort);
-	virtual void Deallocate() override;
+    static TcpConnect* Allocate(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort);
+    virtual void Deallocate() override;
 
-	virtual void Set(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort);
-	void UpdateLastSendTime();
+    virtual void Set(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort);
+    void UpdateLastSendTime();
 
 
-	SOCKET SocketId;
-	std::chrono::steady_clock::time_point LastSendTimePoint;
+    SOCKET SocketId;
+    std::chrono::steady_clock::time_point LastSendTimePoint;
 };
 }

@@ -17,21 +17,21 @@ namespace Spark::Core
 bool Dir::IsDir(const char* path)
 {
 #ifdef _WIN32
-	return _access(path, 00) == 0;
+    return _access(path, 00) == 0;
 #elif __linux__
-	return access(path, 00) == 0;
+    return access(path, 00) == 0;
 #else
-	return false;
+    return false;
 #endif
 }
 bool Dir::Create(const char* path, int mode)
 {
 #ifdef _WIN32
-	return _mkdir(path) == 0;
+    return _mkdir(path) == 0;
 #elif __linux__
-	return mkdir(path, mode) == 0;
+    return mkdir(path, mode) == 0;
 #else
-	return false;
+    return false;
 #endif
 }
 }

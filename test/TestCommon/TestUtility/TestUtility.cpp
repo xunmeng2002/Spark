@@ -17,5 +17,5 @@ IoModelType IoModel = IoModelType::Select;
 
 void PrintTimeCost(const char* name, time_point<system_clock, milliseconds> startTime, time_point<system_clock, milliseconds> endTime)
 {
-	WriteLog(LogLevel::Info, "%s: %lldms", name, (endTime - startTime).count());
+    WriteLog(LogLevel::Info, "%s: %lldms", name, (endTime - startTime).count());
 }

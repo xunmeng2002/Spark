@@ -12,37 +12,37 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 PackageReader::PackageReader(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIdType sessionId, const char* ipAddress)
-	:buff_{ 0 }
+    :buff_{ 0 }
 {
-	data_ = buff_;
-	length_ = 0;
-	discardLength_ = 0;
+    data_ = buff_;
+    length_ = 0;
+    discardLength_ = 0;
 
-	protocolType_ = protocolType;
-	packageFactory_ = packageFactory;
-	sessionId_ = sessionId;
-	snprintf(ipAddress_, sizeof(IpAddressType), "%s", ipAddress);
-	memset(&(head_), 0, sizeof(HeadField));
-	memset(&(tail_), 0, sizeof(TailField));
+    protocolType_ = protocolType;
+    packageFactory_ = packageFactory;
+    sessionId_ = sessionId;
+    snprintf(ipAddress_, sizeof(IpAddressType), "%s", ipAddress);
+    memset(&(head_), 0, sizeof(HeadField));
+    memset(&(tail_), 0, sizeof(TailField));
 }
 PackageReader::~PackageReader()
 {
-	data_ = nullptr;
-	length_ = 0;
+    data_ = nullptr;
+    length_ = 0;
 }
 PackageReader* PackageReader::Allocate(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIdType sessionId, const char* ipAddress)
 {
-	return ObjectPool<PackageReader>::GetInstance().Allocate(protocolType, packageFactory, sessionId, ipAddress);
+    return ObjectPool<PackageReader>::GetInstance().Allocate(protocolType, packageFactory, sessionId, ipAddress);
 }
 void PackageReader::Deallocate()
 {
-	ObjectPool<PackageReader>::GetInstance().Deallocate(this);
+    ObjectPool<PackageReader>::GetInstance().Deallocate(this);
 }
 void PackageReader::Reset()
 {
-	data_ = buff_;
-	length_ = 0;
-	discardLength_ = 0;
+    data_ = buff_;
+    length_ = 0;
+    discardLength_ = 0;
 }
 
 unsigned int PackageReader::Append(char* data, unsigned int len)
@@ -54,22 +54,22 @@ unsigned int PackageReader::Append(char* data, unsigned int len)
 }
 void PackageReader::PopFront(unsigned int len)
 {
-	len = std::min(len, length_);
-	length_ = length_ - len;
-	if (length_ > 0)
-	{
-		std::memmove(buff_, data_ + len, length_);
-	}
-	data_ = buff_;
+    len = std::min(len, length_);
+    length_ = length_ - len;
+    if (length_ > 0)
+    {
+        std::memmove(buff_, data_ + len, length_);
+    }
+    data_ = buff_;
 }
 
 int PackageReader::Length()
 {
-	return length_;
+    return length_;
 }
 unsigned int PackageReader::TailSize()
 {
-	return unsigned((buff_ + MaxPackageSize) - (data_ + length_));
+    return unsigned((buff_ + MaxPackageSize) - (data_ + length_));
 }
 char* PackageReader::Data()
 {
@@ -283,18 +283,18 @@ PackageReader::AlignResult PackageReader::AlignToAnchor(const char* anchor, unsi
 }
 void PackageReader::DiscardFront(unsigned int len)
 {
-	len = std::min(len, length_);
-	discardLength_ += len;
-	PopFront(len);
+    len = std::min(len, length_);
+    discardLength_ += len;
+    PopFront(len);
 }
 bool PackageReader::IsBodyLenWithinFrameLimit() const
 {
-	if (head_.BodyLen <= MaxFrameBodyLen)
-	{
-		return true;
-	}
-	WriteLog(LogLevel::Warning, "Body Length Exceeds Frame Limit. BodyLen:%u, MaxFrameBodyLen:%u, SessionId:%lld, IP:%s",
-		static_cast<unsigned int>(head_.BodyLen), MaxFrameBodyLen, sessionId_, ipAddress_);
-	return false;
+    if (head_.BodyLen <= MaxFrameBodyLen)
+    {
+        return true;
+    }
+    WriteLog(LogLevel::Warning, "Body Length Exceeds Frame Limit. BodyLen:%u, MaxFrameBodyLen:%u, SessionId:%lld, IP:%s",
+        static_cast<unsigned int>(head_.BodyLen), MaxFrameBodyLen, sessionId_, ipAddress_);
+    return false;
 }
 }

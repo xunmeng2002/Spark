@@ -6,20 +6,20 @@
 class XtpClient : public Spark::Network::Protocol, public Spark::Network::ProtocolSubscriber
 {
 public:
-	XtpClient();
-	virtual ~XtpClient();
+    XtpClient();
+    virtual ~XtpClient();
 
-	virtual void OnProtocolConnect(SessionIdType sessionId, const char* ip, int port) override;
-	virtual void OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port) override;
-	virtual void OnMessage(Package* package) override;
+    virtual void OnProtocolConnect(SessionIdType sessionId, const char* ip, int port) override;
+    virtual void OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port) override;
+    virtual void OnMessage(Package* package) override;
 
-	void SendReqInsertOrder(int index);
+    void SendReqInsertOrder(int index);
 
-	bool connected_;
-	SessionIdType sessionId_;
+    bool connected_;
+    SessionIdType sessionId_;
 
-	std::chrono::steady_clock::time_point startTime_;
-	int recvCount_;
+    std::chrono::steady_clock::time_point startTime_;
+    int recvCount_;
     Spark::Packages::ReqInsertOrderPackage* reqInsertOrder_;
 };
 

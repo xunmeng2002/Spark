@@ -10,40 +10,40 @@ SocketInit SocketInit::socketInit_;
 SocketInit::~SocketInit()
 {
 #ifdef _WIN32
-	WSACleanup();
+    WSACleanup();
 #endif
 }
 SocketInit& SocketInit::GetInstance()
 {
-	return socketInit_;
+    return socketInit_;
 }
 void SocketInit::Init()
 {
-	std::call_once(socketInitFlag_, &SocketInit::WsaStart, this);
+    std::call_once(socketInitFlag_, &SocketInit::WsaStart, this);
 }
 void SocketInit::WsaStart()
 {
 #ifdef _WIN32
-	std::cout << "ON WINDOWS" << std::endl;
-	WSADATA initData;
-	initData.wVersion = 0;
-	initData.wHighVersion = 2;
-	memset(initData.szDescription, 0, sizeof(initData.szDescription));
-	memset(initData.szSystemStatus, 0, sizeof(initData.szSystemStatus));
-	initData.iMaxSockets = 1024;
-	initData.lpVendorInfo = nullptr;
-	if (WSAStartup(2, &initData) != 0)
-	{
-		std::cout << "SocketInit Failed!" << std::endl;
-	}
-	//WSADATA initData;
-	//if (WSAStartup(MAKEWORD(2, 2), &initData))
-	//{
-	//	std::cout << "SocketInit Failed!" << std::endl;
-	//}
+    std::cout << "ON WINDOWS" << std::endl;
+    WSADATA initData;
+    initData.wVersion = 0;
+    initData.wHighVersion = 2;
+    memset(initData.szDescription, 0, sizeof(initData.szDescription));
+    memset(initData.szSystemStatus, 0, sizeof(initData.szSystemStatus));
+    initData.iMaxSockets = 1024;
+    initData.lpVendorInfo = nullptr;
+    if (WSAStartup(2, &initData) != 0)
+    {
+        std::cout << "SocketInit Failed!" << std::endl;
+    }
+    //WSADATA initData;
+    //if (WSAStartup(MAKEWORD(2, 2), &initData))
+    //{
+    //  std::cout << "SocketInit Failed!" << std::endl;
+    //}
 #endif
 #ifdef __linux__
-	std::cout << "ON LINUX" << std::endl;
+    std::cout << "ON LINUX" << std::endl;
 #endif
 }
 }
