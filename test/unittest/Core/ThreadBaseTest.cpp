@@ -12,40 +12,28 @@ using namespace Spark::Core;
 
 namespace
 {
-    class TestWorker : public ThreadBase
+class TestWorker : public ThreadBase
+{
+public:
+    TestWorker(const char* name, int timeout = 100) : ThreadBase(name, timeout) {}
+
+    bool IsJoinable() const { return thread_.joinable(); }
+
+    std::atomic<int> RunCount{0};
+    std::atomic<bool> InitCalled{false};
+    std::atomic<bool> ExitCalled{false};
+
+protected:
+    void ThreadInit() override { InitCalled = true; }
+
+    void ThreadExit() override { ExitCalled = true; }
+
+    void Run() override
     {
-    public:
-        TestWorker(const char* name, int timeout = 100)
-            : ThreadBase(name, timeout)
-        {
-        }
-
-        bool IsJoinable() const
-        {
-            return thread_.joinable();
-        }
-
-        std::atomic<int> RunCount{0};
-        std::atomic<bool> InitCalled{false};
-        std::atomic<bool> ExitCalled{false};
-
-    protected:
-        void ThreadInit() override
-        {
-            InitCalled = true;
-        }
-
-        void ThreadExit() override
-        {
-            ExitCalled = true;
-        }
-
-        void Run() override
-        {
-            ++RunCount;
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
-    };
+        ++RunCount;
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+};
 }
 
 // ---------- 构造 ----------

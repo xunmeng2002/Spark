@@ -22,31 +22,27 @@ struct CallTracer
 {
     void Before(const char* funcName) { calls.push_back(std::string(funcName) + "_Before"); }
 
-        void After(const char* funcName)
-        {
-            calls.push_back(std::string(funcName) + "_After");
-        }
-        std::vector<std::string> calls;
+    void After(const char* funcName) { calls.push_back(std::string(funcName) + "_After"); }
+    std::vector<std::string> calls;
+};
 
-    };
+int AspectValue = 0;
+std::string AspectTrace;
 
-    int AspectValue = 0;
-    std::string AspectTrace;
+void SetAspectValue(int x)
+{
+    AspectValue = x;
+}
 
-    void SetAspectValue(int x)
-    {
-        AspectValue = x;
-    }
+int DoubleAspectValue(int x)
+{
+    return x * 2;
+}
 
-    int DoubleAspectValue(int x)
-    {
-        return x * 2;
-    }
-
-    void AppendTrace(const std::string& tag)
-    {
-        AspectTrace += tag;
-    }
+void AppendTrace(const std::string& tag)
+{
+    AspectTrace += tag;
+}
 }
 
 // ============================================================

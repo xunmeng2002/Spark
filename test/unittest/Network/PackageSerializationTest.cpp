@@ -25,65 +25,62 @@ namespace
 constexpr SessionIdType SessionId = 42;
 constexpr const char* IP = "192.168.1.100";
 
-    // 构造并填入字段
-    NotifyComponentConnectStatusPackage* CreateSamplePackage(int msgSeqNum = 1001)
+// 构造并填入字段
+NotifyComponentConnectStatusPackage* CreateSamplePackage(int msgSeqNum = 1001)
+{
+    auto* pkg = NotifyComponentConnectStatusPackage::Allocate();
+    pkg->Prepare(SessionId, 0, msgSeqNum);
+
+    auto* field = ObjectPool<NotifyComponentConnectStatusField>::GetInstance().Allocate();
+    field->SessionId = SessionId;
+    field->Component = ComponentType::TradeFront;
+    field->IsConnected = true;
+
+    pkg->NotifyComponentConnectStatus = field;
+    return pkg;
+}
+
+// 造一条完整报文，返回总长度；buff 由调用方提供
+int MakeFrame(ProtocolTypeType protocolType, char* buff, int msgSeqNum)
+{
+    auto* pkg = CreateSamplePackage(msgSeqNum);
+    int totalLen = pkg->MakePackage(protocolType, buff, MaxPackageSize);
+    pkg->Deallocate();
+    return totalLen;
+}
+
+// 把 Step 包头里的版本值就地改成另一个等宽版本号
+bool PatchStepVersion(std::string& frame, unsigned short version)
+{
+    const std::string& anchor = StepUtility::GetPackageStartAnchor();
+    std::string key = anchor + std::format("{:04X}", Items::Version) + "=";
+    size_t pos = frame.find(key);
+    if (pos == std::string::npos)
     {
-        auto* pkg = NotifyComponentConnectStatusPackage::Allocate();
-        pkg->Prepare(SessionId, 0, msgSeqNum);
-
-        auto* field = ObjectPool<NotifyComponentConnectStatusField>::GetInstance().Allocate();
-        field->SessionId = SessionId;
-        field->Component = ComponentType::TradeFront;
-        field->IsConnected = true;
-
-        pkg->NotifyComponentConnectStatus = field;
-        return pkg;
+        return false;
     }
-
-    // 造一条完整报文，返回总长度；buff 由调用方提供
-    int MakeFrame(ProtocolTypeType protocolType, char* buff, int msgSeqNum)
+    std::string origin = std::format("{:04X}", ProtocolVersionValue);
+    std::string fresh = std::format("{:04X}", version);
+    if (origin.size() != fresh.size())
     {
-        auto* pkg = CreateSamplePackage(msgSeqNum);
-        int totalLen = pkg->MakePackage(protocolType, buff, MaxPackageSize);
-        pkg->Deallocate();
-        return totalLen;
+        return false;
     }
+    frame.replace(pos + key.size(), origin.size(), fresh);
+    return true;
+}
 
-    // 把 Step 包头里的版本值就地改成另一个等宽版本号
-    bool PatchStepVersion(std::string& frame, unsigned short version)
-    {
-        const std::string& anchor = StepUtility::GetPackageStartAnchor();
-        std::string key = anchor + std::format("{:04X}", Items::Version) + "=";
-        size_t pos = frame.find(key);
-        if (pos == std::string::npos)
-        {
-            return false;
-        }
-        std::string origin = std::format("{:04X}", ProtocolVersionValue);
-        std::string fresh = std::format("{:04X}", version);
-        if (origin.size() != fresh.size())
-        {
-            return false;
-        }
-        frame.replace(pos + key.size(), origin.size(), fresh);
-        return true;
-    }
-
-    // 验证解析后的包与原始值一致
-    void VerifyPackage(const NotifyComponentConnectStatusPackage* parsed,
-                       SessionIdType expectedSessionId,
-                       int expectedMsgSeqNum)
-    {
-        ASSERT_NE(parsed, nullptr);
-        ASSERT_NE(parsed->NotifyComponentConnectStatus, nullptr);
-        EXPECT_EQ(parsed->SessionId, expectedSessionId);
-        EXPECT_EQ(parsed->Head.MsgSeqNum, expectedMsgSeqNum);
-        EXPECT_EQ(parsed->Head.PackageId, NotifyComponentConnectStatusPackage::PackageId);
-        EXPECT_EQ(parsed->NotifyComponentConnectStatus->SessionId, SessionId);
-        EXPECT_EQ(static_cast<int>(parsed->NotifyComponentConnectStatus->Component),
-                  static_cast<int>(ComponentType::TradeFront));
-        EXPECT_EQ(parsed->NotifyComponentConnectStatus->IsConnected, true);
-    }
+// 验证解析后的包与原始值一致
+void VerifyPackage(const NotifyComponentConnectStatusPackage* parsed, SessionIdType expectedSessionId, int expectedMsgSeqNum)
+{
+    ASSERT_NE(parsed, nullptr);
+    ASSERT_NE(parsed->NotifyComponentConnectStatus, nullptr);
+    EXPECT_EQ(parsed->SessionId, expectedSessionId);
+    EXPECT_EQ(parsed->Head.MsgSeqNum, expectedMsgSeqNum);
+    EXPECT_EQ(parsed->Head.PackageId, NotifyComponentConnectStatusPackage::PackageId);
+    EXPECT_EQ(parsed->NotifyComponentConnectStatus->SessionId, SessionId);
+    EXPECT_EQ(static_cast<int>(parsed->NotifyComponentConnectStatus->Component), static_cast<int>(ComponentType::TradeFront));
+    EXPECT_EQ(parsed->NotifyComponentConnectStatus->IsConnected, true);
+}
 }
 
 // ============================================================
@@ -576,34 +573,34 @@ TEST(PackageSerializationTest, TruncatedBody_RejectedBeforeWrite)
 
 namespace
 {
-    //按仓外实现的常见写法故意"先写后判"：拿到包体缓冲先改一个字节，再去看容量够不够。
-    //ToXtpStream 是公开纯虚函数，仓外实现不保证先比容量再写，所以 MakePackage 必须在调用它之前
-    //就把尺寸挡住——只要它被调用过，是否越界写就已经交给下游决定了
-    class WriteBeforeMeasurePackage : public Package
+//按仓外实现的常见写法故意"先写后判"：拿到包体缓冲先改一个字节，再去看容量够不够。
+//ToXtpStream 是公开纯虚函数，仓外实现不保证先比容量再写，所以 MakePackage 必须在调用它之前
+//就把尺寸挡住——只要它被调用过，是否越界写就已经交给下游决定了
+class WriteBeforeMeasurePackage : public Package
+{
+public:
+    void Deallocate() override {}
+    int ToStepStream(char* buff, int capacity) const override { return Probe(buff, capacity); }
+    bool FromStepStream(char*, int, int) override { return true; }
+    int ToXtpStream(char* buff, int capacity) const override { return Probe(buff, capacity); }
+    bool FromXtpStream(char*, int, int) override { return true; }
+    const char* GetDebugString() const override { return "WriteBeforeMeasurePackage"; }
+
+    bool WasMeasured() const { return is_measured_; }
+    int ObservedCapacity() const { return observed_capacity_; }
+
+private:
+    int Probe(char* buff, int capacity) const
     {
-    public:
-        void Deallocate() override {}
-        int ToStepStream(char* buff, int capacity) const override { return Probe(buff, capacity); }
-        bool FromStepStream(char*, int, int) override { return true; }
-        int ToXtpStream(char* buff, int capacity) const override { return Probe(buff, capacity); }
-        bool FromXtpStream(char*, int, int) override { return true; }
-        const char* GetDebugString() const override { return "WriteBeforeMeasurePackage"; }
+        is_measured_ = true;
+        observed_capacity_ = capacity;
+        buff[0] = 'W';
+        return 0;
+    }
 
-        bool WasMeasured() const { return is_measured_; }
-        int ObservedCapacity() const { return observed_capacity_; }
-
-    private:
-        int Probe(char* buff, int capacity) const
-        {
-            is_measured_ = true;
-            observed_capacity_ = capacity;
-            buff[0] = 'W';
-            return 0;
-        }
-
-        mutable bool is_measured_ = false;
-        mutable int observed_capacity_ = 0;
-    };
+    mutable bool is_measured_ = false;
+    mutable int observed_capacity_ = 0;
+};
 }
 
 TEST(PackageSerializationTest, MakePackage_BufferSmallerThanFixedOverhead)
