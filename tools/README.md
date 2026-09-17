@@ -89,7 +89,15 @@ python tools/s4scan.py    tools/selfcheck/neg.h                                 
 python tools/s4scan.py    tools/selfcheck/nofirst.h                              # 2 条
 python tools/initcheck.py tools/selfcheck/initpos.h tools/selfcheck/initpos.cpp  # 2 条
 python tools/initcheck.py tools/selfcheck/initneg.h                              # 0 条
+python tools/initcheck.py tools/selfcheck/initwrapped.cpp                        # 1 条
+python tools/initcheck.py tools/selfcheck/initbraced.cpp                         # 1 条
+python tools/initcheck.py tools/selfcheck/initsentinel.cpp                       # 1 条
 ```
+
+后三条是 2026-09-17 补的：`initpos.cpp` 只覆盖「`:` 独占一行」一种类外定义形状，
+而 clang-format 收敛后仓里的形状变了，判据随之静默漏检（通道 B 由 217 掉到 211），
+自检却全绿——**语料的形状没跟上被检对象的写法**，等于没有判别力。
+详见 `tools/selfcheck/README.md` 的「形状覆盖」一节。
 
 每个文件的期望值与设计意图见 `tools/selfcheck/README.md`。该目录已在 `EXCLUDE` 中，
 不会污染无参数的全仓结果。

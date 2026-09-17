@@ -95,7 +95,20 @@ def in_class_init_lists(body_masked):
 
 
 def out_of_class_init_lists(raw, masked):
-    """通道 B：`Foo::Foo(...)` 类外定义。返回 [(行号, 类名, 初始化列表成员名)]。"""
+    """通道 B：`Foo::Foo(...)` 类外定义。返回 [(行号, 类名, 初始化列表成员名)]。
+
+    初始化列表的书写形状有三种，都要认（前两种都要求 `:` 与 `{` 同行，第三种不用）：
+      1. 签名、初始化列表、`{` 全在同一行：`Foo::Foo() : a_(1) {`
+      2. 初始化列表整体在签名下一行：`Foo::Foo()\n    : a_(1)\n{`
+      3. 签名与初始化列表同行、`{` 在下一行（Allman）：
+         `Timer::Timer() : timeInterval_(60000), eventCount_(600)\n{`
+
+    第 3 种是本脚本原先漏掉的形状，**不是**理论情形：clang-format 会把较短的初始化
+    列表并到签名行，于是类外定义由「多行」变成「同行 + 次行 `{`」，旧判据要求 `:` 与
+    `{` 同行、结果整条初始化列表**静默脱离检查**——实测通道 B 从 217 掉到 211。
+    这类「检查器的口径与被检对象的写法同步失效」是本仓反复吃亏的同一失败型，故这里
+    不再按「哪种形状」分支，而是统一从 `:` 扫到函数体的 `{` 为止。
+    """
     out = []
     for m in CTOR_DEF.finditer(masked):
         cls, ctor = m.group(1), m.group(2)
@@ -112,25 +125,66 @@ def out_of_class_init_lists(raw, masked):
                     break
             j += 1
         line_no = masked[:m.start()].count('\n')
-        tail_msk = masked[j + 1:].split('\n')
-        same = re.match(r'\s*:\s*(.*)\{', tail_msk[0]) if tail_msk else None
-        if same:
-            out.append((line_no + 1, cls, re.findall(r'([A-Za-z_]\w*)\s*[({]', same.group(1))))
-            continue
-        if tail_msk and tail_msk[0].strip() == '':
-            k = 1
-            while k < len(tail_msk) and not tail_msk[k].strip():
-                k += 1
-            if k < len(tail_msk) and tail_msk[k].strip().startswith(':'):
-                buf = []
-                while k < len(tail_msk):
-                    s = tail_msk[k].strip()
-                    if s.startswith('{'):
-                        break
-                    buf.append(s)
-                    k += 1
-                out.append((line_no + 1, cls, re.findall(r'([A-Za-z_]\w*)\s*[({]', ' '.join(buf))))
+        members = init_list_members(masked, j + 1)
+        if members is not None:
+            out.append((line_no + 1, cls, members))
     return out
+
+
+def init_list_members(masked, tail_start):
+    """从闭括号之后扫到函数体的 `{`，取出初始化列表成员名；不是初始化列表则返回 None。
+
+    难点是「哪个 `{` 才是函数体」。两侧都栽过：
+
+    - 一律把第一个 `{` 当函数体：成员的 **braced-init** 也是花括号（`buff_{0}`、
+      `sockets_{INVALID_SOCKET, INVALID_SOCKET}`、`lastConnectAttemptTime_{}`），于是
+      初始化列表在最外层那个 `{` 处提前收尾，整条判空或截断——实测由此丢掉 3 条
+      （`PackageReader` / `SocketNotify` 归零、`TcpBase` 少 3 个成员）。
+    - 按「配对 `}` 是否在同一行」判 braced-init：**空函数体** `{}` 的配对 `}` 也在同一行，
+      被误认成成员初始化，于是越过函数体继续往后扫，把下一个函数的限定名也收进成员表
+      ——实测 `Logger::Logger() : ... logData_(nullptr) {}` 之后连 `Logger::GetInstance`
+      一起收了进来（clang-format 会把短构造函数连空体收成一行，这不是理论情形）。
+      该噪声目前被 `judge()` 的 `nm in index_of` 挡掉，故未变成误报，但判据本身是错的。
+
+    正确的区分依据来自语法：本仓 `BreakBeforeBraces: Allman`，函数体的 `{` 要么独占一行，
+    要么紧跟在构造函数形参列表的 `)`（或 braced-init 的 `}`）之后；而 braced-init 的 `{`
+    一定**紧贴一个标识符或模板/数组闭合符**。故判据为：括号外的 `{`，左侧跳空白后若紧贴
+    标识符、`>`、`]` 则是 braced-init，否则是函数体起点。
+    括号深度仍需跟踪，只认**括号外**的 `{`；遇到 `;` 说明已越过定义，一并放弃。
+    宁可漏报不误报：形状认不出时返回 None，绝不猜。
+    """
+    i = tail_start
+    n = len(masked)
+    while i < n and masked[i] in ' \t\r\n':
+        i += 1
+    if i >= n or masked[i] != ':' or (i + 1 < n and masked[i + 1] == ':'):
+        return None                       # 闭括号后不是 `:`，说明没有初始化列表
+    i += 1
+    depth = 0
+    start = i
+    while i < n:
+        c = masked[i]
+        if c == '{' and depth == 0:
+            k = i - 1
+            while k >= 0 and masked[k] in ' \t\r\n':
+                k -= 1
+            prev = masked[k] if k >= 0 else ''
+            if prev.isascii() and (prev.isalnum() or prev in '_>]'):
+                depth += 1                # 紧贴标识符/模板闭合 = 成员的 braced-init
+            else:
+                break                     # 前接 `)` 或处在行首 = 函数体起点
+        elif c in '([{':
+            depth += 1
+        elif c in ')]}':
+            if depth == 0:
+                return None               # 未配平，形状不认识
+            depth -= 1
+        elif c == ';' and depth == 0:
+            return None
+        i += 1
+    if i >= n:
+        return None
+    return re.findall(r'([A-Za-z_]\w*)\s*[({]', masked[start:i])
 
 
 def judge(seq, index_of, declared):

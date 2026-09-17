@@ -1,6 +1,6 @@
 # selfcheck —— 扫描器的判别力语料
 
-这六个文件是 `tools/s4scan.py` 与 `tools/initcheck.py` 的**自检输入**：
+这九个文件是 `tools/s4scan.py` 与 `tools/initcheck.py` 的**自检输入**：
 `pos*` 是故意违规的正例，`neg*` 是完全合规的反例。
 
 ## 为什么需要它
@@ -22,8 +22,43 @@
 | `initpos.h` | `initcheck.py` 报 1 条 INIT_ORDER/A |
 | `initpos.cpp` | `initcheck.py` 报 1 条 INIT_ORDER/B（须与 `initpos.h` 同时传入） |
 | `initneg.h` | `initcheck.py` 报 0 条 |
+| `initwrapped.cpp` | `initcheck.py` 报 1 条 INIT_ORDER/B |
+| `initbraced.cpp` | `initcheck.py` 报 1 条 INIT_ORDER/B |
+| `initsentinel.cpp` | `initcheck.py` 报 1 条 INIT_ORDER/B（仅 Gamma；Alpha 与 Delta 合规） |
 
 各文件头部注释里也写了对应的期望值。
+
+## 形状覆盖（2026-09-17 补）
+
+`initcheck.py` 通道 B 要在 `:` 之后扫到函数体的 `{` 为止。**「哪个 `{` 才是函数体」这件事
+没有唯一答案，判据必须对写法免疫**——而 `initpos.cpp` 只覆盖了「`:` 独占一行」一种形状，
+于是 clang-format 收敛把仓里的形状改掉之后，判据静默失效：通道 B 由 217 掉到 211，
+而本目录的自检**全绿**（`initpos.cpp` 那条恰好是新旧判据都能认的老形状）。
+
+补的三份语料把类外定义的四种形状铺开：
+
+| 文件 | 类外定义形状 |
+| ---- | ---- |
+| `initpos.cpp` | `Foo::Foo()` 换行 + `: a_(1), b_(2)` + `{` 独占一行 |
+| `initwrapped.cpp` | `Foo::Foo() : a_(1), b_(2)` + `{` 独占次行（clang-format 对放不进一行的列表的输出） |
+| `initbraced.cpp` | 同上，但列表里含成员 braced-init `a_{1}` |
+| `initsentinel.cpp` | `Foo::Foo() : a_(1), b_(2) {}` 整条压一行、函数体空 |
+
+三份新语料对三个历史错判据的判别力互不重复（实测结果如下表），缺一份就漏掉一类：
+
+| 判据 | `initwrapped` | `initbraced` | `initsentinel` |
+| ---- | ---- | ---- | ---- |
+| 要求 `:` 与 `{` 同行 | **漏报 0** | **漏报 0** | 1 ✓ |
+| 第一个 `{` 即函数体 | 1 ✓ | **漏报 0** | 1 ✓ |
+| 配对 `}` 同行算 braced-init | 1 ✓ | 1 ✓ | **多报 2** |
+
+`initsentinel.cpp` 测的是**多报**：末尾刻意留的 `Delta` 是越界扫描的收尾点，它的函数体
+必须跨行（否则扫描一路扫到文件尾判空，症状变成漏报，与真实仓的现象不是一回事）
+且非空（否则会被 clang-format 塌成 `{}`）。
+
+三份新语料的函数体都写成非空，**因而对 clang-format 稳定**：空体的跨行写法会被
+clang-format 塌成一行，语料就换了形状、判别力悄然变形——这正是下面「防好心地被修好」
+一节警告的事。
 
 ## 复现
 
@@ -33,6 +68,9 @@ python tools/s4scan.py    tools/selfcheck/neg.h                                 
 python tools/s4scan.py    tools/selfcheck/nofirst.h                              # 2 条
 python tools/initcheck.py tools/selfcheck/initpos.h tools/selfcheck/initpos.cpp  # 2 条
 python tools/initcheck.py tools/selfcheck/initneg.h                              # 0 条
+python tools/initcheck.py tools/selfcheck/initwrapped.cpp                        # 1 条
+python tools/initcheck.py tools/selfcheck/initbraced.cpp                         # 1 条
+python tools/initcheck.py tools/selfcheck/initsentinel.cpp                       # 1 条
 ```
 
 > **注意**：`initcheck.py` 收到路径参数时会打印「通道 B 的结论不作数」的告警。
