@@ -3,11 +3,9 @@
 #include <mutex>
 #include <memory>
 
-
 namespace Spark
 {
-template <typename T>
-class ObjectPool
+template <typename T> class ObjectPool
 {
 public:
     static ObjectPool& GetInstance()
@@ -16,13 +14,9 @@ public:
         return instance_;
     }
 
-    void SetBlockUnitNum(int blockUnitNum)
-    {
-        blockUnitNum_ = blockUnitNum;
-    }
+    void SetBlockUnitNum(int blockUnitNum) { blockUnitNum_ = blockUnitNum; }
 
-    template<typename... Args>
-    T* Allocate(Args&&... args)
+    template <typename... Args> T* Allocate(Args&&... args)
     {
         while (true)
         {
@@ -30,9 +24,11 @@ public:
             FreeNode* nextNode = nullptr;
             if (oldHead != nullptr)
             {
-                do {
+                do
+                {
                     nextNode = oldHead->Next.load(std::memory_order_acquire);
-                } while (!freeList_.compare_exchange_weak(oldHead, nextNode, std::memory_order_release, std::memory_order_acquire) && oldHead != nullptr);
+                } while (!freeList_.compare_exchange_weak(oldHead, nextNode, std::memory_order_release, std::memory_order_acquire) &&
+                         oldHead != nullptr);
                 if (oldHead != nullptr)
                 {
                     T* obj = reinterpret_cast<T*>(oldHead);
@@ -43,13 +39,10 @@ public:
             Expand();
         }
     }
-    template<typename... Args>
-    std::shared_ptr<T> AllocateShared(Args&&... args)
+    template <typename... Args> std::shared_ptr<T> AllocateShared(Args&&... args)
     {
         T* obj = Allocate(std::forward<Args>(args)...);
-        return std::shared_ptr<T>(obj, [](T* ptr) {
-            ObjectPool<T>::GetInstance().Deallocate(ptr);
-            });
+        return std::shared_ptr<T>(obj, [](T* ptr) { ObjectPool<T>::GetInstance().Deallocate(ptr); });
     }
     void Deallocate(T* item)
     {
@@ -58,7 +51,8 @@ public:
         item->~T();
         FreeNode* node = reinterpret_cast<FreeNode*>(item);
         FreeNode* oldHead = freeList_.load(std::memory_order_acquire);
-        do {
+        do
+        {
             node->Next.store(oldHead, std::memory_order_release);
         } while (!freeList_.compare_exchange_weak(oldHead, node, std::memory_order_release, std::memory_order_acquire));
     }
@@ -66,10 +60,7 @@ public:
 private:
     struct Block
     {
-        Block(T* objs, Block* next)
-            : Objects(objs), Next(next)
-        {
-        }
+        Block(T* objs, Block* next) : Objects(objs), Next(next) {}
 
         T* Objects;
         Block* Next;
@@ -132,15 +123,12 @@ private:
     std::atomic<FreeNode*> freeList_ = nullptr;
 };
 
-template<typename T>
-T* Allocate()
+template <typename T> T* Allocate()
 {
     return ObjectPool<T>::GetInstance().Allocate();
 }
-template<typename T>
-void Deallocate(T* ptr)
+template <typename T> void Deallocate(T* ptr)
 {
     ObjectPool<T>::GetInstance().Deallocate(ptr);
 }
 }
-

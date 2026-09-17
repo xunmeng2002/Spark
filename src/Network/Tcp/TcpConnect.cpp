@@ -8,9 +8,8 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 TcpConnect::TcpConnect(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort)
-    :Connect(sessionId, remoteIP.c_str(), atoi(remotePort.c_str()), ConnectStatusType::Connected), SocketId(socketId)
+    : Connect(sessionId, remoteIP.c_str(), atoi(remotePort.c_str()), ConnectStatusType::Connected), SocketId(socketId)
 {
-
 }
 TcpConnect::~TcpConnect()
 {

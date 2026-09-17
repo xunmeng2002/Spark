@@ -3,16 +3,12 @@
 #include <mutex>
 #include <condition_variable>
 
-
 namespace Spark
 {
-template <typename T>
-class ThreadSafeList
+template <typename T> class ThreadSafeList
 {
 public:
-    ThreadSafeList()
-    {
-    }
+    ThreadSafeList() {}
     ThreadSafeList(const ThreadSafeList& other)
     {
         std::lock_guard<std::mutex> guard(other.mutex_);
@@ -29,7 +25,7 @@ public:
     T* PopFront()
     {
         std::unique_lock<std::mutex> lk(mutex_);
-        conditionVariable_.wait(lk, [this] {return !items_.empty(); });
+        conditionVariable_.wait(lk, [this] { return !items_.empty(); });
         T* item = items_.front();
         items_.pop_front();
         return item;

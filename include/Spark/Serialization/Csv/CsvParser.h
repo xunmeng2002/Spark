@@ -3,7 +3,7 @@
 
 namespace Spark::Serialization
 {
-const int TokenMaxLen = 64 * 1024; 
+const int TokenMaxLen = 64 * 1024;
 
 enum class CsvParserError
 {
@@ -17,21 +17,21 @@ class SERIALIZATION_EXPORTS CsvParser
 {
 public:
     CsvParser();
-    CsvParser(const char *csvText);
+    CsvParser(const char* csvText);
     virtual ~CsvParser();
     void SetSeparator(char separatorChar);
-    char *GetNextToken();
-    void Parse(const char *csvText);
+    char* GetNextToken();
+    void Parse(const char* csvText);
     inline CsvParserError GetErrorCode();
 
 private:
     void NextChar();
-    void MakeWord(const char *stopChars);
+    void MakeWord(const char* stopChars);
 
     CsvParserError errorCode_;
-    const char *csvText_;
+    const char* csvText_;
     char* currentWord_;
-    char *cursor_;
+    char* cursor_;
     char currentChar_;
     char nextChar_;
     char separator_[2];

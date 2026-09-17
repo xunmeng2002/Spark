@@ -159,7 +159,7 @@ int TimeUtility::HourAdd(int hourTime, int count)
     {
         // C++ 对负数除法向零截断（-1/24=0），需做 floor 除法
         dayCount = (hour - 23) / 24;
-        hour -= dayCount * 24;  // 归入 [0, 23]
+        hour -= dayCount * 24; // 归入 [0, 23]
     }
 
     date = DateAdd(date, dayCount);
@@ -186,7 +186,7 @@ long long TimeUtility::MinuteAdd(long long minuteTime, int count)
     {
         // C++ 对负数除法向零截断，需做 floor 除法
         hourCount = (minute - 59) / 60;
-        minute -= hourCount * 60;  // 归入 [0, 59]
+        minute -= hourCount * 60; // 归入 [0, 59]
     }
 
     hourTime = HourAdd(hourTime, hourCount);
@@ -201,7 +201,6 @@ void TimeUtility::GetPreYearDay(const char* tradingDay, char* preYearDay)
     tm* preYearDayTm = localtime(&preYearDayTime);
     strftime(preYearDay, 9, "%Y%m%d", preYearDayTm);
 }
-
 
 std::string TimeUtility::GetUtcDate()
 {
@@ -336,7 +335,6 @@ std::string TimeUtility::ToLocalDateTime(time_t* time)
     return std::string(DateTimeBuff);
 }
 
-
 void TimeUtility::GetDateTimeFromUpdateTs(long long updateTs, int& date, int& hour, int& minute, int& second, int& milliSecond)
 {
     milliSecond = (int)(updateTs % 1000LL);
@@ -418,7 +416,6 @@ int TimeUtility::CalculateSecondsTimeStamp(int seconds)
     return hour * 10000 + minute * 100 + second;
 }
 
-
 int TimeUtility::CalculateNextBarDate(int barPeriod, int date)
 {
     if (barPeriod == 1)
@@ -456,7 +453,8 @@ long long TimeUtility::CalculateNextSecondBarTime(int barPeriod, long long updat
     return date * 1000000000LL + nextBarTimeStamp * 1000LL;
 }
 
-void TimeUtility::CalculateRealMinuteBarTime(const char* exchangeId, const char* instrumentId, int calculateBarTime, int& realBarTime, int& realUpdateTs)
+void TimeUtility::CalculateRealMinuteBarTime(const char* exchangeId, const char* instrumentId, int calculateBarTime, int& realBarTime,
+                                             int& realUpdateTs)
 {
     if (strcmp(exchangeId, "SSE") == 0 || strcmp(exchangeId, "SZSE") == 0 || strcmp(exchangeId, "CFFEX") == 0)
     {

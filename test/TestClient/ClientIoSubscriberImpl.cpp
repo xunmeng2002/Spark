@@ -3,7 +3,6 @@
 #include <Spark/Core/Core.h>
 #include <cstring>
 
-
 using namespace std;
 using namespace std::chrono;
 using namespace Spark;
@@ -11,8 +10,7 @@ using namespace Spark::Core;
 using namespace Spark::Network;
 using namespace Spark::Packages;
 
-ClientIoSubscriberImpl::ClientIoSubscriberImpl(IoBase* io, IoThread* ioThread)
-    :io_(io), ioThread_(ioThread)
+ClientIoSubscriberImpl::ClientIoSubscriberImpl(IoBase* io, IoThread* ioThread) : io_(io), ioThread_(ioThread)
 {
     io_->Subscribe(this);
 }
@@ -20,7 +18,6 @@ ClientIoSubscriberImpl::~ClientIoSubscriberImpl()
 {
     io_->UnSubscribe();
 }
-
 
 void ClientIoSubscriberImpl::OnConnect(SessionIdType sessionId, const char* ip, int port)
 {
@@ -41,7 +38,8 @@ void ClientIoSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BuffSize>* b
     auto count = messageCounts_[sessionId];
     if (count % 100 == 0)
     {
-        WriteLog(LogLevel::Info, "ClientIoSubscriberImpl::OnRecv SessionId:[%lld], Length:[%d], Data:[%s]", sessionId, buffer->GetLength(), buffer->GetData());
+        WriteLog(LogLevel::Info, "ClientIoSubscriberImpl::OnRecv SessionId:[%lld], Length:[%d], Data:[%s]", sessionId, buffer->GetLength(),
+                 buffer->GetData());
     }
     if (messageCounts_[sessionId] < 10000)
     {
@@ -89,4 +87,3 @@ void ClientIoSubscriberImpl::SendCommand(SessionIdType sessionId, const char* cm
     buffer->SetLength(n);
     io_->Send(sessionId, buffer);
 }
-

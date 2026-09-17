@@ -29,4 +29,3 @@ private:
     char receiveBuffer_[16];
 };
 }
-

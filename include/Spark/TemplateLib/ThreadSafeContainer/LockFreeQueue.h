@@ -2,11 +2,9 @@
 #include <atomic>
 #include <memory>
 
-
 namespace Spark
 {
-template <typename T>
-class LockFreeQueue
+template <typename T> class LockFreeQueue
 {
 public:
     LockFreeQueue()
@@ -25,7 +23,7 @@ public:
             delete oldHead;
         }
     }
-    
+
     void PushBack(std::shared_ptr<T> data)
     {
         Node* newNode = new Node();
@@ -50,10 +48,7 @@ public:
         delete oldHead;
         return result;
     }
-    bool Empty() const
-    {
-        return head_.load(std::memory_order_acquire) == tail_.load(std::memory_order_acquire);
-    }
+    bool Empty() const { return head_.load(std::memory_order_acquire) == tail_.load(std::memory_order_acquire); }
 
 private:
     struct Node
@@ -69,4 +64,3 @@ private:
     std::atomic<Node*> tail_;
 };
 }
-

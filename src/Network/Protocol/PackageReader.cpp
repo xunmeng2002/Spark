@@ -12,7 +12,7 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 PackageReader::PackageReader(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIdType sessionId, const char* ipAddress)
-    :buff_{ 0 }
+    : buff_{0}
 {
     data_ = buff_;
     length_ = 0;
@@ -30,7 +30,8 @@ PackageReader::~PackageReader()
     data_ = nullptr;
     length_ = 0;
 }
-PackageReader* PackageReader::Allocate(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIdType sessionId, const char* ipAddress)
+PackageReader* PackageReader::Allocate(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIdType sessionId,
+                                       const char* ipAddress)
 {
     return ObjectPool<PackageReader>::GetInstance().Allocate(protocolType, packageFactory, sessionId, ipAddress);
 }
@@ -294,7 +295,7 @@ bool PackageReader::IsBodyLenWithinFrameLimit() const
         return true;
     }
     WriteLog(LogLevel::Warning, "Body Length Exceeds Frame Limit. BodyLen:%u, MaxFrameBodyLen:%u, SessionId:%lld, IP:%s",
-        static_cast<unsigned int>(head_.BodyLen), MaxFrameBodyLen, sessionId_, ipAddress_);
+             static_cast<unsigned int>(head_.BodyLen), MaxFrameBodyLen, sessionId_, ipAddress_);
     return false;
 }
 }

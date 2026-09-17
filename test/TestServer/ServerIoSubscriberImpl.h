@@ -3,7 +3,6 @@
 #include <Spark/Network/Io/IoBase.h>
 #include <Spark/Network/Io/IoThread.h>
 
-
 using namespace Spark;
 using namespace Spark::Network;
 class ServerIoSubscriberImpl : public IoSubscriber

@@ -1,6 +1,5 @@
 #include <Spark/Network/Io/IoUtility.h>
 
-
 namespace Spark::Network
 {
 void ParseAddress(const std::string& addressName, std::string& address, std::string& port)
@@ -10,4 +9,3 @@ void ParseAddress(const std::string& addressName, std::string& address, std::str
     port = addressName.substr(index + 1);
 }
 }
-

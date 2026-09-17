@@ -9,7 +9,7 @@ using namespace Spark::Network;
 
 TEST(CalculateCrc32cTest, EmptyBuffer)
 {
-    unsigned char buff[1] = { 0 };
+    unsigned char buff[1] = {0};
     // 初值与终值异或相互抵消，空输入必为 0
     EXPECT_EQ(CalculateCrc32c(buff, 0), 0x00000000u);
 }
@@ -23,27 +23,27 @@ TEST(CalculateCrc32cTest, StandardCheckValue)
 
 TEST(CalculateCrc32cTest, SingleByte)
 {
-    unsigned char buff[] = { 0x41 };  // 'A'
+    unsigned char buff[] = {0x41}; // 'A'
     EXPECT_EQ(CalculateCrc32c(buff, 1), 0xE16DCDEEu);
 }
 
 TEST(CalculateCrc32cTest, StepTypicalPattern)
 {
     // STEP 报文典型数据，与 CalculateSumTest.SpecificPattern 同一组输入
-    unsigned char buff[] = { 0x01, 0x31, 0x3D, 0x30, 0x30, 0x30, 0x31, 0x01 };
+    unsigned char buff[] = {0x01, 0x31, 0x3D, 0x30, 0x30, 0x30, 0x31, 0x01};
     EXPECT_EQ(CalculateCrc32c(buff, 8), 0xEE8606E7u);
 }
 
 TEST(CalculateCrc32cTest, SingleZeroByteIsNotEmpty)
 {
-    unsigned char buff[] = { 0x00 };
+    unsigned char buff[] = {0x00};
     EXPECT_EQ(CalculateCrc32c(buff, 1), 0x527D5351u);
 }
 
 TEST(CalculateCrc32cTest, LeadingZeroByteIsNotSkipped)
 {
     // 前导 0x00 与"没有这个字节"不是一回事，跳字节的实现会算成 0xA0E9D052
-    unsigned char buff[] = { 0x00, 0xFF, 0x01 };
+    unsigned char buff[] = {0x00, 0xFF, 0x01};
     EXPECT_EQ(CalculateCrc32c(buff, 3), 0x31EC04FAu);
     EXPECT_NE(CalculateCrc32c(buff, 3), CalculateCrc32c(buff + 1, 2));
 }
@@ -67,7 +67,7 @@ TEST(CalculateCrc32cTest, SingleBitFlipIsDetected)
 TEST(CalculateCrc32cTest, OnlyFirstLengthBytesCounted)
 {
     // len 之外的字节不得参与计算，否则校验会覆盖到下一条报文的头
-    unsigned char buff[] = { 0xFF, 0x01, 0x80, 0x80 };
+    unsigned char buff[] = {0xFF, 0x01, 0x80, 0x80};
     EXPECT_EQ(CalculateCrc32c(buff, 2), 0xA0E9D052u);
 }
 
@@ -78,7 +78,7 @@ TEST(CalculateCrc32cTest, OnlyFirstLengthBytesCounted)
 
 TEST(FindBytesTest, FoundAtBeginning)
 {
-    const char data[] = { 'S', 'P', 'K', '2', 'x' };
+    const char data[] = {'S', 'P', 'K', '2', 'x'};
     unsigned int offset = 99;
     EXPECT_TRUE(FindBytes(data, 5, "SPK2", 4, offset));
     EXPECT_EQ(offset, 0u);
@@ -86,7 +86,7 @@ TEST(FindBytesTest, FoundAtBeginning)
 
 TEST(FindBytesTest, FoundInMiddle)
 {
-    const char data[] = { 'a', 'b', 'c', 'S', 'P', 'K', '2' };
+    const char data[] = {'a', 'b', 'c', 'S', 'P', 'K', '2'};
     unsigned int offset = 99;
     EXPECT_TRUE(FindBytes(data, 7, "SPK2", 4, offset));
     EXPECT_EQ(offset, 3u);
@@ -94,22 +94,22 @@ TEST(FindBytesTest, FoundInMiddle)
 
 TEST(FindBytesTest, NotFound)
 {
-    const char data[] = { 'a', 'b', 'c', 'd' };
+    const char data[] = {'a', 'b', 'c', 'd'};
     unsigned int offset = 99;
     EXPECT_FALSE(FindBytes(data, 4, "SPK2", 4, offset));
-    EXPECT_EQ(offset, 99u);  // 未命中时不得写出参
+    EXPECT_EQ(offset, 99u); // 未命中时不得写出参
 }
 
 TEST(FindBytesTest, PatternLongerThanData)
 {
-    const char data[] = { 'S', 'P', 'K' };
+    const char data[] = {'S', 'P', 'K'};
     unsigned int offset = 0;
     EXPECT_FALSE(FindBytes(data, 3, "SPK2", 4, offset));
 }
 
 TEST(FindBytesTest, EmptyPatternOrEmptyData)
 {
-    const char data[] = { 'S', 'P', 'K', '2' };
+    const char data[] = {'S', 'P', 'K', '2'};
     unsigned int offset = 0;
     EXPECT_FALSE(FindBytes(data, 4, "SPK2", 0, offset));
     EXPECT_FALSE(FindBytes(data, 0, "SPK2", 4, offset));
@@ -125,7 +125,7 @@ TEST(FindBytesTest, NullBuffer)
 TEST(FindBytesTest, MagicSplitAcrossRange)
 {
     // 魔术字跨收包边界时，落在范围外的那半个不能算命中
-    const char data[] = { 'S', 'P', 'K', '2' };
+    const char data[] = {'S', 'P', 'K', '2'};
     unsigned int offset = 0;
     EXPECT_FALSE(FindBytes(data, 2, "SPK2", 4, offset));
 }

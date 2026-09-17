@@ -27,10 +27,8 @@ struct ShmTestFixture : public ::testing::Test
         memory_.resize(total, 0);
 
         // 使用 index=1 构造 — ShmBuffer 自行定位 header、UpBuffer、DownBuffer
-        client_.reset(new ShmBuffer<ShmBufferSize>(
-            ServerTypeType::Client, 1, memory_.data(), ConnectStatusType::Connected));
-        server_.reset(new ShmBuffer<ShmBufferSize>(
-            ServerTypeType::Server, 1, memory_.data(), ConnectStatusType::Connected));
+        client_.reset(new ShmBuffer<ShmBufferSize>(ServerTypeType::Client, 1, memory_.data(), ConnectStatusType::Connected));
+        server_.reset(new ShmBuffer<ShmBufferSize>(ServerTypeType::Server, 1, memory_.data(), ConnectStatusType::Connected));
 
         // header_ 指向 ShmBuffer 实际使用的 header（index=1，偏移 sizeof(SingleShmHeader)）
         header_ = client_->ShmHeader;

@@ -16,7 +16,6 @@
 #include <Windows.h>
 #endif
 
-
 namespace Spark::Core
 {
 constexpr unsigned int LogLineLength = 64 * 1024;
@@ -24,25 +23,14 @@ constexpr unsigned int MaxLogFormatLength = 1024;
 constexpr unsigned int MaxLogLineContentLength = (LogLineLength - MaxLogFormatLength);
 
 static std::map<LogLevel, std::string> s_LogLevelName = {
-    { LogLevel::Ignore, "IGNORE"},
-    { LogLevel::Debug, "DEBUG"},
-    { LogLevel::Info, "INFO"},
-    { LogLevel::Warning, "WARNING"},
-    { LogLevel::Error, "ERROR"},
-    { LogLevel::Critical, "CRITICAL"},
-    { LogLevel::Emergency, "EMERGENCY"},
+    {LogLevel::Ignore, "IGNORE"}, {LogLevel::Debug, "DEBUG"},       {LogLevel::Info, "INFO"},           {LogLevel::Warning, "WARNING"},
+    {LogLevel::Error, "ERROR"},   {LogLevel::Critical, "CRITICAL"}, {LogLevel::Emergency, "EMERGENCY"},
 };
 
 thread_local char t_LogBuffer[LogLineLength];
 
-Logger::Logger()
-    :ThreadBase("Logger"), processName_(""), createLogFileTime_(), logData_(nullptr)
-{
-}
-Logger::~Logger()
-{
-
-}
+Logger::Logger() : ThreadBase("Logger"), processName_(""), createLogFileTime_(), logData_(nullptr) {}
+Logger::~Logger() {}
 
 Logger& Logger::GetInstance()
 {
@@ -148,7 +136,8 @@ void Logger::Run()
             {
                 // 运行期换日志文件失败：此时让进程退出造成的损失大于"暂时无日志文件"，
                 // 记 ERROR 继续跑（控制台仍可见），下个跨日或下次重启会重试
-                WriteLog(LogLevel::Error, "Logger: reopen log file for the new day failed, log will not be written to file until a later reopen succeeds.");
+                WriteLog(LogLevel::Error,
+                         "Logger: reopen log file for the new day failed, log will not be written to file until a later reopen succeeds.");
             }
         }
     }
@@ -219,12 +208,16 @@ void Logger::WriteToLog(LogLevel level, const char* file, int line, const char* 
     for (auto p = file; *p != '\0'; p++)
         if (*p == '\\' || *p == '/')
             file = p + 1;
-    unsigned len1 = std::format_to_n(t_LogBuffer, MaxLogFormatLength, "{} {} {} ", TimeUtility::GetLocalDateTimeWithMilliSecond(), GetCurrentThreadId(), s_LogLevelName[level]).out - t_LogBuffer;
+    unsigned len1 = std::format_to_n(t_LogBuffer, MaxLogFormatLength, "{} {} {} ", TimeUtility::GetLocalDateTimeWithMilliSecond(),
+                                     GetCurrentThreadId(), s_LogLevelName[level])
+                        .out -
+                    t_LogBuffer;
     // vsnprintf 返回的是"本该写入"的长度（负数表示编码错误），内容被截断时该值不会随之变小，
     // 不收敛到可写区间会让下一行计算剩余空间 LogLineLength - len1 - len2 - 1 发生无符号回绕
     int formattedContentLength = vsnprintf(t_LogBuffer + len1, MaxLogLineContentLength, format, va);
     unsigned len2 = static_cast<unsigned>(std::clamp(formattedContentLength, 0, static_cast<int>(MaxLogLineContentLength) - 1));
-    unsigned len3 = std::format_to_n(t_LogBuffer + len1 + len2, LogLineLength - len1 - len2 - 1, "\t\t---{}:{}[{}]\n", file, line, func).out - (t_LogBuffer + len1 + len2);
+    unsigned len3 = std::format_to_n(t_LogBuffer + len1 + len2, LogLineLength - len1 - len2 - 1, "\t\t---{}:{}[{}]\n", file, line, func).out -
+                    (t_LogBuffer + len1 + len2);
     unsigned len = len1 + len2 + len3;
     std::lock_guard<std::mutex> guard(logData_->Mutex);
     if (logData_->CurrBuffer->GetWriteBufferSize() < len)
@@ -262,7 +255,8 @@ void Logger::CreateLogFile()
         fprintf(stderr, "Logger: open log file failed. Path:%s\n", fileName);
     }
 }
-static int64_t GetCurrentThreadIdSysCall() noexcept {
+static int64_t GetCurrentThreadIdSysCall() noexcept
+{
 #ifdef _WIN32
     // Windows: 直接调用API
     return static_cast<int64_t>(::GetCurrentThreadId());
@@ -278,5 +272,3 @@ long long Logger::GetCurrentThreadId()
     return tid;
 }
 }
-
-

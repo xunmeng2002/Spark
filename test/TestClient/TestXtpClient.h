@@ -23,8 +23,4 @@ public:
     Spark::Packages::ReqInsertOrderPackage* reqInsertOrder_;
 };
 
-
-
 void TestXtpClient();
-
-

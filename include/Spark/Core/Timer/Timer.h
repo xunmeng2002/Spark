@@ -2,7 +2,6 @@
 #include <Spark/Core/CoreExport.h>
 #include <chrono>
 
-
 namespace Spark::Core
 {
 class CORE_EXPORTS Timer

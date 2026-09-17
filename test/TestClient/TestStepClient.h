@@ -3,7 +3,6 @@
 #include <Spark/Network/Protocol/Protocol.h>
 #include <chrono>
 
-
 class StepClient : public Spark::Network::Protocol, public Spark::Network::ProtocolSubscriber
 {
 public:
@@ -24,8 +23,4 @@ public:
     Spark::Packages::ReqInsertOrderPackage* reqInsertOrder_;
 };
 
-
-
 void TestStepClient();
-
-

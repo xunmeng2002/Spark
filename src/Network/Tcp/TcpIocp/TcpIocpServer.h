@@ -18,4 +18,3 @@ protected:
 };
 }
 #endif // _WIN32
-

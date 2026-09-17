@@ -16,7 +16,7 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 ShmBase::ShmBase(ServerTypeType serverType, const char* shmName, int milliSeconds)
-    :IoBase(serverType, shmName, milliSeconds), commonShmHeader_(nullptr), shmAddr_(nullptr)
+    : IoBase(serverType, shmName, milliSeconds), commonShmHeader_(nullptr), shmAddr_(nullptr)
 {
 #ifdef _WIN32
     file_ = nullptr;
@@ -179,13 +179,13 @@ void ShmBase::DoRecv(Connect* connect)
         buffer->Deallocate();
 }
 
-
 bool ShmBase::WindowsInit()
 {
 #ifdef _WIN32
     if (serverType_ == ServerTypeType::Server)
     {
-        file_ = CreateFileA(shmName_.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+        file_ = CreateFileA(shmName_.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_NEW,
+                            FILE_ATTRIBUTE_NORMAL, NULL);
         if (file_ == INVALID_HANDLE_VALUE)
         {
             WriteLog(LogLevel::Warning, "CreateFileA Failed. ErrNo:%d", GetLastError());
@@ -243,4 +243,3 @@ bool ShmBase::LinuxInit()
     return true;
 }
 }
-

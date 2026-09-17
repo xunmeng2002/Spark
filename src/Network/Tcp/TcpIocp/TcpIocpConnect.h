@@ -9,15 +9,15 @@ namespace Spark::Network
 {
 enum class IocpEvent : int
 {
-    EventNone = 0,          //请求连接
-    EventConnect = 1,           //请求连接
-    EventDisConnect = 2,        //请求断开连接
-    EventAccept = 3,            //请求接受连接
-    EventOnConnected = 4,       //已连接
-    EventOnDisConnected = 5,    //已断开连接
-    EventOnAccept = 6,          //已接受连接
-    EventSend = 7,              //请求发送
-    EventRecv = 8,              //请求接收
+    EventNone = 0,           //请求连接
+    EventConnect = 1,        //请求连接
+    EventDisConnect = 2,     //请求断开连接
+    EventAccept = 3,         //请求接受连接
+    EventOnConnected = 4,    //已连接
+    EventOnDisConnected = 5, //已断开连接
+    EventOnAccept = 6,       //已接受连接
+    EventSend = 7,           //请求发送
+    EventRecv = 8,           //请求接收
 };
 
 class TcpIocpConnect : public TcpConnect
@@ -41,7 +41,6 @@ public:
     void SetBuffer(Buffer<BuffSize>* buffer);
     void Shift(unsigned int len);
     void Reset();
-    
 
     IocpEvent EventId;
     WSABUF WsaBuffer;
@@ -50,5 +49,3 @@ public:
 };
 }
 #endif // _WIN32
-
-

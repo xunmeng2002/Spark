@@ -1,7 +1,6 @@
 #pragma once
 #include <Spark/Core/CoreExport.h>
 
-
 namespace Spark::Core
 {
 class CORE_EXPORTS AspectLogger
@@ -11,4 +10,3 @@ public:
     void After(const char* funcName);
 };
 }
-

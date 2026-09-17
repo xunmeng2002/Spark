@@ -6,13 +6,8 @@ using namespace std;
 
 namespace Spark::Network
 {
-ShmServer::ShmServer(const char* shmName, int milliSeconds)
-    :ShmBase(ServerTypeType::Server, shmName, milliSeconds), connectCount_(0)
-{
-}
-ShmServer::~ShmServer()
-{
-}
+ShmServer::ShmServer(const char* shmName, int milliSeconds) : ShmBase(ServerTypeType::Server, shmName, milliSeconds), connectCount_(0) {}
+ShmServer::~ShmServer() {}
 void ShmServer::Accept()
 {
     switch (commonShmHeader_->Status)
@@ -34,7 +29,8 @@ void ShmServer::Accept()
                     auto shmHeader = commonShmHeader_ + i;
                     if (shmHeader->Status == ConnectStatusType::UnConnected)
                     {
-                        ShmConnect<ShmBuffSize>* shmConnect = ShmConnect<ShmBuffSize>::Allocate(GetSessionId(), address_.c_str(), i, serverType_, shmAddr_, ConnectStatusType::Accepted);
+                        ShmConnect<ShmBuffSize>* shmConnect = ShmConnect<ShmBuffSize>::Allocate(GetSessionId(), address_.c_str(), i, serverType_,
+                                                                                                shmAddr_, ConnectStatusType::Accepted);
                         AddConnect(shmConnect);
 
                         commonShmHeader_->Status = ConnectStatusType::Accepted;
@@ -81,7 +77,7 @@ void ShmServer::Accept()
             }
         }
     }
-        break;
+    break;
     case ConnectStatusType::Connected:
     case ConnectStatusType::DisConnected:
         break;

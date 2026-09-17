@@ -10,9 +10,8 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 TcpIocpServer::TcpIocpServer(const char* addressName, int milliSeconds, int backlog)
-    :TcpIocpBase(ServerTypeType::Server, addressName, milliSeconds, backlog)
+    : TcpIocpBase(ServerTypeType::Server, addressName, milliSeconds, backlog)
 {
-
 }
 bool TcpIocpServer::Init()
 {
@@ -52,11 +51,13 @@ bool TcpIocpServer::PostAccept()
 
     WriteLog(LogLevel::Info, "PostAccept SessionId:%lld, Socket:%lld", tcpIocpConnect->SessionId, tcpIocpConnect->SocketId);
     DWORD transBytes = 0;
-    auto ret = SocketApi::GetInstance().AcceptEx(socket_, tcpIocpConnect->SocketId, overlapped->WsaBuffer.buf, 0, (sizeof(SOCKADDR_IN) + 16), (sizeof(SOCKADDR_IN) + 16), &transBytes, overlapped);
+    auto ret = SocketApi::GetInstance().AcceptEx(socket_, tcpIocpConnect->SocketId, overlapped->WsaBuffer.buf, 0, (sizeof(SOCKADDR_IN) + 16),
+                                                 (sizeof(SOCKADDR_IN) + 16), &transBytes, overlapped);
     auto lastError = WSAGetLastError();
     if (ret != 0 && lastError != ERROR_IO_PENDING)
     {
-        WriteLog(LogLevel::Error, "Call AcceptEx Failed. SessionId:%lld, Socket:%lld, Errno:%d", tcpIocpConnect->SessionId, tcpIocpConnect->SocketId, lastError);
+        WriteLog(LogLevel::Error, "Call AcceptEx Failed. SessionId:%lld, Socket:%lld, Errno:%d", tcpIocpConnect->SessionId, tcpIocpConnect->SocketId,
+                 lastError);
         return false;
     }
     return true;
@@ -67,12 +68,13 @@ void TcpIocpServer::OnAcceptComplete(MyOverlapped* overlapped)
     SOCKADDR_IN* remoteAddr = NULL;
     SOCKADDR_IN* localAddr = NULL;
     int remoteLen = sizeof(SOCKADDR_IN), localLen = sizeof(SOCKADDR_IN);
-    SocketApi::GetInstance().GetAcceptExSockAddrs(overlapped->WsaBuffer.buf, 0,
-        (sizeof(SOCKADDR_IN) + 16), (sizeof(SOCKADDR_IN) + 16), (LPSOCKADDR*)&localAddr, &localLen, (LPSOCKADDR*)&remoteAddr, &remoteLen);
+    SocketApi::GetInstance().GetAcceptExSockAddrs(overlapped->WsaBuffer.buf, 0, (sizeof(SOCKADDR_IN) + 16), (sizeof(SOCKADDR_IN) + 16),
+                                                  (LPSOCKADDR*)&localAddr, &localLen, (LPSOCKADDR*)&remoteAddr, &remoteLen);
     snprintf(tcpIocpConnect->RemoteAddress, sizeof(tcpIocpConnect->RemoteAddress), inet_ntoa(remoteAddr->sin_addr));
     tcpIocpConnect->RemotePort = ntohs(remoteAddr->sin_port);
 
-    WriteLog(LogLevel::Info, "AcceptComplete: From <%s:%d>, SessionId:%lld, Socket:%lld", tcpIocpConnect->RemoteAddress, tcpIocpConnect->RemotePort, tcpIocpConnect->SessionId, tcpIocpConnect->SocketId);
+    WriteLog(LogLevel::Info, "AcceptComplete: From <%s:%d>, SessionId:%lld, Socket:%lld", tcpIocpConnect->RemoteAddress, tcpIocpConnect->RemotePort,
+             tcpIocpConnect->SessionId, tcpIocpConnect->SocketId);
 
     AddConnect(tcpIocpConnect);
     PostRecv(overlapped);

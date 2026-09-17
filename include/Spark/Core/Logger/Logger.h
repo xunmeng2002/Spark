@@ -7,7 +7,6 @@
 #include <mutex>
 #include <condition_variable>
 
-
 namespace Spark::Core
 {
 enum class LogLevel : int
@@ -41,7 +40,6 @@ public:
     void SetLogLevel(LogLevel logLevel = LogLevel::Info, LogLevel logLevelConsole = LogLevel::Warning);
     static void SetExternLogger(WriteLogFunc externLogger);
 
-
 protected:
     virtual void ThreadInit() override;
     virtual void ThreadExit() override;
@@ -63,9 +61,8 @@ private:
     LogData* logData_;
 };
 
-
-#define WriteLog(level, formatStr, ...)\
-    if (Spark::Core::Logger::GetWriteLogFunc() != nullptr)\
+#define WriteLog(level, formatStr, ...)                                                                                                              \
+    if (Spark::Core::Logger::GetWriteLogFunc() != nullptr)                                                                                           \
         Spark::Core::Logger::GetWriteLogFunc()(level, __FILE__, __LINE__, __func__, formatStr, ##__VA_ARGS__);
 
 

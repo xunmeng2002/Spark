@@ -10,8 +10,6 @@
 #include <unistd.h>
 #endif // __linux__
 
-
-
 namespace Spark::Core
 {
 bool Dir::IsDir(const char* path)
@@ -35,4 +33,3 @@ bool Dir::Create(const char* path, int mode)
 #endif
 }
 }
-

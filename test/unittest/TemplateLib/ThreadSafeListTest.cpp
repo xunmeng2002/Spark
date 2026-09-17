@@ -89,7 +89,8 @@ TEST(ThreadSafeListTest, SingleProducerSingleConsumer)
 
     std::vector<int> results;
 
-    std::thread producer([&]()
+    std::thread producer(
+        [&]()
         {
             for (int i = 0; i < kItemCount; ++i)
             {
@@ -97,7 +98,8 @@ TEST(ThreadSafeListTest, SingleProducerSingleConsumer)
             }
         });
 
-    std::thread consumer([&]()
+    std::thread consumer(
+        [&]()
         {
             for (int i = 0; i < kItemCount; ++i)
             {
@@ -132,7 +134,8 @@ TEST(ThreadSafeListTest, MultiProducerSingleConsumer)
     std::vector<std::thread> producers;
     for (int t = 0; t < kProducers; ++t)
     {
-        producers.emplace_back([&, t]()
+        producers.emplace_back(
+            [&, t]()
             {
                 int start = t * kItemsPerProducer;
                 for (int i = 0; i < kItemsPerProducer; ++i)
@@ -143,7 +146,8 @@ TEST(ThreadSafeListTest, MultiProducerSingleConsumer)
     }
 
     std::vector<int> results;
-    std::thread consumer([&]()
+    std::thread consumer(
+        [&]()
         {
             for (int i = 0; i < kTotalItems; ++i)
             {

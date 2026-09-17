@@ -11,34 +11,22 @@ using namespace Spark::Core;
 
 namespace
 {
-    class TestTimer : public Timer
-    {
-    public:
-        using Timer::CheckTimer;
+class TestTimer : public Timer
+{
+public:
+    using Timer::CheckTimer;
 
-        int GetTimeInterval() const
-        {
-            return timeInterval_;
-        }
+    int GetTimeInterval() const { return timeInterval_; }
 
-        int GetEventCount() const
-        {
-            return eventCount_;
-        }
+    int GetEventCount() const { return eventCount_; }
 
-        int GetCurrentEventCount() const
-        {
-            return currentEventCount_;
-        }
+    int GetCurrentEventCount() const { return currentEventCount_; }
 
-        int OnTimerCallCount = 0;
+    int OnTimerCallCount = 0;
 
-    protected:
-        void OnTimer() override
-        {
-            ++OnTimerCallCount;
-        }
-    };
+protected:
+    void OnTimer() override { ++OnTimerCallCount; }
+};
 }
 
 // ---------- 默认构造 ----------
@@ -89,7 +77,7 @@ TEST(TimerTest, SetTimer_OneToOne)
 TEST(TimerTest, CheckTimer_NotFiredBeforeEventCount)
 {
     TestTimer timer;
-    timer.SetTimer(1000, 100);  // eventCount=10
+    timer.SetTimer(1000, 100); // eventCount=10
 
     // 轮询次数未超过 eventCount 时不应触发
     for (int i = 0; i < 10; ++i)
@@ -102,7 +90,7 @@ TEST(TimerTest, CheckTimer_NotFiredBeforeEventCount)
 TEST(TimerTest, CheckTimer_FiresAfterElapsedTime)
 {
     TestTimer timer;
-    timer.SetTimer(50, 10);  // interval=50ms, eventCount=5
+    timer.SetTimer(50, 10); // interval=50ms, eventCount=5
 
     // 轮询次数超过 eventCount（>5）+ 等待时间超过 interval（50ms）
     // 先等足够时间
@@ -122,7 +110,7 @@ TEST(TimerTest, CheckTimer_FiresAfterElapsedTime)
 TEST(TimerTest, CheckTimer_MultipleFires)
 {
     TestTimer timer;
-    timer.SetTimer(30, 5);  // interval=30ms, eventCount=6
+    timer.SetTimer(30, 5); // interval=30ms, eventCount=6
 
     // 第一次触发
     std::this_thread::sleep_for(std::chrono::milliseconds(40));
@@ -146,7 +134,7 @@ TEST(TimerTest, CheckTimer_MultipleFires)
 TEST(TimerTest, CheckTimer_DoesNotFireIfTimeNotElapsed)
 {
     TestTimer timer;
-    timer.SetTimer(10000, 50);  // interval=10s, eventCount=200
+    timer.SetTimer(10000, 50); // interval=10s, eventCount=200
 
     // 轮询次数超过 eventCount，但时间没到
     for (int i = 0; i < 250; ++i)
@@ -163,7 +151,7 @@ TEST(TimerTest, CheckTimer_DoesNotFireIfTimeNotElapsed)
 TEST(TimerTest, CheckTimer_ResetsCounterAfterFire)
 {
     TestTimer timer;
-    timer.SetTimer(30, 10);  // interval=30ms, eventCount=3
+    timer.SetTimer(30, 10); // interval=30ms, eventCount=3
 
     std::this_thread::sleep_for(std::chrono::milliseconds(40));
     for (int i = 0; i < 10; ++i)

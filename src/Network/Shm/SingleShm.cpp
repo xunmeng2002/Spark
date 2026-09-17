@@ -18,8 +18,7 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 SingleShm::SingleShm(ServerTypeType shmType, const char* shmName)
-    :IoBase(shmType, shmName, 0), shmName_(shmName), connected_(false), sessionId_(0LL),
-    shmAddr_(nullptr)
+    : IoBase(shmType, shmName, 0), shmName_(shmName), connected_(false), sessionId_(0LL), shmAddr_(nullptr)
 {
     shmBuffer_ = new ShmBuffer<ShmBuffSize>();
 #ifdef _WIN32
@@ -71,7 +70,8 @@ bool SingleShm::Init()
 {
     bool firstOpen = true;
 #ifdef _WIN32
-    file_ = CreateFileA(shmName_.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+    file_ = CreateFileA(shmName_.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL,
+                        NULL);
     if (file_ == INVALID_HANDLE_VALUE)
     {
         firstOpen = false;
@@ -173,10 +173,7 @@ void SingleShm::CheckConnectStatus()
         ioSubscriber_->OnDisConnect(sessionId_, shmName_.c_str(), 0);
     }
 }
-void SingleShm::CheckEvent()
-{
-
-}
+void SingleShm::CheckEvent() {}
 void SingleShm::HandleEvent()
 {
     if (connected_)

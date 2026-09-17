@@ -35,15 +35,15 @@ static_assert(sizeof(HeadField) == 16, "HeadField 布局变化会改变线上格
 static_assert(sizeof(TailField) == 4, "TailField 布局变化会改变线上格式");
 static_assert(FixedFrameOverhead == 20, "单帧固定开销必须是 20 字节");
 //字段偏移与字段宽度同样是线上格式：整块 memcpy 时，重排或改宽都不会被总长断言发现
-static_assert(offsetof(HeadField, Magic) == 0 && offsetof(HeadField, MsgSeqNum) == 4
-    && offsetof(HeadField, PackageId) == 8 && offsetof(HeadField, BodyLen) == 10
-    && offsetof(HeadField, Version) == 12 && offsetof(HeadField, MessageChain) == 14
-    && offsetof(HeadField, Reserved) == 15, "HeadField 字段偏移变化会改变线上格式，必须同步升级 ProtocolVersionValue");
+static_assert(offsetof(HeadField, Magic) == 0 && offsetof(HeadField, MsgSeqNum) == 4 && offsetof(HeadField, PackageId) == 8 &&
+                  offsetof(HeadField, BodyLen) == 10 && offsetof(HeadField, Version) == 12 && offsetof(HeadField, MessageChain) == 14 &&
+                  offsetof(HeadField, Reserved) == 15,
+              "HeadField 字段偏移变化会改变线上格式，必须同步升级 ProtocolVersionValue");
 static_assert(offsetof(TailField, CheckSum) == 0, "TailField 字段偏移变化会改变线上格式");
 //这两个字段是计数器与校验和，无符号是它们的语义而不是实现细节。改回有符号会让 Step 协议里的
 //8 位十六进制写法产生补码歧义（FFFFFFFF 究竟读成 -1 还是 4294967295），故在此钉死
 static_assert(std::is_same<UInt32Type, decltype(HeadField::MsgSeqNum)>::value && std::is_same<UInt32Type, decltype(TailField::CheckSum)>::value,
-    "MsgSeqNum 与 CheckSum 必须是无符号的 UInt32Type");
+              "MsgSeqNum 与 CheckSum 必须是无符号的 UInt32Type");
 //StepUtility::TailToStream 把 CheckSum 直接交给 snprintf 的 "%08X"，变参不参与编译期类型检查，
 //宽度与符号全靠"UInt32Type 就是 unsigned int"这一点，故在此钉住
 static_assert(std::is_same<UInt32Type, unsigned int>::value, "TailToStream 的 %08X 依赖 UInt32Type 就是 unsigned int");
@@ -51,9 +51,9 @@ static_assert(MaxFrameBodyLen <= std::numeric_limits<UInt16Type>::max(), "包体
 static_assert(std::endian::native == std::endian::little, "线协议依赖小端字节序");
 
 static_assert(ProtocolMagicValue != 0, "魔术字不能为 0，否则无法与全零缓冲区分");
-static_assert(ProtocolMagicText[0] == static_cast<char>(ProtocolMagicValue & 0xFF)
-    && ProtocolMagicText[1] == static_cast<char>((ProtocolMagicValue >> 8) & 0xFF)
-    && ProtocolMagicText[2] == static_cast<char>((ProtocolMagicValue >> 16) & 0xFF)
-    && ProtocolMagicText[3] == static_cast<char>((ProtocolMagicValue >> 24) & 0xFF),
-    "ProtocolMagicText 必须与 ProtocolMagicValue 的字节镜像一致");
+static_assert(ProtocolMagicText[0] == static_cast<char>(ProtocolMagicValue & 0xFF) &&
+                  ProtocolMagicText[1] == static_cast<char>((ProtocolMagicValue >> 8) & 0xFF) &&
+                  ProtocolMagicText[2] == static_cast<char>((ProtocolMagicValue >> 16) & 0xFF) &&
+                  ProtocolMagicText[3] == static_cast<char>((ProtocolMagicValue >> 24) & 0xFF),
+              "ProtocolMagicText 必须与 ProtocolMagicValue 的字节镜像一致");
 }

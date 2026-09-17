@@ -13,4 +13,3 @@
 #include <Spark/Network/Protocol/ProtocolSubscriber.h>
 #include <Spark/Network/Protocol/ProtocolUtility.h>
 #include <Spark/Network/Protocol/StepUtility.h>
-

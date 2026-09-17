@@ -3,16 +3,10 @@
 #include "Tcp/TcpUtility.h"
 #include <string.h>
 
-
 namespace Spark::Network
 {
-TcpEpollServer::TcpEpollServer(const char* addressName, int milliSeconds)
-    :TcpEpollBase(ServerTypeType::Server, addressName, milliSeconds)
-{
-}
-TcpEpollServer::~TcpEpollServer()
-{
-}
+TcpEpollServer::TcpEpollServer(const char* addressName, int milliSeconds) : TcpEpollBase(ServerTypeType::Server, addressName, milliSeconds) {}
+TcpEpollServer::~TcpEpollServer() {}
 bool TcpEpollServer::Init()
 {
     if (!TcpEpollBase::Init())
@@ -24,5 +18,3 @@ bool TcpEpollServer::Init()
     return true;
 }
 }
-
-

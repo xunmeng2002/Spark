@@ -4,7 +4,6 @@
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Network/Network.h>
 
-
 using namespace Spark::Core;
 using namespace Spark::Network;
 
@@ -24,4 +23,3 @@ void TestShmServer()
     ioThread->Join();
     delete io;
 }
-

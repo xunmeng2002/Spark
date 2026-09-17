@@ -13,8 +13,6 @@ public:
     ClientIoSubscriberImpl(IoBase* io, IoThread* ioThread);
     ~ClientIoSubscriberImpl();
 
-
-
     virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) override;
     virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) override;
     virtual void OnRecv(SessionIdType sessionId, Spark::Buffer<Spark::BuffSize>* buffer) override;

@@ -16,8 +16,7 @@ using namespace Spark::Core;
 
 namespace Spark::Network
 {
-Sem::Sem(const char* name, ServerTypeType serverType, unsigned timeOutMilliSecond)
-    :semName_(name), serverType_(serverType), sem_(nullptr)
+Sem::Sem(const char* name, ServerTypeType serverType, unsigned timeOutMilliSecond) : semName_(name), serverType_(serverType), sem_(nullptr)
 {
     timeOutMilliSecond_ = timeOutMilliSecond;
 }
@@ -52,7 +51,7 @@ bool Sem::Lock()
 #ifdef _WIN32
     return WaitForSingleObject(sem_, timeOutMilliSecond_) == WAIT_OBJECT_0;
 #endif
-    
+
 #ifdef __linux__
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);
@@ -105,7 +104,6 @@ bool Sem::WindowsInit()
 #else
     return false;
 #endif
-    
 }
 bool Sem::LinuxInit()
 {

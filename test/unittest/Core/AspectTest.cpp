@@ -17,13 +17,10 @@ using namespace Spark::Core;
 
 namespace
 {
-    // 测试辅助切面：记录 Before/After 调用轨迹
-    struct CallTracer
-    {
-        void Before(const char* funcName)
-        {
-            calls.push_back(std::string(funcName) + "_Before");
-        }
+// 测试辅助切面：记录 Before/After 调用轨迹
+struct CallTracer
+{
+    void Before(const char* funcName) { calls.push_back(std::string(funcName) + "_Before"); }
 
         void After(const char* funcName)
         {

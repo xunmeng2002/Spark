@@ -11,14 +11,14 @@ using namespace Spark::Network;
 
 namespace
 {
-    // 辅助常量
-    constexpr const char* TestIP = "127.0.0.1";
+// 辅助常量
+constexpr const char* TestIP = "127.0.0.1";
 
-    // 构建一个只测试缓冲管理的 PackageReader
-    PackageReader MakeReader()
-    {
-        return PackageReader(ProtocolTypeType::Step, nullptr, 0, TestIP);
-    }
+// 构建一个只测试缓冲管理的 PackageReader
+PackageReader MakeReader()
+{
+    return PackageReader(ProtocolTypeType::Step, nullptr, 0, TestIP);
+}
 }
 
 TEST(PackageReaderTest, InitialState)
@@ -45,8 +45,7 @@ TEST(PackageReaderTest, AppendAndReadData)
     PackageReader reader = MakeReader();
     const char testData[] = "Hello, PackageReader!";
 
-    unsigned int appended = reader.Append(const_cast<char*>(testData),
-                                           (unsigned int)strlen(testData));
+    unsigned int appended = reader.Append(const_cast<char*>(testData), (unsigned int)strlen(testData));
     EXPECT_EQ(appended, strlen(testData));
     EXPECT_EQ(reader.Length(), (int)strlen(testData));
 
@@ -76,9 +75,9 @@ TEST(PackageReaderTest, PopFrontRemovesData)
     const char testData[] = "HelloWorld";
     reader.Append(const_cast<char*>(testData), (unsigned int)strlen(testData));
 
-    reader.PopFront(5);  // remove "Hello"
+    reader.PopFront(5); // remove "Hello"
     EXPECT_EQ(reader.Length(), 5);
-    EXPECT_EQ(memcmp(reader.Data(), "World", 5), 0);  // "World" remains
+    EXPECT_EQ(memcmp(reader.Data(), "World", 5), 0); // "World" remains
 }
 
 TEST(PackageReaderTest, PopFrontClampsToLength)
@@ -114,7 +113,7 @@ TEST(PackageReaderTest, PopFrontMovesDataToBufferStart)
     reader.Append(const_cast<char*>(data1), (unsigned int)strlen(data1));
     EXPECT_EQ(reader.Data(), reader.Tail() - reader.Length());
 
-    reader.PopFront(2);  // remove "AB" → "CDE" moved to start
+    reader.PopFront(2); // remove "AB" → "CDE" moved to start
     EXPECT_EQ(memcmp(reader.Data(), "CDE", 3), 0);
 
     reader.Append(const_cast<char*>(data2), (unsigned int)strlen(data2));
@@ -142,8 +141,7 @@ TEST(PackageReaderTest, AppendClampsToTailSize)
     // 大量追加，验证不会超过尾端容量
     unsigned int tailSize = reader.TailSize();
     std::string bigData(tailSize + 100, 'X');
-    unsigned int appended = reader.Append(const_cast<char*>(bigData.data()),
-                                           (unsigned int)bigData.size());
+    unsigned int appended = reader.Append(const_cast<char*>(bigData.data()), (unsigned int)bigData.size());
     // 应该被 clamp 到 tailSize
     EXPECT_EQ(appended, tailSize);
     EXPECT_EQ(reader.Length(), (int)tailSize);
@@ -169,15 +167,14 @@ TEST(PackageReaderTest, MultiplePopFrontAndVerifyData)
 
     // 多轮追加 → 弹出 → 验证数据完整性
     const char* expected = "HelloReaderTest";
-    reader.Append(const_cast<char*>(expected),
-                   (unsigned int)strlen(expected));
+    reader.Append(const_cast<char*>(expected), (unsigned int)strlen(expected));
 
-    reader.PopFront(5);   // remove "Hello"
+    reader.PopFront(5); // remove "Hello"
     EXPECT_EQ(memcmp(reader.Data(), "ReaderTest", 10), 0);
 
-    reader.PopFront(6);   // remove "Reader"
+    reader.PopFront(6); // remove "Reader"
     EXPECT_EQ(memcmp(reader.Data(), "Test", 4), 0);
 
-    reader.PopFront(4);   // remove "Test"
+    reader.PopFront(4); // remove "Test"
     EXPECT_EQ(reader.Length(), 0);
 }

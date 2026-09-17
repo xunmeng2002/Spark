@@ -12,16 +12,13 @@
 #include <system_error>
 #include <type_traits>
 
-
 //协议里所有键都固定 4 位大写十六进制，后跟 '='。键宽是线上格式的一部分，读写两侧都取这个值
 constexpr int StepKeyTextLen = 4;
 //包头由定宽字段拼成，长度与取值无关，故为编译期常量。每一段都用 StepKeyTextLen 表达，这样键宽一变
 //下面那条 static_assert 就会立刻报红，而不是留下"写侧发 4 位键、读侧找 5 位键"的静默错位。
 //锚点 1+4+1+4+1=11、Version/PackageId/BodyLen 各 4+1+4+1=10、MsgSeqNum 4+1+8+1=14、MessageChain 4+1+1+1=7
-constexpr unsigned int StepHeadLen = (1u + StepKeyTextLen + 1u + 4u + 1u)
-    + (StepKeyTextLen + 1u + 4u + 1u) * 3u
-    + (StepKeyTextLen + 1u + 8u + 1u)
-    + (StepKeyTextLen + 1u + 1u + 1u);
+constexpr unsigned int StepHeadLen =
+    (1u + StepKeyTextLen + 1u + 4u + 1u) + (StepKeyTextLen + 1u + 4u + 1u) * 3u + (StepKeyTextLen + 1u + 8u + 1u) + (StepKeyTextLen + 1u + 1u + 1u);
 //报尾固定为 "0005=" + CRC32C 的 8 位十六进制 + SOH
 constexpr unsigned int StepTailLen = StepKeyTextLen + 1u + 8u + 1u;
 //单侧缓冲区还没收满这么多字节就无法判定包头，读者据此决定"继续等数据"而不是"判定非法"。
@@ -46,8 +43,7 @@ public:
     int GetWrittenLength() const;
     bool IsTruncated() const;
 
-    template<typename... FieldValues>
-    bool AppendField(std::format_string<FieldValues...> fieldFormat, FieldValues&&... fieldValues)
+    template <typename... FieldValues> bool AppendField(std::format_string<FieldValues...> fieldFormat, FieldValues&&... fieldValues)
     {
         if (isTruncated_)
         {
@@ -60,8 +56,8 @@ public:
             return false;
         }
         const int writableLength = remainingLength - 1;
-        auto result = std::format_to_n(GetWritePosition(), static_cast<std::size_t>(writableLength), fieldFormat,
-            std::forward<FieldValues>(fieldValues)...);
+        auto result =
+            std::format_to_n(GetWritePosition(), static_cast<std::size_t>(writableLength), fieldFormat, std::forward<FieldValues>(fieldValues)...);
         if (result.size > static_cast<std::ptrdiff_t>(writableLength))
         {
             isTruncated_ = true;
@@ -111,8 +107,7 @@ public:
 
     //文本转整型：格式非法或越界都返回 false。窄类型直接 atoi 会静默截断，所以必须走这里。
     //base 给 16 时 from_chars 对无符号目标会拒绝 '-'，越界则报 result_out_of_range，无需再手写上界
-    template<typename T>
-    static bool ParseInteger(const std::string& text, T& value, int base = 10)
+    template <typename T> static bool ParseInteger(const std::string& text, T& value, int base = 10)
     {
         static_assert(std::is_integral<T>::value, "ParseInteger 只接受整型");
         if (text.empty())
@@ -130,15 +125,13 @@ public:
         value = parsed;
         return true;
     }
-    template<typename T>
-    static void WriteString(StepWriteCursor& cursor, UInt16Type key, T value)
+    template <typename T> static void WriteString(StepWriteCursor& cursor, UInt16Type key, T value)
     {
         static_assert(std::is_same<T, const char*>::value || std::is_same<T, char*>::value,
-            "WriteString 只覆盖 Types.h 调色板里的类型与字符串指针；裸 long / size_t 请先转成对应别名");
+                      "WriteString 只覆盖 Types.h 调色板里的类型与字符串指针；裸 long / size_t 请先转成对应别名");
         cursor.AppendField("{:04X}={:s}", key, value);
     }
     static void WriteHexString(StepWriteCursor& cursor, UInt16Type key, UInt16Type value);
-
 
     //写入定长包头。成功返回 StepHeadLen，size 不足 StepHeadLen 或字段格式写漏都返回 0
     static int HeadToStream(HeadField* head, char* buff, int size);
@@ -147,6 +140,5 @@ public:
     //写入定长报尾。成功返回 StepTailLen，size 不足或格式化长度不符都返回 0
     static int TailToStream(TailField* tail, char* buff, int size);
     static bool TailFromStream(char* buff, int startIndex, int endIndex, TailField* tail);
-
 };
 }

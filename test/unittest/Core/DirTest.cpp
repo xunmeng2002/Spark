@@ -96,11 +96,7 @@ TEST(DirTest, Create_WithMode)
 
 TEST(DirTest, CreateAndVerifyMultipleDirs)
 {
-    const char* kDirs[] = {
-        "test_dir_a",
-        "test_dir_b",
-        "test_dir_c"
-    };
+    const char* kDirs[] = {"test_dir_a", "test_dir_b", "test_dir_c"};
 
     for (const char* dir : kDirs)
     {

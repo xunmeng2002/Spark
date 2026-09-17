@@ -16,15 +16,13 @@ using namespace Spark::Network;
 using namespace Spark::Packages;
 
 XtpClient::XtpClient()
-    :Protocol(ProtocolTypeType::Xtp, ServerTypeType::Client, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
+    : Protocol(ProtocolTypeType::Xtp, ServerTypeType::Client, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
 {
     reqInsertOrder_ = new ReqInsertOrderPackage();
     Subscribe(this);
     RegisterFront(TcpAddress);
 }
-XtpClient::~XtpClient()
-{
-}
+XtpClient::~XtpClient() {}
 void XtpClient::OnProtocolConnect(SessionIdType sessionId, const char* ip, int port)
 {
     WriteLog(LogLevel::Info, "XtpClient::OnConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
@@ -78,7 +76,6 @@ void XtpClient::SendReqInsertOrder(int index)
     reqInsertOrder_->Deallocate();
 }
 
-
 void TestXtpClient()
 {
     WriteLog(LogLevel::Info, "TestXtpClient");
@@ -91,4 +88,3 @@ void TestXtpClient()
     ioThread->Start();
     ioThread->Join();
 }
-

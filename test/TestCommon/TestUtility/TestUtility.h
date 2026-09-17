@@ -22,4 +22,5 @@ extern const char* ShmAddress;
 extern const char* TcpAddress;
 extern IoModelType IoModel;
 
-void PrintTimeCost(const char* name, std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> startTime, std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> endTime);
+void PrintTimeCost(const char* name, std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> startTime,
+                   std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> endTime);

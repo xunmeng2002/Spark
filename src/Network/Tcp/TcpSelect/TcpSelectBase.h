@@ -4,7 +4,6 @@
 #include <list>
 #include <map>
 
-
 namespace Spark::Network
 {
 class TcpSelectBase : public TcpBase

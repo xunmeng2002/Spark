@@ -5,7 +5,6 @@
 #include <Spark/Core/Logger/Logger.h>
 #include <string.h>
 
-
 using namespace Spark::Core;
 
 namespace Spark::Network
@@ -21,7 +20,8 @@ void FillProtocolHead(HeadField& head)
 }
 }
 
-Package::~Package() {
+Package::~Package()
+{
     SessionId = 0;
     memset(IpAddress, 0, sizeof(IpAddressType));
     memset(&Head, 0, sizeof(Head));
@@ -56,8 +56,8 @@ int Package::MakePackage(ProtocolTypeType protocolType, char* buff, int size)
         int bodyLen = ToXtpStream(data, bodyCapacity);
         if (bodyLen < 0 || bodyLen > bodyCapacity || bodyLen > static_cast<int>(MaxFrameBodyLen))
         {
-            WriteLog(LogLevel::Error, "Xtp Body Length Invalid. BodyLen:%d, BodyCapacity:%d, MaxFrameBodyLen:%u",
-                bodyLen, bodyCapacity, MaxFrameBodyLen);
+            WriteLog(LogLevel::Error, "Xtp Body Length Invalid. BodyLen:%d, BodyCapacity:%d, MaxFrameBodyLen:%u", bodyLen, bodyCapacity,
+                     MaxFrameBodyLen);
             return 0;
         }
         Head.BodyLen = static_cast<UInt16Type>(bodyLen);
@@ -80,8 +80,8 @@ int Package::MakePackage(ProtocolTypeType protocolType, char* buff, int size)
         int bodyLen = ToStepStream(buff + headLen, bodyCapacity);
         if (bodyLen < 0 || bodyLen > bodyCapacity || bodyLen > static_cast<int>(MaxFrameBodyLen))
         {
-            WriteLog(LogLevel::Error, "Step Body Length Invalid. BodyLen:%d, BodyCapacity:%d, MaxFrameBodyLen:%u",
-                bodyLen, bodyCapacity, MaxFrameBodyLen);
+            WriteLog(LogLevel::Error, "Step Body Length Invalid. BodyLen:%d, BodyCapacity:%d, MaxFrameBodyLen:%u", bodyLen, bodyCapacity,
+                     MaxFrameBodyLen);
             return 0;
         }
         Head.BodyLen = static_cast<UInt16Type>(bodyLen);

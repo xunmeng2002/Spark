@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 
-
 namespace Spark::Core
 {
 struct AA
@@ -19,7 +18,6 @@ struct CC
     void Before(const char* funcName) { std::cout << funcName << ": CC Before" << std::endl; }
     void After(const char* funcName) { std::cout << funcName << ": CC After" << std::endl; }
 };
-
 
 void CoreFunc();
 void TestAspect();

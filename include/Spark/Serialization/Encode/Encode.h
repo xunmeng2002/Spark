@@ -3,7 +3,6 @@
 #include <string>
 #include <cstring>
 
-
 // ============================================================================
 //  NOTE: wstring_convert / codecvt_utf8 / codecvt_byname are deprecated in
 //  C++17 and will be removed in C++26.  The deprecation warning is suppressed
@@ -21,18 +20,16 @@ std::string SERIALIZATION_EXPORTS UnicodeToUtf8(const std::wstring& str);
 std::string SERIALIZATION_EXPORTS GbkToUtf8(const std::string& str);
 std::string SERIALIZATION_EXPORTS Utf8ToGbk(const std::string& str);
 
-template <size_t N>
-void TrunsferUtf8ToGbk(char (&src)[N])
+template <size_t N> void TrunsferUtf8ToGbk(char (&src)[N])
 {
     std::string gbk = Utf8ToGbk(src);
     memset(src, 0, N);
-    memcpy(src, gbk.c_str(), (std::min)(gbk.length(), N-1));
+    memcpy(src, gbk.c_str(), (std::min)(gbk.length(), N - 1));
 }
-template <size_t N>
-void TrunsferGbkToUtf8(char (&src)[N])
+template <size_t N> void TrunsferGbkToUtf8(char (&src)[N])
 {
     std::string utf8 = GbkToUtf8(src);
     memset(src, 0, N);
-    memcpy(src, utf8.c_str(), (std::min)(utf8.length(), N-1));
+    memcpy(src, utf8.c_str(), (std::min)(utf8.length(), N - 1));
 }
 }

@@ -11,7 +11,7 @@ class TcpIocpBase : public TcpBase
 public:
     TcpIocpBase(ServerTypeType serverType, const char* addressName, int milliSeconds, int backlog = 5);
     ~TcpIocpBase();
-    
+
     virtual bool Init() override;
     virtual void Send(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
 
@@ -37,4 +37,3 @@ protected:
 };
 }
 #endif // _WIN32
-

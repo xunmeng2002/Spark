@@ -8,7 +8,7 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 ShmClient::ShmClient(const char* shmName, int milliSeconds)
-    :ShmBase(ServerTypeType::Client, shmName, milliSeconds), connected_(false), hasSendConnect_(false), shmConnect_(nullptr)
+    : ShmBase(ServerTypeType::Client, shmName, milliSeconds), connected_(false), hasSendConnect_(false), shmConnect_(nullptr)
 {
 }
 ShmClient::~ShmClient()
@@ -82,7 +82,6 @@ void ShmClient::HandleData()
     }
 }
 
-
 void ShmClient::SendConnect()
 {
     if (semConnect_->Lock())
@@ -108,7 +107,8 @@ void ShmClient::CheckConnectResult()
         if (commonShmHeader_->Status == ConnectStatusType::Accepted)
         {
             auto index = commonShmHeader_->DownWriteCount;
-            shmConnect_ = ShmConnect<ShmBuffSize>::Allocate(GetSessionId(), address_.c_str(), index, serverType_, shmAddr_, ConnectStatusType::Connected);
+            shmConnect_ =
+                ShmConnect<ShmBuffSize>::Allocate(GetSessionId(), address_.c_str(), index, serverType_, shmAddr_, ConnectStatusType::Connected);
             AddConnect(shmConnect_);
             connected_ = true;
             commonShmHeader_->Status = ConnectStatusType::UnConnected;

@@ -17,4 +17,3 @@ public:
     static double GetDoubleValue(const double& value);
 };
 }
-

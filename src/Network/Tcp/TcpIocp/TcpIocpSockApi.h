@@ -22,7 +22,6 @@ public:
     LPFN_CONNECTEX ConnectEx;
     LPFN_DISCONNECTEX DisconnectEx;
 
-
 private:
     static SocketApi instance_;
 };

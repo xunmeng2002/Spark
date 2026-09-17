@@ -125,7 +125,8 @@ TEST(LockFreeQueueTest, MultiThread_SingleProducerSingleConsumer)
     constexpr int kItemCount = 10000;
 
     // Producer
-    std::thread producer([&]()
+    std::thread producer(
+        [&]()
         {
             for (int i = 0; i < kItemCount; ++i)
             {
@@ -135,7 +136,8 @@ TEST(LockFreeQueueTest, MultiThread_SingleProducerSingleConsumer)
 
     // Consumer — 非阻塞 PopFront，需要不断轮询直到取完
     std::vector<int> results;
-    std::thread consumer([&]()
+    std::thread consumer(
+        [&]()
         {
             int received = 0;
             while (received < kItemCount)

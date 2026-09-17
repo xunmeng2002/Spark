@@ -13,11 +13,7 @@ static std::string EncodeToString(const std::string& input)
 {
     std::vector<unsigned char> output((input.length() + 2) / 3 * 4 + 1);
     int destLen = 0;
-    Base64Encode(
-        reinterpret_cast<const unsigned char*>(input.data()),
-        (int)input.length(),
-        output.data(),
-        destLen);
+    Base64Encode(reinterpret_cast<const unsigned char*>(input.data()), (int)input.length(), output.data(), destLen);
     return std::string(reinterpret_cast<const char*>(output.data()), destLen);
 }
 
@@ -26,11 +22,7 @@ static std::string DecodeToString(const std::string& input)
 {
     std::vector<unsigned char> output(input.length());
     int destLen = 0;
-    Base64Decode(
-        reinterpret_cast<const unsigned char*>(input.data()),
-        (int)input.length(),
-        output.data(),
-        destLen);
+    Base64Decode(reinterpret_cast<const unsigned char*>(input.data()), (int)input.length(), output.data(), destLen);
     return std::string(reinterpret_cast<const char*>(output.data()), destLen);
 }
 
@@ -124,7 +116,7 @@ TEST(Base64Test, RoundTrip_AllBytes)
 
 TEST(Base64Test, RoundTrip_Binary)
 {
-    unsigned char raw[] = { 0x00, 0xFF, 0x80, 0x7F, 0x55, 0xAA };
+    unsigned char raw[] = {0x00, 0xFF, 0x80, 0x7F, 0x55, 0xAA};
     std::string original(reinterpret_cast<const char*>(raw), sizeof(raw));
     auto encoded = EncodeToString(original);
     auto decoded = DecodeToString(encoded);

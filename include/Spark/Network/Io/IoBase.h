@@ -11,7 +11,6 @@
 #include <map>
 #include <condition_variable>
 
-
 namespace Spark::Network
 {
 class IoSubscriber
@@ -36,7 +35,7 @@ public:
     virtual void DisConnect(SessionIdType sessionId);
     virtual void DisConnectAll();
     virtual void Send(SessionIdType sessionId, Buffer<BuffSize>* buffer) = 0;
-    
+
     virtual void HandleIoEvent() = 0;
 
 protected:
@@ -66,4 +65,3 @@ protected:
     std::mutex mutex_;
 };
 }
-

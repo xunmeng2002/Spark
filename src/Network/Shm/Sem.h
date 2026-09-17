@@ -5,7 +5,6 @@
 #include <semaphore.h>
 #endif
 
-
 namespace Spark::Network
 {
 class Sem
@@ -32,4 +31,3 @@ private:
 #endif
 };
 }
-

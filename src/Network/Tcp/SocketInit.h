@@ -4,18 +4,18 @@
 #include <mutex>
 #ifdef _WIN32
 #include <Ws2tcpip.h>
-#pragma comment(lib,"ws2_32.lib")
+#pragma comment(lib, "ws2_32.lib")
 #endif // _WIN32
 #ifdef __linux__
 #include <arpa/inet.h>
 #include <netdb.h>
-#include<unistd.h>
+#include <unistd.h>
 #include <netinet/tcp.h>
 #include <sys/ioctl.h>
 
 typedef int SOCKET;
-#define INVALID_SOCKET  (SOCKET)(~0)
-#define SOCKET_ERROR            (-1)
+#define INVALID_SOCKET (SOCKET)(~0)
+#define SOCKET_ERROR (-1)
 
 #define closesocket close
 #endif // __linux__

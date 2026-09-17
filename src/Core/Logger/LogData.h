@@ -5,7 +5,6 @@
 #include <mutex>
 #include <condition_variable>
 
-
 namespace Spark::Core
 {
 struct LogData

@@ -12,9 +12,8 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 TcpIocpClient::TcpIocpClient(const char* addressName, int milliSeconds, int backlog)
-    :TcpIocpBase(ServerTypeType::Client, addressName, milliSeconds, backlog)
+    : TcpIocpBase(ServerTypeType::Client, addressName, milliSeconds, backlog)
 {
-
 }
 bool TcpIocpClient::Init()
 {
@@ -58,8 +57,8 @@ bool TcpIocpClient::PostConnect()
 
     WriteLog(LogLevel::Info, "PostConnect For SessionId:%lld, Socket:%lld", tcpIocpConnect->SessionId, tcpIocpConnect->SocketId);
     DWORD transBytes = 0;
-    auto ret = SocketApi::GetInstance().ConnectEx(tcpIocpConnect->SocketId, (const sockaddr*)addressInfo_->ai_addr, sizeof(SOCKADDR_IN),
-        NULL, 0, &transBytes, overlapped);
+    auto ret = SocketApi::GetInstance().ConnectEx(tcpIocpConnect->SocketId, (const sockaddr*)addressInfo_->ai_addr, sizeof(SOCKADDR_IN), NULL, 0,
+                                                  &transBytes, overlapped);
     if (!ret && WSAGetLastError() != ERROR_IO_PENDING)
     {
         WriteErrorLog(WSAGetLastError(), "Call ConnectEx Failed.");
@@ -78,7 +77,8 @@ void TcpIocpClient::OnConnectComplete(MyOverlapped* overlapped)
 }
 SOCKET TcpIocpClient::PrepareConnectSocket()
 {
-    WriteLog(LogLevel::Info, "AI_Family for clientLocalAddressInfo_:%d, addressInfo_:%d", clientLocalAddressInfo_->ai_family, addressInfo_->ai_family);
+    WriteLog(LogLevel::Info, "AI_Family for clientLocalAddressInfo_:%d, addressInfo_:%d", clientLocalAddressInfo_->ai_family,
+             addressInfo_->ai_family);
     SOCKET socketId = WSASocket(clientLocalAddressInfo_->ai_family, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
     if (socketId == INVALID_SOCKET)
     {

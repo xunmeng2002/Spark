@@ -9,8 +9,7 @@ using namespace Spark::Core;
 using namespace Spark::Network;
 
 static int g_Count = 0;
-ShmSubscriberImpl::ShmSubscriberImpl(IoBase* io, ServerTypeType serverType)
-    :connected_(false), sessionId_(0LL), io_(io), serverType_(serverType)
+ShmSubscriberImpl::ShmSubscriberImpl(IoBase* io, ServerTypeType serverType) : connected_(false), sessionId_(0LL), io_(io), serverType_(serverType)
 {
     buff_ = new char[BuffSize];
     length_ = 0;
@@ -62,7 +61,8 @@ void ShmSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer
         }
         if (shmPackage != nullptr)
         {
-            WriteLog(LogLevel::Info, "ShmSubscriberImpl::OnRecv ShmType[%d], Count[%d], Data[%s]", shmPackage->ShmType, shmPackage->Count, shmPackage->Data);
+            WriteLog(LogLevel::Info, "ShmSubscriberImpl::OnRecv ShmType[%d], Count[%d], Data[%s]", shmPackage->ShmType, shmPackage->Count,
+                     shmPackage->Data);
             if (serverType_ == ServerTypeType::Server)
             {
                 shmPackage->ShmType = (int)ServerTypeType::Server;

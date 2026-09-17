@@ -9,13 +9,11 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 IoBase::IoBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
-    :serverType_(serverType), addressName_(addressName), timeOut_(chrono::milliseconds(milliSeconds)), ioSubscriber_(nullptr), lastSessionIndex_(0LL)
+    : serverType_(serverType), addressName_(addressName), timeOut_(chrono::milliseconds(milliSeconds)), ioSubscriber_(nullptr), lastSessionIndex_(0LL)
 {
     ParseAddress(addressName_, address_, port_);
 }
-IoBase::~IoBase()
-{
-}
+IoBase::~IoBase() {}
 void IoBase::Subscribe(IoSubscriber* subscriber)
 {
     ioSubscriber_ = subscriber;
@@ -66,8 +64,8 @@ void IoBase::DoDisConnect()
 }
 void IoBase::AddConnect(Connect* connect)
 {
-    WriteLog(LogLevel::Info, "New Connection. SessionId:%lld, RemoteAddress:%s, RemotePort:%d",
-        connect->SessionId, connect->RemoteAddress, connect->RemotePort);
+    WriteLog(LogLevel::Info, "New Connection. SessionId:%lld, RemoteAddress:%s, RemotePort:%d", connect->SessionId, connect->RemoteAddress,
+             connect->RemotePort);
     {
         std::lock_guard<std::mutex> guard(connectsMutex_);
         connects_.insert(std::make_pair(connect->SessionId, connect));
@@ -79,8 +77,8 @@ void IoBase::AddConnect(Connect* connect)
 }
 void IoBase::RemoveConnect(Connect* connect)
 {
-    WriteLog(LogLevel::Info, "RemoveConnect. SessionId:%lld,  RemoteAddress:%s, RemotePort:%d",
-        connect->SessionId, connect->RemoteAddress, connect->RemotePort);
+    WriteLog(LogLevel::Info, "RemoveConnect. SessionId:%lld,  RemoteAddress:%s, RemotePort:%d", connect->SessionId, connect->RemoteAddress,
+             connect->RemotePort);
     if (ioSubscriber_)
     {
         ioSubscriber_->OnDisConnect(connect->SessionId, connect->RemoteAddress, connect->RemotePort);
@@ -101,10 +99,8 @@ Connect* IoBase::GetConnect(SessionIdType sessionId)
     return it->second;
 }
 
-
 SessionIdType IoBase::GetSessionId()
 {
     return TimeUtility::GetMilliSecondTimeStamp() * 100LL + (++lastSessionIndex_) % 100LL;
 }
 }
-

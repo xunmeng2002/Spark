@@ -1,7 +1,6 @@
 #pragma once
 #include <Spark/Network/Protocol/Protocol.h>
 
-
 using namespace Spark::Network;
 class StepServer : public Protocol, public ProtocolSubscriber
 {
@@ -18,8 +17,4 @@ public:
     int recvCount_;
 };
 
-
-
 void TestStepServer();
-
-

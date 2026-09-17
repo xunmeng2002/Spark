@@ -22,7 +22,6 @@ public:
     virtual void Set(SessionIdType sessionId, const SOCKET& socketId, const std::string& remoteIP, const std::string& remotePort);
     void UpdateLastSendTime();
 
-
     SOCKET SocketId;
     std::chrono::steady_clock::time_point LastSendTimePoint;
 };

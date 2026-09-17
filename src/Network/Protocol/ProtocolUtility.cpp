@@ -2,7 +2,6 @@
 #include <array>
 #include <cstring>
 
-
 namespace Spark::Network
 {
 namespace

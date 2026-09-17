@@ -2,7 +2,6 @@
 #ifdef __linux__
 #include <unistd.h>
 
-
 namespace Spark::Core
 {
 int GetLastError()

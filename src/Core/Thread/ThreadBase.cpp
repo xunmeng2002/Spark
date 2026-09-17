@@ -3,13 +3,9 @@
 #include <functional>
 #include <assert.h>
 
-
 namespace Spark::Core
 {
-ThreadBase::ThreadBase(const char* name, int milliSeconds)
-    :threadName_(name), shouldRun_(false), timeOut_(milliSeconds)
-{
-}
+ThreadBase::ThreadBase(const char* name, int milliSeconds) : threadName_(name), shouldRun_(false), timeOut_(milliSeconds) {}
 ThreadBase::~ThreadBase()
 {
     Stop();

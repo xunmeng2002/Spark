@@ -4,7 +4,6 @@
 #include <chrono>
 #include <string>
 
-
 namespace Spark::Core
 {
 class CORE_EXPORTS TimeUtility
@@ -54,7 +53,6 @@ public:
     static std::string ToLocalTime(time_t* time);
     static std::string ToLocalDateTime(time_t* time);
 
-
     static void GetDateTimeFromUpdateTs(long long updateTs, int& date, int& hour, int& minute, int& second, int& milliSecond);
     static int CalculateNextBarFromDayBar(int tradingDay, int barPeriod);
     static int CalculateMinutes(int hour, int minute);
@@ -66,14 +64,13 @@ public:
     static long long CalculateNextMinuteBarTime(long long updateTs);
     static long long CalculateNextSecondBarTime(int barPeriod, long long updateTs);
 
-    static void CalculateRealMinuteBarTime(const char* exchangeId, const char* instrumentId, int calculateBarTime, int& realBarTime, int& realUpdateTs);
+    static void CalculateRealMinuteBarTime(const char* exchangeId, const char* instrumentId, int calculateBarTime, int& realBarTime,
+                                           int& realUpdateTs);
 
-    template<typename T>
-    static long long GetDuration(std::chrono::steady_clock::time_point& start)
+    template <typename T> static long long GetDuration(std::chrono::steady_clock::time_point& start)
     {
         auto end = std::chrono::steady_clock::now();
         return std::chrono::duration_cast<T>(end - start).count();
     }
 };
 }
-

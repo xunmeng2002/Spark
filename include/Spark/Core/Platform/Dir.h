@@ -10,5 +10,3 @@ public:
     static bool Create(const char* path, int mode = 0777);
 };
 }
-
-

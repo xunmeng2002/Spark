@@ -42,8 +42,8 @@ IoBase* IoFactory::CreateIo(ServerTypeType serverType, const char* address, IoMo
         throw std::logic_error(std::format("Invalid Address:{}", address));
     }
     auto addressName = address + 6;
-    WriteLog(LogLevel::Info, "CreateIo ServerType:%s, Address:%s, IOType:%s, IOModel:%s",
-        GetServerTypeString(serverType), address, GetIoTypeString(ioType), GetIoModelString(ioModel));
+    WriteLog(LogLevel::Info, "CreateIo ServerType:%s, Address:%s, IOType:%s, IOModel:%s", GetServerTypeString(serverType), address,
+             GetIoTypeString(ioType), GetIoModelString(ioModel));
     if (serverType == ServerTypeType::Client)
     {
         switch (ioType)
@@ -107,4 +107,3 @@ IoBase* IoFactory::CreateIo(ServerTypeType serverType, const char* address, IoMo
     return nullptr;
 }
 }
-

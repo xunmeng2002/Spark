@@ -3,23 +3,14 @@
 #include <string.h>
 #include <assert.h>
 
-
 namespace Spark
 {
-template<unsigned SIZE>
-class RingBuffer
+template <unsigned SIZE> class RingBuffer
 {
 public:
-    RingBuffer() : buffer_{0}, length_(0) ,readPos_(buffer_), writePos_(buffer_)
-    {}
-    static RingBuffer* Allocate()
-    {
-        return ObjectPool<RingBuffer<SIZE>>::GetInstance().Allocate();
-    }
-    void Deallocate()
-    {
-        ObjectPool<RingBuffer<SIZE>>::GetInstance().Deallocate(this);
-    }
+    RingBuffer() : buffer_{0}, length_(0), readPos_(buffer_), writePos_(buffer_) {}
+    static RingBuffer* Allocate() { return ObjectPool<RingBuffer<SIZE>>::GetInstance().Allocate(); }
+    void Deallocate() { ObjectPool<RingBuffer<SIZE>>::GetInstance().Deallocate(this); }
     inline void Reset()
     {
         length_ = 0;
@@ -50,23 +41,10 @@ public:
         len = (std::min)(len, size);
         return CopyToBuffer(nullptr, len, true);
     }
-    inline unsigned GetReadBufferSize()
-    {
-        return length_;
-    }
-    inline unsigned GetWriteBufferSize()
-    {
-        return SIZE - length_;
-    }
-    inline bool IsEmpty()
-    {
-        return length_ == 0;
-    }
-    inline bool IsFull()
-    {
-        return length_ == SIZE;
-    }
-
+    inline unsigned GetReadBufferSize() { return length_; }
+    inline unsigned GetWriteBufferSize() { return SIZE - length_; }
+    inline bool IsEmpty() { return length_ == 0; }
+    inline bool IsFull() { return length_ == SIZE; }
 
 private:
     unsigned CopyFromBuffer(const char* data, unsigned len)

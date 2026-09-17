@@ -17,5 +17,3 @@
 #include <Spark/Core/Utility/DoubleUtility.h>
 #include <Spark/Core/Utility/TimeUtility.h>
 #include <Spark/Core/Utility/Utility.h>
-
-

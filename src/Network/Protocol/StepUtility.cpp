@@ -49,8 +49,8 @@ bool IsKeyAt(char* buff, int index, int endIndex, UInt16Type expectedKey)
 
 //扫描标记键（0006 / 0007），回填其后的十六进制 fieldId、标记起始位置、以及标记字段之后的下一个位置。
 //GetFieldStart 取前者、GetFieldEnd 取后者，两个入口除此以外完全一致
-bool LocateFieldMarker(char* buff, int startIndex, int endIndex, UInt16Type markerKey,
-    UInt16Type& fieldId, int& markerStartIndex, int& afterMarkerIndex)
+bool LocateFieldMarker(char* buff, int startIndex, int endIndex, UInt16Type markerKey, UInt16Type& fieldId, int& markerStartIndex,
+                       int& afterMarkerIndex)
 {
     //标记形如 "SOH + '0006' + '='"；i 指向键的首字节，i 为 0 时前面没有字节，不可能是标记
     for (int i = startIndex; i < endIndex; ++i)
@@ -76,10 +76,7 @@ bool LocateFieldMarker(char* buff, int startIndex, int endIndex, UInt16Type mark
 }
 }
 
-StepWriteCursor::StepWriteCursor(char* buffer, int capacity)
-    : bufferBegin_(buffer), capacity_(capacity), writtenLength_(0), isTruncated_(false)
-{
-}
+StepWriteCursor::StepWriteCursor(char* buffer, int capacity) : bufferBegin_(buffer), capacity_(capacity), writtenLength_(0), isTruncated_(false) {}
 int StepWriteCursor::GetWrittenLength() const
 {
     return writtenLength_;
@@ -96,7 +93,6 @@ int StepWriteCursor::GetRemainingLength() const
 {
     return capacity_ - writtenLength_;
 }
-
 
 bool StepUtility::GetNextSoh(char* buff, int startIndex, int endIndex, int& sohIndex)
 {
@@ -165,7 +161,8 @@ bool StepUtility::GetNextFieldZone(char* buff, int startIndex, int endIndex, UIn
     }
     if (fieldId != fieldIdEnd)
     {
-        WriteLog(LogLevel::Error, "FieldId not Match. FieldId:0x%X, FieldIdEnd:0x%X", static_cast<unsigned int>(fieldId), static_cast<unsigned int>(fieldIdEnd));
+        WriteLog(LogLevel::Error, "FieldId not Match. FieldId:0x%X, FieldIdEnd:0x%X", static_cast<unsigned int>(fieldId),
+                 static_cast<unsigned int>(fieldIdEnd));
         return false;
     }
     return true;
@@ -174,7 +171,7 @@ const std::string& StepUtility::GetPackageStartAnchor()
 {
     static const std::string anchor = []()
     {
-        char buff[StepHeadLen] = { 0 };
+        char buff[StepHeadLen] = {0};
         StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
         AppendPackageMagicField(cursor);
         return std::string(buff, static_cast<std::size_t>(cursor.GetWrittenLength()));
@@ -243,12 +240,11 @@ int StepUtility::HeadToStream(HeadField* head, char* buff, int size)
         return 0;
     }
     StepWriteCursor cursor(buff, size);
-    if (!AppendPackageMagicField(cursor)
-        || !cursor.AppendField("{:04X}={:04X}", Items::Version, head->Version)
-        || !cursor.AppendField("{:04X}={:04X}", Items::PackageId, head->PackageId)
-        || !cursor.AppendField("{:04X}={:04X}", Items::BodyLen, head->BodyLen)
-        || !cursor.AppendField("{:04X}={:08X}", Items::MsgSeqNum, head->MsgSeqNum)
-        || !cursor.AppendField("{:04X}={:d}", Items::MessageChain, head->MessageChain))
+    if (!AppendPackageMagicField(cursor) || !cursor.AppendField("{:04X}={:04X}", Items::Version, head->Version) ||
+        !cursor.AppendField("{:04X}={:04X}", Items::PackageId, head->PackageId) ||
+        !cursor.AppendField("{:04X}={:04X}", Items::BodyLen, head->BodyLen) ||
+        !cursor.AppendField("{:04X}={:08X}", Items::MsgSeqNum, head->MsgSeqNum) ||
+        !cursor.AppendField("{:04X}={:d}", Items::MessageChain, head->MessageChain))
     {
         return 0;
     }

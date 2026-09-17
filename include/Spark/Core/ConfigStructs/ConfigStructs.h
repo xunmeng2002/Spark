@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 
-
 namespace Spark::Core
 {
 struct TimeZone

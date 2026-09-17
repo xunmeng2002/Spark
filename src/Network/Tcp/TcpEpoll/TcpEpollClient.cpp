@@ -6,13 +6,8 @@ using namespace Spark::Core;
 
 namespace Spark::Network
 {
-TcpEpollClient::TcpEpollClient(const char* addressName, int milliSeconds)
-    :TcpEpollBase(ServerTypeType::Client, addressName, milliSeconds)
-{
-}
-TcpEpollClient::~TcpEpollClient()
-{
-}
+TcpEpollClient::TcpEpollClient(const char* addressName, int milliSeconds) : TcpEpollBase(ServerTypeType::Client, addressName, milliSeconds) {}
+TcpEpollClient::~TcpEpollClient() {}
 
 bool TcpEpollClient::ConnectToServer(const char* ip, unsigned short port)
 {

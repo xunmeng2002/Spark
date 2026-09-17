@@ -2,7 +2,6 @@
 #include <locale>
 #include <codecvt>
 
-
 namespace Spark::Serialization
 {
 class codecvt_gbk : public std::codecvt_byname<wchar_t, char, std::mbstate_t>
@@ -10,14 +9,13 @@ class codecvt_gbk : public std::codecvt_byname<wchar_t, char, std::mbstate_t>
 public:
     codecvt_gbk()
 #ifdef _WIN32
-        :codecvt_byname("zh_CN")
+        : codecvt_byname("zh_CN")
 #else
         : codecvt_byname("zh_CN.GB18030")
 #endif
     {
     }
 };
-
 
 static std::wstring_convert<codecvt_gbk> s_GbkConvert;
 static std::wstring_convert<std::codecvt_utf8<wchar_t>> s_Utf8Convert;

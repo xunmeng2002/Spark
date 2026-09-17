@@ -24,5 +24,3 @@ private:
     char* buff_;
     int length_;
 };
-
-

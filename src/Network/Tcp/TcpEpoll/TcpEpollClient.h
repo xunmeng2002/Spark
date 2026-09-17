@@ -1,7 +1,6 @@
 #pragma once
 #include "Tcp/TcpEpoll/TcpEpollBase.h"
 
-
 namespace Spark::Network
 {
 class TcpEpollClient : public TcpEpollBase

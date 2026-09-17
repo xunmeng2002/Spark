@@ -15,15 +15,13 @@ using namespace Spark::Network;
 using namespace Spark::Packages;
 
 StepClient::StepClient()
-    :Protocol(ProtocolTypeType::Step, ServerTypeType::Client, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
+    : Protocol(ProtocolTypeType::Step, ServerTypeType::Client, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
 {
     reqInsertOrder_ = new ReqInsertOrderPackage();
     Subscribe(this);
     RegisterFront(TcpAddress);
 }
-StepClient::~StepClient()
-{
-}
+StepClient::~StepClient() {}
 
 void StepClient::OnProtocolConnect(SessionIdType sessionId, const char* ip, int port)
 {
@@ -88,6 +86,3 @@ void TestStepClient()
     ioThread->Start();
     ioThread->Join();
 }
-
-
-

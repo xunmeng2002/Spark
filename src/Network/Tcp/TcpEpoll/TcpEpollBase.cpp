@@ -7,7 +7,7 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 TcpEpollBase::TcpEpollBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
-    :TcpBase(serverType, addressName, milliSeconds), epollFd_(0)
+    : TcpBase(serverType, addressName, milliSeconds), epollFd_(0)
 {
 #ifdef __linux__
     epollFd_ = epoll_create(5);
@@ -78,7 +78,8 @@ void TcpEpollBase::HandleTcpEvent()
                 }
                 if (errno != 0)
                 {
-                    WriteLog(LogLevel::Warning, "Connect Failed. SessionId:%lld, SocketId:%lld, errno:%d", tcpConnect->SessionId, tcpConnect->SocketId, errno);
+                    WriteLog(LogLevel::Warning, "Connect Failed. SessionId:%lld, SocketId:%lld, errno:%d", tcpConnect->SessionId,
+                             tcpConnect->SocketId, errno);
                     RemoveConnect(tcpConnect);
                     continue;
                 }
@@ -145,4 +146,3 @@ void TcpEpollBase::RemoveWriteEpollEvent(TcpConnect* connect)
 #endif
 }
 }
-

@@ -22,8 +22,8 @@ using namespace Spark::Packages;
 
 namespace
 {
-    constexpr SessionIdType SessionId = 42;
-    constexpr const char* IP = "192.168.1.100";
+constexpr SessionIdType SessionId = 42;
+constexpr const char* IP = "192.168.1.100";
 
     // 构造并填入字段
     NotifyComponentConnectStatusPackage* CreateSamplePackage(int msgSeqNum = 1001)
@@ -135,7 +135,7 @@ TEST(PackageSerializationTest, StepRoundTrip_MultipleMessages)
     for (int seq = 1; seq <= 3; ++seq)
     {
         auto* pkg = CreateSamplePackage(seq);
-        pkg->NotifyComponentConnectStatus->IsConnected = (seq % 2 == 1);  // toggle
+        pkg->NotifyComponentConnectStatus->IsConnected = (seq % 2 == 1); // toggle
 
         char buff[MaxPackageSize] = {};
         int totalLen = pkg->MakePackage(ProtocolTypeType::Step, buff, MaxPackageSize);
@@ -197,7 +197,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_CheckSumVerify)
     // 篡改校验和
     TailField tail = {};
     memcpy(&tail, buff + totalLen - sizeof(TailField), sizeof(tail));
-    tail.CheckSum = 0xFF;  // 错误值
+    tail.CheckSum = 0xFF; // 错误值
     memcpy(buff + totalLen - sizeof(TailField), &tail, sizeof(tail));
 
     PackageFactory factory;
@@ -205,7 +205,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_CheckSumVerify)
     reader.Append(buff, totalLen);
 
     Package* parsedRaw = nullptr;
-    EXPECT_TRUE(reader.ParsePackage(parsedRaw));   // 不是致命错误，不断链
+    EXPECT_TRUE(reader.ParsePackage(parsedRaw)); // 不是致命错误，不断链
     EXPECT_EQ(parsedRaw, nullptr);
     EXPECT_EQ(reader.Length(), sizeof(ProtocolMagicValue) - 1);
 }
@@ -255,7 +255,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_CorruptHeadIsDiscarded)
 TEST(PackageSerializationTest, XtpRoundTrip_GarbagePrefixIsResynced)
 {
     // 前面塞一段噪声，接收端应当丢弃它们并重新对齐到真正的魔术字
-    const char garbage[] = { 'n', 'o', 'i', 's', 'e', '!', '!' };
+    const char garbage[] = {'n', 'o', 'i', 's', 'e', '!', '!'};
 
     char buff[MaxPackageSize] = {};
     int totalLen = MakeFrame(ProtocolTypeType::Xtp, buff, 1001);
@@ -353,7 +353,7 @@ TEST(PackageSerializationTest, StepRoundTrip_WrongVersionIsFatal)
 
 TEST(PackageSerializationTest, StepRoundTrip_GarbagePrefixIsResynced)
 {
-    const char garbage[] = { 'n', 'o', 'i', 's', 'e', '!', '!' };
+    const char garbage[] = {'n', 'o', 'i', 's', 'e', '!', '!'};
 
     char buff[MaxPackageSize] = {};
     int totalLen = MakeFrame(ProtocolTypeType::Step, buff, 1001);
@@ -467,17 +467,17 @@ TEST(PackageSerializationTest, EmptyField_NullBody)
 
 namespace
 {
-    // 生成器不看 size 参数，这里只回报一个超限的包体长度，用来验证 MakePackage 的长度契约
-    class OversizedBodyPackage : public Package
-    {
-    public:
-        void Deallocate() override {}
-        int ToStepStream(char*, int) const override { return static_cast<int>(MaxFrameBodyLen) + 1; }
-        bool FromStepStream(char*, int, int) override { return true; }
-        int ToXtpStream(char*, int) const override { return static_cast<int>(MaxFrameBodyLen) + 1; }
-        bool FromXtpStream(char*, int, int) override { return true; }
-        const char* GetDebugString() const override { return "OversizedBodyPackage"; }
-    };
+// 生成器不看 size 参数，这里只回报一个超限的包体长度，用来验证 MakePackage 的长度契约
+class OversizedBodyPackage : public Package
+{
+public:
+    void Deallocate() override {}
+    int ToStepStream(char*, int) const override { return static_cast<int>(MaxFrameBodyLen) + 1; }
+    bool FromStepStream(char*, int, int) override { return true; }
+    int ToXtpStream(char*, int) const override { return static_cast<int>(MaxFrameBodyLen) + 1; }
+    bool FromXtpStream(char*, int, int) override { return true; }
+    const char* GetDebugString() const override { return "OversizedBodyPackage"; }
+};
 }
 
 TEST(PackageSerializationTest, OversizedBody_RejectedBeforeWrite)
@@ -542,17 +542,17 @@ TEST(PackageSerializationTest, XtpBody_CapacityBoundary)
 
 namespace
 {
-    //生成器回 -1 表示"给定容量放不下"，MakePackage 必须拒绝发送
-    class TruncatedBodyPackage : public Package
-    {
-    public:
-        void Deallocate() override {}
-        int ToStepStream(char*, int) const override { return -1; }
-        bool FromStepStream(char*, int, int) override { return true; }
-        int ToXtpStream(char*, int) const override { return -1; }
-        bool FromXtpStream(char*, int, int) override { return true; }
-        const char* GetDebugString() const override { return "TruncatedBodyPackage"; }
-    };
+//生成器回 -1 表示"给定容量放不下"，MakePackage 必须拒绝发送
+class TruncatedBodyPackage : public Package
+{
+public:
+    void Deallocate() override {}
+    int ToStepStream(char*, int) const override { return -1; }
+    bool FromStepStream(char*, int, int) override { return true; }
+    int ToXtpStream(char*, int) const override { return -1; }
+    bool FromXtpStream(char*, int, int) override { return true; }
+    const char* GetDebugString() const override { return "TruncatedBodyPackage"; }
+};
 }
 
 TEST(PackageSerializationTest, TruncatedBody_RejectedBeforeWrite)
@@ -610,7 +610,7 @@ TEST(PackageSerializationTest, MakePackage_BufferSmallerThanFixedOverhead)
 {
     //物理缓冲给足，传进去的 size 才是唯一的自变量：闸门一旦失效，越界写会落在分配内被最后那条
     //断言读到，而不是把用例变成一次随机崩溃
-    const int sizes[] = { FixedFrameOverhead - 1, 0, -1, std::numeric_limits<int>::min() };
+    const int sizes[] = {FixedFrameOverhead - 1, 0, -1, std::numeric_limits<int>::min()};
 
     for (int size : sizes)
     {

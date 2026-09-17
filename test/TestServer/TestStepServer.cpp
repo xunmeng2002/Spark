@@ -10,14 +10,12 @@ using namespace Spark::Network;
 using namespace Spark::Packages;
 
 StepServer::StepServer()
-    :Protocol(ProtocolTypeType::Step, ServerTypeType::Server, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
+    : Protocol(ProtocolTypeType::Step, ServerTypeType::Server, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
 {
     Subscribe(this);
     RegisterFront(TcpAddress);
 }
-StepServer::~StepServer()
-{
-}
+StepServer::~StepServer() {}
 
 void StepServer::OnProtocolConnect(SessionIdType sessionId, const char* ip, int port)
 {
@@ -42,7 +40,6 @@ void StepServer::OnMessage(Package* stepPackage)
     Send(stepPackage);
 }
 
-
 void TestStepServer()
 {
     WriteLog(LogLevel::Info, "TestStepServer");
@@ -63,6 +60,3 @@ void TestStepServer()
     ioThread->Stop();
     ioThread->Join();
 }
-
-
-

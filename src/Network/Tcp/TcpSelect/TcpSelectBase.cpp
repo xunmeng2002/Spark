@@ -3,11 +3,9 @@
 #include "Tcp/TcpUtility.h"
 #include <string.h>
 
-
 namespace Spark::Network
 {
-TcpSelectBase::TcpSelectBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
-    :TcpBase(serverType, addressName, milliSeconds)
+TcpSelectBase::TcpSelectBase(ServerTypeType serverType, const char* addressName, int milliSeconds) : TcpBase(serverType, addressName, milliSeconds)
 {
     FD_ZERO(&readFds_);
     FD_ZERO(&writeFds_);

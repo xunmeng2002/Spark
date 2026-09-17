@@ -3,7 +3,6 @@
 #include "Tcp/SocketInit.h"
 #include <string>
 
-
 namespace Spark::Network
 {
 class NETWORK_EXPORTS TcpUtility

@@ -7,7 +7,6 @@
 #include <sys/epoll.h>
 #endif
 
-
 namespace Spark::Network
 {
 #define EpollEventNumber 1024
@@ -17,7 +16,7 @@ class TcpEpollBase : public TcpBase
 public:
     TcpEpollBase(ServerTypeType serverType, const char* addressName, int milliSeconds);
     ~TcpEpollBase();
-    
+
     virtual bool Init() override;
 
 protected:
@@ -25,7 +24,6 @@ protected:
 
     virtual void AddConnect(Connect* connect) override;
     virtual void RemoveConnect(Connect* connect) override;
-    
 
     void AddEpollEvent(TcpConnect* connect);
     void RemoveEpollEvent(TcpConnect* connect);
@@ -38,4 +36,3 @@ protected:
 #endif
 };
 }
-

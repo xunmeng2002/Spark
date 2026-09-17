@@ -43,8 +43,8 @@ int TcpUtility::GetNameinfo(const sockaddr* sockAddr, int len, std::string& ip, 
 {
     static mutex getnameinfoMutex;
     lock_guard<mutex> guard(getnameinfoMutex);
-    char ipBuff[NI_MAXHOST]{ 0 };
-    char portBuff[NI_MAXSERV]{ 0 };
+    char ipBuff[NI_MAXHOST]{0};
+    char portBuff[NI_MAXSERV]{0};
     auto ret = getnameinfo(sockAddr, len, ipBuff, NI_MAXHOST, portBuff, NI_MAXSERV, NI_NUMERICHOST);
     ip = ipBuff;
     port = portBuff;
@@ -57,7 +57,7 @@ SOCKET TcpUtility::CreateSocket(int family)
 }
 bool TcpUtility::SetSockUnblock(SOCKET socketId, unsigned long unblock)
 {
-#ifdef  _WIN32
+#ifdef _WIN32
     if (::ioctlsocket(socketId, FIONBIO, &unblock) == SOCKET_ERROR)
     {
         WriteLog(LogLevel::Error, "ioctlsocket FIONBIO:%d, Failed. ErrorId:%d", unblock, WSAGetLastError());
@@ -144,4 +144,3 @@ SOCKET TcpUtility::PrepareSocket(int family)
     return socketId;
 }
 }
-

@@ -3,7 +3,6 @@
 #include <Spark/Network/Protocol/Package.h>
 #include <Spark/Network/Protocol/PackageFactoryBase.h>
 
-
 namespace Spark::Network
 {
 class NETWORK_EXPORTS PackageReader
@@ -26,7 +25,6 @@ public:
 protected:
     bool ParseXtpPackage(Package*& package);
     bool ParseStepPackage(Package*& package);
-
 
     ProtocolTypeType protocolType_;
     PackageFactoryBase* packageFactory_;
@@ -53,6 +51,5 @@ private:
     AlignResult AlignToAnchor(const char* anchor, unsigned int anchorLength);
     void DiscardFront(unsigned int len);
     bool IsBodyLenWithinFrameLimit() const;
-
 };
 }

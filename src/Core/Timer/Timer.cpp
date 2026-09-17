@@ -2,11 +2,9 @@
 
 using namespace std::chrono;
 
-
 namespace Spark::Core
 {
-Timer::Timer()
-    :timeInterval_(60000), eventCount_(600), currentEventCount_(0)
+Timer::Timer() : timeInterval_(60000), eventCount_(600), currentEventCount_(0)
 {
     lastTimePoint_ = time_point_cast<milliseconds>(steady_clock::now());
 }

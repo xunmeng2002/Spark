@@ -1,7 +1,6 @@
 #pragma once
 #include "Tcp/TcpSelect/TcpSelectBase.h"
 
-
 namespace Spark::Network
 {
 class TcpSelectClient : public TcpSelectBase

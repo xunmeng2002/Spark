@@ -8,10 +8,7 @@ using namespace Spark::Core;
 
 namespace Spark::Network
 {
-TcpSelectClient::TcpSelectClient(const char* addressName, int milliSeconds)
-    :TcpSelectBase(ServerTypeType::Client, addressName, milliSeconds)
-{
-}
+TcpSelectClient::TcpSelectClient(const char* addressName, int milliSeconds) : TcpSelectBase(ServerTypeType::Client, addressName, milliSeconds) {}
 
 bool TcpSelectClient::ConnectToServer(const char* ip, unsigned short port)
 {
@@ -105,4 +102,3 @@ void TcpSelectClient::CheckConnect()
     connectFailedSessions_.clear();
 }
 }
-

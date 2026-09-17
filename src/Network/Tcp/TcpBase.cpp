@@ -14,13 +14,13 @@ namespace Spark::Network
 {
 namespace
 {
-    // Client 断线自动重连的固定重试间隔
-    constexpr int kAutoReconnectIntervalMs = 3000;
+// Client 断线自动重连的固定重试间隔
+constexpr int kAutoReconnectIntervalMs = 3000;
 }
 
 TcpBase::TcpBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
-    :IoBase(serverType, addressName, milliSeconds), addressInfo_(nullptr), socket_(INVALID_SOCKET), socketNotify_(nullptr),
-    autoConnectPending_(false), lastConnectAttemptTime_{}, remoteAddressLen_(sizeof(remoteAddress_))
+    : IoBase(serverType, addressName, milliSeconds), addressInfo_(nullptr), socket_(INVALID_SOCKET), socketNotify_(nullptr),
+      autoConnectPending_(false), lastConnectAttemptTime_{}, remoteAddressLen_(sizeof(remoteAddress_))
 {
     SocketInit::GetInstance().Init();
     memset(&remoteAddress_, 0, sizeof(remoteAddress_));
@@ -57,7 +57,8 @@ bool TcpBase::Init()
         auto ret = TcpUtility::GetAddrinfo(address_.c_str(), port_.c_str(), addressInfo_);
         if (ret < 0)
         {
-            WriteLog(LogLevel::Info, "GetAddrinfo Failed. Address:%s Port:%s ret:%d, Errno:%d", address_.c_str(), port_.c_str(), ret, WSAGetLastError());
+            WriteLog(LogLevel::Info, "GetAddrinfo Failed. Address:%s Port:%s ret:%d, Errno:%d", address_.c_str(), port_.c_str(), ret,
+                     WSAGetLastError());
             return false;
         }
         socket_ = TcpUtility::PrepareSocket(addressInfo_->ai_family);
@@ -155,18 +156,18 @@ void TcpBase::DoSend(Connect* connect)
             if (errorId == WSAEWOULDBLOCK || errorId == WSAENOBUFS)
 #endif
 #ifdef __linux__
-            if (errorId == EWOULDBLOCK || errorId == ENOBUFS || errorId == ENOMEM)
+                if (errorId == EWOULDBLOCK || errorId == ENOBUFS || errorId == ENOMEM)
 #endif
-            {
-                connect->PushFront(buffer);
-                break;
-            }
-            else
-            {
-                WriteLog(LogLevel::Warning, "Tcp send Failed. SessionId:%lld, len:%d, errorId:%d", connect->SessionId, len, errorId);
-                buffer->Deallocate();
-                DisConnect(connect->SessionId);
-            }
+                {
+                    connect->PushFront(buffer);
+                    break;
+                }
+                else
+                {
+                    WriteLog(LogLevel::Warning, "Tcp send Failed. SessionId:%lld, len:%d, errorId:%d", connect->SessionId, len, errorId);
+                    buffer->Deallocate();
+                    DisConnect(connect->SessionId);
+                }
         }
     }
 }

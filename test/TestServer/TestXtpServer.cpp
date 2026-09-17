@@ -11,14 +11,12 @@ using namespace Spark::Network;
 using namespace Spark::Packages;
 
 XtpServer::XtpServer()
-    :Protocol(ProtocolTypeType::Xtp, ServerTypeType::Server, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
+    : Protocol(ProtocolTypeType::Xtp, ServerTypeType::Server, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
 {
     Subscribe(this);
     RegisterFront(TcpAddress);
 }
-XtpServer::~XtpServer()
-{
-}
+XtpServer::~XtpServer() {}
 
 void XtpServer::OnProtocolConnect(SessionIdType sessionId, const char* ip, int port)
 {
@@ -44,7 +42,6 @@ void XtpServer::OnMessage(Package* xtpPackage)
     Send(xtpPackage);
 }
 
-
 void TestXtpServer()
 {
     WriteLog(LogLevel::Info, "TestXtpServer");
@@ -65,6 +62,3 @@ void TestXtpServer()
     ioThread->Stop();
     ioThread->Join();
 }
-
-
-

@@ -134,7 +134,8 @@ TEST(TimeUtilityTest, DateAdd_LeapYear)
     EXPECT_EQ(TimeUtility::DateAdd(20240228, 1), 20240229);
 }
 
-TEST(TimeUtilityTest, DateAdd_Minus) {
+TEST(TimeUtilityTest, DateAdd_Minus)
+{
     EXPECT_EQ(TimeUtility::DateAdd(20240101, -1), 20231231);
 }
 
@@ -348,8 +349,8 @@ TEST(TimeUtilityTest, GetMilliSecondTimeStamp_Format)
     // 返回值是 YYYYMMDDHHMMSSmmm 格式的数字，20位
     // 不能精确断言值，但能检查格式范围
     auto ts = TimeUtility::GetMilliSecondTimeStamp();
-    EXPECT_GT(ts, 20240000000000000LL);   // 年份>=2024
-    EXPECT_LT(ts, 21000101000000000LL);   // 不会超过2100年
+    EXPECT_GT(ts, 20240000000000000LL); // 年份>=2024
+    EXPECT_LT(ts, 21000101000000000LL); // 不会超过2100年
 }
 
 // ---------- Date formatting: GetUtcDate / GetLocalDate ----------
@@ -491,7 +492,7 @@ TEST(TimeUtilityTest, CalculateNextSecondBarTime_5Second)
 
 TEST(TimeUtilityTest, CalculateMinutes)
 {
-    EXPECT_EQ(TimeUtility::CalculateMinutes(10, 30), 630);  // 10*60+30
+    EXPECT_EQ(TimeUtility::CalculateMinutes(10, 30), 630); // 10*60+30
     EXPECT_EQ(TimeUtility::CalculateMinutes(0, 0), 0);
     EXPECT_EQ(TimeUtility::CalculateMinutes(23, 59), 1439);
 }

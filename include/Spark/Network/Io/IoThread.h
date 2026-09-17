@@ -10,7 +10,6 @@
 #include <list>
 #include <map>
 
-
 namespace Spark::Network
 {
 class NETWORK_EXPORTS IoThread : public Spark::Core::ThreadBase

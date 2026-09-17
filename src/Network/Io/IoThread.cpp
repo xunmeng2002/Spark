@@ -8,10 +8,7 @@ using namespace std;
 using namespace Spark::Core;
 namespace Spark::Network
 {
-IoThread::IoThread(const char* threadName)
-    :ThreadBase(threadName), io_(nullptr)
-{
-}
+IoThread::IoThread(const char* threadName) : ThreadBase(threadName), io_(nullptr) {}
 IoThread::~IoThread()
 {
     if (io_)
@@ -33,4 +30,3 @@ void IoThread::ThreadExit()
     io_->DisConnectAll();
 }
 }
-

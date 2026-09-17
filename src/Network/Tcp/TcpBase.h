@@ -17,7 +17,7 @@ class NETWORK_EXPORTS TcpBase : public IoBase
 public:
     TcpBase(ServerTypeType serverType, const char* addressName, int milliSeconds);
     virtual ~TcpBase();
-    
+
     virtual bool Init() override;
 
     virtual void Send(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
@@ -56,4 +56,3 @@ protected:
 #endif
 };
 }
-

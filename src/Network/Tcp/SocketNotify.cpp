@@ -8,7 +8,7 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 SocketNotify::SocketNotify()
-    :sockets_{ INVALID_SOCKET, INVALID_SOCKET }, tcpConnect_(nullptr), ip_("127.0.0.1"), addressInfo_(nullptr), receiveBuffer_{0}
+    : sockets_{INVALID_SOCKET, INVALID_SOCKET}, tcpConnect_(nullptr), ip_("127.0.0.1"), addressInfo_(nullptr), receiveBuffer_{0}
 {
 }
 SocketNotify::~SocketNotify()
@@ -51,7 +51,6 @@ TcpConnect* SocketNotify::GetConnect()
 {
     return tcpConnect_;
 }
-
 
 bool SocketNotify::CreateSocketPair()
 {
@@ -115,4 +114,3 @@ bool SocketNotify::CreateSocketPair()
     return true;
 }
 }
-

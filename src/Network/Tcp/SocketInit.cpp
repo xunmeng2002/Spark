@@ -1,11 +1,9 @@
 #include "Tcp/SocketInit.h"
 #include <iostream>
 
-
 namespace Spark::Network
 {
 SocketInit SocketInit::socketInit_;
-
 
 SocketInit::~SocketInit()
 {

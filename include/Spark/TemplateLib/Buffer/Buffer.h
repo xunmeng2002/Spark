@@ -3,28 +3,18 @@
 #include <cstring>
 #include <assert.h>
 
-
 namespace Spark
 {
 constexpr unsigned int BuffSize = 64 * 1024;
 constexpr unsigned int ShmBuffSize = 1024 * 1024;
 constexpr unsigned int LogBuffSize = 1024 * 1024;
 
-template<unsigned SIZE>
-class Buffer
+template <unsigned SIZE> class Buffer
 {
 public:
-    Buffer()
-        :buffer_{0}, length_(0), readPos_(buffer_)
-    {}
-    static Buffer* Allocate()
-    {
-        return ObjectPool<Buffer<SIZE>>::GetInstance().Allocate();
-    }
-    void Deallocate()
-    {
-        ObjectPool<Buffer<SIZE>>::GetInstance().Deallocate(this);
-    }
+    Buffer() : buffer_{0}, length_(0), readPos_(buffer_) {}
+    static Buffer* Allocate() { return ObjectPool<Buffer<SIZE>>::GetInstance().Allocate(); }
+    void Deallocate() { ObjectPool<Buffer<SIZE>>::GetInstance().Deallocate(this); }
     unsigned Append(const char* data, unsigned len)
     {
         auto size = GetWriteBufferSize();
@@ -33,28 +23,16 @@ public:
         length_ += len;
         return len;
     }
-    char* GetData()
-    {
-        return readPos_;
-    }
-    char* GetWritePos()
-    {
-        return readPos_ + length_;
-    }
+    char* GetData() { return readPos_; }
+    char* GetWritePos() { return readPos_ + length_; }
     void SetLength(unsigned len)
     {
         assert(len <= SIZE);
         length_ = len;
     }
-    unsigned GetLength()
-    {
-        return length_;
-    }
+    unsigned GetLength() { return length_; }
 
-    unsigned GetWriteBufferSize()
-    {
-        return unsigned((buffer_ + SIZE) - (readPos_ + length_));
-    }
+    unsigned GetWriteBufferSize() { return unsigned((buffer_ + SIZE) - (readPos_ + length_)); }
     void Shift(unsigned len)
     {
         if (len >= length_)

@@ -1,7 +1,6 @@
 #include <Spark/Serialization/Csv/CsvParser.h>
 #include <cstring>
 
-
 namespace Spark::Serialization
 {
 CsvParser::CsvParser()
@@ -13,21 +12,21 @@ CsvParser::CsvParser()
     currentWord_ = new char[TokenMaxLen + 1];
 }
 
-CsvParser::CsvParser(const char *csvText)
+CsvParser::CsvParser(const char* csvText)
 {
     separator_[0] = ',';
     separator_[1] = '\0';
     csvText_ = csvText;
-    cursor_ = (char *)csvText_;
+    cursor_ = (char*)csvText_;
     NextChar();
 
     currentWord_ = new char[TokenMaxLen + 1];
 }
 
-void CsvParser::Parse(const char *csvText)
+void CsvParser::Parse(const char* csvText)
 {
     csvText_ = csvText;
-    cursor_ =  (char *)csvText_;
+    cursor_ = (char*)csvText_;
     errorCode_ = CsvParserError::HasNext;
     NextChar();
 
@@ -46,21 +45,22 @@ void CsvParser::SetSeparator(char separatorChar)
 void CsvParser::NextChar()
 {
     currentChar_ = *cursor_;
-    if(currentChar_ == '\0' || currentChar_ == '\r' || currentChar_ == '\n')
+    if (currentChar_ == '\0' || currentChar_ == '\r' || currentChar_ == '\n')
     {
         currentChar_ = '\0';
         nextChar_ = '\0';
     }
-    else{
+    else
+    {
         cursor_++;
         nextChar_ = *cursor_;
     }
 }
 
-void CsvParser::MakeWord(const char *stopChars)
+void CsvParser::MakeWord(const char* stopChars)
 {
-    int i=0;
-    for (;i<TokenMaxLen; i++)
+    int i = 0;
+    for (; i < TokenMaxLen; i++)
     {
         if (currentChar_ == '\0')
         {
@@ -77,13 +77,13 @@ void CsvParser::MakeWord(const char *stopChars)
                 break;
             }
         }
-        currentWord_[i]=currentChar_;
+        currentWord_[i] = currentChar_;
         NextChar();
     }
-    currentWord_[i]='\0';
+    currentWord_[i] = '\0';
 }
 
-char *CsvParser::GetNextToken()
+char* CsvParser::GetNextToken()
 {
     switch (currentChar_)
     {

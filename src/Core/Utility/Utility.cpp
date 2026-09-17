@@ -5,7 +5,6 @@
 #include <cstring>
 #include <fstream>
 
-
 namespace Spark::Core
 {
 void Utility::ParseProcessName(const char* fullProcessName, char* processName, int len)
@@ -30,7 +29,6 @@ void Utility::ParseProcessName(const char* fullProcessName, char* processName, i
     strncpy(processName, temp, len);
 }
 
-
 std::string Utility::ItoA(int value)
 {
     return std::to_string(value);
@@ -39,7 +37,6 @@ std::string Utility::FtoA(double value)
 {
     return std::format("{}", value);
 }
-
 
 void Utility::PrintBytes(const char* name, char* src, int len)
 {

@@ -1,7 +1,6 @@
 #pragma once
 #include "Shm/ShmBase.h"
 
-
 namespace Spark::Network
 {
 class ShmClient : public ShmBase
@@ -17,7 +16,6 @@ protected:
     virtual void CheckConnect() override;
     virtual void CheckData() override;
     virtual void HandleData() override;
-
 
     void SendConnect();
     void CheckConnectResult();

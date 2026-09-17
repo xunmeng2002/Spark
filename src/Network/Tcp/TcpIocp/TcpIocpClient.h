@@ -2,7 +2,6 @@
 #ifdef _WIN32
 #include "Tcp/TcpIocp/TcpIocpBase.h"
 
-
 namespace Spark::Network
 {
 class TcpIocpClient : public TcpIocpBase
@@ -24,4 +23,3 @@ private:
 };
 }
 #endif // _WIN32
-

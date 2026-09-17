@@ -1,8 +1,6 @@
 #pragma once
 #include <Spark/Network/Protocol/Protocol.h>
 
-
-
 using namespace Spark::Network;
 class XtpServer : public Protocol, public ProtocolSubscriber
 {
@@ -19,8 +17,4 @@ public:
     int recvCount_;
 };
 
-
-
 void TestXtpServer();
-
-

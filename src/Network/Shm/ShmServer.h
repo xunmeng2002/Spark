@@ -2,7 +2,6 @@
 #include "Shm/ShmBase.h"
 #include <chrono>
 
-
 namespace Spark::Network
 {
 class ShmServer : public ShmBase
@@ -24,4 +23,3 @@ private:
     virtual void RemoveConnect(Connect* connect) override;
 };
 }
-

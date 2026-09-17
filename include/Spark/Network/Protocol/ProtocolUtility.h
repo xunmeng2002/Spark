@@ -1,7 +1,6 @@
 #pragma once
 #include <Spark/Network/NetworkExport.h>
 
-
 namespace Spark::Network
 {
 unsigned int NETWORK_EXPORTS CalculateCrc32c(const unsigned char* buff, int len);

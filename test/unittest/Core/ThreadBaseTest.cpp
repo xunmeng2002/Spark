@@ -97,7 +97,7 @@ TEST(ThreadBaseTest, DoubleStart_ReturnsFalse)
     TestWorker worker("Double", 100);
 
     EXPECT_TRUE(worker.Start());
-    EXPECT_FALSE(worker.Start());  // 第二次启动返回 false
+    EXPECT_FALSE(worker.Start()); // 第二次启动返回 false
     EXPECT_TRUE(worker.IsJoinable());
 
     worker.Stop();

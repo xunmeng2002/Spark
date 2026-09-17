@@ -4,7 +4,6 @@
 #include <string>
 #include <cstring>
 
-
 namespace Spark::Core
 {
 class CORE_EXPORTS Utility
@@ -15,14 +14,12 @@ public:
     static std::string ItoA(int value);
     static std::string FtoA(double value);
 
-    template<int N>
-    static char* Strcpy(char(&dest)[N], const char* src)
+    template <int N> static char* Strcpy(char (&dest)[N], const char* src)
     {
         if (src == nullptr)
             return nullptr;
         return strncpy(dest, src, sizeof(dest) - 1);
     }
-
 
     static void PrintBytes(const char* name, char* src, int len);
     static void RemoveCharacter(char* src, int size, char c = ' ');

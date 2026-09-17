@@ -13,25 +13,24 @@ using namespace Spark::Core;
 
 namespace
 {
-    // 测试辅助：记录最后一次 WriteLog 调用
-    static LogLevel LastLevel = LogLevel::Ignore;
-    static char LastMessage[1024] = {};
+// 测试辅助：记录最后一次 WriteLog 调用
+static LogLevel LastLevel = LogLevel::Ignore;
+static char LastMessage[1024] = {};
 
-    void TestLogCallback(LogLevel level, const char* fileName, int lineNo,
-                         const char* funcName, const char* formatStr, ...)
-    {
-        LastLevel = level;
-        va_list va;
-        va_start(va, formatStr);
-        vsnprintf(LastMessage, sizeof(LastMessage), formatStr, va);
-        va_end(va);
-    }
+void TestLogCallback(LogLevel level, const char* fileName, int lineNo, const char* funcName, const char* formatStr, ...)
+{
+    LastLevel = level;
+    va_list va;
+    va_start(va, formatStr);
+    vsnprintf(LastMessage, sizeof(LastMessage), formatStr, va);
+    va_end(va);
+}
 
-    void ClearTestCallback()
-    {
-        LastLevel = LogLevel::Ignore;
-        LastMessage[0] = '\0';
-    }
+void ClearTestCallback()
+{
+    LastLevel = LogLevel::Ignore;
+    LastMessage[0] = '\0';
+}
 }
 
 // ---------- 单例 ----------

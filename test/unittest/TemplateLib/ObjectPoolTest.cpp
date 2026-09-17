@@ -185,7 +185,8 @@ TEST(ObjectPoolTest, MultiThreadAllocate)
 
     for (int t = 0; t < kThreads; ++t)
     {
-        threads.emplace_back([&pool, &sum]()
+        threads.emplace_back(
+            [&pool, &sum]()
             {
                 for (int i = 0; i < kPerThread; ++i)
                 {

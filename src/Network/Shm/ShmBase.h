@@ -10,7 +10,6 @@
 #include <mutex>
 #include <chrono>
 
-
 namespace Spark::Network
 {
 class ShmBase : public IoBase
@@ -53,4 +52,3 @@ private:
     bool LinuxInit();
 };
 }
-
