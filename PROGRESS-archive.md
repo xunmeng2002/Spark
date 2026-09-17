@@ -4,6 +4,171 @@
 
 ## ✅ 原已完成
 
+### D.29
+
+- **默认值审计与钉死：`template` 并行是配置漏写、不是工具坏；重排 16 文件并修掉它掀开的 `s4scan` 误报（2026-09-17）**：
+  用户发现 `template <typename Func, typename... Args> struct AspectBefore` 被并成一行，问「是不是工具有点问题」。
+  **结论：工具没坏，是 `.clang-format` 一个字都没写这一项**——`BreakTemplateDeclarations` 未指定即取 LLVM 默认
+  `MultiLine`，在 150 列内把模板头与实体并行。**该改默认值而非迁就它，判据是「作者原来站哪边」**：格式化前这批
+  文件里**并行写法 0 处**，而 HEAD 有 **31 处**（15 文件）——属默认值覆盖作者写法，不是风格选择。
+  - **顺带做了 LLVM 默认值审计（用户批准）**：显式键 92（`§3`/`§4` 段 24 + 新 `§5` 段 68），其余 **128 项骑默认值**；
+    其中 39 项与 C++ 输出相关，逐项实测分四类——**A 3 项**（默认值覆盖作者写法：`BreakTemplateDeclarations`、
+    `AlignEscapedNewlines`、`SpaceAfterTemplateKeyword`）、**B 32 项**（默认恰与作者写法一致，显式钉死）、
+    **C 4 项**（作者两种写法各半、无多数派，逐项裁定）、其余 26 项本仓不涉及。
+  - **两处真实输出变化**：①`BreakTemplateDeclarations: Yes` 还原那 31 处；②`AlignEscapedNewlines: DontAlign`
+    ——默认 `Right` 把宏续行反斜杠右对齐到第 150 列，实测给 `Logger.h` 4 行各补 **91~110 个空格**（作者原文零补位），
+    补位撑长宏体后触发重折、**多出一个续行反斜杠**：B 步那处唯一的「真实字符变化」源头就在这，现已消除。
+  - **两个读配置的坑（都踩过，已写进文档）**：①`--dump-config` 里**空值是嵌套结构、不是标量**——把
+    `AlignTrailingComments`（默认 `Kind: Always`）读成标量而写成 `Never`，会取消 `MD5.cpp` / `TcpIocpConnect.h`
+    已有的行尾注释对齐，靠「受影响文件数从 16 变 18」才发现；②`AlignConsecutive{BitFields,Declarations,Macros}`
+    的简写 `None` **不等于**默认值，它会把子项 `PadOperators` 隐式置 `true` 而默认为 `false`，故这三项**刻意不写**
+    （**写错值比不写更糟**）。`LineEnding` 同理不写，归 `.editorconfig` 管。
+  - **重排 16 个文件**（15 个模板文件 + `Logger.h`），并逐文件证明内容等价：15 个满足「去掉全部空白后逐字相同」，
+    `Logger.h` 另按 C++ 翻译阶段 2 拼回宏体后比较通过。另扫全仓手写文件确认**无一处字符串字面量跨续行**，
+    这条判据才成立。
+  - **⚠️ 这次重排掀开了 `s4scan.py` 一个既有误报**：类作用域里**跨行函数声明的续行**不含 `(` 却以 `;` 结尾，
+    被 `classify()` 当成**数据成员**，于是凭空配出「普通成员函数出现在数据成员之后」的 ORDER 误报。它出不出现，
+    取决于同一个函数上方的 `template <...>` 是独占一行还是压成一行——**只改写法、不改语义，扫描结果就能凭空多一条**；
+    改回独占一行后它在 `TimeUtility` 上现形（而该类的 `public` 段里**一个数据成员都没有**）。修法是给类作用域条目加
+    **括号配平**判据（完整声明必然配平，跨行声明首行必然左括号多于右括号，故首行保留、续行全丢直到回平），与写法无关。
+    新增语料 `tools/selfcheck/wrappedsig.h`：`WrappedOk` 必须 **0 条**、`WrappedBad` 必须 **1 条**，缺一不可——
+    前者测误报，后者防「把续行一律丢掉」这种过度修复（那会反而漏掉真正的组序违规）。基线回到 **24 条**。
+  - **⚠️ 本批第 6 次同类失误**：我最初写的检测脚本 `tplcheck2.py` 报「三种状态全是 0/31」——`rest` 保留了
+    `template` 之后的那个空格，`startswith('<')` 恒假，于是**每一行都被数成「独占一行」**。**判据或量法偏松、偏盲，
+    而结果看起来正常**——本批同类失误已达 6 次，全部自查纠正。教训汇入 `docs/cpp-style-clang-format.md` §4.3。
+  - **`rules/cpp-style.md` §3 新增「模板声明换行」一节（用户批准）**：`template <...>` 独占一行，并写明它与
+    「函数签名单行优先」不冲突——后者管的是**参数列表内部**不许垂直铺开，前者是**声明层级**的换行。
+  - **验证**：新配置下全仓手写文件 `clang-format --dry-run --Werror` **0 处待格式化**；WSL-GCC `ninja UnitTests`
+    **rc=0 + 391/391 全过**；`tools/s4scan.py` **176 文件 / 456 类 / 24 条**、`tools/initcheck.py`
+    **176 文件 / A 24 / B 217 / 乱序 0**，两者均与改前逐项一致；判别力自检全对（s4scan 10/0/2/1、initcheck 2/0/1/1/1）。
+  - **⚠️ 顺带更正一个复现不出来的数字：「手写 173/173 全绿」应为 167/167**。按当前文件筛选口径
+    逐项可复现的是 **167**（全仓 `.h`/`.cpp` 共 200 − 14 第三方 `Serialization/json/` − 9 生成物 −
+    10 判别力语料 = 167）；而 **173 = 167 + `e5a27cb` 当时 `tools/selfcheck/` 下的 6 个 `.h`/`.cpp`
+    语料**——那次计数把判别力语料一起数了进去，而「文件筛选排除 `tools/selfcheck/`」是之后才加的。
+    更关键的是那 6 个文件当时是**空过**的：目录自带的 `.clang-format` 设了 `DisableFormat: true`，
+    clang-format 对它们根本不检查，自然报不出违规。**「N/N 全绿」的 N 换了口径，绿灯的含义就跟着
+    换，而报告里只留下一个数字。** 已更正 `docs/cpp-style-clang-format.md`（3 处，并补上语料那一行
+    与来历说明）与本文件上方 clang-format 收敛条目（3 处）。该数字与本次重排无关，属既有记载。
+  - 审计方法、分类结论与钉死清单的维护约定见 `docs/cpp-style-clang-format.md` §6–§7（`.clang-format` 头部注释指向 §7）。
+
+### D.28
+
+- **clang-format 收敛把检查器的一个口径改坏，已修并补判别力语料（2026-09-17，紧接上一条）**：
+  上一条 A 步收尾后复核工具，发现 `tools/initcheck.py` 通道 B 由 **217 掉到 211**——clang-format
+  把较短的类外初始化列表并到签名行、`{` 留在次行，而旧判据要求 `:` 与 `{` 同行，于是 6 条
+  初始化列表**静默脱离检查**。**这是「检查器的口径与被检对象的写法同步失效」，与上一条那三处
+  同属一个失败型**：绿灯是真的，但绿灯的覆盖范围悄悄变小了——而这次连自检也是绿的（见下）。
+  - **修法与两次翻车**：①初版改成「扫到第一个括号外的 `{` 就收尾」——撞上成员的 **braced-init**
+    （`buff_{0}`、`sockets_{INVALID_SOCKET, INVALID_SOCKET}`、`lastConnectAttemptTime_{}`），
+    实测 **9 增 3 丢**（`PackageReader` / `SocketNotify` 归零、`TcpBase` 少 3 个成员）；
+    ②再改成「配对 `}` 与 `{` 同行才算 braced-init」——又被**空函数体** `{}` 骗过（clang-format
+    会把短构造函数连空体收成一行，如 `Logger::Logger() : ..., logData_(nullptr) {}`），扫描
+    越过函数体、把下一个函数的限定名（`Logger::GetInstance`、`TcpEpollServer::Init`）也收进
+    成员表。该噪声恰好被 `judge()` 的 `nm in index_of` 挡掉而**未变成误报**——但那是下游
+    擦屁股，判据本身是错的，不能因为结果碰巧对就留着。
+  - **最终判据（贴合语法，不认形状）**：括号外的 `{`，左侧跳空白后紧贴标识符或 `>`/`]` 的
+    是 braced-init，其余（前接 `)` 或处在行首）是函数体起点。类外定义的四种形状通吃。
+  - **语料这次没能兜住，这才是真问题**：`tools/selfcheck/` 里原只有 `initpos.cpp` 一条通道 B
+    语料，用的恰是**新旧判据都能认**的「`:` 独占一行」形状——故判据失效期间自检**全绿**，
+    「已知正例必报」的自证成了空转。补三份：`initwrapped.cpp`（签名同行、`{` 次行）、
+    `initbraced.cpp`（含 braced-init 成员）、`initsentinel.cpp`（整条压一行含空体 `{}`，
+    专测**多报**）。**实测三个历史错判据各被至少一份钉住**（依次漏报 0 / 漏报 0 / 多报 2），
+    缺一份就漏一类；判别力矩阵与形状对照表写进 `tools/selfcheck/README.md`。
+  - **两个细节是踩出来的**：①`initsentinel.cpp` 末尾的 `Delta` 必须跨行**且非空**——跨行才能
+    让越界扫描停下来（否则一路扫到文件尾判空，症状变成漏报，与真实仓的现象不是一回事），
+    非空才不会被 clang-format 塌成 `{}`；②三份新语料的函数体因此都写成非空，**对 clang-format
+    稳定**，判别力不再依赖目录豁免。
+  - **验证**：全仓 176 文件 / 通道 A 24 / 通道 B **217** / 乱序 0（已回到格式化前的数字，
+    且新判据在 `cc21352` 与当前树上的检出集合**逐条相同**，行号差异系空行增删所致）；
+    自检 8 项全对（s4scan 10/0/2，initcheck 2/0/1/1/1）。
+
+### D.27
+
+- **全仓 clang-format 收敛（选项 c 两步）完成：手写代码 167/167 合规（2026-09-17）**：
+  用户裁定「执行 c」，即先把 Tab→空格 单独做一次机械归一化，再启用 clang-format。**六个提交**：
+  `030f614`（109 个文件、6225 个 Tab 按制表位展开）→ `919485a`（新建 `.git-blame-ignore-revs` 登记前者）
+  → `5dff1a0`（文档与 PROGRESS 登记）→ `9539b25`（第二步 A 步：142 个手写文件，空白与换行布局归一）
+  → `0bd533a`（登记 A 步）→ `0ff2111`（第二步 B 步：4 个文件收尾）。
+  **结果**：手写 167 个文件 `clang-format --dry-run --Werror` **全部通过**；9 个生成物与 14 个
+  第三方快照按设计不纳入。
+  **⚠️ 本条原先写的是「173/173」，该数复现不出来，已更正**（2026-09-17 复核，见 ✅ 区顶层条目的
+  同名记录）：173 = 167 手写 + `e5a27cb` 当时 `tools/selfcheck/` 下的 **6** 个 `.h`/`.cpp` 语料
+  ——那次计数把判别力语料一起数了进去，而「文件筛选排除 `tools/selfcheck/`」是之后才加的。那 6 个
+  文件当时还是**空过**的（靠目录自带 `.clang-format` 的 `DisableFormat: true`，clang-format 根本
+  不检查它们）。**「N/N 全绿」的 N 换了口径，绿灯的含义就跟着换，而报告里只留下一个数字。**
+  - **拆分方式与理由**：A 步的判据是「去掉全部空白（含换行）后内容逐字相同」——142/142 通过，
+    即**一个字符都没改**，故可安全登记进 `.git-blame-ignore-revs`；B 步含真实字符增删
+    （`Logger.h` 的 `WriteErrorLog` 宏续行被重折、**多出一个续行反斜杠**），**不登记**，
+    必须留在 blame 里可见。这正是用户要求拆两个提交的目的：不让真实改动混进纯空白提交而
+    随之一并被豁免。
+  - **豁免实测生效，且能跨「拆行」**：`ThreadSafeListTest.cpp` 里被 clang-format 拆开的
+    `std::thread producer(` 一行，忽略前归 `9539b25`，忽略后回落到 `51d7b8c9`（紫云 2026-07-26）
+    ——git 的忽略机制能跨换行位置移动重新归属，不只是越过多余空白。
+  - **⚠️ 本批我连续犯了三个同类错误，都是「判据或量法偏松，而结果看起来正常」**：
+    ① 用 `zip(a, b)` 逐行对位统计 churn——两侧行数不等时第一个插入点之后**每一行都被判成
+    「改了」**，把 863 行夸成 **5241 行**，还凭空造出「大括号挂行」（本配置
+    `BreakBeforeBraces: Allman` 下**不可能发生**，而我当时先去解释这个假象而不是怀疑量法）；
+    ② 据此报出「收益仅 −2%」，真实是「被动文件 8629→863 行、−90%」，**方向完全相反**；
+    ③ 拿 `git diff -w` 为空当纯空白证明，而 clang-format 会把一行拆成两行（内容同、行结构变），
+    `-w` 照样报，该证明不成立；另把初始化列表 `:member` → `: member` 误记为「含非空白」，
+    它其实是空白改动——**全仓真实字符变化只有 `Logger.h` 那一处**。三条教训已写入
+    `docs/cpp-style-clang-format.md` §4.3。
+  - **区域级归并的一处自身 bug（已修）**：初版给 `delete`/`insert` 区块特判「非纯空白、保留
+    原文」，于是「删掉一个空行」这种空白改动被挡在 A 之外——实测 **55 个手写文件**的
+    clang-format 改动**全部**是空行增删，全被误判。统一成一条 strip_ws 相等判据后各就各位。
+  - **验证**：每个提交后均跑 WSL-GCC `ninja UnitTests` rc=0 + **391/391 全过**；B 步后逐文件
+    `--dry-run --Werror` 复核 **167/167** 绿（原记 173/173，口径更正见本条上方）；A 步另有独立
+    复查（逐文件 strip_ws 比对 HEAD、并确认**无任何非空行被删除**）。
+  - 原 ❓⑤ 的完整原文与结论见归档 `Q.21`；量法与判据的坑见 `docs/cpp-style-clang-format.md` §4。
+
+### D.26
+
+- **Spark §4「类内顺序」新规对齐：36 文件重排 + `.clang-format` + 检查工具入仓（2026-09-17）**：
+  用户更新了 `rules/cpp-style.md` §4（相对旧版有七处 delta），要求把 Spark 仓对齐；同批把「§4 里 clang-format 能表达的部分」固化为仓内配置，并把排查用的结构扫描器纳入仓库。**已提交**：`16edbe6`（36 文件重排 + `.clang-format` + `CMakeLists.txt` 的 `-Wreorder`）、`b234cec`（用户自行收掉 `Packages.h`）、`e5a27cb`（检查脚本修复 + 自检语料入库 + `SingleShm.h` 格式化 + `.clang-format` 关 `FixNamespaceComments`）；`out/build/WSL-GCC-*` 的重新 configure 一并算在本批。
+  - **规范 delta 七条**：①访问优先 `public`→`protected`→`private`，每段尽量只出现一次；②段内第 3 组扩为「特殊成员函数：构造、析构、拷贝/移动构造、拷贝/移动赋值（含 `operator=`）」，第 4 组收窄为「其他操作符重载」；③数据成员移至段末（`public` 数据成员放 `public` 末尾，**不再次打开 `public:`**）；④显式写访问标签，不依赖 `class` 默认私有；⑤标签顶格、成员缩进 4 空格、段间空行；⑥非静态数据成员声明顺序决定初始化顺序，初始化列表需一致；⑦例外：单例可将私有特殊成员置顶，但必须显式 `private:`、该区只放特殊成员、随后立即 `public:`。
+  - **用户的三条裁决（本批据此执行）**：①**`struct` 不用显式 `public`**——故扫描器报出的 212 条 `struct` `NO_FIRST_LABEL` **不是违规**，一条未动；②访问段顺序的处理是**把 `protected` 那一段整体挪到 `private` 前面**，**不改任何访问级别**（我起初以为要改级别，被用户纠正）；③**`tpl` 生成的文件一律不动**（`test/Packages/Packages.h` 与仓外 `Templates/`），故该文件上报出的 188 条 `NO_BLANK`/`DUP_LABEL` 全部原样保留。
+  - **改动 36 文件，四类**：①**合并重复访问段**（`DUP_LABEL`）；②**访问段顺序**——把落后于 `private` 的 `protected` 段整体前移（`ShmBase.h`/`ShmServer.h`/`SingleShm.h` 等）；③**段内组序**——数据成员移到段末（`AspectTest.cpp`、`ThreadBaseTest.cpp`、`TimerTest.cpp`，以及 `ObjectPoolTest.cpp` 里 5 个 helper 类型）；④**N6 初始化列表与声明同序** 4 处（`Protocol.cpp`/`Sem.cpp`/`TcpBase.cpp`/`ShmSubscriberImpl.cpp`）——**行为中性**，实际初始化顺序由声明顺序决定，改的只是列表书写顺序。
+  - **本批的方法论：「搬行对象」而非「重打内容」。** 所有重排一律在行列表上做**切片搬运**（把现有行对象放进新位置），从不重新键入成员内容——「搬运过程吃掉某个字符」因此在结构上不可能发生。与之配套的是**断言策略必须用「整块结果等值」，不能用「出现次数」**：见下方第一处翻车。
+  - **翻车一（最严重，已 `git checkout` 回退重做）：`ro5.py` 静默删代码。** `L[u + 2:d]` 在 `d < u` 时求值为**空切片**，于是 `TimerTest.cpp` 少了 `GetTimeInterval`/`GetEventCount`/`GetCurrentEventCount` 三个 getter；`ThreadBaseTest.cpp` 的 `L[:c-4] + L[c:j-1] + data + [''] + L[k:]` 跳过了 25..30 号下标，少了 `bool IsJoinable() const`。**两处的出现次数断言全都通过**——因为我断言的是「新内容出现了 N 次」，而**被删掉的旧内容一次也没被试断言过**。是逐行看 `git diff` 才发现的。改写成 `ro6.py`：断言**整段结果的逐行等值**（`assert new[d-1:d-1+len(expect)] == expect`），并给两处 `long long value;` 的搜索补起始偏移以消除歧义。
+  - **翻车二：`fixn6.py` 把 `TcpBase.cpp` 的函数体 `{` 吃掉了**（`lines[i+3:]` 跳过了大括号行），同样靠 `git checkout` 回退重做。**翻车三：`TcpBase.cpp` 初始化列表尾多一个逗号**（`remoteAddressLen_(...)` 后直接跟 `{`），由 WSL GCC 构建报 `expected identifier before '{' token` 抓出。
+  - **扫描器自身也翻车两次（都已修并留证）**：`n5check.py` v1 报出 **640 条假阳性**（把 `{` 紧邻首个标签这种**合法**写法当成「段间无空行」，并对缩进类体误报「未顶格」）；v2 修好假阳性后**静默返回 0 条**，根因是 `mlines[:o].count('\n')`——`o` 是 masked **字符串**的字符偏移，拿它去切**行列表**会按元素个数切、得到错误行号。改为 `masked[:o].count('\n')` 并加注释（该注释已随脚本入仓，见 `tools/s4scan.py`）。
+  - **新增 `.clang-format`（仓根）**：只固化 §4 中**机械可表达**的三项——标签顶格（`AccessModifierOffset: -4`）、成员缩进 4 空格（`IndentWidth: 4` + `IndentAccessModifiers: false`）、段间空行（`EmptyLineBeforeAccessModifier: LogicalBlock`）。缩进基准取 **`UseTab: Never`**，跟随仓根 `.editorconfig` 的 `indent_style = space`。**边界是实测出来的、不是凭记忆断言的**：正例（§4 规范里的 `Example` 块）经 `clang-format` 往返后与原文**逐字一致**（据此确认 `LogicalBlock` 才是对的值，`Always` 会在 `{` 之后多补一个空行）；反例（同时含「数据成员在构造函数前 / 数据成员未置段末 / `public:` 重复 / `private:` 在 `protected:` 前 / 初始化列表逆序」五类违规）经 `clang-format` 后**零差异**——这五类它一律不管。取舍与 churn 分析见 `docs/cpp-style-clang-format.md`。
+  - **新增 `tools/s4scan.py` + `tools/initcheck.py` + `tools/README.md`（本批入仓）**：把排查用的扫描器从 `%TEMP%` 提升为仓内工具。`initcheck.py` 原先硬编码 `sys.path.insert(0, r'C:/Users/15031/AppData/Local/Temp')`，改为**相对本文件的路径**；N5 的两条检查（标签顶格 / 段间空行）并入 `s4scan.py`，使一个脚本覆盖 `docs/cpp-style-clang-format.md` §3.1 表格声明的全部条款。**入仓时逐条比对过等价性**：`initcheck.py` 输出与 `%TEMP%` 原版**逐字节相同**；`s4scan.py` 输出与「原 `s4scan2.py` ∪ 原 `n5check.py`」归一化后是**同一批 400 条**（仅统一了打印格式）。
+  - **判别力自检（「0 命中」不算证据，必须先证明判据能命中）**：两个脚本都做了「注入的已知正例必须报警、已知反例必须不报警」。6 类规则各造正例语料并确认全部命中（`NO_FIRST_LABEL` 对 `class` 与 `struct` 都触发，其余各 1 条以上）；反例（`class Neg` 六组齐备 + 单例 `Singleton` 走 N7 例外）**0 命中**——**N7 例外不误报**是本轮特意验的一条。`initcheck.py` 两条通道各造一处逆序，`INIT_ORDER/A` 与 `INIT_ORDER/B` 均命中；同序反例 0 命中。**语料已入库 `tools/selfcheck/`**（此前只在 `/tmp`，见下方「工具自身的假绿灯」一条），复现命令写在 `tools/README.md` §4 与该目录 README。
+  - **`CMakeLists.txt` 加 `-Wreorder`（`if(NOT MSVC)`）**：§4 第 ⑥ 条另有一道编译器侧防线。**先证明这条警告在本仓能响**：造一个 `S() : b_(2), a_(1) {}` 而声明顺序 `a_` 在前的样本，带 `-Wreorder` 报 3 行、不带则**完全静默**（证明它不在默认告警集内，必须显式打开）。**MSVC 侧未启用**：对应项 `C5038` 属 `/W4` 级而本仓未开 `/W4`，单独用 `/w15038` 需在真实 Windows 工具链上实测，故留待有可用 MSVC 环境的时机再评估——已在 `CMakeLists.txt` 注释与文档里写明。
+  - **验证（全绿）**：WSL-GCC-Debug 重新 configure 后 `build.ninja` 里 93 条编译规则均带 `-Wreorder`；`ninja UnitTests` rc=0、**0 warning / 0 error**；`UnitTests` **391/391 全过**；`tools/s4scan.py` 剩 **400 条候选，全部落在用户明确划出的范围外**（212 条 `struct` 的 `NO_FIRST_LABEL` + 188 条 `test/Packages/Packages.h` 生成物）；`tools/initcheck.py` **0 处乱序**（类内 24 个 + 类外 217 个初始化列表）。
+  - **收尾复核（同日，用户提交后）**：后一半由用户自行收掉——`b234cec` 把 `test/Packages/Packages.h` 的 188 个包类由 `struct` 改为 `class` 并显式写 `public:`（改的是仓外模板 `Templates/Cpp/Protocol/Packages/Packages.h.tpl`，本仓 `tpl` 生成物此前按用户指示未动）。**当前全仓复核：456 个类/结构体，仅剩 24 条 `NO_FIRST_LABEL`，即全部 24 个真实 `struct` 的既定例外（用户裁决「`struct` 不用显式 `public`」）；432 个 `class` 全部通过，`Packages.h` 命中归零。**
+  - **一处是我自己差点制造的假发现**：此前把 `test/TestCommon/ShmSubscriber/ShmSubscriberImpl.h:11` 的 `ShmSubscriberImpl(IoBase* io, ServerTypeType serverType)` 记为「单参数构造缺 `explicit`」——**核实后是两个无默认值的参数，§6 该条不适用**，故未登记、未改动。**教训：登记前回原文数参数，别凭「看起来像单参数」下判。**
+  - **工具自身的假绿灯（用户报出，已修）：从 `tools/` 子目录运行两个脚本都报 0。** 根因是默认文件列表用 `git ls-files` 但**未固定 `cwd`**——`git` 按**当前目录**解释匹配、返回相对当前目录的路径，而 `tools/` 下没有 `.h/.cpp`，于是列表为空 → 打印「0 命中」，与「真的干净」无从区分；`--help` 被当文件名（`FileNotFoundError`）、`..` 被当文件（`PermissionError`），两者都只打印一行报错后**继续报 0**。**这正是本批反复吃亏的同一失败型**（口径与被判对象共用盲区 / 空输入冒充绿灯）。修法：`s4scan.py` 新增 `repo_root()`（`git rev-parse --show-toplevel`）与 `parse_targets()`——无参数时文件列表相对**仓库根**取（故与 cwd 无关），显式给路径时相对**当前目录**解析并递归展开目录，`-h/--help` 打印用法，**任一分支得到空列表一律 `exit 2` 响亮失败**；`initcheck.py` 复用同一解析，并新增「只给子集时通道 B 结论不作数」的告警。
+  - **判别力语料入库（`tools/selfcheck/`，6 文件）**：语料此前只存在于 `/tmp`，等于这份自检**只能被当时那个人跑一次**、命令抄不动——文档里的复现步骤指向不存在的路径，是「写了但从没被跑」的典型。入库并把该目录加进 `EXCLUDE`（**无参数全仓扫描不受污染**，实测仍 176 文件 / 24 条）。期望值写在每个文件头部注释与本目录 README 里，**是跑出来核对的、不是凭记忆写的**：`pos.h` 实际 **10 条**（含我原先漏记的 `NO_BLANK` ×2），`nofirst.h` 实际 **2 条**——**`struct` 的那条也会被报出**，用户裁定的「`struct` 不必显式 `public:`」是**报告侧的既定例外**，检查器并未在判据侧排除 `struct`；我第一版注释写成「struct 不应报警」，已按实测改正。
+  - **文档同步**：`tools/README.md` 的「退出码恒为 `0`」改为 0/2 两档并写明「**有发现也是 0**——条目需人工判读」；补 `-h`、子目录无关性、通道 B 子集告警、以及「先看规模行，规模为 0 或偏小时结论不可信」；§5 门禁一节补上 `.workflow/pipeline.yml` 实况（`trigger: manual`，挂了也拦不住任何东西）与取舍建议（**`initcheck.py` 适合先接**：今天 0 命中、接进去即绿；`s4scan.py` 的 `struct` 例外目前**只在报告侧建模**，未在判据侧排除）。`docs/cpp-style-clang-format.md` §3.1 指向新语料。
+  - **紧随其后查出的第二个口径错误（同一失败型的反面：不是漏报，是**淹没**）**：修完 cwd 后 `python tools/s4scan.py ..` 从 `tools/` 能跑了，但报 **416 个文件 / 4573 条**——因为 `os.walk` 会走进 `out/build/*/vcpkg_installed`，那里每个 preset 都有一份第三方头文件副本。**真实结果只有 176 文件 / 24 条，其余 4573 条全是第三方头文件**。误报和漏报一样致命：4573 条噪声里没人找得出那 24 条真发现。**修法不硬编码目录名，而是取自 `.gitignore`**——一次 `git ls-files --others --ignored --exclude-standard --directory` 拿到忽略目录表（本仓 15 条），递归展开时剪掉子目录；取不到 git 时退化为「不跳过」而非静默跳过，跳过数在末行报出（`跳过 EXCLUDE 内 N 个文件`），**绝不静默**。
+  - **修这个 bug 时我自己又制造了一个（已由 D 组用例抓住）**：加 EXCLUDE 过滤时把「显式点名的文件不受 EXCLUDE 约束」写进了注释和 `-h` 文本，**代码却对所有展开结果一律过滤**——于是 `tools/selfcheck/pos.h` 被自己排除、报「全部落在 EXCLUDE 内」退出 2，**语料自检整个失效**。修法是给显式点名的文件加 `pinned` 集合，`p in pinned or not any(...)`。**教训：注释里写的行为必须有一条用例去跑它**，否则注释就是谎言。
+  - **语料必须挡在 clang-format 之外（否则语料会被「好心地修好」而静默失效）**：试过 `clang-format --style=file --dry-run --Werror`——6 个语料里 `pos.h` 与 `initpos.cpp` **会被改写**，且改动方向恰好是**摧毁语料本身**：`pos.h` 的两处 `NO_BLANK` 被补上空行、`namespace N` 内的 `class Indented` **被去掉缩进**（`NOT_FLUSH` 随之消失）——**10 条期望发现会静默少掉 3 条**，而自检看起来仍在正常工作，正是这套语料本该防住的那种假绿灯。已加 `tools/selfcheck/.clang-format`（`DisableFormat: true`）保护，实测 6 文件全绿、**不外溢**（`src/Network/Shm/SingleShm.h` 仍被正常标记），语料自检结果不变。**副产物**：`SingleShm.h` 当前**不是** clang-format 干净的（`#include <string>` 被标记），即全仓并不满足 `.clang-format`——这是 ❓⑤ 的既有事实，本批未动。
+  - **顺带核实「语料会不会被 glob 进构建」**：**不会**。仓根 `CMakeLists.txt` 的模块只收显式目录（`include` + `src/<模块>`），测试走 `add_subdirectory(test)`，且**全仓没有任何 CMake 文件引用 `tools/`**——故把语料放在 `tools/selfcheck/` 而不是 `test/` 是刻意的：`test/` 会被构建收进去，故意写坏的代码会进编译。构建图里也确认无 `selfcheck` 字样。
+  - **回归验证**：改完两个脚本后重跑全仓，与重构前**同批**（176 文件 / 456 类 / 24 条；类内 24 + 类外 217 个初始化列表 / 0 乱序）；`python tools/s4scan.py ..`（从 `tools/`）与 `python tools/s4scan.py .`（从仓根）均为 **176 文件 / 24 条**；5 条自检命令逐条与语料头部注释的期望值一致；混合给「目录 + 显式文件」得到 11 + 1 = 12 个文件、10 条（**全部落在 `pos.h` 上，`src/Network/Shm` 的 11 个文件贡献 0 条**），与两边分别跑的结果自洽。
+  - **`SingleShm.h` 的收尾（`e5a27cb`）**：用户指出它不满足 `.clang-format`（`--dry-run --Werror` 会报 `<string>` 那行），已应用 `clang-format -i`——**纯空白改动**（Tab→4 空格、折叠 `#include` 后与文件尾的多余空行），证据是「格式化前 vs 格式化后」的 `diff -u` 只有空白行。**这里我一度说错**：拿 `git diff -w` 当「纯空白」的证明，而它是**对 HEAD** 比的，输出里那 1 增 5 删其实是**用户自己把 `shmName_` 从 `public` 挪到 `protected`**（真语义改动），不是格式化引入的。**改用构建兜底**：WSL-GCC `ninja UnitTests` rc=0（`SingleShm.cpp` 被重新编译，证明构建确实吃进了新头文件），**391/391 全过**。附带效果：该文件由 Tab 改为空格，与同目录仍用 Tab 的 `ShmBase.h` 暂不一致——这正是 ❓⑤ 选项 a「只对改动文件收敛」的第一步。
+
+### D.25
+
+- **Spark 批 3 子集 · CSV 缩写规范化：`CSVxxx` → `Csvxxx`（目录/类名/枚举/内部偏差，2026-09-16，`4b9ef4d`，合并 `f13cb2f`）**：
+  同 IO 批的判据（§1「缩写按普通单词处理」+ §2「文件名与类名一致」→ 三类只能同批原子改），但**证据策略必须换**：CSV 不满足等长不变式（`TOKEN_MAX_LEN`→`TokenMaxLen`、`TCSVField`→`CsvField`、`ltstr`→`CsvFieldLess` 都变长），IO 批「断言等长把偏移漂移变成不可能」那层保护在此失效。
+  - **范围（9 文件，185 增 / 185 删，完全对称 = 纯改名特征）**：路径 `src/Serialization/CSV/`→`Csv/`、`CSVParserTest.cpp`→`CsvParserTest.cpp`、`CSVRecordTest.cpp`→`CsvRecordTest.cpp`（含 gtest 套件名）；公开类 `CSVParser`/`CSVRecord`→`CsvParser`/`CsvRecord`；枚举 `enum CSV_PARSER_ERROR`→`enum class CsvParserError`（**语义变化**：改为限定作用域，使用点须补 `CsvParserError::`），值 `CPE_*` 去前缀；内部偏差 `TOKEN_MAX_LEN`→`TokenMaxLen`、`CSV_RECORD_MAX_{HEAD,CONTENT}_SIZE`→`CsvRecordMax{Head,Content}Size`、`struct TCSVField`→`CsvField`、`struct ltstr`→`CsvFieldLess`、`CCSVFieldMap`→`CsvFieldMap`、成员 `m_mapCSVField`→`csvFieldMap_`；中英 README 测试表各 2 行。`CSV` 作**文件格式名**的散文与 include 路径原样保留。
+  - **本批最重要的教训：自洽的 oracle 证明不了规则表完整。** 我漏了枚举**类型名** `CSV_PARSER_ERROR` 本身（只写了 4 个 `CPE_*` 枚举值），而**闸门 1d 照样报 OK**——它的判据是「拿 HEAD 原文按改名规则机械重推」，**规则表漏了，重推就一起漏**，两边一致地错。与 `PROGRESS.md:17 ⑧`「扫描口径写窄 = 假绿灯」、IO 批漏掉 `HandleIOEvent` 是同一失败型：**判据与被判对象共用同一个盲区**。根治靠加一道**独立口径**（`--scan`：直接搜残留 `CSV[A-Za-z0-9_]*`，不依赖规则表），并**先证明扫描器非空转**——拿 HEAD 原文跑，它确实报出 `CSV_PARSER_ERROR` ×4（1 定义 + 3 使用），与漏掉的那处吻合。
+  - **第二处漏网，同样只有独立口径能抓：右边界断言把自己挡住了。** 残留扫描写成 `(?<![A-Za-z0-9_])(CSVParser|CSVRecord|…)(?![A-Za-z0-9_])`，末尾那个 `(?![A-Za-z0-9_])` 使 `CSVParserTest`/`CSVRecordTest` **结构上不可能匹配**，报 0 处。改成不做边界假设的 `CSV[A-Za-z0-9_]*` 全仓扫，才在两份 README 各抓到 2 处。**两次都是同一类错**：我拿「已想到的名字」造句，而漏掉的必然不在句子里。
+  - **枚举定义体重写必须保 Allman**：第一版把 `enum CSV_PARSER_ERROR {` 合成一行，违 §3「括号独占一行」。改为**只替换 header 类型名与定义体里的枚举值、其余字节（含换行缩进）原样搬运**，并用 `cat -A` 核过 `{` 独占一行、枚举值 tab 缩进。
+  - **注释改动是有意的，与 IO 批相反**：测试文件里 `// CSVParser 测试` 是**自指类名的标签**，不改就成陈旧注释。故本批屏蔽区间只含字符串/字符字面量，注释照改，并逐文件核验注释条目数（`CsvParserTest` 3 / `CsvRecordTest` 5，旧名 0 处）。
+  - **闸门（全绿）**：脚本自测 15/15（含 `// 轻量 CSV 文件解析器` 假阳性语料、Allman 枚举定义体、`CSV_PARSER_ERROR` 类型名三条防回归语料）；闸门 1d 六文件与机械重推**逐字节全等**；`--scan` 独立口径 `CSV*` 清零；字面量多重集**零差异**（0/0/15/19/33/39）；陈旧注释 0；中英 README 正样本保留；`pumpall.py` rc=0、231 个跟踪文件逐字节零 churn、无 `.pumptmp`；`x64-Debug`/`x64-Release` 各 0 error，`UnitTests` **392/392 ×2**。
+  - **重命名的目录/文件由 `GLOB_RECURSE CONFIGURE_DEPENDS` 自动收进构建**（`submodules/CMakeCommon/CMakeCommon.cmake:50,80,98,117`）→ **零 CMake 改动**；构建日志里可见 `Serialization\CsvParserTest.cpp.obj` / `CsvRecordTest.cpp.obj`。`git diff -M` 把 `CsvParserTest.cpp` 报成 delete+create 是相似度跌破 50% 阈值所致，内容本身已由闸门 1d 证明是纯改名。
+  - **工具链踩坑（`%TEMP%\spark-build.py`）**：从 Git Bash 驱动 MSVC 构建有四个坑——①`cmd.exe /c` 会被 MSYS 转成 `C:/`（须 `//c`）；②`cmd.exe` **不认 `\"` 转义**（那是 C runtime 规则），故 subprocess 用 list 传参会因内层引号转义而失败；③bash heredoc/printf 中转 .bat 会被**八进制转义吃掉反斜杠**（`\2022`→0x82 `2`、`\Build`→退格 `uild`、`\v`→VT）；④最终解法是**由 python 亲自写纯 ASCII + CRLF 的 .bat 再以 list 调用**。另：不跑 `vcvars64.bat` 时 `INCLUDE` 未设，报的是 `fatal error C1083: 无法打开包括文件: "string"/"stdint.h"`——**与本批改动无关**，勿误归因。
+  - **同批续做（`e26dd92`，合并 `4584d6b`）：CSV 族匈牙利前缀清零，122 处 / 4 文件，102 增 / 102 删（完全对称）**。范围是批首**未选**的那一项——形参 `psz*`、`ch[A-Z]`/`n[A-Z]` 前缀、私有成员 `chC_`/`chNC_`/`currWord_`/`curr_`、无信息名 `data_`、缩写 `itor`，一律改为承载语义的 camelCase（`pszEnd`→`stopChars`，因其语义是「终止字符集」而非某数据源；`data_`→`csvText_` 依 Harness §4「名称即意图」）。**刻意不混入 §6/§7 的既有偏差**（同文件里的 `(char *)` / `(int)` C 风格 cast、缺 `explicit`、`GetErrorCode()` 缺 `const`），故**闸门 1d 在本批可用**：从 HEAD 按规则表机械重推、与工作区逐字节全等，直接证明「除改名外无任何其他改动混入」。
+  - **本批把上一批的教训变成了两条可执行的闸门**：①**两条互相独立的口径必须给出相同的逐文件命中数**——规则表机械推导（9/16/43/54）与**不依赖规则表**的前缀正则扫描（9/16/43/54），两边一致才结案；②**扫描器自己也要有自测语料**（7 条旧名正样本 + 10 条新名反样本），因为「0 命中」在报告之前**必须先证明判据本身能命中正样本**——上一批的 `CSV_PARSER_ERROR` 正是死在「口径与被判对象共用同一个盲区」。反样本里 `currentWord_`/`currentChar_` 是以 `curr` 开头的**新名**，裸 `curr[A-Za-z0-9_]*` 会把它们报成残留（假阳性），故扫描正则写作 `curr(?!ent)[A-Za-z0-9_]*`——**这是我差点自己制造的一个「口径与目标不一致」，由反样本语料挡住**。`x64-Debug`/`x64-Release` 各 0 error，`UnitTests` 392/392 ×2。
+  - **本批能自洽的前提是先把口径量全**：动手前全仓扫过 `psz*` 61 处 / 4 文件、`ch[A-Z]` 24 / 4、`n[A-Z]` 12 / 2，**全部落在 CSV 这 4 个文件里**；仓内别处只剩 `b[A-Z]`（`TcpIocpBase.cpp` 3 处）、`str[A-Z]`（`MD5.cpp` 10 处）、`p[A-Z]`（`TcpIocpCompletePort.cpp` 2 处）三处疑似假阳性——故本批未牵动别的模块。测试文件里匈牙利前缀命中 **0**，也印证了「形参名不影响调用方」。
+  - **同批另一笔（`ee74e59`，独立 commit）：`new char[]` 配 `delete` 的未定义行为 + 删 `#if 0` 死代码**。`CsvParser.cpp:39` 与 `CsvRecord.cpp:20-21` 共 3 处 `delete` 改 `delete[]`（与 5 处 `new char[]` 逐一核过配对），并删掉 `CsvRecord.cpp` 里调用早已不存在的 `record.Analysis(...)` 的整块 `#if 0`。**刻意不混进改名批**：它是内存管理改动（Harness §3），且改名批的证据策略要求 HEAD 基线干净——HEAD 落后两批会让差异**无法归因**。**一条教训**：这两项是我登记、**用户自己动手**改的，但用户改的是他读到的那几行，我复核时发现 `CsvParser.cpp:39` **仍漏着**（登记条目描的是 2 处，实际 3 处）——**「对方说改过了」不等于「都改过了」，复核必须逐个分配点比对，而不是只核对登记条目提到的那几行**。
+  - **独立审查（`code-reviewer`，针对 `e26dd92`）判定 0 阻断项**，并用机械方式复核本批的三条声明：对 `ee74e59` 原文施加规则表后与工作区**逐字节比对 4/4 全等**；且**15 个新名在 HEAD 原文中的出现次数均为 0**——无同名标识符共存，故替换是 alpha-renaming，**语义必然保持**（这比逐行目视可靠）。它还确认了 14 条规则项在 HEAD 中**均有实际命中、无空转条目或编号遗漏**。
+  - **审查指出两处「本批自己新引入」的低severity 隐患，已在 `6300a1b` 收掉**：①`SetSeparator` 的形参 `separator` 与成员 `separator_` 只差一个下划线，而 `CsvParser` 的成员是 `char separator_[2]`——若把它误写成 `separator[0] = separator`，**对算术类型取下标是合法左值表达式，能静默编译通过**，变成对形参自赋值、成员纹丝不动。原名 `chSeparator` 区分度更高，是**本批把区分度改没了**，故形参定为 `separatorChar`（两个类一致）。②`itor`→`foundField` 丢掉了「迭代器」这一类别信息——`foundField` 读起来像字段对象，实际是 `CsvFieldMap::iterator`；改为 `fieldIterator`，并把 `(*x).second` 写成 `x->second`。
+  - **审查的仓外核查结论**：形参名对外**零影响**（全仓无 `STRINGIFY`/`##`/模板参数名挂钩，调用点全按位置传参，无宏包裹）；`e26dd92` 的 diff 里**没有任何 `class`/`enum` 行增删**，对外契约不变；`D:/Gitee/DAG/DAGDemo/PersonalLib/` 是**冻结的 vendored 快照**（自带一份 `CsvParser`/`CSVRecord` 与自己的 `pszData`），**不是消费方，勿误登记**。
+
 ### D.24
 
 - **Spark 批 3 子集 · IO 缩写规范化：`IOxxx` → `Ioxxx`（类名/文件名/目录名同批原子改，2026-09-16，`0c95abb`，合并 `9e12009`）**：
@@ -448,6 +613,17 @@
     方向是"此前静默跳过的字段开始被赋值"，属**行为变更**（修漏），已确认对现有全部消费方零输出。
 
 ## ❓ 原待讨论 / 待决策
+
+### Q.23
+
+- **§4 新规对齐的收尾登记（2026-09-17）**：
+  - ~~**① `src/Network/Shm/SingleShm.h` 的 `std::string shmName_;` 是 `public` 数据成员，违 §1「公有成员变量 PascalCase」**~~ **已关闭（用户自行处理）**：用户把它从 `public` 段挪进了 `protected` 段（现 `SingleShm.h:28`），不再踩「公有成员 PascalCase」，**符号名保持 `shmName_` 未改**。挪动本身正确（3 个使用点全在类内）；但那次编辑带进来两个格式偏差，已由我收掉——段间多出一个空行（21-22 行两个连续空行 → 一个）、成员缩进写成 4 空格而该文件其余全是 Tab（已改回 Tab）。顺带清掉该文件第 17 行既有的纯 Tab 尾随空白（`.editorconfig` 要求 `trim_trailing_whitespace`）。
+  - ~~**② §6 表格里「禁止 `new`/`delete`」这一行的消失是遗漏**~~ **已裁定：禁令已解除**。用户确认 §6 该行不再存在是有意的，`new`/`delete` 转为 §7「智能指针」的**优先**写法（「**默认使用** `std::unique_ptr`」）而非**禁止**，并明确**批 3 不做 `new`/`delete` 这一项**。据此，本区「批 3 Spark 侧公开 API 改名的授权」条目里的「裸 `new` 46 处 / 裸 `delete` 20 处 → 智能指针」**整项撤销**，不再是待办。**代码未动。**
+  - ~~**③ `volatile` 用于同步（`ShmBuffer.h:12-16`、`ThreadBase.h` 的 `shouldRun_`）**~~ **已裁定：保留，非违规**。用户给出的设计口径：这两处 `volatile` 用在**进程间共享内存**的读写上，作用是**避免编译器把值缓存在寄存器里导致不读**；同步机制本身**不靠 `volatile`**；共享内存链路每次**只有一个进程写、另一个读**（单写单读）。据此 §6「禁止 `volatile` 用于同步」在这一用法上**不适用**，上述同一条目里的「`volatile` 6 处 / 2 文件 → `std::atomic`」**整项撤销**。**遗留风险（仅登记，不再作待办）**：C++ 标准对跨线程/跨进程的可见性只保证到 `std::atomic` 与内存序，`volatile` 只约束编译器不做寄存器缓存、不约束相邻访存的重排，当前实现依赖「单写单读 + 硬件缓存一致性」这一实践约定成立。若该约定日后变化（出现多写，或状态与数据分离在不同字段），需重新评估。
+
+### Q.22
+
+- **`D:/Gitee/Libs/Spark/x64-windows` 在未发指令的情况下被刷新了（2026-09-16，需用户确认）**：本会话窗口内该目录的 mtime 集中在 13:36–13:41，`include/Spark/Serialization/Csv/CsvRecord.h`（13:38）已是**新名** `class SERIALIZATION_EXPORTS CsvRecord`。**决定性判据**：记下该目录 mtime 后跑 `cmake --build x64-Debug`（结果 `ninja: no work to do`），mtime **纹丝不动**；`out/build/x64-Debug/build.ninja` 的 `default all` 里也只有 `build all: phony … Cored.dll test\all`、**不含 `install`** → **`cmake --build` 不安装，不是我这条命令链造成的**（`CMakeCommon.cmake:139/155/168` 的 POST_BUILD 钩子只往目标目录拷 DLL 与 config）。推测是并行的 IDE / 另一个会话所为。这属对外可见动作——它改变了 QT 编译时面向的头文件，且**绕过了此前为「重发 SDK」登记的「装前先把旧 `IO/` 单次 `mv` 让位」那道 NTFS 大小写陷阱处置**。**请确认是否你本人有意为之。**（大小写陷阱已自查掉一半：`python os.listdir` 读回 `include/Spark/Network/` = `['Io', 'Network.h', 'NetworkExport.h', 'Protocol']`、`include/Spark/Serialization/` = `[..., 'Csv', ...]`——**磁盘真名已是 `Io`/`Csv`，没有留下旧 `IO` 目录**，故本次刷新**未**踩到那道 NTFS 陷阱。遗留的只有「谁刷的、是否要与 QT 的消费时点对齐」这一个问题。）
 
 ### Q.21
 
