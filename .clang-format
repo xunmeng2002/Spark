@@ -37,4 +37,9 @@ MaxEmptyLinesToKeep: 1
 ReflowComments: false                         # 仓库里的 `// ===....===` 分隔线不能被重排
 SortIncludes: Never                           # §2 的 include 分组（组间空行、组内字母序）由人维护；
                                               # clang-format 排序会吞掉分组空行
+FixNamespaceComments: false                   # LLVM 默认 true，会给 `}` 追加 `// namespace X`。
+                                              # 本仓自有代码无此惯例（13 处命中全在 src/Serialization/json/
+                                              # 那份第三方快照里），且它会往文件里**写入注释行**——
+                                              # 使「全仓格式化 = 纯空白改动、可用 git diff -w 验证」不再成立。
+                                              # 格式化的职责是调空白，不该改内容
 ...

@@ -10,8 +10,13 @@
 通道 B 依赖类名唯一的假设：同名类若成员表不同则判为歧义，整体跳过（宁漏勿误）。
 
 只读。用法：
-  python tools/initcheck.py
-  python tools/initcheck.py src/Network
+  python tools/initcheck.py              # 全仓（推荐；通道 B 需要全仓的类表）
+  python tools/initcheck.py src/Network  # 只扫指定路径（路径相对当前目录）
+
+**给定的路径只是子集时，通道 B 的结论不作数**：它要先全仓建「类名 → 成员声明顺序」
+表，子集里看不到的类会被静默跳过（`cls not in table`）。脚本会在这种情况下打印告警。
+
+退出码: 0 = 扫描完成（有乱序也算 0）；2 = 用法/路径错误或扫到 0 个文件。
 """
 import os
 import re
@@ -139,13 +144,19 @@ def judge(seq, index_of, declared):
 
 
 def main():
-    files = sys.argv[1:] or S.repo_files()
+    args = sys.argv[1:]
+    files = S.parse_targets(args)
+    if args:
+        all_files = S.parse_targets([])
+        print('注意: 只给了 %d 个文件（全仓 %d 个），通道 B 只在给定文件里建类表——'
+              '跨文件的类外构造函数定义会被漏检，通道 B 的结论不作数；'
+              '要校验通道 B 请不带参数全仓运行。' % (len(files), len(all_files)))
     parsed = {}
     for f in files:
         try:
             raw = open(f, encoding='utf-8', errors='replace').read()
         except OSError as exc:
-            print(f'!! {f}: {type(exc).__name__}: {exc}')
+            print(f'!! {S.rel(f)}: {type(exc).__name__}: {exc}')
             continue
         parsed[f] = (raw, S.mask(raw))
 
@@ -170,11 +181,11 @@ def main():
                 continue
             index_of = {nm: n for n, (nm, _) in enumerate(declared)}
             open_line = masked[:o + 1].count('\n') + 1
-            for rel, names in in_class_init_lists(masked[o + 1:c]):
+            for rel_line, names in in_class_init_lists(masked[o + 1:c]):
                 total_a += 1
                 why = judge(names, index_of, declared)
                 if why:
-                    hits.append(('A', f, open_line + rel, kw, name, why))
+                    hits.append(('A', f, open_line + rel_line, kw, name, why))
         # 通道 B
         for line_no, cls, names in out_of_class_init_lists(raw, masked):
             if cls in ambiguous or cls not in table:
@@ -187,10 +198,12 @@ def main():
                 hits.append(('B', f, line_no, 'class', cls, why))
 
     for ch, f, ln, kw, name, why in hits:
-        print(f'  [INIT_ORDER/{ch}] {f}:{ln}  ({kw} {name})')
+        print(f'  [INIT_ORDER/{ch}] {S.rel(f)}:{ln}  ({kw} {name})')
         print(f'        {why}')
-    print(f'---- 通道 A（类内定义）检查 {total_a} 个初始化列表；通道 B（类外定义）检查 {total_b} 个；'
-          f'乱序 {len(hits)} 处')
+    skipped = S._SKIPPED[0] if S._SKIPPED else 0
+    print(f'---- 扫描 {len(files)} 个文件；通道 A（类内定义）检查 {total_a} 个初始化列表；'
+          f'通道 B（类外定义）检查 {total_b} 个；乱序 {len(hits)} 处'
+          + (f'（跳过 EXCLUDE 内 {skipped} 个文件）' if skipped else ''))
     if ambiguous:
         print(f'---- 因类名歧义跳过通道 B 的类: {sorted(ambiguous)}')
 
