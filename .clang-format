@@ -8,6 +8,16 @@
 #   标签顶格、成员缩进 4 空格、段间空行。
 # §4 中 clang-format **不能**表达的（访问段优先级、段内 6 组序、数据成员置段末、
 #   每段只出现一次、初始化列表与声明同序）——见 docs/cpp-style-clang-format.md。
+#
+# ⚠ 配置的两段结构与维护约定
+#
+#   "§3 / §4" 两段是**主动选择**：每一项都对应规范里的条款或 .editorconfig 的值。
+#   "§5" 段是**记录性钉死**（2026-09-17 补）：这些项此前一个字都没写，于是取
+#   LLVM 默认值——而默认值会随 clang-format 版本变。全仓格式化时正是这样栽了一次：
+#   template 声明被默认值并成一行、宏续行反斜杠被默认值补位到列宽，两处都改掉了
+#   作者原有写法而无人察觉（配置里没写，代码里也就没有"这一项是谁定的"的痕迹）。
+#   §5 每一项都实测确认过：写进去之后全仓输出**逐字不变**，属于把当前生效值记账，
+#   不是新的风格决定。要改某一条，请连同 docs/cpp-style-clang-format.md §7 一起改。
 ---
 Language: Cpp
 BasedOnStyle: LLVM
@@ -42,4 +52,116 @@ FixNamespaceComments: false                   # LLVM 默认 true，会给 `}` �
                                               # 那份第三方快照里），且它会往文件里**写入注释行**——
                                               # 使「全仓格式化 = 纯空白改动、可用 git diff -w 验证」不再成立。
                                               # 格式化的职责是调空白，不该改内容
+
+# ---- §5 记录性钉死：此前骑在 LLVM 默认值上（2026-09-17 实测后补）----
+#
+# 前六项是**实测发现默认值覆盖了作者原有写法**、因而需要表态的；其余是实测确认
+# 「默认值与作者写法一致」、钉死只为不再随版本漂移。分组顺序对应常见的阅读顺序。
+
+# 5.1 已实测发现问题的三项（本段唯一改变了代码输出的地方）
+BreakTemplateDeclarations: Yes                # 默认 MultiLine 会在 150 列内把
+                                              # `template <...>` 与后面的实体并成一行。
+                                              # A 步据此改掉 31 处（15 文件），
+                                              # 而格式化前本仓 0 处是并行的 —— 属默认值
+                                              # 覆盖作者写法，非风格选择。
+AlignEscapedNewlines: DontAlign               # 默认 Right 会把宏续行反斜杠右对齐到第
+                                              # 150 列，实测给 4 行各补 91~110 个空格
+                                              # （作者原文零补位）。补位撑长宏体后会触发
+                                              # 重折、进而多出一个续行反斜杠——B 步那处
+                                              # 「真实字符变化」就是这么来的。
+                                              # DontAlign 最接近原写法（clang-format 仍会
+                                              # 留 1 个空格，零空格做不到）。
+SpaceAfterTemplateKeyword: true               # 默认即 true，此处显式记账：作者原有 63 处
+                                              # 声明里 48 处本就带空格（76%），默认值是把
+                                              # 少数写法归并到多数派，非覆盖，故维持。
+
+# 5.2 对齐（本仓一律不对齐：对齐列一旦增删字段就会连带 diff 一片）
+AlignConsecutiveAssignments: None            # 这一项写 None 与默认值等价（其实测通过）
+# AlignConsecutiveBitFields / Declarations / Macros 三项**刻意不写**：
+#   简写 `None` 并不等于默认值——它会把子项 `PadOperators` 隐式置成 true，
+#   而这三项的默认是 false（`AlignConsecutiveAssignments` 的默认本就是 true，
+#   所以只有它写 None 是等价的）。本仓未启用这些对齐，输出上看不出差别，
+#   但配置已与默认值不同。**写错值比不写更糟**，故保持骑默认。
+#   ——这条是 2026-09-17 用 `--dump-config` 逐键对比时抓出来的。
+AlignTrailingComments: Always                # 注意：默认是 Kind=Always（行尾注释对齐），
+                                              # 不是 Never。写成 Never 会取消 MD5.cpp、
+                                              # TcpIocpConnect.h 等处已有的对齐——实测踩过
+AlignOperands: Align
+AlignArrayOfStructures: None
+SpacesBeforeTrailingComments: 1
+
+# 5.3 空格
+SpaceAfterCStyleCast: false                   # `(char*)p` 而非 `(char*) p`
+SpaceAfterLogicalNot: false                   # `!flag` 而非 `! flag`
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCaseColon: false
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true         # `Foo() : a_(1)` 冒号前有空格
+SpaceBeforeInheritanceColon: true
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceBeforeSquareBrackets: false              # `arr[0]` 而非 `arr [0]`
+SpaceInEmptyBlock: false
+SpaceAroundPointerQualifiers: Default
+SpacesInContainerLiterals: true               # `{1, 2}` 而非 `{1,2}`
+SpacesInParens: Never
+SpacesInSquareBrackets: false
+BitFieldColonSpacing: Both
+SpacesInAngles: Never
+ReferenceAlignment: Pointer
+DerivePointerAlignment: false
+
+# 5.4 缩进
+IndentCaseBlocks: false
+IndentCaseLabels: false
+IndentGotoLabels: true
+IndentPPDirectives: None
+IndentWrappedFunctionNames: false
+NamespaceIndentation: None                    # 本仓 namespace 内不缩进
+ContinuationIndentWidth: 4
+ConstructorInitializerIndentWidth: 4
+LambdaBodyIndentation: Signature
+ShortNamespaceLines: 1
+CompactNamespaces: false
+IndentExternBlock: AfterExternBlock
+IndentRequiresClause: true
+
+# 5.5 断行与收行
+AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortCaseExpressionOnASingleLine: true
+AllowShortEnumsOnASingleLine: true
+AllowShortLambdasOnASingleLine: All
+AllowShortCompoundRequirementOnASingleLine: true
+AllowBreakBeforeNoexceptSpecifier: Never
+BreakArrays: true
+BreakFunctionDefinitionParameters: false
+BreakAfterReturnType: None
+BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: true
+BreakBeforeInlineASMColon: OnlyMultiline
+BreakBeforeConceptDeclarations: Always
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon
+PackConstructorInitializers: BinPack
+BreakStringLiterals: true
+BreakAdjacentStringLiterals: true
+AlwaysBreakBeforeMultilineStrings: false
+RequiresClausePosition: OwnLine
+
+# 5.6 其余
+Cpp11BracedListStyle: true
+EmptyLineAfterAccessModifier: Never            # 与 5.4 的 EmptyLineBeforeAccessModifier 分工：
+                                              # 空行补在标签**之前**，标签之后不补
+InsertBraces: false                           # 不替人补大括号（那是改控制流写法）
+RemoveBracesLLVM: false
+RemoveParentheses: Leave
+RemoveSemicolon: false
+SeparateDefinitionBlocks: Leave
+QualifierAlignment: Leave
+SortUsingDeclarations: LexicographicNumeric
+InsertNewlineAtEOF: false
+
+# 5.7 刻意**不**写的一项
+# LineEnding 保持不指定（解析为 DeriveLF）：行尾符属于文件编码约定，不是风格决定；
+# 写死成 LF 会让将来任何 CRLF 文件被静默改行尾。此项归 .editorconfig 管。
 ...
