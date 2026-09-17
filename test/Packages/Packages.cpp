@@ -5257,14 +5257,10 @@ int RspQryCommissionRatePackage::ToStepStream(char* buff, int size) const
 		}
 		StepUtility::WriteString(cursor, Items::ExchangeId, CommissionRate->ExchangeId);
 		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(CommissionRate->ProductClass));
-		StepUtility::WriteString(cursor, Items::OpenBuyByMoney, CommissionRate->OpenBuyByMoney);
-		StepUtility::WriteString(cursor, Items::OpenSellByMoney, CommissionRate->OpenSellByMoney);
-		StepUtility::WriteString(cursor, Items::CloseBuyByMoney, CommissionRate->CloseBuyByMoney);
-		StepUtility::WriteString(cursor, Items::CloseSellByMoney, CommissionRate->CloseSellByMoney);
-		StepUtility::WriteString(cursor, Items::OpenBuyByVolume, CommissionRate->OpenBuyByVolume);
-		StepUtility::WriteString(cursor, Items::OpenSellByVolume, CommissionRate->OpenSellByVolume);
-		StepUtility::WriteString(cursor, Items::CloseBuyByVolume, CommissionRate->CloseBuyByVolume);
-		StepUtility::WriteString(cursor, Items::CloseSellByVolume, CommissionRate->CloseSellByVolume);
+		StepUtility::WriteString(cursor, Items::OpenByMoney, CommissionRate->OpenByMoney);
+		StepUtility::WriteString(cursor, Items::CloseByMoney, CommissionRate->CloseByMoney);
+		StepUtility::WriteString(cursor, Items::OpenByVolume, CommissionRate->OpenByVolume);
+		StepUtility::WriteString(cursor, Items::CloseByVolume, CommissionRate->CloseByVolume);
 		StepUtility::WriteString(cursor, Items::MinCommission, CommissionRate->MinCommission);
 		StepUtility::WriteString(cursor, Items::MaxCommission, CommissionRate->MaxCommission);
 		StepUtility::WriteHexString(cursor, Items::FieldEnd, CommissionRateField::FieldId);
@@ -5331,44 +5327,24 @@ bool RspQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 							CommissionRate->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
 							break;
 						}
-						case Items::OpenBuyByMoney:
+						case Items::OpenByMoney:
 						{
-							CommissionRate->OpenBuyByMoney = atof(value.c_str());
+							CommissionRate->OpenByMoney = atof(value.c_str());
 							break;
 						}
-						case Items::OpenSellByMoney:
+						case Items::CloseByMoney:
 						{
-							CommissionRate->OpenSellByMoney = atof(value.c_str());
+							CommissionRate->CloseByMoney = atof(value.c_str());
 							break;
 						}
-						case Items::CloseBuyByMoney:
+						case Items::OpenByVolume:
 						{
-							CommissionRate->CloseBuyByMoney = atof(value.c_str());
+							CommissionRate->OpenByVolume = atof(value.c_str());
 							break;
 						}
-						case Items::CloseSellByMoney:
+						case Items::CloseByVolume:
 						{
-							CommissionRate->CloseSellByMoney = atof(value.c_str());
-							break;
-						}
-						case Items::OpenBuyByVolume:
-						{
-							CommissionRate->OpenBuyByVolume = atof(value.c_str());
-							break;
-						}
-						case Items::OpenSellByVolume:
-						{
-							CommissionRate->OpenSellByVolume = atof(value.c_str());
-							break;
-						}
-						case Items::CloseBuyByVolume:
-						{
-							CommissionRate->CloseBuyByVolume = atof(value.c_str());
-							break;
-						}
-						case Items::CloseSellByVolume:
-						{
-							CommissionRate->CloseSellByVolume = atof(value.c_str());
+							CommissionRate->CloseByVolume = atof(value.c_str());
 							break;
 						}
 						case Items::MinCommission:
@@ -5514,7 +5490,7 @@ const char* RspQryCommissionRatePackage::GetDebugString() const
 	int offset = 0;
 	if (CommissionRate != nullptr)
 	{
-		offset = AppendDebugString(offset, "CommissionRate:AccountId:[%s], ExchangeId:[%s], ProductClass:[%d], OpenBuyByMoney:[%f], OpenSellByMoney:[%f], CloseBuyByMoney:[%f], CloseSellByMoney:[%f], OpenBuyByVolume:[%f], OpenSellByVolume:[%f], CloseBuyByVolume:[%f], CloseSellByVolume:[%f], MinCommission:[%f], MaxCommission:[%f]", CommissionRate->AccountId, CommissionRate->ExchangeId, static_cast<int>(CommissionRate->ProductClass), CommissionRate->OpenBuyByMoney, CommissionRate->OpenSellByMoney, CommissionRate->CloseBuyByMoney, CommissionRate->CloseSellByMoney, CommissionRate->OpenBuyByVolume, CommissionRate->OpenSellByVolume, CommissionRate->CloseBuyByVolume, CommissionRate->CloseSellByVolume, CommissionRate->MinCommission, CommissionRate->MaxCommission);
+		offset = AppendDebugString(offset, "CommissionRate:AccountId:[%s], ExchangeId:[%s], ProductClass:[%d], OpenByMoney:[%f], CloseByMoney:[%f], OpenByVolume:[%f], CloseByVolume:[%f], MinCommission:[%f], MaxCommission:[%f]", CommissionRate->AccountId, CommissionRate->ExchangeId, static_cast<int>(CommissionRate->ProductClass), CommissionRate->OpenByMoney, CommissionRate->CloseByMoney, CommissionRate->OpenByVolume, CommissionRate->CloseByVolume, CommissionRate->MinCommission, CommissionRate->MaxCommission);
 	}
 	if (RspInfo != nullptr)
 	{
@@ -25211,14 +25187,10 @@ int ReqAddCommissionGroupPackage::ToStepStream(char* buff, int size) const
 		}
 		StepUtility::WriteString(cursor, Items::ExchangeId, ReqAddCommissionGroup->ExchangeId);
 		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(ReqAddCommissionGroup->ProductClass));
-		StepUtility::WriteString(cursor, Items::OpenBuyByMoney, ReqAddCommissionGroup->OpenBuyByMoney);
-		StepUtility::WriteString(cursor, Items::OpenSellByMoney, ReqAddCommissionGroup->OpenSellByMoney);
-		StepUtility::WriteString(cursor, Items::CloseBuyByMoney, ReqAddCommissionGroup->CloseBuyByMoney);
-		StepUtility::WriteString(cursor, Items::CloseSellByMoney, ReqAddCommissionGroup->CloseSellByMoney);
-		StepUtility::WriteString(cursor, Items::OpenBuyByVolume, ReqAddCommissionGroup->OpenBuyByVolume);
-		StepUtility::WriteString(cursor, Items::OpenSellByVolume, ReqAddCommissionGroup->OpenSellByVolume);
-		StepUtility::WriteString(cursor, Items::CloseBuyByVolume, ReqAddCommissionGroup->CloseBuyByVolume);
-		StepUtility::WriteString(cursor, Items::CloseSellByVolume, ReqAddCommissionGroup->CloseSellByVolume);
+		StepUtility::WriteString(cursor, Items::OpenByMoney, ReqAddCommissionGroup->OpenByMoney);
+		StepUtility::WriteString(cursor, Items::CloseByMoney, ReqAddCommissionGroup->CloseByMoney);
+		StepUtility::WriteString(cursor, Items::OpenByVolume, ReqAddCommissionGroup->OpenByVolume);
+		StepUtility::WriteString(cursor, Items::CloseByVolume, ReqAddCommissionGroup->CloseByVolume);
 		StepUtility::WriteString(cursor, Items::MinCommission, ReqAddCommissionGroup->MinCommission);
 		StepUtility::WriteString(cursor, Items::MaxCommission, ReqAddCommissionGroup->MaxCommission);
 		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddCommissionGroupField::FieldId);
@@ -25291,44 +25263,24 @@ bool ReqAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							ReqAddCommissionGroup->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
 							break;
 						}
-						case Items::OpenBuyByMoney:
+						case Items::OpenByMoney:
 						{
-							ReqAddCommissionGroup->OpenBuyByMoney = atof(value.c_str());
+							ReqAddCommissionGroup->OpenByMoney = atof(value.c_str());
 							break;
 						}
-						case Items::OpenSellByMoney:
+						case Items::CloseByMoney:
 						{
-							ReqAddCommissionGroup->OpenSellByMoney = atof(value.c_str());
+							ReqAddCommissionGroup->CloseByMoney = atof(value.c_str());
 							break;
 						}
-						case Items::CloseBuyByMoney:
+						case Items::OpenByVolume:
 						{
-							ReqAddCommissionGroup->CloseBuyByMoney = atof(value.c_str());
+							ReqAddCommissionGroup->OpenByVolume = atof(value.c_str());
 							break;
 						}
-						case Items::CloseSellByMoney:
+						case Items::CloseByVolume:
 						{
-							ReqAddCommissionGroup->CloseSellByMoney = atof(value.c_str());
-							break;
-						}
-						case Items::OpenBuyByVolume:
-						{
-							ReqAddCommissionGroup->OpenBuyByVolume = atof(value.c_str());
-							break;
-						}
-						case Items::OpenSellByVolume:
-						{
-							ReqAddCommissionGroup->OpenSellByVolume = atof(value.c_str());
-							break;
-						}
-						case Items::CloseBuyByVolume:
-						{
-							ReqAddCommissionGroup->CloseBuyByVolume = atof(value.c_str());
-							break;
-						}
-						case Items::CloseSellByVolume:
-						{
-							ReqAddCommissionGroup->CloseSellByVolume = atof(value.c_str());
+							ReqAddCommissionGroup->CloseByVolume = atof(value.c_str());
 							break;
 						}
 						case Items::MinCommission:
@@ -25414,7 +25366,7 @@ const char* ReqAddCommissionGroupPackage::GetDebugString() const
 	int offset = 0;
 	if (ReqAddCommissionGroup != nullptr)
 	{
-		offset = AppendDebugString(offset, "ReqAddCommissionGroup:AdminUserId:[%s], TradingDay:[%s], CommissionGroupId:[%d], CommissionGroupName:[%s], ExchangeId:[%s], ProductClass:[%d], OpenBuyByMoney:[%f], OpenSellByMoney:[%f], CloseBuyByMoney:[%f], CloseSellByMoney:[%f], OpenBuyByVolume:[%f], OpenSellByVolume:[%f], CloseBuyByVolume:[%f], CloseSellByVolume:[%f], MinCommission:[%f], MaxCommission:[%f]", ReqAddCommissionGroup->AdminUserId, ReqAddCommissionGroup->TradingDay, ReqAddCommissionGroup->CommissionGroupId, ReqAddCommissionGroup->CommissionGroupName, ReqAddCommissionGroup->ExchangeId, static_cast<int>(ReqAddCommissionGroup->ProductClass), ReqAddCommissionGroup->OpenBuyByMoney, ReqAddCommissionGroup->OpenSellByMoney, ReqAddCommissionGroup->CloseBuyByMoney, ReqAddCommissionGroup->CloseSellByMoney, ReqAddCommissionGroup->OpenBuyByVolume, ReqAddCommissionGroup->OpenSellByVolume, ReqAddCommissionGroup->CloseBuyByVolume, ReqAddCommissionGroup->CloseSellByVolume, ReqAddCommissionGroup->MinCommission, ReqAddCommissionGroup->MaxCommission);
+		offset = AppendDebugString(offset, "ReqAddCommissionGroup:AdminUserId:[%s], TradingDay:[%s], CommissionGroupId:[%d], CommissionGroupName:[%s], ExchangeId:[%s], ProductClass:[%d], OpenByMoney:[%f], CloseByMoney:[%f], OpenByVolume:[%f], CloseByVolume:[%f], MinCommission:[%f], MaxCommission:[%f]", ReqAddCommissionGroup->AdminUserId, ReqAddCommissionGroup->TradingDay, ReqAddCommissionGroup->CommissionGroupId, ReqAddCommissionGroup->CommissionGroupName, ReqAddCommissionGroup->ExchangeId, static_cast<int>(ReqAddCommissionGroup->ProductClass), ReqAddCommissionGroup->OpenByMoney, ReqAddCommissionGroup->CloseByMoney, ReqAddCommissionGroup->OpenByVolume, ReqAddCommissionGroup->CloseByVolume, ReqAddCommissionGroup->MinCommission, ReqAddCommissionGroup->MaxCommission);
 	}
 	return DataStringBuffer;
 }
@@ -25742,14 +25694,10 @@ int ReqUpdateCommissionGroupPackage::ToStepStream(char* buff, int size) const
 		}
 		StepUtility::WriteString(cursor, Items::ExchangeId, ReqUpdateCommissionGroup->ExchangeId);
 		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(ReqUpdateCommissionGroup->ProductClass));
-		StepUtility::WriteString(cursor, Items::OpenBuyByMoney, ReqUpdateCommissionGroup->OpenBuyByMoney);
-		StepUtility::WriteString(cursor, Items::OpenSellByMoney, ReqUpdateCommissionGroup->OpenSellByMoney);
-		StepUtility::WriteString(cursor, Items::CloseBuyByMoney, ReqUpdateCommissionGroup->CloseBuyByMoney);
-		StepUtility::WriteString(cursor, Items::CloseSellByMoney, ReqUpdateCommissionGroup->CloseSellByMoney);
-		StepUtility::WriteString(cursor, Items::OpenBuyByVolume, ReqUpdateCommissionGroup->OpenBuyByVolume);
-		StepUtility::WriteString(cursor, Items::OpenSellByVolume, ReqUpdateCommissionGroup->OpenSellByVolume);
-		StepUtility::WriteString(cursor, Items::CloseBuyByVolume, ReqUpdateCommissionGroup->CloseBuyByVolume);
-		StepUtility::WriteString(cursor, Items::CloseSellByVolume, ReqUpdateCommissionGroup->CloseSellByVolume);
+		StepUtility::WriteString(cursor, Items::OpenByMoney, ReqUpdateCommissionGroup->OpenByMoney);
+		StepUtility::WriteString(cursor, Items::CloseByMoney, ReqUpdateCommissionGroup->CloseByMoney);
+		StepUtility::WriteString(cursor, Items::OpenByVolume, ReqUpdateCommissionGroup->OpenByVolume);
+		StepUtility::WriteString(cursor, Items::CloseByVolume, ReqUpdateCommissionGroup->CloseByVolume);
 		StepUtility::WriteString(cursor, Items::MinCommission, ReqUpdateCommissionGroup->MinCommission);
 		StepUtility::WriteString(cursor, Items::MaxCommission, ReqUpdateCommissionGroup->MaxCommission);
 		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqUpdateCommissionGroupField::FieldId);
@@ -25822,44 +25770,24 @@ bool ReqUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							ReqUpdateCommissionGroup->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
 							break;
 						}
-						case Items::OpenBuyByMoney:
+						case Items::OpenByMoney:
 						{
-							ReqUpdateCommissionGroup->OpenBuyByMoney = atof(value.c_str());
+							ReqUpdateCommissionGroup->OpenByMoney = atof(value.c_str());
 							break;
 						}
-						case Items::OpenSellByMoney:
+						case Items::CloseByMoney:
 						{
-							ReqUpdateCommissionGroup->OpenSellByMoney = atof(value.c_str());
+							ReqUpdateCommissionGroup->CloseByMoney = atof(value.c_str());
 							break;
 						}
-						case Items::CloseBuyByMoney:
+						case Items::OpenByVolume:
 						{
-							ReqUpdateCommissionGroup->CloseBuyByMoney = atof(value.c_str());
+							ReqUpdateCommissionGroup->OpenByVolume = atof(value.c_str());
 							break;
 						}
-						case Items::CloseSellByMoney:
+						case Items::CloseByVolume:
 						{
-							ReqUpdateCommissionGroup->CloseSellByMoney = atof(value.c_str());
-							break;
-						}
-						case Items::OpenBuyByVolume:
-						{
-							ReqUpdateCommissionGroup->OpenBuyByVolume = atof(value.c_str());
-							break;
-						}
-						case Items::OpenSellByVolume:
-						{
-							ReqUpdateCommissionGroup->OpenSellByVolume = atof(value.c_str());
-							break;
-						}
-						case Items::CloseBuyByVolume:
-						{
-							ReqUpdateCommissionGroup->CloseBuyByVolume = atof(value.c_str());
-							break;
-						}
-						case Items::CloseSellByVolume:
-						{
-							ReqUpdateCommissionGroup->CloseSellByVolume = atof(value.c_str());
+							ReqUpdateCommissionGroup->CloseByVolume = atof(value.c_str());
 							break;
 						}
 						case Items::MinCommission:
@@ -25945,7 +25873,7 @@ const char* ReqUpdateCommissionGroupPackage::GetDebugString() const
 	int offset = 0;
 	if (ReqUpdateCommissionGroup != nullptr)
 	{
-		offset = AppendDebugString(offset, "ReqUpdateCommissionGroup:AdminUserId:[%s], TradingDay:[%s], CommissionGroupId:[%d], CommissionGroupName:[%s], ExchangeId:[%s], ProductClass:[%d], OpenBuyByMoney:[%f], OpenSellByMoney:[%f], CloseBuyByMoney:[%f], CloseSellByMoney:[%f], OpenBuyByVolume:[%f], OpenSellByVolume:[%f], CloseBuyByVolume:[%f], CloseSellByVolume:[%f], MinCommission:[%f], MaxCommission:[%f]", ReqUpdateCommissionGroup->AdminUserId, ReqUpdateCommissionGroup->TradingDay, ReqUpdateCommissionGroup->CommissionGroupId, ReqUpdateCommissionGroup->CommissionGroupName, ReqUpdateCommissionGroup->ExchangeId, static_cast<int>(ReqUpdateCommissionGroup->ProductClass), ReqUpdateCommissionGroup->OpenBuyByMoney, ReqUpdateCommissionGroup->OpenSellByMoney, ReqUpdateCommissionGroup->CloseBuyByMoney, ReqUpdateCommissionGroup->CloseSellByMoney, ReqUpdateCommissionGroup->OpenBuyByVolume, ReqUpdateCommissionGroup->OpenSellByVolume, ReqUpdateCommissionGroup->CloseBuyByVolume, ReqUpdateCommissionGroup->CloseSellByVolume, ReqUpdateCommissionGroup->MinCommission, ReqUpdateCommissionGroup->MaxCommission);
+		offset = AppendDebugString(offset, "ReqUpdateCommissionGroup:AdminUserId:[%s], TradingDay:[%s], CommissionGroupId:[%d], CommissionGroupName:[%s], ExchangeId:[%s], ProductClass:[%d], OpenByMoney:[%f], CloseByMoney:[%f], OpenByVolume:[%f], CloseByVolume:[%f], MinCommission:[%f], MaxCommission:[%f]", ReqUpdateCommissionGroup->AdminUserId, ReqUpdateCommissionGroup->TradingDay, ReqUpdateCommissionGroup->CommissionGroupId, ReqUpdateCommissionGroup->CommissionGroupName, ReqUpdateCommissionGroup->ExchangeId, static_cast<int>(ReqUpdateCommissionGroup->ProductClass), ReqUpdateCommissionGroup->OpenByMoney, ReqUpdateCommissionGroup->CloseByMoney, ReqUpdateCommissionGroup->OpenByVolume, ReqUpdateCommissionGroup->CloseByVolume, ReqUpdateCommissionGroup->MinCommission, ReqUpdateCommissionGroup->MaxCommission);
 	}
 	return DataStringBuffer;
 }

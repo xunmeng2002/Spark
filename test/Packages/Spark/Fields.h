@@ -284,14 +284,10 @@ public:
 	AccountIdType AccountId;		//账户代码
 	ExchangeIdType ExchangeId;		//交易所代码
 	ProductClassType ProductClass;		//品种类型
-	RateType OpenBuyByMoney;		//买开仓费率
-	RateType OpenSellByMoney;		//卖开仓费率
-	RateType CloseBuyByMoney;		//买平仓费率
-	RateType CloseSellByMoney;		//卖平仓费率
-	RateType OpenBuyByVolume;		//每手买开仓费用
-	RateType OpenSellByVolume;		//每手卖开仓费用
-	RateType CloseBuyByVolume;		//每手买平仓费用
-	RateType CloseSellByVolume;		//每手卖平仓费用
+	RateType OpenByMoney;		//开仓费率
+	RateType CloseByMoney;		//平仓费率
+	RateType OpenByVolume;		//每手开仓费用
+	RateType CloseByVolume;		//每手平仓费用
 	MoneyType MinCommission;		//最低手续费
 	MoneyType MaxCommission;		//最高手续费
 };
@@ -913,14 +909,10 @@ public:
 	GroupNameType CommissionGroupName;		//手续费组名称
 	ExchangeIdType ExchangeId;		//交易所代码
 	ProductClassType ProductClass;		//品种类型
-	RateType OpenBuyByMoney;		//买开仓费率
-	RateType OpenSellByMoney;		//卖开仓费率
-	RateType CloseBuyByMoney;		//买平仓费率
-	RateType CloseSellByMoney;		//卖平仓费率
-	RateType OpenBuyByVolume;		//每手买开仓费用
-	RateType OpenSellByVolume;		//每手卖开仓费用
-	RateType CloseBuyByVolume;		//每手买平仓费用
-	RateType CloseSellByVolume;		//每手卖平仓费用
+	RateType OpenByMoney;		//开仓费率
+	RateType CloseByMoney;		//平仓费率
+	RateType OpenByVolume;		//每手开仓费用
+	RateType CloseByVolume;		//每手平仓费用
 	MoneyType MinCommission;		//最低手续费
 	MoneyType MaxCommission;		//最高手续费
 };
@@ -944,14 +936,10 @@ public:
 	GroupNameType CommissionGroupName;		//手续费组名称
 	ExchangeIdType ExchangeId;		//交易所代码
 	ProductClassType ProductClass;		//品种类型
-	RateType OpenBuyByMoney;		//买开仓费率
-	RateType OpenSellByMoney;		//卖开仓费率
-	RateType CloseBuyByMoney;		//买平仓费率
-	RateType CloseSellByMoney;		//卖平仓费率
-	RateType OpenBuyByVolume;		//每手买开仓费用
-	RateType OpenSellByVolume;		//每手卖开仓费用
-	RateType CloseBuyByVolume;		//每手买平仓费用
-	RateType CloseSellByVolume;		//每手卖平仓费用
+	RateType OpenByMoney;		//开仓费率
+	RateType CloseByMoney;		//平仓费率
+	RateType OpenByVolume;		//每手开仓费用
+	RateType CloseByVolume;		//每手平仓费用
 	MoneyType MinCommission;		//最低手续费
 	MoneyType MaxCommission;		//最高手续费
 };

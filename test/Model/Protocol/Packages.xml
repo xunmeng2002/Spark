@@ -283,14 +283,10 @@
 			<item name="AccountId" id="0x1001" type="AccountId" desc="账户代码"/>
 			<item name="ExchangeId" id="0x100A" type="ExchangeId" desc="交易所代码"/>
 			<item name="ProductClass" id="0x901C" type="ProductClass" desc="品种类型"/>
-			<item name="OpenBuyByMoney" id="0x5006" type="Rate" desc="买开仓费率"/>
-			<item name="OpenSellByMoney" id="0x5007" type="Rate" desc="卖开仓费率"/>
-			<item name="CloseBuyByMoney" id="0x5008" type="Rate" desc="买平仓费率"/>
-			<item name="CloseSellByMoney" id="0x5009" type="Rate" desc="卖平仓费率"/>
-			<item name="OpenBuyByVolume" id="0x500A" type="Rate" desc="每手买开仓费用"/>
-			<item name="OpenSellByVolume" id="0x500B" type="Rate" desc="每手卖开仓费用"/>
-			<item name="CloseBuyByVolume" id="0x500C" type="Rate" desc="每手买平仓费用"/>
-			<item name="CloseSellByVolume" id="0x500D" type="Rate" desc="每手卖平仓费用"/>
+			<item name="OpenByMoney" id="0x5002" type="Rate" desc="开仓费率"/>
+			<item name="CloseByMoney" id="0x5003" type="Rate" desc="平仓费率"/>
+			<item name="OpenByVolume" id="0x5004" type="Rate" desc="每手开仓费用"/>
+			<item name="CloseByVolume" id="0x5005" type="Rate" desc="每手平仓费用"/>
 			<item name="MinCommission" id="0x700C" type="Money" desc="最低手续费"/>
 			<item name="MaxCommission" id="0x700D" type="Money" desc="最高手续费"/>
 		</field>
@@ -1252,10 +1248,10 @@
 			<item name="TradingDay" id="0x3001" type="Date" desc="交易日"/>
 			<item name="ExchangeId" id="0x100A" type="ExchangeId" desc="交易所代码"/>
 			<item name="ProductClass" id="0x901C" type="ProductClass" desc="品种类型"/>
-			<item name="OpenStampTaxByMoney" id="0x5002" type="Rate" desc="开仓印花税率"/>
-			<item name="CloseStampTaxByMoney" id="0x5003" type="Rate" desc="平仓印花税率"/>
-			<item name="OpenTransferFeeByMoney" id="0x5004" type="Rate" desc="开仓过户费率"/>
-			<item name="CloseTransferFeeByMoney" id="0x5005" type="Rate" desc="平仓过户费率"/>
+			<item name="OpenStampTaxByMoney" id="0x5006" type="Rate" desc="开仓印花税率"/>
+			<item name="CloseStampTaxByMoney" id="0x5007" type="Rate" desc="平仓印花税率"/>
+			<item name="OpenTransferFeeByMoney" id="0x5008" type="Rate" desc="开仓过户费率"/>
+			<item name="CloseTransferFeeByMoney" id="0x5009" type="Rate" desc="平仓过户费率"/>
 		</field>
 	</package>
 	<package name="RspAddBaseCommission" id="0x401F" desc="添加基础费率应答">
@@ -1276,10 +1272,10 @@
 			<item name="TradingDay" id="0x3001" type="Date" desc="交易日"/>
 			<item name="ExchangeId" id="0x100A" type="ExchangeId" desc="交易所代码"/>
 			<item name="ProductClass" id="0x901C" type="ProductClass" desc="品种类型"/>
-			<item name="OpenStampTaxByMoney" id="0x5002" type="Rate" desc="开仓印花税率"/>
-			<item name="CloseStampTaxByMoney" id="0x5003" type="Rate" desc="平仓印花税率"/>
-			<item name="OpenTransferFeeByMoney" id="0x5004" type="Rate" desc="开仓过户费率"/>
-			<item name="CloseTransferFeeByMoney" id="0x5005" type="Rate" desc="平仓过户费率"/>
+			<item name="OpenStampTaxByMoney" id="0x5006" type="Rate" desc="开仓印花税率"/>
+			<item name="CloseStampTaxByMoney" id="0x5007" type="Rate" desc="平仓印花税率"/>
+			<item name="OpenTransferFeeByMoney" id="0x5008" type="Rate" desc="开仓过户费率"/>
+			<item name="CloseTransferFeeByMoney" id="0x5009" type="Rate" desc="平仓过户费率"/>
 		</field>
 	</package>
 	<package name="RspUpdateBaseCommission" id="0x4021" desc="更新基础费率应答">
@@ -1322,14 +1318,10 @@
 			<item name="CommissionGroupName" id="0x2003" type="GroupName" desc="手续费组名称"/>
 			<item name="ExchangeId" id="0x100A" type="ExchangeId" desc="交易所代码"/>
 			<item name="ProductClass" id="0x901C" type="ProductClass" desc="品种类型"/>
-			<item name="OpenBuyByMoney" id="0x5006" type="Rate" desc="买开仓费率"/>
-			<item name="OpenSellByMoney" id="0x5007" type="Rate" desc="卖开仓费率"/>
-			<item name="CloseBuyByMoney" id="0x5008" type="Rate" desc="买平仓费率"/>
-			<item name="CloseSellByMoney" id="0x5009" type="Rate" desc="卖平仓费率"/>
-			<item name="OpenBuyByVolume" id="0x500A" type="Rate" desc="每手买开仓费用"/>
-			<item name="OpenSellByVolume" id="0x500B" type="Rate" desc="每手卖开仓费用"/>
-			<item name="CloseBuyByVolume" id="0x500C" type="Rate" desc="每手买平仓费用"/>
-			<item name="CloseSellByVolume" id="0x500D" type="Rate" desc="每手卖平仓费用"/>
+			<item name="OpenByMoney" id="0x5002" type="Rate" desc="开仓费率"/>
+			<item name="CloseByMoney" id="0x5003" type="Rate" desc="平仓费率"/>
+			<item name="OpenByVolume" id="0x5004" type="Rate" desc="每手开仓费用"/>
+			<item name="CloseByVolume" id="0x5005" type="Rate" desc="每手平仓费用"/>
 			<item name="MinCommission" id="0x700C" type="Money" desc="最低手续费"/>
 			<item name="MaxCommission" id="0x700D" type="Money" desc="最高手续费"/>
 		</field>
@@ -1355,14 +1347,10 @@
 			<item name="CommissionGroupName" id="0x2003" type="GroupName" desc="手续费组名称"/>
 			<item name="ExchangeId" id="0x100A" type="ExchangeId" desc="交易所代码"/>
 			<item name="ProductClass" id="0x901C" type="ProductClass" desc="品种类型"/>
-			<item name="OpenBuyByMoney" id="0x5006" type="Rate" desc="买开仓费率"/>
-			<item name="OpenSellByMoney" id="0x5007" type="Rate" desc="卖开仓费率"/>
-			<item name="CloseBuyByMoney" id="0x5008" type="Rate" desc="买平仓费率"/>
-			<item name="CloseSellByMoney" id="0x5009" type="Rate" desc="卖平仓费率"/>
-			<item name="OpenBuyByVolume" id="0x500A" type="Rate" desc="每手买开仓费用"/>
-			<item name="OpenSellByVolume" id="0x500B" type="Rate" desc="每手卖开仓费用"/>
-			<item name="CloseBuyByVolume" id="0x500C" type="Rate" desc="每手买平仓费用"/>
-			<item name="CloseSellByVolume" id="0x500D" type="Rate" desc="每手卖平仓费用"/>
+			<item name="OpenByMoney" id="0x5002" type="Rate" desc="开仓费率"/>
+			<item name="CloseByMoney" id="0x5003" type="Rate" desc="平仓费率"/>
+			<item name="OpenByVolume" id="0x5004" type="Rate" desc="每手开仓费用"/>
+			<item name="CloseByVolume" id="0x5005" type="Rate" desc="每手平仓费用"/>
 			<item name="MinCommission" id="0x700C" type="Money" desc="最低手续费"/>
 			<item name="MaxCommission" id="0x700D" type="Money" desc="最高手续费"/>
 		</field>

@@ -209,14 +209,10 @@
 		<item name="AccountId"/>
 		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
-		<item name="OpenBuyByMoney"/>
-		<item name="OpenSellByMoney"/>
-		<item name="CloseBuyByMoney"/>
-		<item name="CloseSellByMoney"/>
-		<item name="OpenBuyByVolume"/>
-		<item name="OpenSellByVolume"/>
-		<item name="CloseBuyByVolume"/>
-		<item name="CloseSellByVolume"/>
+		<item name="OpenByMoney"/>
+		<item name="CloseByMoney"/>
+		<item name="OpenByVolume"/>
+		<item name="CloseByVolume"/>
 		<item name="MinCommission"/>
 		<item name="MaxCommission"/>
 	</field>
@@ -632,14 +628,10 @@
 		<item name="CommissionGroupName"/>
 		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
-		<item name="OpenBuyByMoney"/>
-		<item name="OpenSellByMoney"/>
-		<item name="CloseBuyByMoney"/>
-		<item name="CloseSellByMoney"/>
-		<item name="OpenBuyByVolume"/>
-		<item name="OpenSellByVolume"/>
-		<item name="CloseBuyByVolume"/>
-		<item name="CloseSellByVolume"/>
+		<item name="OpenByMoney"/>
+		<item name="CloseByMoney"/>
+		<item name="OpenByVolume"/>
+		<item name="CloseByVolume"/>
 		<item name="MinCommission"/>
 		<item name="MaxCommission"/>
 	</field>
@@ -657,14 +649,10 @@
 		<item name="CommissionGroupName"/>
 		<item name="ExchangeId"/>
 		<item name="ProductClass"/>
-		<item name="OpenBuyByMoney"/>
-		<item name="OpenSellByMoney"/>
-		<item name="CloseBuyByMoney"/>
-		<item name="CloseSellByMoney"/>
-		<item name="OpenBuyByVolume"/>
-		<item name="OpenSellByVolume"/>
-		<item name="CloseBuyByVolume"/>
-		<item name="CloseSellByVolume"/>
+		<item name="OpenByMoney"/>
+		<item name="CloseByMoney"/>
+		<item name="OpenByVolume"/>
+		<item name="CloseByVolume"/>
 		<item name="MinCommission"/>
 		<item name="MaxCommission"/>
 	</field>
