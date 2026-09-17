@@ -1,6 +1,6 @@
 # selfcheck —— 扫描器的判别力语料
 
-这九个文件是 `tools/s4scan.py` 与 `tools/initcheck.py` 的**自检输入**：
+这十个文件是 `tools/s4scan.py` 与 `tools/initcheck.py` 的**自检输入**：
 `pos*` 是故意违规的正例，`neg*` 是完全合规的反例。
 
 ## 为什么需要它
@@ -19,6 +19,7 @@
 | `pos.h` | `s4scan.py` 报 10 条：ACCESS_ORDER ×3、DUP_LABEL ×2、ORDER ×2、NO_BLANK ×2、NOT_FLUSH ×1 |
 | `neg.h` | `s4scan.py` 报 0 条（含 §4 单例例外的正确写法） |
 | `nofirst.h` | `s4scan.py` 报 2 条 NO_FIRST_LABEL（`class` 与 `struct` 各一） |
+| `wrappedsig.h` | `s4scan.py` 报 1 条 ORDER（仅 `WrappedBad`） |
 | `initpos.h` | `initcheck.py` 报 1 条 INIT_ORDER/A |
 | `initpos.cpp` | `initcheck.py` 报 1 条 INIT_ORDER/B（须与 `initpos.h` 同时传入） |
 | `initneg.h` | `initcheck.py` 报 0 条 |
@@ -60,12 +61,37 @@
 clang-format 塌成一行，语料就换了形状、判别力悄然变形——这正是下面「防好心地被修好」
 一节警告的事。
 
+## 跨行声明的续行：判据与被检写法耦合（2026-09-17 补）
+
+`s4scan.py` 要按「组」判段内顺序，而组是由**类作用域里的每条声明**分类出来的。
+一条**跨行的函数声明**，其续行不含 `(` 却以 `;` 结尾，会被 `classify()` 落到最后
+一条分支当**数据成员**——于是凭空配出「普通成员函数出现在数据成员之后」的 ORDER。
+
+它出不出来，取决于同一个函数上方的 `template <...>` 是独占一行、还是与函数压成
+一行：函数名落到自己那行时 `classify()` 才返回 `func`，压行时整行归 `other`。
+**只改写法、不改语义，扫描结果就会凭空多出一条。** 2026-09-17 把全仓 `template`
+改回独占一行（`.clang-format` 的 `BreakTemplateDeclarations: Yes`）时，它就在
+`TimeUtility` 上现形了——而该类的 public 段里一个数据成员都没有。
+
+修法是给类作用域的条目加**括号配平**判据：完整声明的括号必然配平（以 `;` 收尾、
+或 Allman 在次行开体），跨行声明的首行必然左括号多于右括号，故首行保留、续行全丢，
+直到括号回平。这条判据与写法无关。
+
+| 类 | 形状 | 期望 |
+| -- | ---- | ---- |
+| `WrappedOk` | 跨行声明 + 其下是独占一行的 template 函数，类内无数据成员 | **0 条**（旧判据误报 1 条） |
+| `WrappedBad` | 跨行声明 + 真数据成员 + 其后又有函数 | **1 条** |
+
+两者缺一不可：没有 `WrappedOk` 就测不出误报；没有 `WrappedBad` 就测不出
+「把续行一律丢掉」这种过度修复——那会把跨行声明也吞掉，反而漏掉真正的组序违规。
+
 ## 复现
 
 ```bash
 python tools/s4scan.py    tools/selfcheck/pos.h                                  # 10 条
 python tools/s4scan.py    tools/selfcheck/neg.h                                  # 0 条
 python tools/s4scan.py    tools/selfcheck/nofirst.h                              # 2 条
+python tools/s4scan.py    tools/selfcheck/wrappedsig.h                           # 1 条
 python tools/initcheck.py tools/selfcheck/initpos.h tools/selfcheck/initpos.cpp  # 2 条
 python tools/initcheck.py tools/selfcheck/initneg.h                              # 0 条
 python tools/initcheck.py tools/selfcheck/initwrapped.cpp                        # 1 条

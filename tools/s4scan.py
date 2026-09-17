@@ -292,18 +292,41 @@ def class_entries(body_raw, body_masked, open_line):
     entries = [(ln, r, m) for (ln, r, m) in entries
                if not r.strip().startswith('//') and not r.strip().startswith('*')]
     # 丢掉多行声明的续行（典型是多行 static_assert 的第二行：无 `(` 却以 `;` 结尾，
-    # 会被误判成数据成员）。以「上一条声明尚未收尾」判断。
-    kept, pending = [], False
+    # 会被误判成数据成员）。
+    #
+    # 判据是**括号配平**：类作用域的一条完整声明，要么以 `;` 收尾、要么（Allman）
+    # 在下一行以 `{` 开体，两种写法的括号都是配平的；而**跨行声明的首行**必然左括号
+    # 多于右括号。故首行保留、其后的续行全部丢掉，直到括号回平。
+    #
+    # 早期版本只对 `static_assert` 设 pending，于是多行**函数声明**的续行漏了过来：
+    #   static void CalculateRealMinuteBarTime(const char* exchangeId, ..., int& realBarTime,
+    #                                          int& realUpdateTs);
+    # 首行含 `(` 被认成函数并保留，续行 `int& realUpdateTs);` 不含 `(`、又以 `;` 结尾，
+    # 落进 classify() 的最后一条分支被当成**数据成员**，凭空配出「普通成员函数出现在
+    # 数据成员之后」的 ORDER 误报（实测命中 TimeUtility，而该类的 public 段里一个数据
+    # 成员都没有）。
+    #
+    # 该误报长期被另一种写法掩盖：`template <...> void GetDuration(...)` 压成一行时，
+    # classify() 走 `^template\s*<` 分支返回 ('other', ...)，配不出那个组合。2026-09-17
+    # 把 template 改回独占一行（.clang-format 的 BreakTemplateDeclarations: Yes）之后，
+    # 函数名落到自己那行、重新被认成函数，误报才浮出来。判据修好后与写法无关。
+    kept, pending, paren_depth = [], False, 0
     for ln, r, m in entries:
         if pending:
             if ';' in m:
                 pending = False
+            continue
+        if paren_depth > 0:
+            paren_depth += m.count('(') - m.count(')')
             continue
         k0 = classify(m)
         if k0 and k0[0] == 'static_assert' and ';' not in m:
             pending = True
             continue
         kept.append((ln, r, m))
+        paren_depth += m.count('(') - m.count(')')
+        if paren_depth < 0:
+            paren_depth = 0
     # 丢掉续行：构造函数初始化列表（`:` 起头）、续参、花括号行
     return [(ln, r, m) for (ln, r, m) in kept
             if not m.strip().startswith((':', ',', '{}', '};')) and m.strip() not in ('{', '}')]

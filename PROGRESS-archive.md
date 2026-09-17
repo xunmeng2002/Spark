@@ -4,6 +4,24 @@
 
 ## ✅ 原已完成
 
+### D.24
+
+- **Spark 批 3 子集 · IO 缩写规范化：`IOxxx` → `Ioxxx`（类名/文件名/目录名同批原子改，2026-09-16，`0c95abb`，合并 `9e12009`）**：
+  **为什么三类必须同批**：§1「缩写按普通单词处理，只首字母大写」的原文示例就是 `IoBase`，§2 又要求「文件名与类名一致」——只改类名或只改文件名，都是从违反一条规范变成违反另一条。故类名、文件名、目录名只能一个 commit 原子改。
+  - **范围（44 文件，166 增 / 166 删，完全对称 = 纯改名特征，与批 1 的 854/854 同型）**：符号 `IOBase`/`IOFactory`/`IOThread`/`IOCompletePort`/`IOSubscriber`/`HandleIOEvent`/`GetIO`/`GetIOThread`/`ClientIOSubscriberImpl`/`ServerIOSubscriberImpl` + 4 处局部变量；目录 `include/Spark/Network/IO`→`Io`、`src/Network/IO`→`Io`；文件 12 个（含 `test/TestClient`、`test/TestServer` 各 2）；7 处「自指类名」日志字面量；中英文 README 代码示例。`IOUtility` 不是符号只是文件名——6 处命中全是 `#include`。
+  - **两处我此前的测量是错的，已更正**：①`HandleIOEvent` 在原始清单里根本没有——用「以 `IO` 开头」的前缀式 grep，**结构上不可能匹配到它**（它不以 `IO` 开头），漏了 8 处，含 `IoBase.h:40` 的公开纯虚（被 `ShmBase`/`SingleShm`/`TcpBase` override）。②`GetIOThread`/`GetIO` 同理必须各自单列规则——`\bIOThread\b` 匹配不到 `GetIOThread` 里那一段。**与 `PROGRESS.md:17 ⑧`「扫描口径写窄 = 假绿灯」同型**：判据本身失明时，「0 命中」毫无意义。
+  - **批量替换的三道自保（承批 1 那 20 处字面量误改的教训）**：①**状态机屏蔽**——按区间标出字符串/字符/注释，只在 `code` 区间求替换位置再按原偏移回写，`#include` 行是**唯一**白名单出口；②**等长不变式**——所有替换只翻一个字母大小写，断言 `len(new) == len(old)`，把偏移漂移这一整类 bug 变成不可能；③**15 例自测语料先行**（`IOBaseXXX`/`MyIOBase` 边界、`"IOBase"`/`'I'`/`// IOBase` 屏蔽、转义引号、`AppPlatformType::IOS`、`TimeConditionType::IOC`、`1'000'000` 数字分隔符），语料全绿才上真实文件。
+  - **假阳性清单（全部实测原样保留）**：`FIONBIO` 6、`ERROR_IO_PENDING` 5、`ERROR_OPERATION_ABORTED` 1、`SIO_GET_EXTENSION_FUNCTION_POINTER` 4、`CreateIoCompletionPort` 2，以及 `AppPlatformType::IOS`（Apple 平台）与 `TimeConditionType::IOC`（即时成交或撤销）各 2。**后两条是「绝不允许写裸 `IO` 前缀规则」的死证**——前缀规则会把它们改成 `IoS`/`IoC`。
+  - **刻意保留（附理由）**：①`IoFactory.cpp:45` 的日志**字段标签** `IOType`/`IOModel` 未改（规则管标识符，代码里从不存在叫 `IOType` 的标识符）；但规范拼写确由上游 `Model/Types.xml:222,227` 定为 `IoType`/`IoModel`，且同行 `ServerType` 恰是「类型名去尾 `Type`」的写法，故它是这行里唯一拼法落后于类型名的标签——**登记待决**。②中文散文里的 `IO`（`Types.h` 的 `//IO模型`/`//IO类型`、`TcpBase` 的「IO 循环」、`Protocol.cpp` 的 `static_assert` 消息、README 的「IO 线程」）保留，并作为闸门 3 的「应保留」正样本核验。③**`types.h`/`EnumString.h` 里那些 `IO` 不是手写文本而是生成物**（源在 `Model/Types.xml`，首行自述「请勿手改」），在 Spark 单仓改会被下次 `pumpall.py` 静默回滚——保留是唯一正确选择，不只是风格判断。
+  - **六道闸门（全绿）**：①旧名残留 0，假阳性反向核验全部原样；②字符串字面量多重集比对 **13 删 / 13 增**且逐条可枚举（6 条 include basename + 6 条日志 + 1 条 `"Create IoCompletePort Failed."`），`"IOS"`/`"IOC"`/`"FIONBIO"` 无混入；③陈旧注释 0，中文正样本保留；④`pumpall.py` rc=0 且 **232 个跟踪文件逐字节零 churn**、无 `.pumptmp` 残留；⑤MSVC `x64-Debug`/`x64-Release` 0 error、`UnitTests` **392/392 ×2**；⑥`TestServer` + `TestClient` 端到端冒烟 **Tcp 与 Shm 两条路径均通过**（覆盖 `HandleIoEvent` 纯虚在 `ShmBase`/`SingleShm` 与 `TcpBase` 的实现）。
+  - **本批最强的一条证据（新增闸门 1d）**：把 `git show HEAD:<旧路径>` 原文**按改名规则机械变换后**与工作区逐字节比对——**44 文件全等**。这比看 diff 强：它直接证明「除改名外无任何其他改动混入」。独立审查 agent 用自己的映射独立复现了同一结论，并额外做子串级普查（确认 `SERIALIZATION`/`VERSION` 这类**词内** `…ION…` 未被误伤成 `SERIALIZATIoN`）。
+  - **另加的一道硬校验（Linux）**：`WSL-GCC-Debug` 构建 rc=0 / 0 error，`UnitTests` **391/391**（差 1 个平台专属用例）。对「只改大小写」这类改动，**大小写敏感的 Linux 构建才是硬校验**——Windows 上 `#include <Spark/Network/Io/IoBase.h>` 与残留的 `IO/IOBase.h` 会互相匹配，可能静默编到旧头从而绕掉闸门 1。（用户已定：仅 Windows 需通过，Linux 不投入。）
+  - **顺带修掉一处既有构建缺陷（`e523f91`，独立于本批）**：`CMakeLists.txt:5` 用 `"$ENV{VCPKG_ROOT}/scripts/..."` 直接拼接工具链路径，而本机 `VCPKG_ROOT` 在注册表里是反斜杠形式（`D:\Github\vcpkg`），CMake 把它原样写进 `CMakeSystem.cmake` 的 `include()`，`\G` 被当非法转义 → **任何一次全新 configure（`cmake --fresh`、或他人 clone 后首次构建）都失败**。此隐患此前被既有缓存掩盖，是 `--fresh`（计划里 `rm -rf out/build` 的合规替代）把它逼出来的。已用 `file(TO_CMAKE_PATH)` 规范化，两个 preset 均 rc=0。
+  - **清理的会话副产物（均非仓库文件）**：`parselist.xml`（0 字节，`touch` 时误建，仓库本无此文件）、冒烟产生的 `log/*.log` 与 Shm 落盘文件 `TestShm`（8 MB）。**顺带发现两处 `.gitignore` 缺口**：`log/` 与 `TestShm` 都未被忽略，一次 `git add -A` 会把日志与 8 MB 文件一并提交进去——**登记待决，本批未动**。
+  - **仓外认知更正（此前记载有误）**：**LibTest 与 DAG 不是 Spark 的消费方**——LibTest 引的是自带的 `"PersonalLib/Network/IO/IOBase.h"` 且调用 `IOFactory::CreateIO`（该名在 Spark 的 `HEAD` 早已不存在），DAG 的 `DAGDemo/PersonalLib/` 是自带 `.lib` 的冻结 vendored 快照且在 DAG 仓里未被 git 跟踪。**两仓本批零动作**。**唯一活跃消费方是 QuantTrading**（16 处 / 10 文件，走 `find_package(Spark PATHS "../Libs/Spark/x64-windows")`），且它**当前已经编译不过**（调 `Protocol::SetIOThread`，该名只存在于 Spark 的 `HEAD`）——与本批无关，须先建基线才能归因。
+  - **踩到并记录的 Git 索引陷阱**：`git mv` 会**立即把重命名写进索引**。我为把 CMake 修复拆成独立 commit 而做了 `git reset`，索引退回旧路径——在大小写不敏感文件系统上 **git 再也看不见重命名**，它把磁盘上的 `Io/IoBase.h` 当成索引里 `IO/IOBase.h` 的「同名文件」判为修改（`git status` 打印的是**索引里的旧大小写**，与磁盘不符）。此刻 `git add -A` 会把内容写进旧路径条目，**大小写改名静默丢失**；恢复办法是按原样重跑两步 `git mv`。**独立审查又抓到同源的第二个疏漏**：提交前索引只装了 14 条重命名、42 个文件的内容改动一条未入，裸 `git commit` 会产出「新路径装旧内容 + include 指向不存在目录」的编译不过的树——已按审查意见 `git add -A`，并在提交后复验索引旧名归零。
+
+
 ### D.23
 
 - **六仓 C++ 规范对齐 · 批 2b：Templates 残留 C 风格 cast 清零 + 生成失败路径加固（2026-09-15）**：

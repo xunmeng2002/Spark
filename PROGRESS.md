@@ -4,6 +4,42 @@
 
 ## ✅ 已完成
 
+- **默认值审计与钉死：`template` 并行是配置漏写、不是工具坏；重排 16 文件并修掉它掀开的 `s4scan` 误报（2026-09-17）**：
+  用户发现 `template <typename Func, typename... Args> struct AspectBefore` 被并成一行，问「是不是工具有点问题」。
+  **结论：工具没坏，是 `.clang-format` 一个字都没写这一项**——`BreakTemplateDeclarations` 未指定即取 LLVM 默认
+  `MultiLine`，在 150 列内把模板头与实体并行。**该改默认值而非迁就它，判据是「作者原来站哪边」**：格式化前这批
+  文件里**并行写法 0 处**，而 HEAD 有 **31 处**（15 文件）——属默认值覆盖作者写法，不是风格选择。
+  - **顺带做了 LLVM 默认值审计（用户批准）**：显式键 92（`§3`/`§4` 段 24 + 新 `§5` 段 68），其余 **128 项骑默认值**；
+    其中 39 项与 C++ 输出相关，逐项实测分四类——**A 3 项**（默认值覆盖作者写法：`BreakTemplateDeclarations`、
+    `AlignEscapedNewlines`、`SpaceAfterTemplateKeyword`）、**B 32 项**（默认恰与作者写法一致，显式钉死）、
+    **C 4 项**（作者两种写法各半、无多数派，逐项裁定）、其余 26 项本仓不涉及。
+  - **两处真实输出变化**：①`BreakTemplateDeclarations: Yes` 还原那 31 处；②`AlignEscapedNewlines: DontAlign`
+    ——默认 `Right` 把宏续行反斜杠右对齐到第 150 列，实测给 `Logger.h` 4 行各补 **91~110 个空格**（作者原文零补位），
+    补位撑长宏体后触发重折、**多出一个续行反斜杠**：B 步那处唯一的「真实字符变化」源头就在这，现已消除。
+  - **两个读配置的坑（都踩过，已写进文档）**：①`--dump-config` 里**空值是嵌套结构、不是标量**——把
+    `AlignTrailingComments`（默认 `Kind: Always`）读成标量而写成 `Never`，会取消 `MD5.cpp` / `TcpIocpConnect.h`
+    已有的行尾注释对齐，靠「受影响文件数从 16 变 18」才发现；②`AlignConsecutive{BitFields,Declarations,Macros}`
+    的简写 `None` **不等于**默认值，它会把子项 `PadOperators` 隐式置 `true` 而默认为 `false`，故这三项**刻意不写**
+    （**写错值比不写更糟**）。`LineEnding` 同理不写，归 `.editorconfig` 管。
+  - **重排 16 个文件**（15 个模板文件 + `Logger.h`），并逐文件证明内容等价：15 个满足「去掉全部空白后逐字相同」，
+    `Logger.h` 另按 C++ 翻译阶段 2 拼回宏体后比较通过。另扫全仓手写文件确认**无一处字符串字面量跨续行**，
+    这条判据才成立。
+  - **⚠️ 这次重排掀开了 `s4scan.py` 一个既有误报**：类作用域里**跨行函数声明的续行**不含 `(` 却以 `;` 结尾，
+    被 `classify()` 当成**数据成员**，于是凭空配出「普通成员函数出现在数据成员之后」的 ORDER 误报。它出不出现，
+    取决于同一个函数上方的 `template <...>` 是独占一行还是压成一行——**只改写法、不改语义，扫描结果就能凭空多一条**；
+    改回独占一行后它在 `TimeUtility` 上现形（而该类的 `public` 段里**一个数据成员都没有**）。修法是给类作用域条目加
+    **括号配平**判据（完整声明必然配平，跨行声明首行必然左括号多于右括号，故首行保留、续行全丢直到回平），与写法无关。
+    新增语料 `tools/selfcheck/wrappedsig.h`：`WrappedOk` 必须 **0 条**、`WrappedBad` 必须 **1 条**，缺一不可——
+    前者测误报，后者防「把续行一律丢掉」这种过度修复（那会反而漏掉真正的组序违规）。基线回到 **24 条**。
+  - **⚠️ 本批第 6 次同类失误**：我最初写的检测脚本 `tplcheck2.py` 报「三种状态全是 0/31」——`rest` 保留了
+    `template` 之后的那个空格，`startswith('<')` 恒假，于是**每一行都被数成「独占一行」**。**判据或量法偏松、偏盲，
+    而结果看起来正常**——本批同类失误已达 6 次，全部自查纠正。教训汇入 `docs/cpp-style-clang-format.md` §4.3。
+  - **`rules/cpp-style.md` §3 新增「模板声明换行」一节（用户批准）**：`template <...>` 独占一行，并写明它与
+    「函数签名单行优先」不冲突——后者管的是**参数列表内部**不许垂直铺开，前者是**声明层级**的换行。
+  - **验证**：新配置下全仓手写文件 `clang-format --dry-run --Werror` **0 处待格式化**；WSL-GCC `ninja UnitTests`
+    **rc=0 + 391/391 全过**；`tools/s4scan.py` **176 文件 / 456 类 / 24 条**、`tools/initcheck.py`
+    **176 文件 / A 24 / B 217 / 乱序 0**，两者均与改前逐项一致；判别力自检全对（s4scan 10/0/2/1、initcheck 2/0/1/1/1）。
+  - 审计方法、分类结论与钉死清单的维护约定见 `docs/cpp-style-clang-format.md` §6–§7（`.clang-format` 头部注释指向 §7）。
 - **clang-format 收敛把检查器的一个口径改坏，已修并补判别力语料（2026-09-17，紧接上一条）**：
   上一条 A 步收尾后复核工具，发现 `tools/initcheck.py` 通道 B 由 **217 掉到 211**——clang-format
   把较短的类外初始化列表并到签名行、`{` 留在次行，而旧判据要求 `:` 与 `{` 同行，于是 6 条
@@ -107,21 +143,6 @@
   - **审查指出两处「本批自己新引入」的低severity 隐患，已在 `6300a1b` 收掉**：①`SetSeparator` 的形参 `separator` 与成员 `separator_` 只差一个下划线，而 `CsvParser` 的成员是 `char separator_[2]`——若把它误写成 `separator[0] = separator`，**对算术类型取下标是合法左值表达式，能静默编译通过**，变成对形参自赋值、成员纹丝不动。原名 `chSeparator` 区分度更高，是**本批把区分度改没了**，故形参定为 `separatorChar`（两个类一致）。②`itor`→`foundField` 丢掉了「迭代器」这一类别信息——`foundField` 读起来像字段对象，实际是 `CsvFieldMap::iterator`；改为 `fieldIterator`，并把 `(*x).second` 写成 `x->second`。
   - **审查的仓外核查结论**：形参名对外**零影响**（全仓无 `STRINGIFY`/`##`/模板参数名挂钩，调用点全按位置传参，无宏包裹）；`e26dd92` 的 diff 里**没有任何 `class`/`enum` 行增删**，对外契约不变；`D:/Gitee/DAG/DAGDemo/PersonalLib/` 是**冻结的 vendored 快照**（自带一份 `CsvParser`/`CSVRecord` 与自己的 `pszData`），**不是消费方，勿误登记**。
 
-- **Spark 批 3 子集 · IO 缩写规范化：`IOxxx` → `Ioxxx`（类名/文件名/目录名同批原子改，2026-09-16，`0c95abb`，合并 `9e12009`）**：
-  **为什么三类必须同批**：§1「缩写按普通单词处理，只首字母大写」的原文示例就是 `IoBase`，§2 又要求「文件名与类名一致」——只改类名或只改文件名，都是从违反一条规范变成违反另一条。故类名、文件名、目录名只能一个 commit 原子改。
-  - **范围（44 文件，166 增 / 166 删，完全对称 = 纯改名特征，与批 1 的 854/854 同型）**：符号 `IOBase`/`IOFactory`/`IOThread`/`IOCompletePort`/`IOSubscriber`/`HandleIOEvent`/`GetIO`/`GetIOThread`/`ClientIOSubscriberImpl`/`ServerIOSubscriberImpl` + 4 处局部变量；目录 `include/Spark/Network/IO`→`Io`、`src/Network/IO`→`Io`；文件 12 个（含 `test/TestClient`、`test/TestServer` 各 2）；7 处「自指类名」日志字面量；中英文 README 代码示例。`IOUtility` 不是符号只是文件名——6 处命中全是 `#include`。
-  - **两处我此前的测量是错的，已更正**：①`HandleIOEvent` 在原始清单里根本没有——用「以 `IO` 开头」的前缀式 grep，**结构上不可能匹配到它**（它不以 `IO` 开头），漏了 8 处，含 `IoBase.h:40` 的公开纯虚（被 `ShmBase`/`SingleShm`/`TcpBase` override）。②`GetIOThread`/`GetIO` 同理必须各自单列规则——`\bIOThread\b` 匹配不到 `GetIOThread` 里那一段。**与 `PROGRESS.md:17 ⑧`「扫描口径写窄 = 假绿灯」同型**：判据本身失明时，「0 命中」毫无意义。
-  - **批量替换的三道自保（承批 1 那 20 处字面量误改的教训）**：①**状态机屏蔽**——按区间标出字符串/字符/注释，只在 `code` 区间求替换位置再按原偏移回写，`#include` 行是**唯一**白名单出口；②**等长不变式**——所有替换只翻一个字母大小写，断言 `len(new) == len(old)`，把偏移漂移这一整类 bug 变成不可能；③**15 例自测语料先行**（`IOBaseXXX`/`MyIOBase` 边界、`"IOBase"`/`'I'`/`// IOBase` 屏蔽、转义引号、`AppPlatformType::IOS`、`TimeConditionType::IOC`、`1'000'000` 数字分隔符），语料全绿才上真实文件。
-  - **假阳性清单（全部实测原样保留）**：`FIONBIO` 6、`ERROR_IO_PENDING` 5、`ERROR_OPERATION_ABORTED` 1、`SIO_GET_EXTENSION_FUNCTION_POINTER` 4、`CreateIoCompletionPort` 2，以及 `AppPlatformType::IOS`（Apple 平台）与 `TimeConditionType::IOC`（即时成交或撤销）各 2。**后两条是「绝不允许写裸 `IO` 前缀规则」的死证**——前缀规则会把它们改成 `IoS`/`IoC`。
-  - **刻意保留（附理由）**：①`IoFactory.cpp:45` 的日志**字段标签** `IOType`/`IOModel` 未改（规则管标识符，代码里从不存在叫 `IOType` 的标识符）；但规范拼写确由上游 `Model/Types.xml:222,227` 定为 `IoType`/`IoModel`，且同行 `ServerType` 恰是「类型名去尾 `Type`」的写法，故它是这行里唯一拼法落后于类型名的标签——**登记待决**。②中文散文里的 `IO`（`Types.h` 的 `//IO模型`/`//IO类型`、`TcpBase` 的「IO 循环」、`Protocol.cpp` 的 `static_assert` 消息、README 的「IO 线程」）保留，并作为闸门 3 的「应保留」正样本核验。③**`types.h`/`EnumString.h` 里那些 `IO` 不是手写文本而是生成物**（源在 `Model/Types.xml`，首行自述「请勿手改」），在 Spark 单仓改会被下次 `pumpall.py` 静默回滚——保留是唯一正确选择，不只是风格判断。
-  - **六道闸门（全绿）**：①旧名残留 0，假阳性反向核验全部原样；②字符串字面量多重集比对 **13 删 / 13 增**且逐条可枚举（6 条 include basename + 6 条日志 + 1 条 `"Create IoCompletePort Failed."`），`"IOS"`/`"IOC"`/`"FIONBIO"` 无混入；③陈旧注释 0，中文正样本保留；④`pumpall.py` rc=0 且 **232 个跟踪文件逐字节零 churn**、无 `.pumptmp` 残留；⑤MSVC `x64-Debug`/`x64-Release` 0 error、`UnitTests` **392/392 ×2**；⑥`TestServer` + `TestClient` 端到端冒烟 **Tcp 与 Shm 两条路径均通过**（覆盖 `HandleIoEvent` 纯虚在 `ShmBase`/`SingleShm` 与 `TcpBase` 的实现）。
-  - **本批最强的一条证据（新增闸门 1d）**：把 `git show HEAD:<旧路径>` 原文**按改名规则机械变换后**与工作区逐字节比对——**44 文件全等**。这比看 diff 强：它直接证明「除改名外无任何其他改动混入」。独立审查 agent 用自己的映射独立复现了同一结论，并额外做子串级普查（确认 `SERIALIZATION`/`VERSION` 这类**词内** `…ION…` 未被误伤成 `SERIALIZATIoN`）。
-  - **另加的一道硬校验（Linux）**：`WSL-GCC-Debug` 构建 rc=0 / 0 error，`UnitTests` **391/391**（差 1 个平台专属用例）。对「只改大小写」这类改动，**大小写敏感的 Linux 构建才是硬校验**——Windows 上 `#include <Spark/Network/Io/IoBase.h>` 与残留的 `IO/IOBase.h` 会互相匹配，可能静默编到旧头从而绕掉闸门 1。（用户已定：仅 Windows 需通过，Linux 不投入。）
-  - **顺带修掉一处既有构建缺陷（`e523f91`，独立于本批）**：`CMakeLists.txt:5` 用 `"$ENV{VCPKG_ROOT}/scripts/..."` 直接拼接工具链路径，而本机 `VCPKG_ROOT` 在注册表里是反斜杠形式（`D:\Github\vcpkg`），CMake 把它原样写进 `CMakeSystem.cmake` 的 `include()`，`\G` 被当非法转义 → **任何一次全新 configure（`cmake --fresh`、或他人 clone 后首次构建）都失败**。此隐患此前被既有缓存掩盖，是 `--fresh`（计划里 `rm -rf out/build` 的合规替代）把它逼出来的。已用 `file(TO_CMAKE_PATH)` 规范化，两个 preset 均 rc=0。
-  - **清理的会话副产物（均非仓库文件）**：`parselist.xml`（0 字节，`touch` 时误建，仓库本无此文件）、冒烟产生的 `log/*.log` 与 Shm 落盘文件 `TestShm`（8 MB）。**顺带发现两处 `.gitignore` 缺口**：`log/` 与 `TestShm` 都未被忽略，一次 `git add -A` 会把日志与 8 MB 文件一并提交进去——**登记待决，本批未动**。
-  - **仓外认知更正（此前记载有误）**：**LibTest 与 DAG 不是 Spark 的消费方**——LibTest 引的是自带的 `"PersonalLib/Network/IO/IOBase.h"` 且调用 `IOFactory::CreateIO`（该名在 Spark 的 `HEAD` 早已不存在），DAG 的 `DAGDemo/PersonalLib/` 是自带 `.lib` 的冻结 vendored 快照且在 DAG 仓里未被 git 跟踪。**两仓本批零动作**。**唯一活跃消费方是 QuantTrading**（16 处 / 10 文件，走 `find_package(Spark PATHS "../Libs/Spark/x64-windows")`），且它**当前已经编译不过**（调 `Protocol::SetIOThread`，该名只存在于 Spark 的 `HEAD`）——与本批无关，须先建基线才能归因。
-  - **踩到并记录的 Git 索引陷阱**：`git mv` 会**立即把重命名写进索引**。我为把 CMake 修复拆成独立 commit 而做了 `git reset`，索引退回旧路径——在大小写不敏感文件系统上 **git 再也看不见重命名**，它把磁盘上的 `Io/IoBase.h` 当成索引里 `IO/IOBase.h` 的「同名文件」判为修改（`git status` 打印的是**索引里的旧大小写**，与磁盘不符）。此刻 `git add -A` 会把内容写进旧路径条目，**大小写改名静默丢失**；恢复办法是按原样重跑两步 `git mv`。**独立审查又抓到同源的第二个疏漏**：提交前索引只装了 14 条重命名、42 个文件的内容改动一条未入，裸 `git commit` 会产出「新路径装旧内容 + include 指向不存在目录」的编译不过的树——已按审查意见 `git add -A`，并在提交后复验索引旧名归零。
-
 ## 🔄 进行中
 
 - **六仓 C++ 规范对齐**：批 1（Beacon）**已完成并提交**（`bd95bd4`，条目已入归档 `D.20`）；批 2 前置（Mdb 生成物补齐）**已提交**（`0bb5fa6`，条目已入归档 `D.21`）；**批 2a + 批 2b（Templates：有界化 / 公开成员改名 / C 风格 cast 清零 / 生成失败路径加固）已完成**。**批 3 已落地两个子集**：IO 族 `IOxxx` → `Ioxxx`（`0c95abb` + `9e12009`）与 **CSV 族 `CSVxxx` → `Csvxxx`（目录/类名/枚举/内部偏差）+ 同族匈牙利前缀清零**（`4b9ef4d` + `f13cb2f`，续做 `e26dd92` + `4584d6b`），见上方 ✅ 条目——**此处原先写的「两者能先落地，都是因为它们不触碰任何跨仓公开契约」是错的，已由独立审查推翻**——IO 与 CSV 两族的**类名**都是 `SERIALIZATION_EXPORTS` 导出符号，`CsvRecord` 实际被 `D:/Gitee/Mdb/src/Mdb/InitMdbFromCsv.cpp`（11 处）、`D:/Gitee/QuantTrading/src/Mdb/InitMdbFromCsv.cpp`（11 处）与 `Templates/Cpp/Mdb/InitMdbFromCsv.cpp.tpl:132` 消费。它们能先落地的**正确理由**是：这些消费方此刻**本来就已经编译不过**（`InitMdbFromCsv.cpp:8-9` 写着 `using namespace spark::core;` / `using namespace spark::serialization;`，而已发货 SDK 的 `include/` 里 `namespace spark` 命中 **0 处**）——**本批不是它们的第一个断点**。跨仓跟随须按决策⑤逐仓单独授权、单独 commit，见 ❓ 区。**批 3 剩余部分仍阻塞于授权**：`namespace Spark` 112 处、小写访问器与方法约 1,295 处、C 风格 cast 134 处、`k` 前缀 221 处、`g_` 66 处，见 ❓ 区②③。**批 2 剩余部分**仍是 `namespace Spark`/`mdb` → PascalCase——它生成的是被 Mdb / DbAdapters / QT 通过 `find_package` 消费的公开头，**须授权并与批 7 原子改**（见 ❓ 区①）。批 4–7 **未开工**，阻塞见 ❓ 区。**注意**：`Cpp/Mdb/*.tpl` 被 Mdb 与 QT 共用，落地即产生三仓生成物 churn，**须分仓、分批 commit**。
@@ -133,6 +154,7 @@
   - ~~**② §6 表格里「禁止 `new`/`delete`」这一行的消失是遗漏**~~ **已裁定：禁令已解除**。用户确认 §6 该行不再存在是有意的，`new`/`delete` 转为 §7「智能指针」的**优先**写法（「**默认使用** `std::unique_ptr`」）而非**禁止**，并明确**批 3 不做 `new`/`delete` 这一项**。据此，本区「六仓 C++ 规范对齐：批 2–7 的授权」条目③里的「裸 `new` 46 处 / 裸 `delete` 20 处 → 智能指针」**整项撤销**，不再是待办。**代码未动。**
   - ~~**③ `volatile` 用于同步（`ShmBuffer.h:12-16`、`ThreadBase.h` 的 `shouldRun_`）**~~ **已裁定：保留，非违规**。用户给出的设计口径：这两处 `volatile` 用在**进程间共享内存**的读写上，作用是**避免编译器把值缓存在寄存器里导致不读**；同步机制本身**不靠 `volatile`**；共享内存链路每次**只有一个进程写、另一个读**（单写单读）。据此 §6「禁止 `volatile` 用于同步」在这一用法上**不适用**，上述条目③里的「`volatile` 6 处 / 2 文件 → `std::atomic`」**整项撤销**。**遗留风险（仅登记，不再作待办）**：C++ 标准对跨线程/跨进程的可见性只保证到 `std::atomic` 与内存序，`volatile` 只约束编译器不做寄存器缓存、不约束相邻访存的重排，当前实现依赖「单写单读 + 硬件缓存一致性」这一实践约定成立。若该约定日后变化（出现多写，或状态与数据分离在不同字段），需重新评估。
   - **④ 是否把 `tools/` 的检查接成 CI 门禁（未决）**：本仓 `.workflow/pipeline.yml` 只有 1 个 Build 阶段（`build@gcc`，gcc 11.1.0，`cmake -G 'Unix Makefiles' ../ && make -j2`），且 **`trigger: manual`——不自动跑**，故门禁挂了也拦不住任何东西。真要接，关键在于**扫哪些文件**：全仓扫会立刻报 24 条 `struct` `NO_FIRST_LABEL`（既定例外）→ 门禁从第一天起就是红的；只扫改动文件则可绿，但 **`initcheck.py` 的通道 B 会跨文件失效**（它要先全仓建「类名 → 成员声明顺序」表，只喂子集时表里只剩这几个文件的类，其余 `cls not in table` 直接静默 continue）。**建议分两步**：先只接 `initcheck.py`（今天 0 命中，接进去立刻有效且不误伤），`s4scan.py` 等把 `struct` 例外在检查器里显式建模之后再接。**两个前置障碍已于 2026-09-17 排除**：①脚本原本 `git ls-files` 未固定 `cwd`，在子目录下会静默报「0 命中」——CI 的工作目录不受本仓控制，这个 bug 会让门禁**永远绿**，现已改为与 cwd 无关（并新增 `-h` 与空列表 `exit 2`）；②判别力语料已入库 `tools/selfcheck/`，门禁的可信度可以随时自证，而不必「相信上次那个人跑过」。**注意 `tools/selfcheck/` 已在 `EXCLUDE` 中，CI 也不要显式扫它**——更要紧的是：**显式点名的文件按设计绕过 `EXCLUDE`**（语料自检靠的就是这个口子），所以「CI 把改动文件显式喂给脚本」这种接法，一旦某次提交动了 `tools/selfcheck/`，就会**红在故意写坏的语料上**。接门禁时须在文件筛选那步排除该路径。
+    **2026-09-17 续记（本条建议的适用条件变了）**：`s4scan.py` 当天又修掉一个**既有误报**（跨行函数声明的续行被当成数据成员，见 ✅ 区顶层条目），并补了判别力语料 `tools/selfcheck/wrappedsig.h`。**故上面「`s4scan.py` 等把 `struct` 例外显式建模之后再接」这句的前提已不再成立**——它现在能在真实代码上给出 24 条稳定结果，其中 24 条全部是既定的 `struct` 例外。**剩下要决定的不是「脚本能不能信」，而是「门禁怎么处理这 24 条既定例外」**：①把 `struct` 桶在 `s4scan.py` 里显式建模成可配置例外（条目数变 0，门禁直接绿）；②保留 24 条、门禁按「不新增」比对基线快照。两条都可行，**待用户择一**。文件筛选那步仍须排除 `tools/selfcheck/`。
 
 - **登记待批（承自归档 `D.19`「STEP 协议数字化收口」，原文照录；均超出该批范围）**：
   - **登记待批（均超出本批范围）**：①C# 对端 `SharpLibrary/Network/StepProtocol/`（8 文件）同步；②`DAG/DAGDemo/PersonalLib/include/Protocol/StepUtility.h` 声明副本同步；③**`Package::Prepare(SessionIdType, int messageChain, int msgSeqNum)` 的 `msgSeqNum` 形参仍是有符号 `int`**——改它要动公开签名，且 QT 约 50 个调用点传的是 CTp API 的 `int requestId`；负值会静默回绕成 2^32 附近的大值（今天则存成负数），两种都原样保留调用方的位模式；④`docs/wire-protocol-revision-plan.md` 补 v3 变更记录；⑤`TailToStream` 现在与 `HeadToStream` 形状相同（同样有定长宽度校验），可以同样迁移到 `StepWriteCursor`——本批按批准的计划保留了 `snprintf`。
@@ -249,13 +271,14 @@
 
 ## 备注
 
-- **本文件当前超出 §8.1 的 50 KB 目标约 26 KB——这是 2026-09-17 用户裁定「维持现状」的结果，不是漏做的滚动作业。** 滚动作业本身已按硬触发条件执行（最旧的 ✅ 批已入归档 `D.23`）；超标的成因是 **❓ 区自身 33.5 KB**，而 §8.1 同时要求「❓ 仅未决」与「禁止整条搬走——那等于把待办一起埋掉」。两条规则在此互相掣肘：要压到 50 KB，只能么丢掉未决待办，要么把 ✅ 区压到 3 批以下——两者都不可取，故选择接受超标。**后续会话请勿为此再动归档；若确需压缩，先向用户要新的裁定。**
-- **尺寸口径（2026-09-17 复核，因原先记的「约 12 KB」已过期）**：全文 **79.8 KB**（79,806 字节）/ 45,242 字符；其中 ✅ 区 **39.1 KB**（40,005 字节）、❓ 区 **32.7 KB**（33,456 字节 / 19,461 字符）、其余为项目定位与归档索引。按 §8.1 的字面口径（KB）算超出约 **30 KB**。**引用本条时请写明用的是哪个口径**：同一份内容按 UTF-8 字节算是 79.8 KB、按字符数只有 45,242，两个口径相差约 1.8 倍，混用会得出互相矛盾的结论。上一版此处记的「按字符数只超 8.3 K 字符」是派生出来的数，本次复核复算不出它的算法（它约等于 45,242 减去 33,963，而 33,963 从何而来已无从追溯），故不再沿用，只保留两个可直接测量的原始数。本次新增两批（clang-format 收敛批 + 紧随其后的检查器口径修复批）与移除的 ❓⑤ 四行长 bullet 相抵后**净增约 3.8 KB**，增量全部落在 ✅ 区。
+- **本文件当前超出 §8.1 的 50 KB 目标约 27 KB——这是 2026-09-17 用户裁定「维持现状」的结果，不是漏做的滚动作业。** 滚动作业本身已按硬触发条件执行两次（`D.23`、`D.24`：✅ 区一超 5 批即把最旧的整条移入归档）；超标的成因是 **❓ 区自身 33.5 KB**，而 §8.1 同时要求「❓ 仅未决」与「禁止整条搬走——那等于把待办一起埋掉」。两条规则在此互相掣肘：要压到 50 KB，只能么丢掉未决待办，要么把 ✅ 区压到 3 批以下——两者都不可取，故选择接受超标。**后续会话请勿为此再动归档**（批次数触发的滚动作业照 §8.1 正常执行）；**若确需为尺寸压缩，先向用户要新的裁定。**
+- **尺寸口径（2026-09-17 复核，因原先记的「约 12 KB」已过期）**：全文 **76.6 KB**（78,422 字节）/ 44,180 字符；其中 ✅ 区 **36.3 KB**（37,201 字节 / 20,488 字符）、❓ 区 **33.5 KB**（34,310 字节 / 19,861 字符）、其余为项目定位与归档索引。按 §8.1 的字面口径（KB）算超出约 **27 KB**。**引用本条时请写明用的是哪个口径**：同一份内容按 UTF-8 字节算是 76.6 KB、按字符数只有 44,180，两个口径相差约 1.8 倍，混用会得出互相矛盾的结论。上一版此处记的「按字符数只超 8.3 K 字符」是派生出来的数，本次复核复算不出它的算法（它约等于 45,242 减去 33,963，而 33,963 从何而来已无从追溯），故不再沿用，只保留两个可直接测量的原始数。**历次增量与本次的抵减**：先新增两批（clang-format 收敛批 + 紧随其后的检查器口径修复批）与移除的 ❓⑤ 四行长 bullet 相抵后净增约 3.8 KB；本次先增一批（默认值审计与钉死批，含 `wrappedsig.h` 与 ❓④ 续记）**净增约 4.1 KB**，随后按 §8.1 的批次数规则把最旧的 ✅ 条（IO 族改名，4.4 KB）移入归档 `D.24`，**两相抵减后 ✅ 区由 44.0 KB 降到 36.3 KB，全文由 84.0 KB 降到 76.6 KB**；❓ 区因只续记一段而基本持平（33.5 KB）。
 - 宿主必须显式调用 `Logger::Stop()` + `Join()` 收尾，否则最后一次缓冲必丢；这是进程退出时序的**定论**，不是可以靠改析构语义绕过的缺陷——见归档 `Q.17`
 - P5 握手（协议版本协商）已决定**不做**，日后若要做的入口是 `Protocol::OnConnect`——见归档 `Q.18`
 
 ## 归档索引
 
+- `D.24` Spark 批 3 子集 · IO 缩写规范化：`IOxxx` → `Ioxxx`（类名/文件名/目录名同批原子改，2026-09-16，`0c95abb`，合并 `9e12009`）
 - `D.23` 六仓 C++ 规范对齐 · 批 2b：Templates 残留 C 风格 cast 清零 + 生成失败路径加固（2026-09-15）
 - `D.22` 六仓 C++ 规范对齐 · 批 2a 三项收口：模板有界化 / `using namespace std;` 清零 / 生成物「勿手改」头（2026-09-15）
 - `D.21` 六仓 C++ 规范对齐 · 批 2 前置：Mdb 停滞生成物补齐（`pumpall.py` 静默吞失败一节的根因，2026-09-15）

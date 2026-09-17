@@ -87,6 +87,7 @@ python tools/s4scan.py -h
 python tools/s4scan.py    tools/selfcheck/pos.h                                  # 10 条
 python tools/s4scan.py    tools/selfcheck/neg.h                                  # 0 条
 python tools/s4scan.py    tools/selfcheck/nofirst.h                              # 2 条
+python tools/s4scan.py    tools/selfcheck/wrappedsig.h                           # 1 条
 python tools/initcheck.py tools/selfcheck/initpos.h tools/selfcheck/initpos.cpp  # 2 条
 python tools/initcheck.py tools/selfcheck/initneg.h                              # 0 条
 python tools/initcheck.py tools/selfcheck/initwrapped.cpp                        # 1 条
@@ -98,6 +99,11 @@ python tools/initcheck.py tools/selfcheck/initsentinel.cpp                      
 而 clang-format 收敛后仓里的形状变了，判据随之静默漏检（通道 B 由 217 掉到 211），
 自检却全绿——**语料的形状没跟上被检对象的写法**，等于没有判别力。
 详见 `tools/selfcheck/README.md` 的「形状覆盖」一节。
+
+`wrappedsig.h` 同理，只是方向相反：`s4scan.py` 把**跨行函数声明的续行**当成数据成员，
+于是配出「函数出现在数据成员之后」的 ORDER。这条误报出不出现，取决于函数上方的
+`template <...>` 是独占一行还是压成一行——**只改写法就能凭空多一条发现**。两个类
+（`WrappedOk` 必须 0 条、`WrappedBad` 必须 1 条）缺一不可，详见 `tools/selfcheck/README.md`。
 
 每个文件的期望值与设计意图见 `tools/selfcheck/README.md`。该目录已在 `EXCLUDE` 中，
 不会污染无参数的全仓结果。
