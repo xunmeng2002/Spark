@@ -15,7 +15,6 @@ protected:
 	virtual void CheckTimer();
 	virtual void OnTimer() = 0;
 
-protected:
 	int timeInterval_;
 	int eventCount_;
 	int currentEventCount_;

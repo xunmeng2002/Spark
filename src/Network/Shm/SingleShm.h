@@ -19,14 +19,13 @@ public:
 	virtual void DoRecv(Connect* connect) override;
 	virtual void HandleIoEvent() override;
 
+	std::string shmName_;
+
 protected:
 	virtual void CheckConnectStatus();
 	virtual void CheckEvent();
 	virtual void HandleEvent();
 
-public:
-	std::string shmName_;
-protected:
 	bool connected_;
 	SessionIdType sessionId_;
 	void* shmAddr_;

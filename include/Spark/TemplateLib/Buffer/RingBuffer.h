@@ -10,8 +10,7 @@ template<unsigned SIZE>
 class RingBuffer
 {
 public:
-	RingBuffer()
-		:buffer_{ 0 }, readPos_(buffer_), writePos_(buffer_), length_(0)
+	RingBuffer() : buffer_{0}, length_(0) ,readPos_(buffer_), writePos_(buffer_)
 	{}
 	static RingBuffer* Allocate()
 	{
@@ -21,17 +20,23 @@ public:
 	{
 		ObjectPool<RingBuffer<SIZE>>::GetInstance().Deallocate(this);
 	}
+    inline void Reset()
+    {
+        length_ = 0;
+        readPos_ = buffer_;
+        writePos_ = buffer_;
+    }
+    unsigned Read(char* buff, unsigned len)
+    {
+        unsigned size = GetReadBufferSize();
+        len = (std::min)(len, size);
+        return CopyToBuffer(buff, len, true);
+    }
 	unsigned Write(const char* data, unsigned len)
 	{
 		unsigned size = GetWriteBufferSize();
 		len = (std::min)(len, size);
 		return CopyFromBuffer(data, len);
-	}
-	unsigned Read(char* buff, unsigned len)
-	{
-		unsigned size = GetReadBufferSize();
-		len = (std::min)(len, size);
-		return CopyToBuffer(buff, len, true);
 	}
 	unsigned Peek(char* buff, unsigned len)
 	{
@@ -61,14 +66,27 @@ public:
 	{
 		return length_ == SIZE;
 	}
-	inline void Reset()
-	{
-		length_ = 0;
-		readPos_ = buffer_;
-		writePos_ = buffer_;
-	}
+
 
 private:
+    unsigned CopyFromBuffer(const char* data, unsigned len)
+    {
+        if (len == 0)
+            return 0;
+        unsigned tailLen = (std::min)(len, unsigned((buffer_ + SIZE) - writePos_));
+        memcpy(writePos_, data, tailLen);
+        if (tailLen < len)
+        {
+            memcpy(buffer_, data + tailLen, size_t(len - tailLen));
+            writePos_ = buffer_ + len - tailLen;
+        }
+        else
+        {
+            writePos_ += tailLen;
+        }
+        length_ += len;
+        return len;
+    }
 	unsigned CopyToBuffer(char* buff, unsigned len, bool consume)
 	{
 		if (len == 0)
@@ -96,28 +114,10 @@ private:
 		}
 		return len;
 	}
-	unsigned CopyFromBuffer(const char* data, unsigned len)
-	{
-		if (len == 0)
-			return 0;
-		unsigned tailLen = (std::min)(len, unsigned((buffer_ + SIZE) - writePos_));
-		memcpy(writePos_, data, tailLen);
-		if (tailLen < len)
-		{
-			memcpy(buffer_, data + tailLen, size_t(len - tailLen));
-			writePos_ = buffer_ + len - tailLen;
-		}
-		else
-		{
-			writePos_ += tailLen;
-		}
-		length_ += len;
-		return len;
-	}
-private:
-	char* readPos_;
+
+    char buffer_[SIZE];
+    unsigned length_;
+    char* readPos_;
 	char* writePos_;
-	char buffer_[SIZE];
-	unsigned length_;
 };
 }

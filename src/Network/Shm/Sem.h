@@ -21,7 +21,6 @@ private:
 	bool WindowsInit();
 	bool LinuxInit();
 
-private:
 	std::string semName_;
 	ServerTypeType serverType_;
 	unsigned timeOutMilliSecond_;

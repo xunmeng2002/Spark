@@ -20,8 +20,6 @@ namespace
     // 测试辅助切面：记录 Before/After 调用轨迹
     struct CallTracer
     {
-        std::vector<std::string> calls;
-
         void Before(const char* funcName)
         {
             calls.push_back(std::string(funcName) + "_Before");
@@ -31,6 +29,8 @@ namespace
         {
             calls.push_back(std::string(funcName) + "_After");
         }
+        std::vector<std::string> calls;
+
     };
 
     int AspectValue = 0;

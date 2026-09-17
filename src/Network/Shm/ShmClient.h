@@ -11,6 +11,7 @@ public:
 	virtual ~ShmClient();
 
 	virtual bool ConnectToServer(const char* addressName) override;
+
 protected:
 	virtual void ConnectToServer() override;
 	virtual void CheckConnect() override;
@@ -21,7 +22,7 @@ protected:
 	void SendConnect();
 	void CheckConnectResult();
 	virtual void RemoveConnect(Connect* connect) override;
-protected:
+
 	bool connected_;
 	bool hasSendConnect_;
 	ShmConnect<ShmBuffSize>* shmConnect_;

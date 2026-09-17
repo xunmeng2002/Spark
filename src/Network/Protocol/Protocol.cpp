@@ -9,7 +9,7 @@ namespace Spark::Network
 static_assert(BuffSize >= MaxFrameSize, "IO 层的收发缓冲必须容纳一帧上限，否则 MakePackage 会写出界");
 
 Protocol::Protocol(ProtocolTypeType protocolType, ServerTypeType serverType, IoModelType ioModel, int milliSeconds, PackageFactoryBase* packageFactory)
-	:protocolType_(protocolType), serverType_(serverType), ioModel_(ioModel), milliSeconds_(milliSeconds), subscriber_(nullptr), packageFactory_(packageFactory), ioBase_(nullptr), ioThread_(nullptr)
+	:protocolType_(protocolType), serverType_(serverType), ioModel_(ioModel), milliSeconds_(milliSeconds), ioBase_(nullptr), ioThread_(nullptr), packageFactory_(packageFactory), subscriber_(nullptr)
 {
 }
 Protocol::~Protocol()

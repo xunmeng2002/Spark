@@ -16,29 +16,32 @@ using namespace Spark;
 
 struct PoolInt
 {
-    long long value;
     PoolInt() : value(0) {}
     explicit PoolInt(int v) : value(static_cast<long long>(v)) {}
+
+    long long value;
 };
 
 struct PoolPoint
 {
-    int x;
-    int y;
     PoolPoint() : x(0), y(0) {}
     PoolPoint(int a, int b) : x(a), y(b) {}
+
+    int x;
+    int y;
 };
 
 // 检测构造/析构计数的类型
 struct PoolTracked
 {
+    PoolTracked() : id(0) { s_Constructed++; }
+    PoolTracked(int i) : id(static_cast<long long>(i)) { s_Constructed++; }
+    ~PoolTracked() { s_Destroyed++; }
+
     static std::atomic<int> s_Constructed;
     static std::atomic<int> s_Destroyed;
 
     long long id;
-    PoolTracked() : id(0) { s_Constructed++; }
-    PoolTracked(int i) : id(static_cast<long long>(i)) { s_Constructed++; }
-    ~PoolTracked() { s_Destroyed++; }
 };
 std::atomic<int> PoolTracked::s_Constructed{0};
 std::atomic<int> PoolTracked::s_Destroyed{0};
@@ -138,8 +141,8 @@ TEST(ObjectPoolTest, Expand_Blocks)
     // 使用独立类型确保旧扩容不影响
     struct ExpandType
     {
-        char data[32];
         ExpandType() = default;
+        char data[32];
     };
 
     ObjectPool<ExpandType>& pool = ObjectPool<ExpandType>::GetInstance();
@@ -167,9 +170,10 @@ TEST(ObjectPoolTest, MultiThreadAllocate)
 {
     struct MTPoolType
     {
-        long long value;
         MTPoolType() : value(0) {}
         explicit MTPoolType(int v) : value(static_cast<long long>(v)) {}
+
+        long long value;
     };
 
     ObjectPool<MTPoolType>& pool = ObjectPool<MTPoolType>::GetInstance();

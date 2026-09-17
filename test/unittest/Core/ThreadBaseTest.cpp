@@ -15,10 +15,6 @@ namespace
     class TestWorker : public ThreadBase
     {
     public:
-        std::atomic<int> RunCount{0};
-        std::atomic<bool> InitCalled{false};
-        std::atomic<bool> ExitCalled{false};
-
         TestWorker(const char* name, int timeout = 100)
             : ThreadBase(name, timeout)
         {
@@ -28,6 +24,10 @@ namespace
         {
             return thread_.joinable();
         }
+
+        std::atomic<int> RunCount{0};
+        std::atomic<bool> InitCalled{false};
+        std::atomic<bool> ExitCalled{false};
 
     protected:
         void ThreadInit() override

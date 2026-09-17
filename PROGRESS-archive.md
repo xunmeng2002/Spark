@@ -4,6 +4,22 @@
 
 ## ✅ 原已完成
 
+### D.23
+
+- **六仓 C++ 规范对齐 · 批 2b：Templates 残留 C 风格 cast 清零 + 生成失败路径加固（2026-09-15）**：
+  批 2 至此只剩 `namespace Spark`/`mdb` → PascalCase（公开 API，须授权、与批 7 原子改）。
+  - **① C 风格 cast 清零：17 处 / 11 文件，分两轮**（`%TEMP%\tpl-ccast-fix.py` 10 条 + `%TEMP%\tpl-ptrcat-fix.py` 3 条，逐条带命中数断言、幂等可重入）。
+    第一轮 **11 处 / 8 文件**：两类形态，C 关键字类型（`(int)`/`(bool)`/`(void*)`/`(const char*)`）与模板变量类型（`(!!@type!!Type)`）；`enum` 分支沿用 `Packages.cpp.tpl` 已用过的条件三元组写法，不另创。
+    **第二轮补 6 处 / 3 文件（`(T*)ptr` 指针形态，是独立审查抓到的漏网，见 ⑧）**：`Cpp/Api/ApiImpl.cpp.tpl:48,56`、`Cpp/Api/GbkApiImpl.cpp.tpl:60,81`、`Cpp/Protocol/Kernel/KernelGen.cpp.tpl:48,58`，一律 `((!!$packageName!!*)package)` → `static_cast<!!$packageName!!*>(package)`。**选 `static_cast` 而非 `reinterpret_cast` 已核实**：`Packages.h.tpl:16` 为 `class !!$className!! : public Package`（单一、非虚、公有继承），模板上下文里 `package` 声明为 `Package* package`，故下行转换合法且与 C 风格等价。本轮 churn：**只 QT 变**（Spark/Mdb 重 pump 无输出——这 3 个模板不喂它们），产物里 `static_cast<XxxPackage*>(package)` **107 处 / 8 文件**，旧形态在该 8 文件归零。
+  - **② 举证是受控对照，不是看 diff**（`%TEMP%\ccast-verify5.py`）：10 条编辑整体回退 → pump → 基线，正向应用 → pump → 现状。**168 个产物变更 22 个**（Mdb 5 / QT 17 / Spark 0——Spark 0 可解释：这 8 个模板没有一个喂 Spark）。三重判据：变更集合符合预期、**每文件行数不变**、**两侧 cast 语法都摘掉后剩余逐字节相等** → **越界 0 处**；往返一轮 SHA-256 回同值、`.pumptmp` 残留 0。
+  - **③ `pump.py` 加固（承 ❓ 区同名条目的方向 (i)；三仓各一份、md5 一致）**：usage 分支 `sys.exit(2)`；生成失败**不删目标**、改留 `<目标>.pumptmp` 并 `sys.exit(1)`；注释符由「`.sql` 否则 `// `」改成**扩展名白名单**，未知扩展名在写任何东西之前响亮失败；`pumpall.py` 的 `DoPump` 裸 `exit()` → `sys.exit(1)` + 中止信息。端到端五例（`pump-e2e2.py`）：A 正常 rc=0；B 模板坏 / C 未知扩展名（**在写之前**就退出）/ D 参数不足（**旧版会打印 usage 后继续覆盖目标并 rc=0**）三条 rc≠0 且**目标原样**；E `os.replace` 被挡 → 退回就地重写、rc=0 且内容更新；并证**字节中性**（加固后强制全量重泵：168 个产物内容变化 0、缺失 0、残留 0）。
+  - **④ 其中一处是我引入的回归，由 `code-reviewer` 抓到**：`os.replace` 在 Windows 上当目标被别的句柄打开会抛 `WinError 5`，而它替代的旧写法 `open(dest,'w')` 只需写权限——于是「能就地重写」的场合变成**未捕获异常**，绕过我自己写的 `pump failed:` 并把 `pumpall.py` 停在半路。已加 try/except + 二进制就地重写回退。
+  - **⑤ 三仓重建重测全绿**：六配置 MSVC rc=0、0 错误；Spark `UnitTests` **392/392** ×2；Mdb `TestDb.exe` rc=0 ×2（Sqlite+Duckdb）；QT `UnitTests` **101/690** ×2；QT 5 个集成 exe **10/10 rc=0**。**⑥ `.gitignore` 对齐（关闭 `:18` 登记）**：`__pycache__/` 补进 Spark 与 QT、Mdb 的 `/__pycache__` 归一为 `__pycache__/`（覆盖子目录）、新增本批引入的 `*.pumptmp`；三仓 `git check-ignore -v` 逐条核过。
+  - **⑦ 本批我犯的两个错（留证）**：①首轮 C-cast 扫描**只认 C 关键字类型**，把「自定义类型」这一族整个漏了（审查在 `Mdb/InitMdbFromCsv.cpp.tpl:173` 抓到，且已落进两仓产物）——与此前批评的「没有全仓重扫」**是同一类错误**；②给 Mdb/QT 复制 `pump.py` 时**行尾写成了 CRLF**（HEAD 是 LF），而 **git 看不见**——全局 gitattributes 的 `*.py text eol=lf` 让 `git hash-object` 比的是**规范化后**的字节；靠逐仓比**工作区** md5 才发现。**跨仓复制文件不能用 `git hash-object` 判等。**
+  - **⑧ 本批第三个错，也是最重要的一条：扫描口径写窄 = 假绿灯。** 第一轮收尾时我用 `%TEMP%\tpl-ccast-rescan.py` 复扫，报「真实 C 风格 cast **0 处**」，我据此把 ③ 记为**已关闭**并写进本文档。**独立审查用不同口径扫出 6 处真实残留**（上条第二轮）。根因不是漏看，是**判据本身失明**：`CAST_OLD` 长了一张**类型白名单**（`(const )?char * | void * | unsigned int | int | bool | <X>Type`），而漏掉的那一族类型名是**占位符** `!!$packageName!!`，**结构上不可能被白名单匹配**——白名单对「生成式类型名」天然失明，而本仓 96,612 行产物**全是生成式类型名**。改法：`%TEMP%\tpl-ccast-full.py` 改为**故意过收**——不预判哪些像类型，凡「括号紧跟操作数起始」一律列出、由人判读（93 个 `.tpl`、候选 158 处、`cast_like` 24 处，逐条判读后真 cast 恰为 6，其余是形参声明 / 函数指针 typedef / `offsetof` 限定名 / C# 越界）。**纪律**：本仓的扫描器一律「过收 + 人工判读」，不得再用类型白名单结案；「0 命中」在报告之前必须先证明**判据本身能命中正样本**（我没做这一步，是这次翻车的直接原因）。
+  - **⑨ 顺带扫出、但不属本批的 4 处 `(T*)ptr`**：`QuantTrading/src/BackTest/SimExchange.cpp:287,290,293,296`，**手写**文件（非 pump 产物）、**HEAD 即已存在**（逐行比对确认非本批引入）→ 归**批 6**，已登记 ❓ 区未动。
+  - **登记（本批未动，见 ❓ 区）**：生成物 `*TableList.h` 的 5 头 / 10 个公开常量须授权；工具链三处既有问题（`os.system` 拼串 / 头注释嵌模板路径 / 产物无体检）；**新登记 6 条**（`.cu` 白名单缺口、Mdb README 的 `tradingDay` 未定义示例、pump.py 回退路径四处、README 注释列位）见 ❓ 区同名条目。
+
 ### D.22
 
 - **六仓 C++ 规范对齐 · 批 2a 三项收口：模板有界化 / `using namespace std;` 清零 / 生成物「勿手改」头（2026-09-15）**：
@@ -414,6 +430,10 @@
     方向是"此前静默跳过的字段开始被赋值"，属**行为变更**（修漏），已确认对现有全部消费方零输出。
 
 ## ❓ 原待讨论 / 待决策
+
+### Q.20
+
+- **`out/build/WSL-GCC-*` 是陈旧的（2026-09-16 复核，`out/` 未被 git 跟踪）**：两个 Linux 构建目录里各有 **12 / 9 个文件**仍写着旧路径 `Serialization/CSV/…`、`CSVParserTest`、`CSVRecordTest`（`build.ninja`、`VerifyGlobs.cmake` 一类），因为改名后**从未在 Linux 侧重新 configure**。按「仅 Windows 需通过、Linux 先不管」不影响任何本批结论；但日后若要跑 WSL 构建，**必须先 `cmake --fresh --preset WSL-GCC-*`**，否则它仍按旧文件名去 glob。**对照**：`x64-Debug` 里唯一命中是一份陈旧的 `vc140.pdb`（二进制调试符号库，**非构建输入**），`x64-Release` 为 **0**——**Windows 侧的 glob 与构建图都是干净的**，本批两次构建日志里编译的确实是 `Serialization\CsvParser.cpp.obj` 与 `CsvParserTest.cpp.obj`。
 
 ### Q.19
 

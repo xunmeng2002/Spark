@@ -29,18 +29,13 @@ public:
 	int64_t GetFieldAsInt64(const char* fieldName);
 	double GetFieldAsDouble(const char *fieldName);
 	void SetSeparator(char separatorChar);
-private:
-	char *AppendNameToken(const char *token);
-	char *AppendContentToken(const char *token);
+
 private:
 	struct CsvField
 	{
 		char *FieldName;
 		char *FieldContent;
 	};
-
-	std::vector<CsvField> csvFields_;
-
 	struct CsvFieldLess
 	{
 	  bool operator()(const char* s1, const char* s2) const
@@ -49,6 +44,11 @@ private:
 	  }
 	};
 	typedef std::map<const char*, const char *, CsvFieldLess> CsvFieldMap;
+
+	char *AppendNameToken(const char *token);
+	char *AppendContentToken(const char *token);
+
+	std::vector<CsvField> csvFields_;
 	CsvFieldMap csvFieldMap_;
 
 	char* nameBuffer_;

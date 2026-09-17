@@ -17,7 +17,7 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 Sem::Sem(const char* name, ServerTypeType serverType, unsigned timeOutMilliSecond)
-	:semName_(name), sem_(nullptr), serverType_(serverType)
+	:semName_(name), serverType_(serverType), sem_(nullptr)
 {
 	timeOutMilliSecond_ = timeOutMilliSecond;
 }

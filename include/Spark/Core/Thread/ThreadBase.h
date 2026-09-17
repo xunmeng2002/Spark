@@ -25,9 +25,7 @@ protected:
 
 
 	virtual void Run() = 0;
-	
 
-protected:
 	std::thread thread_;
 	std::string threadName_;
 	volatile bool shouldRun_;

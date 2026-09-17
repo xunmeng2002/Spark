@@ -28,9 +28,10 @@ public:
 	~SocketInit();
 	static SocketInit& GetInstance();
 	void Init();
+
 private:
 	void WsaStart();
-private:
+
 	std::once_flag socketInitFlag_;
 	static SocketInit socketInit_;
 };

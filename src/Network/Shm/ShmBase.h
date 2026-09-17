@@ -23,6 +23,7 @@ public:
 	virtual void Send(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
 
 	virtual void HandleIoEvent() override;
+
 protected:
 	virtual void DoSend(Connect* connect) override;
 	virtual void DoRecv(Connect* connect) override;
@@ -33,11 +34,6 @@ protected:
 	virtual void CheckData() = 0;
 	virtual void HandleData() = 0;
 
-private:
-	bool WindowsInit();
-	bool LinuxInit();
-
-protected:
 	std::string shmName_;
 	unsigned maxConnectSize_;
 	SingleShmHeader* commonShmHeader_;
@@ -51,6 +47,10 @@ protected:
 	void* file_;
 	void* fileMap_;
 #endif // _WIN32
+
+private:
+	bool WindowsInit();
+	bool LinuxInit();
 };
 }
 

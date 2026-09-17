@@ -19,8 +19,8 @@ namespace
 }
 
 TcpBase::TcpBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
-	:IoBase(serverType, addressName, milliSeconds), addressInfo_(nullptr), socket_(INVALID_SOCKET), socketNotify_(nullptr), remoteAddressLen_(sizeof(remoteAddress_)),
-	autoConnectPending_(false), lastConnectAttemptTime_{}
+	:IoBase(serverType, addressName, milliSeconds), addressInfo_(nullptr), socket_(INVALID_SOCKET), socketNotify_(nullptr),
+	autoConnectPending_(false), lastConnectAttemptTime_{}, remoteAddressLen_(sizeof(remoteAddress_))
 {
 	SocketInit::GetInstance().Init();
 	memset(&remoteAddress_, 0, sizeof(remoteAddress_));

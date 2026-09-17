@@ -14,8 +14,6 @@ namespace
     class TestTimer : public Timer
     {
     public:
-        int OnTimerCallCount = 0;
-
         using Timer::CheckTimer;
 
         int GetTimeInterval() const
@@ -32,6 +30,8 @@ namespace
         {
             return currentEventCount_;
         }
+
+        int OnTimerCallCount = 0;
 
     protected:
         void OnTimer() override

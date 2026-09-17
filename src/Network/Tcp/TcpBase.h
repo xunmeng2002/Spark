@@ -26,6 +26,7 @@ public:
 	virtual void HandleIoEvent() override;
 	virtual void AddConnect(Connect* connect) override;
 	virtual void RemoveConnect(Connect* connect) override;
+
 protected:
 	virtual void DoSend(Connect* connect) override;
 	virtual void DoRecv(Connect* connect) override;
@@ -36,7 +37,6 @@ protected:
 	// Client 断线自动重连:IO 循环内检测无连接且无在途连接时按固定间隔重试
 	void TryAutoReconnect();
 
-protected:
 	addrinfo* addressInfo_;
 	SOCKET socket_;
 	SocketNotify* socketNotify_;
@@ -45,9 +45,8 @@ protected:
 	bool autoConnectPending_;
 	std::chrono::steady_clock::time_point lastConnectAttemptTime_;
 
-
 	std::mutex connectDataMutex_;
-	
+
 	sockaddr_storage remoteAddress_;
 #ifdef _WIN32
 	int remoteAddressLen_;

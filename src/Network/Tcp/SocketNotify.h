@@ -21,7 +21,6 @@ public:
 private:
 	bool CreateSocketPair();
 
-private:
 	SOCKET sockets_[2];
 	TcpConnect* tcpConnect_;
 

@@ -25,6 +25,12 @@ if(WIN32)
     add_compile_definitions(UNICODE _UNICODE _CRT_SECURE_NO_WARNINGS)
     add_compile_options(/utf-8 /bigobj)
 endif()
+# §4「非静态数据成员声明顺序决定初始化顺序，初始化列表需一致」由编译器警告兜住。
+# GCC/Clang 的 -Wreorder 不在默认告警集内，需显式打开；MSVC 的对应项是 C5038，
+# 该警告属 /W4 级，本项目未开 /W4，故 Windows 侧暂不启用。
+if(NOT MSVC)
+    add_compile_options(-Wreorder)
+endif()
 #list(APPEND CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address")
 message("CMAKE_BUILD_TYPE:" ${CMAKE_BUILD_TYPE})
 message("CMAKE_SYSTEM_NAME:" ${CMAKE_SYSTEM_NAME})

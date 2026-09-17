@@ -21,6 +21,7 @@ public:
 
 	void Send(SessionIdType sessionId);
 	void SendCommand(SessionIdType sessionId, const char* cmd);
+
 private:
 	IoBase* io_;
 	IoThread* ioThread_;

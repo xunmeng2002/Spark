@@ -23,10 +23,11 @@ public:
 	char *GetNextToken();
 	void Parse(const char *csvText);
 	inline CsvParserError GetErrorCode();
+
 private:
 	void NextChar();
 	void MakeWord(const char *stopChars);
-private:
+
 	CsvParserError errorCode_;
 	const char *csvText_;
 	char* currentWord_;

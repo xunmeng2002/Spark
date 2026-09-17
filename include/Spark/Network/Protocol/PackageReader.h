@@ -13,20 +13,32 @@ public:
 	~PackageReader();
 	static PackageReader* Allocate(ProtocolTypeType protocolType, PackageFactoryBase* packageFactory, SessionIdType sessionId, const char* ipAddress);
 	void Deallocate();
-
 	void Reset();
-	void PopFront(unsigned int len);
-	char* Data();
-	int Length();
-	char* Tail();
-	unsigned int TailSize();
-	unsigned int Append(char* data, unsigned  int len);
 
+    unsigned int Append(char* data, unsigned int len);
+    void PopFront(unsigned int len);
+    int Length();
+    unsigned int TailSize();
+	char* Data();
+	char* Tail();
 	bool ParsePackage(Package*& package);
 
 protected:
 	bool ParseXtpPackage(Package*& package);
 	bool ParseStepPackage(Package*& package);
+
+
+	ProtocolTypeType protocolType_;
+    PackageFactoryBase* packageFactory_;
+	SessionIdType sessionId_;
+	IpAddressType ipAddress_;
+	HeadField head_;
+	TailField tail_;
+
+	char buff_[MaxPackageSize * 2];
+	char* data_;
+	unsigned int length_;
+	unsigned int discardLength_;
 
 private:
 	enum class AlignResult
@@ -42,17 +54,5 @@ private:
 	void DiscardFront(unsigned int len);
 	bool IsBodyLenWithinFrameLimit() const;
 
-protected:
-	ProtocolTypeType protocolType_;
-    PackageFactoryBase* packageFactory_;
-	SessionIdType sessionId_;
-	IpAddressType ipAddress_;
-	HeadField head_;
-	TailField tail_;
-
-	char buff_[MaxPackageSize * 2];
-	char* data_;
-	unsigned int length_;
-	unsigned int discardLength_;
 };
 }

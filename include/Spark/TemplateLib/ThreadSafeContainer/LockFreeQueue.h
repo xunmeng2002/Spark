@@ -8,18 +8,6 @@ namespace Spark
 template <typename T>
 class LockFreeQueue
 {
-private:
-    struct Node
-    {
-        Node() : data(nullptr), next(nullptr) {}
-        Node(std::shared_ptr<T>& val) : data(val), next(nullptr) {}
-
-        std::shared_ptr<T> data;
-        Node* next;
-    };
-    std::atomic<Node*> head_;
-    std::atomic<Node*> tail_;
-
 public:
     LockFreeQueue()
     {
@@ -66,6 +54,19 @@ public:
     {
         return head_.load(std::memory_order_acquire) == tail_.load(std::memory_order_acquire);
     }
+
+private:
+    struct Node
+    {
+        Node() : data(nullptr), next(nullptr) {}
+        Node(std::shared_ptr<T>& val) : data(val), next(nullptr) {}
+
+        std::shared_ptr<T> data;
+        Node* next;
+    };
+
+    std::atomic<Node*> head_;
+    std::atomic<Node*> tail_;
 };
 }
 

@@ -72,11 +72,11 @@ public:
 		writtenLength_ += 1;
 		return true;
 	}
+
 private:
     char* GetWritePosition();
     int GetRemainingLength() const;
 
-private:
 	char* bufferBegin_;
 	int capacity_;
 	int writtenLength_;

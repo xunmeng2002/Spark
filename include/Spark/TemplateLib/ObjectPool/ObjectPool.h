@@ -9,47 +9,6 @@ namespace Spark
 template <typename T>
 class ObjectPool
 {
-private:
-    struct Block
-    {
-        T* Objects;
-        Block* Next;
-
-        Block(T* objs, Block* next)
-            : Objects(objs), Next(next)
-        {
-        }
-    };
-
-    struct FreeNode
-    {
-        std::atomic<FreeNode*> Next;
-    };
-
-    static_assert(sizeof(FreeNode) <= sizeof(T),
-        "The T type is too small to hold the free list node!");
-
-private:
-    ObjectPool()
-        : blockUnitNum_(64), blocks_(nullptr)
-    {
-    }
-
-    ~ObjectPool()
-    {
-        Block* current = blocks_;
-        while (current)
-        {
-            Block* next = current->Next;
-            operator delete(current->Objects);
-            delete current;
-            current = next;
-        }
-    }
-
-    ObjectPool(ObjectPool&) = delete;
-    ObjectPool& operator=(ObjectPool&) = delete;
-
 public:
     static ObjectPool& GetInstance()
     {
@@ -105,6 +64,36 @@ public:
     }
 
 private:
+    struct Block
+    {
+        Block(T* objs, Block* next)
+            : Objects(objs), Next(next)
+        {
+        }
+
+        T* Objects;
+        Block* Next;
+    };
+    struct FreeNode
+    {
+        std::atomic<FreeNode*> Next;
+    };
+
+    static_assert(sizeof(FreeNode) <= sizeof(T), "The T type is too small to hold the free list node!");
+    ObjectPool() : blockUnitNum_(64), blocks_(nullptr) {}
+    ~ObjectPool()
+    {
+        Block* current = blocks_;
+        while (current)
+        {
+            Block* next = current->Next;
+            operator delete(current->Objects);
+            delete current;
+            current = next;
+        }
+    }
+    ObjectPool(const ObjectPool&) = delete;
+    ObjectPool& operator=(const ObjectPool&) = delete;
     void Expand()
     {
         std::lock_guard<std::mutex> guard(mutex_);
@@ -137,7 +126,6 @@ private:
         } while (!freeList_.compare_exchange_weak(oldHead, newHead, std::memory_order_release, std::memory_order_acquire));
     }
 
-private:
     int blockUnitNum_;
     std::mutex mutex_;
     Block* blocks_;

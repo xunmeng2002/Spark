@@ -23,6 +23,7 @@ struct Aspect
         Invoke(std::forward<Args>(args)..., std::forward<AP>(aspects)...);
         aspect.After(funcName_.c_str());
     }
+
 private:
     Func func_;
     std::string funcName_;

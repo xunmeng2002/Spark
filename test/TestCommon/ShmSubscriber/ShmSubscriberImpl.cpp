@@ -10,7 +10,7 @@ using namespace Spark::Network;
 
 static int g_Count = 0;
 ShmSubscriberImpl::ShmSubscriberImpl(IoBase* io, ServerTypeType serverType)
-	:io_(io), serverType_(serverType), connected_(false), sessionId_(0LL)
+	:connected_(false), sessionId_(0LL), io_(io), serverType_(serverType)
 {
 	buff_ = new char[BuffSize];
 	length_ = 0;

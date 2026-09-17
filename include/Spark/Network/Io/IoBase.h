@@ -49,9 +49,7 @@ protected:
 	virtual Connect* GetConnect(SessionIdType sessionId);
 
 	SessionIdType GetSessionId();
-	
 
-protected:
 	ServerTypeType serverType_;
 	std::string	addressName_;
 	std::string address_;

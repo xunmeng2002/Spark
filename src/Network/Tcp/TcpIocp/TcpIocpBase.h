@@ -14,6 +14,7 @@ public:
 	
 	virtual bool Init() override;
 	virtual void Send(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
+
 protected:
 	virtual void HandleTcpEvent() override;
 	virtual void DoDisConnect() override;
@@ -30,7 +31,7 @@ protected:
 	virtual void OnDisConnectComplete(MyOverlapped* overlapped);
 	virtual void OnSendComplete(MyOverlapped* overlapped, int bytesTransferred);
 	virtual void OnRecvComplete(MyOverlapped* overlapped, int bytesTransferred);
-protected:
+
 	int backLog_;
 	IoCompletePort* ioCompletePort_;
 };

@@ -19,6 +19,7 @@ public:
 	~TcpEpollBase();
 	
 	virtual bool Init() override;
+
 protected:
 	virtual void HandleTcpEvent() override;
 
@@ -30,8 +31,7 @@ protected:
 	void RemoveEpollEvent(TcpConnect* connect);
 	void AddWriteEpollEvent(TcpConnect* connect);
 	void RemoveWriteEpollEvent(TcpConnect* connect);
-	
-protected:
+
 	int epollFd_;
 #ifdef __linux__
 	epoll_event epollEvents_[EpollEventNumber];

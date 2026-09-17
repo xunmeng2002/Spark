@@ -4,6 +4,22 @@
 
 ## ✅ 已完成
 
+- **Spark §4「类内顺序」新规对齐：36 文件重排 + `.clang-format` + 检查工具入仓（2026-09-17）**：
+  用户更新了 `rules/cpp-style.md` §4（相对旧版有七处 delta），要求把 Spark 仓对齐；同批把「§4 里 clang-format 能表达的部分」固化为仓内配置，并把排查用的结构扫描器纳入仓库。**未提交**，`CMakeLists.txt` 的 `-Wreorder` 与 `out/build/WSL-GCC-*` 的重新 configure 一并算在本批。
+  - **规范 delta 七条**：①访问优先 `public`→`protected`→`private`，每段尽量只出现一次；②段内第 3 组扩为「特殊成员函数：构造、析构、拷贝/移动构造、拷贝/移动赋值（含 `operator=`）」，第 4 组收窄为「其他操作符重载」；③数据成员移至段末（`public` 数据成员放 `public` 末尾，**不再次打开 `public:`**）；④显式写访问标签，不依赖 `class` 默认私有；⑤标签顶格、成员缩进 4 空格、段间空行；⑥非静态数据成员声明顺序决定初始化顺序，初始化列表需一致；⑦例外：单例可将私有特殊成员置顶，但必须显式 `private:`、该区只放特殊成员、随后立即 `public:`。
+  - **用户的三条裁决（本批据此执行）**：①**`struct` 不用显式 `public`**——故扫描器报出的 212 条 `struct` `NO_FIRST_LABEL` **不是违规**，一条未动；②访问段顺序的处理是**把 `protected` 那一段整体挪到 `private` 前面**，**不改任何访问级别**（我起初以为要改级别，被用户纠正）；③**`tpl` 生成的文件一律不动**（`test/Packages/Packages.h` 与仓外 `Templates/`），故该文件上报出的 188 条 `NO_BLANK`/`DUP_LABEL` 全部原样保留。
+  - **改动 36 文件，四类**：①**合并重复访问段**（`DUP_LABEL`）；②**访问段顺序**——把落后于 `private` 的 `protected` 段整体前移（`ShmBase.h`/`ShmServer.h`/`SingleShm.h` 等）；③**段内组序**——数据成员移到段末（`AspectTest.cpp`、`ThreadBaseTest.cpp`、`TimerTest.cpp`，以及 `ObjectPoolTest.cpp` 里 5 个 helper 类型）；④**N6 初始化列表与声明同序** 4 处（`Protocol.cpp`/`Sem.cpp`/`TcpBase.cpp`/`ShmSubscriberImpl.cpp`）——**行为中性**，实际初始化顺序由声明顺序决定，改的只是列表书写顺序。
+  - **本批的方法论：「搬行对象」而非「重打内容」。** 所有重排一律在行列表上做**切片搬运**（把现有行对象放进新位置），从不重新键入成员内容——「搬运过程吃掉某个字符」因此在结构上不可能发生。与之配套的是**断言策略必须用「整块结果等值」，不能用「出现次数」**：见下方第一处翻车。
+  - **翻车一（最严重，已 `git checkout` 回退重做）：`ro5.py` 静默删代码。** `L[u + 2:d]` 在 `d < u` 时求值为**空切片**，于是 `TimerTest.cpp` 少了 `GetTimeInterval`/`GetEventCount`/`GetCurrentEventCount` 三个 getter；`ThreadBaseTest.cpp` 的 `L[:c-4] + L[c:j-1] + data + [''] + L[k:]` 跳过了 25..30 号下标，少了 `bool IsJoinable() const`。**两处的出现次数断言全都通过**——因为我断言的是「新内容出现了 N 次」，而**被删掉的旧内容一次也没被试断言过**。是逐行看 `git diff` 才发现的。改写成 `ro6.py`：断言**整段结果的逐行等值**（`assert new[d-1:d-1+len(expect)] == expect`），并给两处 `long long value;` 的搜索补起始偏移以消除歧义。
+  - **翻车二：`fixn6.py` 把 `TcpBase.cpp` 的函数体 `{` 吃掉了**（`lines[i+3:]` 跳过了大括号行），同样靠 `git checkout` 回退重做。**翻车三：`TcpBase.cpp` 初始化列表尾多一个逗号**（`remoteAddressLen_(...)` 后直接跟 `{`），由 WSL GCC 构建报 `expected identifier before '{' token` 抓出。
+  - **扫描器自身也翻车两次（都已修并留证）**：`n5check.py` v1 报出 **640 条假阳性**（把 `{` 紧邻首个标签这种**合法**写法当成「段间无空行」，并对缩进类体误报「未顶格」）；v2 修好假阳性后**静默返回 0 条**，根因是 `mlines[:o].count('\n')`——`o` 是 masked **字符串**的字符偏移，拿它去切**行列表**会按元素个数切、得到错误行号。改为 `masked[:o].count('\n')` 并加注释（该注释已随脚本入仓，见 `tools/s4scan.py`）。
+  - **新增 `.clang-format`（仓根）**：只固化 §4 中**机械可表达**的三项——标签顶格（`AccessModifierOffset: -4`）、成员缩进 4 空格（`IndentWidth: 4` + `IndentAccessModifiers: false`）、段间空行（`EmptyLineBeforeAccessModifier: LogicalBlock`）。缩进基准取 **`UseTab: Never`**，跟随仓根 `.editorconfig` 的 `indent_style = space`。**边界是实测出来的、不是凭记忆断言的**：正例（§4 规范里的 `Example` 块）经 `clang-format` 往返后与原文**逐字一致**（据此确认 `LogicalBlock` 才是对的值，`Always` 会在 `{` 之后多补一个空行）；反例（同时含「数据成员在构造函数前 / 数据成员未置段末 / `public:` 重复 / `private:` 在 `protected:` 前 / 初始化列表逆序」五类违规）经 `clang-format` 后**零差异**——这五类它一律不管。取舍与 churn 分析见 `docs/cpp-style-clang-format.md`。
+  - **新增 `tools/s4scan.py` + `tools/initcheck.py` + `tools/README.md`（本批入仓）**：把排查用的扫描器从 `%TEMP%` 提升为仓内工具。`initcheck.py` 原先硬编码 `sys.path.insert(0, r'C:/Users/15031/AppData/Local/Temp')`，改为**相对本文件的路径**；N5 的两条检查（标签顶格 / 段间空行）并入 `s4scan.py`，使一个脚本覆盖 `docs/cpp-style-clang-format.md` §3.1 表格声明的全部条款。**入仓时逐条比对过等价性**：`initcheck.py` 输出与 `%TEMP%` 原版**逐字节相同**；`s4scan.py` 输出与「原 `s4scan2.py` ∪ 原 `n5check.py`」归一化后是**同一批 400 条**（仅统一了打印格式）。
+  - **判别力自检（「0 命中」不算证据，必须先证明判据能命中）**：两个脚本都做了「注入的已知正例必须报警、已知反例必须不报警」。6 类规则各造正例语料并确认全部命中（`NO_FIRST_LABEL` 对 `class` 与 `struct` 都触发，其余各 1 条以上）；反例（`class Neg` 六组齐备 + 单例 `Singleton` 走 N7 例外）**0 命中**——**N7 例外不误报**是本轮特意验的一条。`initcheck.py` 两条通道各造一处逆序，`INIT_ORDER/A` 与 `INIT_ORDER/B` 均命中；同序反例 0 命中。复现命令写在 `tools/README.md`。
+  - **`CMakeLists.txt` 加 `-Wreorder`（`if(NOT MSVC)`）**：§4 第 ⑥ 条另有一道编译器侧防线。**先证明这条警告在本仓能响**：造一个 `S() : b_(2), a_(1) {}` 而声明顺序 `a_` 在前的样本，带 `-Wreorder` 报 3 行、不带则**完全静默**（证明它不在默认告警集内，必须显式打开）。**MSVC 侧未启用**：对应项 `C5038` 属 `/W4` 级而本仓未开 `/W4`，单独用 `/w15038` 需在真实 Windows 工具链上实测，故留待有可用 MSVC 环境的时机再评估——已在 `CMakeLists.txt` 注释与文档里写明。
+  - **验证（全绿）**：WSL-GCC-Debug 重新 configure 后 `build.ninja` 里 93 条编译规则均带 `-Wreorder`；`ninja UnitTests` rc=0、**0 warning / 0 error**；`UnitTests` **391/391 全过**；`tools/s4scan.py` 剩 **400 条候选，全部落在用户明确划出的范围外**（212 条 `struct` 的 `NO_FIRST_LABEL` + 188 条 `test/Packages/Packages.h` 生成物）；`tools/initcheck.py` **0 处乱序**（类内 24 个 + 类外 217 个初始化列表）。
+  - **一处是我自己差点制造的假发现**：此前把 `test/TestCommon/ShmSubscriber/ShmSubscriberImpl.h:11` 的 `ShmSubscriberImpl(IoBase* io, ServerTypeType serverType)` 记为「单参数构造缺 `explicit`」——**核实后是两个无默认值的参数，§6 该条不适用**，故未登记、未改动。**教训：登记前回原文数参数，别凭「看起来像单参数」下判。**
+
 - **Spark 批 3 子集 · CSV 缩写规范化：`CSVxxx` → `Csvxxx`（目录/类名/枚举/内部偏差，2026-09-16，`4b9ef4d`，合并 `f13cb2f`）**：
   同 IO 批的判据（§1「缩写按普通单词处理」+ §2「文件名与类名一致」→ 三类只能同批原子改），但**证据策略必须换**：CSV 不满足等长不变式（`TOKEN_MAX_LEN`→`TokenMaxLen`、`TCSVField`→`CsvField`、`ltstr`→`CsvFieldLess` 都变长），IO 批「断言等长把偏移漂移变成不可能」那层保护在此失效。
   - **范围（9 文件，185 增 / 185 删，完全对称 = 纯改名特征）**：路径 `src/Serialization/CSV/`→`Csv/`、`CSVParserTest.cpp`→`CsvParserTest.cpp`、`CSVRecordTest.cpp`→`CsvRecordTest.cpp`（含 gtest 套件名）；公开类 `CSVParser`/`CSVRecord`→`CsvParser`/`CsvRecord`；枚举 `enum CSV_PARSER_ERROR`→`enum class CsvParserError`（**语义变化**：改为限定作用域，使用点须补 `CsvParserError::`），值 `CPE_*` 去前缀；内部偏差 `TOKEN_MAX_LEN`→`TokenMaxLen`、`CSV_RECORD_MAX_{HEAD,CONTENT}_SIZE`→`CsvRecordMax{Head,Content}Size`、`struct TCSVField`→`CsvField`、`struct ltstr`→`CsvFieldLess`、`CCSVFieldMap`→`CsvFieldMap`、成员 `m_mapCSVField`→`csvFieldMap_`；中英 README 测试表各 2 行。`CSV` 作**文件格式名**的散文与 include 路径原样保留。
@@ -37,25 +53,18 @@
   - **仓外认知更正（此前记载有误）**：**LibTest 与 DAG 不是 Spark 的消费方**——LibTest 引的是自带的 `"PersonalLib/Network/IO/IOBase.h"` 且调用 `IOFactory::CreateIO`（该名在 Spark 的 `HEAD` 早已不存在），DAG 的 `DAGDemo/PersonalLib/` 是自带 `.lib` 的冻结 vendored 快照且在 DAG 仓里未被 git 跟踪。**两仓本批零动作**。**唯一活跃消费方是 QuantTrading**（16 处 / 10 文件，走 `find_package(Spark PATHS "../Libs/Spark/x64-windows")`），且它**当前已经编译不过**（调 `Protocol::SetIOThread`，该名只存在于 Spark 的 `HEAD`）——与本批无关，须先建基线才能归因。
   - **踩到并记录的 Git 索引陷阱**：`git mv` 会**立即把重命名写进索引**。我为把 CMake 修复拆成独立 commit 而做了 `git reset`，索引退回旧路径——在大小写不敏感文件系统上 **git 再也看不见重命名**，它把磁盘上的 `Io/IoBase.h` 当成索引里 `IO/IOBase.h` 的「同名文件」判为修改（`git status` 打印的是**索引里的旧大小写**，与磁盘不符）。此刻 `git add -A` 会把内容写进旧路径条目，**大小写改名静默丢失**；恢复办法是按原样重跑两步 `git mv`。**独立审查又抓到同源的第二个疏漏**：提交前索引只装了 14 条重命名、42 个文件的内容改动一条未入，裸 `git commit` 会产出「新路径装旧内容 + include 指向不存在目录」的编译不过的树——已按审查意见 `git add -A`，并在提交后复验索引旧名归零。
 
-- **六仓 C++ 规范对齐 · 批 2b：Templates 残留 C 风格 cast 清零 + 生成失败路径加固（2026-09-15）**：
-  批 2 至此只剩 `namespace Spark`/`mdb` → PascalCase（公开 API，须授权、与批 7 原子改）。
-  - **① C 风格 cast 清零：17 处 / 11 文件，分两轮**（`%TEMP%\tpl-ccast-fix.py` 10 条 + `%TEMP%\tpl-ptrcat-fix.py` 3 条，逐条带命中数断言、幂等可重入）。
-    第一轮 **11 处 / 8 文件**：两类形态，C 关键字类型（`(int)`/`(bool)`/`(void*)`/`(const char*)`）与模板变量类型（`(!!@type!!Type)`）；`enum` 分支沿用 `Packages.cpp.tpl` 已用过的条件三元组写法，不另创。
-    **第二轮补 6 处 / 3 文件（`(T*)ptr` 指针形态，是独立审查抓到的漏网，见 ⑧）**：`Cpp/Api/ApiImpl.cpp.tpl:48,56`、`Cpp/Api/GbkApiImpl.cpp.tpl:60,81`、`Cpp/Protocol/Kernel/KernelGen.cpp.tpl:48,58`，一律 `((!!$packageName!!*)package)` → `static_cast<!!$packageName!!*>(package)`。**选 `static_cast` 而非 `reinterpret_cast` 已核实**：`Packages.h.tpl:16` 为 `class !!$className!! : public Package`（单一、非虚、公有继承），模板上下文里 `package` 声明为 `Package* package`，故下行转换合法且与 C 风格等价。本轮 churn：**只 QT 变**（Spark/Mdb 重 pump 无输出——这 3 个模板不喂它们），产物里 `static_cast<XxxPackage*>(package)` **107 处 / 8 文件**，旧形态在该 8 文件归零。
-  - **② 举证是受控对照，不是看 diff**（`%TEMP%\ccast-verify5.py`）：10 条编辑整体回退 → pump → 基线，正向应用 → pump → 现状。**168 个产物变更 22 个**（Mdb 5 / QT 17 / Spark 0——Spark 0 可解释：这 8 个模板没有一个喂 Spark）。三重判据：变更集合符合预期、**每文件行数不变**、**两侧 cast 语法都摘掉后剩余逐字节相等** → **越界 0 处**；往返一轮 SHA-256 回同值、`.pumptmp` 残留 0。
-  - **③ `pump.py` 加固（承 ❓ 区同名条目的方向 (i)；三仓各一份、md5 一致）**：usage 分支 `sys.exit(2)`；生成失败**不删目标**、改留 `<目标>.pumptmp` 并 `sys.exit(1)`；注释符由「`.sql` 否则 `// `」改成**扩展名白名单**，未知扩展名在写任何东西之前响亮失败；`pumpall.py` 的 `DoPump` 裸 `exit()` → `sys.exit(1)` + 中止信息。端到端五例（`pump-e2e2.py`）：A 正常 rc=0；B 模板坏 / C 未知扩展名（**在写之前**就退出）/ D 参数不足（**旧版会打印 usage 后继续覆盖目标并 rc=0**）三条 rc≠0 且**目标原样**；E `os.replace` 被挡 → 退回就地重写、rc=0 且内容更新；并证**字节中性**（加固后强制全量重泵：168 个产物内容变化 0、缺失 0、残留 0）。
-  - **④ 其中一处是我引入的回归，由 `code-reviewer` 抓到**：`os.replace` 在 Windows 上当目标被别的句柄打开会抛 `WinError 5`，而它替代的旧写法 `open(dest,'w')` 只需写权限——于是「能就地重写」的场合变成**未捕获异常**，绕过我自己写的 `pump failed:` 并把 `pumpall.py` 停在半路。已加 try/except + 二进制就地重写回退。
-  - **⑤ 三仓重建重测全绿**：六配置 MSVC rc=0、0 错误；Spark `UnitTests` **392/392** ×2；Mdb `TestDb.exe` rc=0 ×2（Sqlite+Duckdb）；QT `UnitTests` **101/690** ×2；QT 5 个集成 exe **10/10 rc=0**。**⑥ `.gitignore` 对齐（关闭 `:18` 登记）**：`__pycache__/` 补进 Spark 与 QT、Mdb 的 `/__pycache__` 归一为 `__pycache__/`（覆盖子目录）、新增本批引入的 `*.pumptmp`；三仓 `git check-ignore -v` 逐条核过。
-  - **⑦ 本批我犯的两个错（留证）**：①首轮 C-cast 扫描**只认 C 关键字类型**，把「自定义类型」这一族整个漏了（审查在 `Mdb/InitMdbFromCsv.cpp.tpl:173` 抓到，且已落进两仓产物）——与此前批评的「没有全仓重扫」**是同一类错误**；②给 Mdb/QT 复制 `pump.py` 时**行尾写成了 CRLF**（HEAD 是 LF），而 **git 看不见**——全局 gitattributes 的 `*.py text eol=lf` 让 `git hash-object` 比的是**规范化后**的字节；靠逐仓比**工作区** md5 才发现。**跨仓复制文件不能用 `git hash-object` 判等。**
-  - **⑧ 本批第三个错，也是最重要的一条：扫描口径写窄 = 假绿灯。** 第一轮收尾时我用 `%TEMP%\tpl-ccast-rescan.py` 复扫，报「真实 C 风格 cast **0 处**」，我据此把 ③ 记为**已关闭**并写进本文档。**独立审查用不同口径扫出 6 处真实残留**（上条第二轮）。根因不是漏看，是**判据本身失明**：`CAST_OLD` 长了一张**类型白名单**（`(const )?char * | void * | unsigned int | int | bool | <X>Type`），而漏掉的那一族类型名是**占位符** `!!$packageName!!`，**结构上不可能被白名单匹配**——白名单对「生成式类型名」天然失明，而本仓 96,612 行产物**全是生成式类型名**。改法：`%TEMP%\tpl-ccast-full.py` 改为**故意过收**——不预判哪些像类型，凡「括号紧跟操作数起始」一律列出、由人判读（93 个 `.tpl`、候选 158 处、`cast_like` 24 处，逐条判读后真 cast 恰为 6，其余是形参声明 / 函数指针 typedef / `offsetof` 限定名 / C# 越界）。**纪律**：本仓的扫描器一律「过收 + 人工判读」，不得再用类型白名单结案；「0 命中」在报告之前必须先证明**判据本身能命中正样本**（我没做这一步，是这次翻车的直接原因）。
-  - **⑨ 顺带扫出、但不属本批的 4 处 `(T*)ptr`**：`QuantTrading/src/BackTest/SimExchange.cpp:287,290,293,296`，**手写**文件（非 pump 产物）、**HEAD 即已存在**（逐行比对确认非本批引入）→ 归**批 6**，已登记 ❓ 区未动。
-  - **登记（本批未动，见 ❓ 区）**：生成物 `*TableList.h` 的 5 头 / 10 个公开常量须授权；工具链三处既有问题（`os.system` 拼串 / 头注释嵌模板路径 / 产物无体检）；**新登记 6 条**（`.cu` 白名单缺口、Mdb README 的 `tradingDay` 未定义示例、pump.py 回退路径四处、README 注释列位）见 ❓ 区同名条目。
-
 ## 🔄 进行中
 
 - **六仓 C++ 规范对齐**：批 1（Beacon）**已完成并提交**（`bd95bd4`，条目已入归档 `D.20`）；批 2 前置（Mdb 生成物补齐）**已提交**（`0bb5fa6`，条目已入归档 `D.21`）；**批 2a + 批 2b（Templates：有界化 / 公开成员改名 / C 风格 cast 清零 / 生成失败路径加固）已完成**。**批 3 已落地两个子集**：IO 族 `IOxxx` → `Ioxxx`（`0c95abb` + `9e12009`）与 **CSV 族 `CSVxxx` → `Csvxxx`（目录/类名/枚举/内部偏差）+ 同族匈牙利前缀清零**（`4b9ef4d` + `f13cb2f`，续做 `e26dd92` + `4584d6b`），见上方 ✅ 条目——**此处原先写的「两者能先落地，都是因为它们不触碰任何跨仓公开契约」是错的，已由独立审查推翻**——IO 与 CSV 两族的**类名**都是 `SERIALIZATION_EXPORTS` 导出符号，`CsvRecord` 实际被 `D:/Gitee/Mdb/src/Mdb/InitMdbFromCsv.cpp`（11 处）、`D:/Gitee/QuantTrading/src/Mdb/InitMdbFromCsv.cpp`（11 处）与 `Templates/Cpp/Mdb/InitMdbFromCsv.cpp.tpl:132` 消费。它们能先落地的**正确理由**是：这些消费方此刻**本来就已经编译不过**（`InitMdbFromCsv.cpp:8-9` 写着 `using namespace spark::core;` / `using namespace spark::serialization;`，而已发货 SDK 的 `include/` 里 `namespace spark` 命中 **0 处**）——**本批不是它们的第一个断点**。跨仓跟随须按决策⑤逐仓单独授权、单独 commit，见 ❓ 区。**批 3 剩余部分仍阻塞于授权**：`namespace Spark` 112 处、小写访问器与方法约 1,295 处、C 风格 cast 134 处、`k` 前缀 221 处、`g_` 66 处，见 ❓ 区②③。**批 2 剩余部分**仍是 `namespace Spark`/`mdb` → PascalCase——它生成的是被 Mdb / DbAdapters / QT 通过 `find_package` 消费的公开头，**须授权并与批 7 原子改**（见 ❓ 区①）。批 4–7 **未开工**，阻塞见 ❓ 区。**注意**：`Cpp/Mdb/*.tpl` 被 Mdb 与 QT 共用，落地即产生三仓生成物 churn，**须分仓、分批 commit**。
 
 ## ❓ 待讨论 / 待决策
+
+- **§4 新规对齐的收尾登记（2026-09-17，本批未动，均需授权或决策）**：
+  - **① `src/Network/Shm/SingleShm.h:22` 的 `std::string shmName_;` 是 `public` 数据成员，违 §1「公有成员变量 PascalCase」**。它同时踩「公有 + `_` 后缀」，两条规则的交叉点没有现成写法。改名 `ShmName` 会动到公开符号（`NETWORK_EXPORTS` 导出类的公有成员），按 Harness §3.1 **须先授权**；使用点 4 处（`SingleShm.h:22` 声明、`SingleShm.cpp:21` 初始化列表、`:168`、`:173`）。**本批只把它挪到了 `public` 段末尾，符号名一个没碰。**
+  - **② `rules/cpp-style.md` §6 的表格里「禁止 `new`/`delete`」这一行已不存在**（现有 7 行为 C 风格 cast / `sprintf` 族 / 宏代替函数 / 副作用宏 / 单参数 `explicit` / 虚析构 / `volatile` 同步）。而本区③登记的处置方案（「裸 `new` 46 处 / 裸 `delete` 20 处 → 智能指针」）正是照该条拟的；§7「智能指针」一节仍写着「**默认使用** `std::unique_ptr`」，语义是**优先**而非**禁止**。**须确认该行是有意删除还是遗漏**——它直接决定批 3 的 `new`/`delete` 那部分要不要做、按「违规」还是按「建议」做。
+  - **③ §6 `volatile` 用于同步的两处具体位置已定位**（本区③记作「6 处 / 2 文件」但未给位置）：`include/Spark/TemplateLib/Buffer/ShmBuffer.h:12-16` 的 `volatile ConnectStatusType Status;`，与 `include/Spark/Core/Thread/ThreadBase.h` 的 `volatile bool shouldRun_;`。属 Harness §3.2 的高风险类（多线程/锁/内存管理重构），**须单独确认后再动**；本批只做 §4 重排，未改这两处的 `volatile`。
+  - **④ 是否把 `tools/` 的检查接成 CI 门禁**：建议**只对增量文件**启用——存量 `struct` 的 `NO_FIRST_LABEL` 是既定例外（用户已裁决），全仓门禁会一直红。接入方式见 `tools/README.md` §5。
+  - **⑤ 全仓 `clang-format -i` 的 churn 需先决策**：`.editorconfig` 声明 `indent_style = space`，但实测 176 个源文件里 **101 个纯 Tab / 44 个纯空格 / 18 个混用 / 13 个无缩进**，全仓 `-i` 会把那 101 个文件的缩进整个改写；另有「初始化列表 `:` 后空格」（仓库写 `:member`，clang-format 固定输出 `: member`，**无开关可关**）等 4 项必然改写。完整清单见 `docs/cpp-style-clang-format.md` §4。
 
 - **登记待批（承自归档 `D.19`「STEP 协议数字化收口」，原文照录；均超出该批范围）**：
   - **登记待批（均超出本批范围）**：①C# 对端 `SharpLibrary/Network/StepProtocol/`（8 文件）同步；②`DAG/DAGDemo/PersonalLib/include/Protocol/StepUtility.h` 声明副本同步；③**`Package::Prepare(SessionIdType, int messageChain, int msgSeqNum)` 的 `msgSeqNum` 形参仍是有符号 `int`**——改它要动公开签名，且 QT 约 50 个调用点传的是 CTp API 的 `int requestId`；负值会静默回绕成 2^32 附近的大值（今天则存成负数），两种都原样保留调用方的位模式；④`docs/wire-protocol-revision-plan.md` 补 v3 变更记录；⑤`TailToStream` 现在与 `HeadToStream` 形状相同（同样有定长宽度校验），可以同样迁移到 `StepWriteCursor`——本批按批准的计划保留了 `snprintf`。
@@ -170,15 +179,15 @@
 
 - **承自归档 `D.22`（批 2a 的未决部分，2026-09-16 滚动时按 §8.1 抽出，短版）**：①`Mdb/test/TestMdb/TestDb.cpp` 的 `t_tradingDay`/`t_exchange`/`t_account` 等**局部蛇形名**属批 5；②`LibTest` 与 `SAMS` 消费了批 2a 改过的模板但**未重 pump**（一个已废弃、一个不在范围），存在语义漂移、**无编译错误**；③`m_Protocol` 8 处只声明在手写的 `QuantTrading/src/Apis/ApiBase.h`、不在任何模板里，属批 6（本区⑤另载，此处仅存互引）。**批 2a 已关闭的部分**（`sprintf` 有界化、`using namespace std;` 清零、生成物「勿手改」头、`__pycache__/` 补齐、`pumpall.py` 加固）见归档。
 
-- **`out/build/WSL-GCC-*` 是陈旧的（2026-09-16 复核，`out/` 未被 git 跟踪）**：两个 Linux 构建目录里各有 **12 / 9 个文件**仍写着旧路径 `Serialization/CSV/…`、`CSVParserTest`、`CSVRecordTest`（`build.ninja`、`VerifyGlobs.cmake` 一类），因为改名后**从未在 Linux 侧重新 configure**。按「仅 Windows 需通过、Linux 先不管」不影响任何本批结论；但日后若要跑 WSL 构建，**必须先 `cmake --fresh --preset WSL-GCC-*`**，否则它仍按旧文件名去 glob。**对照**：`x64-Debug` 里唯一命中是一份陈旧的 `vc140.pdb`（二进制调试符号库，**非构建输入**），`x64-Release` 为 **0**——**Windows 侧的 glob 与构建图都是干净的**，本批两次构建日志里编译的确实是 `Serialization\CsvParser.cpp.obj` 与 `CsvParserTest.cpp.obj`。
-
 ## 备注
 
+- **本文件当前超出 §8.1 的 50 KB 目标约 12 KB——这是 2026-09-17 用户裁定「维持现状」的结果，不是漏做的滚动作业。** 滚动作业本身已按硬触发条件执行（最旧的 ✅ 批已入归档 `D.23`）；超标的成因是 **❓ 区自身 31.8 KB**，而 §8.1 同时要求「❓ 仅未决」与「禁止整条搬走——那等于把待办一起埋掉」。两条规则在此互相掣肘：要压到 50 KB，只能么丢掉未决待办，要么把 ✅ 区压到 3 批以下——两者都不可取，故选择接受超标。**后续会话请勿为此再动归档；若确需压缩，先向用户要新的裁定。**
 - 宿主必须显式调用 `Logger::Stop()` + `Join()` 收尾，否则最后一次缓冲必丢；这是进程退出时序的**定论**，不是可以靠改析构语义绕过的缺陷——见归档 `Q.17`
 - P5 握手（协议版本协商）已决定**不做**，日后若要做的入口是 `Protocol::OnConnect`——见归档 `Q.18`
 
 ## 归档索引
 
+- `D.23` 六仓 C++ 规范对齐 · 批 2b：Templates 残留 C 风格 cast 清零 + 生成失败路径加固（2026-09-15）
 - `D.22` 六仓 C++ 规范对齐 · 批 2a 三项收口：模板有界化 / `using namespace std;` 清零 / 生成物「勿手改」头（2026-09-15）
 - `D.21` 六仓 C++ 规范对齐 · 批 2 前置：Mdb 停滞生成物补齐（`pumpall.py` 静默吞失败一节的根因，2026-09-15）
 - `D.20` 六仓 C++ 规范对齐 · 批 1 Beacon 完成（含批 2 前置的三条教训、跨仓交付纪律，2026-09-14/15）
@@ -201,6 +210,7 @@
 - `D.03` 类型宽度显式化
 - `D.02` 类型调色板补齐 8/16/32/64 位
 - `D.01` 类型 label 逐族统一
+- `Q.20` `out/build/WSL-GCC-*` 构建目录陈旧（2026-09-17 关闭：两个目录均已重新 configure）
 - `Q.19` 生成器不认 `size`，包体越界写没有写前防护（2026-09-14 关闭，本次拆分时移入）
 - `Q.18` P5 握手（2026-09-14 关闭，本次拆分时移入）
 - `Q.17` 设计约束：宿主必须显式调用 `Stop()`+`Join()`，否则最后一次缓冲必丢（2026-09-14 关闭，本次拆分时移入）

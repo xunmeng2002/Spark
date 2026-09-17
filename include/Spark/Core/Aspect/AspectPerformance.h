@@ -10,6 +10,7 @@ public:
 	AspectPerformance();
 	void Before(const char* funcName);
 	void After(const char* funcName);
+
 private:
 	std::chrono::time_point<std::chrono::system_clock, std::chrono::microseconds> startTimePoint_;
     std::chrono::time_point<std::chrono::system_clock, std::chrono::microseconds> endTimePoint_;

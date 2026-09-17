@@ -21,12 +21,6 @@ template<unsigned SIZE>
 class ShmBuffer
 {
 public:
-	SingleShmHeader* ShmHeader;
-	ServerTypeType ServerType;
-	int Index;
-	char* UpBuffer;
-	char* DownBuffer;
-
 	ShmBuffer()
 	{
 		ShmHeader = nullptr;
@@ -94,6 +88,12 @@ public:
 			return GetDownReadBufferSize();
 		return GetUpReadBufferSize();
 	}
+
+	SingleShmHeader* ShmHeader;
+	ServerTypeType ServerType;
+	int Index;
+	char* UpBuffer;
+	char* DownBuffer;
 
 private:
 	unsigned GetUpWriteBufferSize()

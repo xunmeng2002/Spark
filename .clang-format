@@ -1,0 +1,40 @@
+# Spark C++ 格式配置
+#
+# 依据：rules/cpp-style.md §3（代码格式）与 §4（类内顺序）。
+# 机械格式（缩进 / 行宽 / 换行符）的上位约定是仓库根目录的 .editorconfig，
+# 故本文件与之对齐：indent_style=space、indent_size=4、max_line_length=150。
+#
+# §4 中 clang-format **能**表达的（下方 "§4" 段）：
+#   标签顶格、成员缩进 4 空格、段间空行。
+# §4 中 clang-format **不能**表达的（访问段优先级、段内 6 组序、数据成员置段末、
+#   每段只出现一次、初始化列表与声明同序）——见 docs/cpp-style-clang-format.md。
+---
+Language: Cpp
+BasedOnStyle: LLVM
+
+# ---- §4 类内顺序（可表达部分）----
+AccessModifierOffset: -4                      # 访问标签相对成员再左移 4 列 => 与 class 关键字同列
+IndentAccessModifiers: false                  # 标签所在行不额外缩进
+EmptyLineBeforeAccessModifier: LogicalBlock   # 段间空行；`{` 之后的首个标签不补空行
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never                                 # 与 .editorconfig 的 indent_style=space 一致
+
+# ---- §3 代码格式 ----
+ColumnLimit: 150                              # 与 .editorconfig 的 max_line_length 一致
+BreakBeforeBraces: Allman
+SpaceBeforeParens: ControlStatements          # `if (...)` 有空格，`Foo()` 无空格
+PointerAlignment: Left                        # `const std::string& name`、`int* p`
+AllowShortFunctionsOnASingleLine: Inline      # 仅类内可写 `void F() {}`；文件级定义必须换行
+AllowShortBlocksOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+BinPackArguments: true
+BinPackParameters: true                       # §3：禁止每个参数独占一行（严禁垂直铺开）
+AlignAfterOpenBracket: Align
+MaxEmptyLinesToKeep: 1
+ReflowComments: false                         # 仓库里的 `// ===....===` 分隔线不能被重排
+SortIncludes: Never                           # §2 的 include 分组（组间空行、组内字母序）由人维护；
+                                              # clang-format 排序会吞掉分组空行
+...

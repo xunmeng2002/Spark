@@ -11,6 +11,10 @@ public:
 	ShmServer(const char* shmName, int milliSeconds);
 	~ShmServer();
 
+protected:
+	unsigned connectCount_;
+	std::chrono::system_clock::time_point lastWriteTimePoint_;
+
 private:
 	virtual void Accept() override;
 	virtual void CheckConnect() override;
@@ -18,9 +22,6 @@ private:
 	virtual void HandleData() override;
 
 	virtual void RemoveConnect(Connect* connect) override;
-protected:
-	unsigned connectCount_;
-	std::chrono::system_clock::time_point lastWriteTimePoint_;
 };
 }
 

@@ -14,10 +14,9 @@ public:
 	virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) override;
 	virtual void OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
 
-
-public:
 	bool connected_;
 	SessionIdType sessionId_;
+
 private:
 	IoBase* io_;
 	ServerTypeType serverType_;

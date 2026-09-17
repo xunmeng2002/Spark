@@ -14,10 +14,7 @@ static_assert(MaxPackageSize >= MaxFrameSize, "读侧缓冲必须容纳一帧上
 class NETWORK_EXPORTS Package
 {
 public:
-	Package()
-		:SessionId(0), IpAddress{ 0 }
-	{
-	}
+	Package() :SessionId(0), IpAddress{ 0 } { }
 	virtual ~Package();
 	virtual void Deallocate() = 0;
 	virtual void Prepare(SessionIdType sessionId, int messageChain, int msgSeqNum);
@@ -28,7 +25,6 @@ public:
 	virtual bool FromXtpStream(char* buff, int startIndex, int endIndex) = 0;
 	virtual const char* GetDebugString() const = 0;
 
-public:
 	SessionIdType SessionId;
 	IpAddressType IpAddress;
 
