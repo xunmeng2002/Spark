@@ -9,7 +9,8 @@ constexpr unsigned int BuffSize = 64 * 1024;
 constexpr unsigned int ShmBuffSize = 1024 * 1024;
 constexpr unsigned int LogBuffSize = 1024 * 1024;
 
-template <unsigned SIZE> class Buffer
+template <unsigned SIZE>
+class Buffer
 {
 public:
     Buffer() : buffer_{0}, length_(0), readPos_(buffer_) {}

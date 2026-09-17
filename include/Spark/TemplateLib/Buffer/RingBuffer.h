@@ -5,7 +5,8 @@
 
 namespace Spark
 {
-template <unsigned SIZE> class RingBuffer
+template <unsigned SIZE>
+class RingBuffer
 {
 public:
     RingBuffer() : buffer_{0}, length_(0), readPos_(buffer_), writePos_(buffer_) {}

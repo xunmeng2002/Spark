@@ -5,7 +5,8 @@
 
 namespace Spark
 {
-template <typename T> class ThreadSafeList
+template <typename T>
+class ThreadSafeList
 {
 public:
     ThreadSafeList() {}

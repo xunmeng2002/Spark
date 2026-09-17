@@ -5,7 +5,8 @@
 
 namespace Spark
 {
-template <typename T> class ObjectPool
+template <typename T>
+class ObjectPool
 {
 public:
     static ObjectPool& GetInstance()
@@ -16,7 +17,8 @@ public:
 
     void SetBlockUnitNum(int blockUnitNum) { blockUnitNum_ = blockUnitNum; }
 
-    template <typename... Args> T* Allocate(Args&&... args)
+    template <typename... Args>
+    T* Allocate(Args&&... args)
     {
         while (true)
         {
@@ -39,7 +41,8 @@ public:
             Expand();
         }
     }
-    template <typename... Args> std::shared_ptr<T> AllocateShared(Args&&... args)
+    template <typename... Args>
+    std::shared_ptr<T> AllocateShared(Args&&... args)
     {
         T* obj = Allocate(std::forward<Args>(args)...);
         return std::shared_ptr<T>(obj, [](T* ptr) { ObjectPool<T>::GetInstance().Deallocate(ptr); });
@@ -123,11 +126,13 @@ private:
     std::atomic<FreeNode*> freeList_ = nullptr;
 };
 
-template <typename T> T* Allocate()
+template <typename T>
+T* Allocate()
 {
     return ObjectPool<T>::GetInstance().Allocate();
 }
-template <typename T> void Deallocate(T* ptr)
+template <typename T>
+void Deallocate(T* ptr)
 {
     ObjectPool<T>::GetInstance().Deallocate(ptr);
 }

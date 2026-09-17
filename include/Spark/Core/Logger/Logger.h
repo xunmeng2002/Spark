@@ -61,12 +61,12 @@ private:
     LogData* logData_;
 };
 
-#define WriteLog(level, formatStr, ...)                                                                                                              \
-    if (Spark::Core::Logger::GetWriteLogFunc() != nullptr)                                                                                           \
+#define WriteLog(level, formatStr, ...) \
+    if (Spark::Core::Logger::GetWriteLogFunc() != nullptr) \
         Spark::Core::Logger::GetWriteLogFunc()(level, __FILE__, __LINE__, __func__, formatStr, ##__VA_ARGS__);
 
-#define WriteErrorLog(errorId, errorMsg)                                                                                                             \
-    if (Spark::Core::Logger::GetWriteLogFunc() != nullptr)                                                                                           \
-        Spark::Core::Logger::GetWriteLogFunc()(Spark::Core::LogLevel::Error, __FILE__, __LINE__, __func__, "ErrorId:[%d], ErrorMsg:[%s].", errorId,  \
+#define WriteErrorLog(errorId, errorMsg) \
+    if (Spark::Core::Logger::GetWriteLogFunc() != nullptr) \
+        Spark::Core::Logger::GetWriteLogFunc()(Spark::Core::LogLevel::Error, __FILE__, __LINE__, __func__, "ErrorId:[%d], ErrorMsg:[%s].", errorId, \
                                                errorMsg);
 }

@@ -20,13 +20,15 @@ std::string SERIALIZATION_EXPORTS UnicodeToUtf8(const std::wstring& str);
 std::string SERIALIZATION_EXPORTS GbkToUtf8(const std::string& str);
 std::string SERIALIZATION_EXPORTS Utf8ToGbk(const std::string& str);
 
-template <size_t N> void TrunsferUtf8ToGbk(char (&src)[N])
+template <size_t N>
+void TrunsferUtf8ToGbk(char (&src)[N])
 {
     std::string gbk = Utf8ToGbk(src);
     memset(src, 0, N);
     memcpy(src, gbk.c_str(), (std::min)(gbk.length(), N - 1));
 }
-template <size_t N> void TrunsferGbkToUtf8(char (&src)[N])
+template <size_t N>
+void TrunsferGbkToUtf8(char (&src)[N])
 {
     std::string utf8 = GbkToUtf8(src);
     memset(src, 0, N);

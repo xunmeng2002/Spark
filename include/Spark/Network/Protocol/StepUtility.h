@@ -43,7 +43,8 @@ public:
     int GetWrittenLength() const;
     bool IsTruncated() const;
 
-    template <typename... FieldValues> bool AppendField(std::format_string<FieldValues...> fieldFormat, FieldValues&&... fieldValues)
+    template <typename... FieldValues>
+    bool AppendField(std::format_string<FieldValues...> fieldFormat, FieldValues&&... fieldValues)
     {
         if (isTruncated_)
         {
@@ -107,7 +108,8 @@ public:
 
     //文本转整型：格式非法或越界都返回 false。窄类型直接 atoi 会静默截断，所以必须走这里。
     //base 给 16 时 from_chars 对无符号目标会拒绝 '-'，越界则报 result_out_of_range，无需再手写上界
-    template <typename T> static bool ParseInteger(const std::string& text, T& value, int base = 10)
+    template <typename T>
+    static bool ParseInteger(const std::string& text, T& value, int base = 10)
     {
         static_assert(std::is_integral<T>::value, "ParseInteger 只接受整型");
         if (text.empty())
@@ -125,7 +127,8 @@ public:
         value = parsed;
         return true;
     }
-    template <typename T> static void WriteString(StepWriteCursor& cursor, UInt16Type key, T value)
+    template <typename T>
+    static void WriteString(StepWriteCursor& cursor, UInt16Type key, T value)
     {
         static_assert(std::is_same<T, const char*>::value || std::is_same<T, char*>::value,
                       "WriteString 只覆盖 Types.h 调色板里的类型与字符串指针；裸 long / size_t 请先转成对应别名");

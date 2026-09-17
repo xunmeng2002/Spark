@@ -7,7 +7,8 @@
 
 namespace Spark::Network
 {
-template <unsigned SIZE> class ShmConnect : public Connect
+template <unsigned SIZE>
+class ShmConnect : public Connect
 {
 public:
     ShmConnect(SessionIdType sessionId, const char* remoteAddress, int remotePort, ServerTypeType serverType, void* shmAddr,

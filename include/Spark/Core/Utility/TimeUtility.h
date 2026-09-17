@@ -67,7 +67,8 @@ public:
     static void CalculateRealMinuteBarTime(const char* exchangeId, const char* instrumentId, int calculateBarTime, int& realBarTime,
                                            int& realUpdateTs);
 
-    template <typename T> static long long GetDuration(std::chrono::steady_clock::time_point& start)
+    template <typename T>
+    static long long GetDuration(std::chrono::steady_clock::time_point& start)
     {
         auto end = std::chrono::steady_clock::now();
         return std::chrono::duration_cast<T>(end - start).count();

@@ -30,7 +30,8 @@ const std::string kStepVersionText = std::format("{:04X}", ProtocolVersionValue)
 
 //写入路径用例骨架：搭缓冲 → 建游标 → 写一个字段 → 与预期字段串逐字节比对。
 //容量取 64：写入路径的字段都是短文本或单个数字；容量边界与截断语义另有专门用例，不走这里
-template <typename FieldValue> void ExpectStepField(UInt16Type key, const FieldValue& value, const std::string& expectedValue)
+template <typename FieldValue>
+void ExpectStepField(UInt16Type key, const FieldValue& value, const std::string& expectedValue)
 {
     char buff[64] = {};
     StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));
@@ -51,7 +52,8 @@ void ExpectHexStepField(UInt16Type key, UInt16Type value, const std::string& exp
 //只校验键的写法：4 位大写十六进制 + '='。键的格式串在 14 个写入入口各写一次，
 //没有公共 helper 可抽，所以逐个遍历——任何一个入口漏改都会先红。
 //键取 0x00Ax，让补零与大写字母同时可见
-template <typename FieldValue> void ExpectStepKeyWritten(UInt16Type key, const FieldValue& value)
+template <typename FieldValue>
+void ExpectStepKeyWritten(UInt16Type key, const FieldValue& value)
 {
     char buff[64] = {};
     StepWriteCursor cursor(buff, static_cast<int>(sizeof(buff)));

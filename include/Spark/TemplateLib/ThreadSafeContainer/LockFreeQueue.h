@@ -4,7 +4,8 @@
 
 namespace Spark
 {
-template <typename T> class LockFreeQueue
+template <typename T>
+class LockFreeQueue
 {
 public:
     LockFreeQueue()

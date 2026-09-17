@@ -14,7 +14,8 @@ public:
     static std::string ItoA(int value);
     static std::string FtoA(double value);
 
-    template <int N> static char* Strcpy(char (&dest)[N], const char* src)
+    template <int N>
+    static char* Strcpy(char (&dest)[N], const char* src)
     {
         if (src == nullptr)
             return nullptr;

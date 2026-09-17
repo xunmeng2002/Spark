@@ -16,7 +16,8 @@ struct SingleShmHeader
     volatile unsigned DownReadCount;
 };
 
-template <unsigned SIZE> class ShmBuffer
+template <unsigned SIZE>
+class ShmBuffer
 {
 public:
     ShmBuffer()
