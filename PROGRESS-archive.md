@@ -614,6 +614,22 @@
 
 ## ❓ 原待讨论 / 待决策
 
+### Q.32
+
+原文（2026-09-18 从 `PROGRESS.md` ❓ 区搬入，只移动未删改）：
+
+- **模板改动在 `D:\Gitee\Templates` 仓 —— 已关闭（2026-09-18）**：`Cpp/Protocol/Packages/Packages.cpp.tpl` 属**另一个仓库**，本仓只消费产物。**用户已在该仓自行提交**（`2ceedcd 使用StepUtility::ParseInteger 替代atoll`；`git -C D:/Gitee/Templates status` 现为 clean），模板与产物已同步于提交。**本条的归档（拟为 `Q.31`）留到本会话收尾时一并做**，届时原文移入 `PROGRESS-archive.md`。
+
+**已关闭（2026-09-18）**：用户已在模板仓自行提交（`2ceedcd 使用StepUtility::ParseInteger 替代atoll`），`git -C D:/Gitee/Templates status` 现为 clean，模板与产物同步于该提交。原文末尾「本条的归档（拟为 `Q.31`）留到本会话收尾时一并做」即由此答复关闭。**该预排号不作数**：按拆分当日的文档顺序，本条的归档号最终定为 **`Q.32`**——`Q.31` 给了正文位置更靠前的那条（读路径端到端覆盖）。
+
+### Q.31
+
+原文（2026-09-18 从 `PROGRESS.md` ❓ 区搬入，只移动未删改）：
+
+- **读路径的端到端覆盖仍是零（2026-09-18 本批发现，待决）**：本批把 244 处 `atoi` 换成带范围检查的 `ParseInteger`，**唯一的证据是 2 条新单测**——因为标准冒烟（TestServer + TestClient）是**原样回显**，`ServerIoSubscriberImpl::OnRecv` 只把收到的字节 memcpy 回发，两端都**不解析**；而 23 条既有序列化用例命中的字段只有 `int64s`/`enums`/`bools`。**待决**：是否给冒烟加一条真正的 STEP 帧往返（发出 → 解析 → 断言字段），让「拒绝路径」也进端到端，而不是只靠单测。
+
+**已关闭（2026-09-18）**：用户裁定「可以做」，且已落地——`TestClient`/`TestServer` 的 `main` 接受命令行第一个参数覆盖 `TestProtocol`，新增 `tools/step_e2e.py` 驱动两端走**真** STEP 帧往返（发侧成帧、收侧经 `Package::FromStepStream` 解析），20 秒实测两端各解出 40 / 4 帧全过，并做了 6 种注入的判别力自检。原文末尾「待决：是否给冒烟加一条真正的 STEP 帧往返」即由此答复关闭。**落地时未提交**（工作区状态）。
+
 ### Q.30
 
 原文（2026-09-18 从 `PROGRESS.md` ❓ 区搬入，只移动未删改）：

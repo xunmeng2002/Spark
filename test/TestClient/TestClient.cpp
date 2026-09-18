@@ -4,7 +4,6 @@
 #include "TestStepClient.h"
 #include "TestUtility/TestUtility.h"
 #include <Spark/Core/Logger/Logger.h>
-#include <thread>
 
 using namespace Spark::Core;
 using namespace Spark::Network;
@@ -14,6 +13,11 @@ int main(int argc, const char* argv[])
     Logger::GetInstance().Init(argv[0]);
     Logger::GetInstance().SetLogLevel(LogLevel::Info, LogLevel::Info);
     Logger::GetInstance().Start();
+
+    if (const int startupExitCode = ApplyTestProtocolFromCommandLine(argc, argv); startupExitCode != 0)
+    {
+        return startupExitCode;
+    }
 
     switch (TestProtocol)
     {
@@ -33,9 +37,7 @@ int main(int argc, const char* argv[])
         break;
     }
 
-    //std::this_thread::sleep_for(std::chrono::seconds(10));
-    Logger::GetInstance().Stop();
-    Logger::GetInstance().Join();
+    ShutdownTestLogger();
 
     return 0;
 }

@@ -15,6 +15,11 @@ int main(int argc, const char* argv[])
     Logger::GetInstance().SetLogLevel(LogLevel::Info, LogLevel::Info);
     Logger::GetInstance().Start();
 
+    if (const int startupExitCode = ApplyTestProtocolFromCommandLine(argc, argv); startupExitCode != 0)
+    {
+        return startupExitCode;
+    }
+
     switch (TestProtocol)
     {
     case TestProtocolType::Shm:
@@ -33,7 +38,6 @@ int main(int argc, const char* argv[])
         break;
     }
 
-    Logger::GetInstance().Stop();
-    Logger::GetInstance().Join();
+    ShutdownTestLogger();
     return 0;
 }

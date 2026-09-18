@@ -865,3 +865,114 @@ TEST(StepUtilityTest, EmptyBuffer_AllFunctionsReturnFalse)
     EXPECT_FALSE(StepUtility::GetNextSoh(buff, 0, 0, sohIdx));
     EXPECT_FALSE(StepUtility::GetNextEqual(buff, 0, 0, equalIdx));
 }
+
+// ============================================================
+// ParseInteger：整数文本的接受/拒绝矩阵
+// ============================================================
+
+namespace
+{
+struct AcceptedIntegerText
+{
+    const char* Text;
+    Int64Type Value;
+    bool UnsignedAccepted;
+};
+
+const char* const RejectedIntegerTexts[] = {"+123", " 123", "123 ", "123abc", "1.5", "0x10", "", "-", "--1", "99999999999999999999"};
+
+const AcceptedIntegerText AcceptedIntegerTexts[] = {{"0", 0, true}, {"123", 123, true}, {"00123", 123, true}, {"-1", -1, false}, {"-0", 0, false}};
+
+template <typename T>
+void ExpectIntegerParsed(const char* text, T expected, int base = 10)
+{
+    T value = static_cast<T>(0);
+    EXPECT_TRUE(StepUtility::ParseInteger(std::string(text), value, base)) << text;
+    EXPECT_EQ(value, expected) << text;
+}
+
+template <typename T>
+void ExpectRejectedWithoutChanging(const char* text, T sentinel, int base = 10)
+{
+    T value = sentinel;
+    EXPECT_FALSE(StepUtility::ParseInteger(std::string(text), value, base)) << text;
+    EXPECT_EQ(value, sentinel) << text;
+}
+}
+
+TEST(StepUtilityTest, ParseIntegerAcceptsCanonicalDecimalOnly)
+{
+    for (const char* text : RejectedIntegerTexts)
+    {
+        SCOPED_TRACE(std::string("拒绝 \"") + text + "\"");
+        ExpectRejectedWithoutChanging<Int64Type>(text, -7);
+        ExpectRejectedWithoutChanging<UInt64Type>(text, 7);
+    }
+
+    for (const auto& c : AcceptedIntegerTexts)
+    {
+        SCOPED_TRACE(std::string("接受 \"") + c.Text + "\"");
+        ExpectIntegerParsed<Int64Type>(c.Text, c.Value);
+        if (c.UnsignedAccepted)
+        {
+            ExpectIntegerParsed<UInt64Type>(c.Text, static_cast<UInt64Type>(c.Value));
+        }
+        else
+        {
+            ExpectRejectedWithoutChanging<UInt64Type>(c.Text, 7);
+        }
+    }
+}
+
+TEST(StepUtilityTest, ParseIntegerPinsWidthBoundaries)
+{
+    ExpectIntegerParsed<Int8Type>("127", std::numeric_limits<Int8Type>::max());
+    ExpectRejectedWithoutChanging<Int8Type>("128", Int8Type(-7));
+    ExpectIntegerParsed<Int8Type>("-128", std::numeric_limits<Int8Type>::min());
+    ExpectRejectedWithoutChanging<Int8Type>("-129", Int8Type(-7));
+
+    ExpectIntegerParsed<UInt8Type>("255", std::numeric_limits<UInt8Type>::max());
+    ExpectRejectedWithoutChanging<UInt8Type>("256", UInt8Type(7));
+    ExpectRejectedWithoutChanging<UInt8Type>("-1", UInt8Type(7));
+
+    ExpectIntegerParsed<Int16Type>("32767", std::numeric_limits<Int16Type>::max());
+    ExpectRejectedWithoutChanging<Int16Type>("32768", Int16Type(-7));
+    ExpectIntegerParsed<Int16Type>("-32768", std::numeric_limits<Int16Type>::min());
+    ExpectRejectedWithoutChanging<Int16Type>("-32769", Int16Type(-7));
+
+    ExpectIntegerParsed<UInt16Type>("65535", std::numeric_limits<UInt16Type>::max());
+    ExpectRejectedWithoutChanging<UInt16Type>("65536", UInt16Type(7));
+    ExpectRejectedWithoutChanging<UInt16Type>("-1", UInt16Type(7));
+
+    ExpectIntegerParsed<Int32Type>("2147483647", std::numeric_limits<Int32Type>::max());
+    ExpectRejectedWithoutChanging<Int32Type>("2147483648", Int32Type(-7));
+    ExpectIntegerParsed<Int32Type>("-2147483648", std::numeric_limits<Int32Type>::min());
+    ExpectRejectedWithoutChanging<Int32Type>("-2147483649", Int32Type(-7));
+
+    ExpectIntegerParsed<UInt32Type>("4294967295", std::numeric_limits<UInt32Type>::max());
+    ExpectRejectedWithoutChanging<UInt32Type>("4294967296", UInt32Type(7));
+    ExpectRejectedWithoutChanging<UInt32Type>("-1", UInt32Type(7));
+
+    ExpectIntegerParsed<Int64Type>("9223372036854775807", std::numeric_limits<Int64Type>::max());
+    ExpectRejectedWithoutChanging<Int64Type>("9223372036854775808", Int64Type(-7));
+    ExpectIntegerParsed<Int64Type>("-9223372036854775808", std::numeric_limits<Int64Type>::min());
+    ExpectRejectedWithoutChanging<Int64Type>("-9223372036854775809", Int64Type(-7));
+
+    ExpectIntegerParsed<UInt64Type>("18446744073709551615", std::numeric_limits<UInt64Type>::max());
+    ExpectRejectedWithoutChanging<UInt64Type>("18446744073709551616", UInt64Type(7));
+    ExpectRejectedWithoutChanging<UInt64Type>("-1", UInt64Type(7));
+}
+
+TEST(StepUtilityTest, ParseIntegerPinsHexFields)
+{
+    ExpectIntegerParsed<UInt16Type>("FFFF", std::numeric_limits<UInt16Type>::max(), 16);
+    ExpectIntegerParsed<UInt16Type>("ffff", std::numeric_limits<UInt16Type>::max(), 16);
+    ExpectRejectedWithoutChanging<UInt16Type>("10000", UInt16Type(7), 16);
+    ExpectRejectedWithoutChanging<UInt16Type>("-1", UInt16Type(7), 16);
+    ExpectRejectedWithoutChanging<UInt16Type>("", UInt16Type(7), 16);
+    ExpectRejectedWithoutChanging<UInt16Type>("FF FG", UInt16Type(7), 16);
+
+    ExpectIntegerParsed<Int16Type>("7FFF", std::numeric_limits<Int16Type>::max(), 16);
+    ExpectRejectedWithoutChanging<Int16Type>("8000", Int16Type(-7), 16);
+    ExpectIntegerParsed<Int16Type>("-8000", std::numeric_limits<Int16Type>::min(), 16);
+}

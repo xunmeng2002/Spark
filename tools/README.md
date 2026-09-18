@@ -1,9 +1,13 @@
-# tools —— 规范检查脚本
+# tools —— 规范检查与冒烟脚本
 
 本目录存放 `rules/cpp-style.md` 的**机器可检查部分**。这些条款属于结构语义，
 `clang-format` 无法表达（详见 `docs/cpp-style-clang-format.md`），故用脚本补位。
 
-脚本一律**只读**：只报告，不修改任何文件。改与不改由人判断。
+规范检查脚本一律**只读**：只报告，不修改任何文件。改与不改由人判断。
+
+另有一个**端到端冒烟**脚本 `step_e2e.py`（第 6 节）：它不查规范，而是真的**起进程**收发
+STEP 帧并断言字段——只读的是源码，进程与日志当然会动。两者同放本目录，是因为它们都是
+「验证」而非「构建」的一环。
 
 ---
 
@@ -13,6 +17,7 @@
 | ---- | ---- |
 | `s4scan.py` | §4 类内结构：首标签 / 重复标签 / 访问段优先级 / 段内 6 组序 / 标签顶格 / 段间空行 |
 | `initcheck.py` | §4 非静态数据成员声明顺序与初始化列表一致 |
+| `step_e2e.py` | 非规范检查：STEP 帧端到端（发出 → 解析 → 断言字段），见第 6 节 |
 
 ---
 
@@ -131,10 +136,71 @@ python tools/initcheck.py <本次改动的 C++ 文件>
 
 ---
 
-## 6. 依赖
+## 6. 端到端冒烟（`step_e2e.py`）
 
-只用 Python 标准库（`re` / `os` / `subprocess` / `sys`），无第三方依赖。
-须在 git 仓库内运行（无参数时的文件列表取自 `git rev-parse --show-toplevel`
+```bash
+python tools/step_e2e.py                 # Debug 配置，跑 40 秒
+python tools/step_e2e.py --seconds 60
+python tools/step_e2e.py --config Release
+```
+
+**它补的是哪个洞**：标准冒烟（`TestServer` + `TestClient`，`TestProtocol` 默认 `Tcp`）走
+`ServerIoSubscriberImpl::OnRecv` 的**原样回显**——两端都不解析，`Package::FromStepStream`
+一次都没被调用。真正「发出 → 成帧 → 解析 → 断言字段」的路径只在
+`StepClient` / `StepServer`（`ProtocolTypeType::Step`，实现分别在 `TestStepClient.*` /
+`TestStepServer.*`）里，而它此前只能靠手改
+`TestUtility.cpp` 里 `TestProtocol` 的初值来选中（改完还得按字节还原，极易出错）。
+现在两个 `main` 都接受命令行第一个参数，本脚本即用 `TestServer.exe Step` /
+`TestClient.exe Step` 选中它。
+
+**默认 40 秒、上限 80 秒**，两个数都是被客户端那一侧逼出来的：
+
+- 默认值：客户端每 10000 条才记一行，机器慢一倍时 20 秒只够凑出 2 帧，第 2 帧还可能连着
+  缓冲区被 `terminate` 丢掉，于是把「机器慢」误报成协议回归。40 秒给足的余量是 2 倍以上。
+- 上限：服务端连上后 90 秒自停（`TestStepServer` 的 `sleep_for(90s)`），跑过这个窗口后段
+  就是死时间——帧仍存在、序号仍等间隔，断言看不出「末段没在跑」，于是可能假绿。超过 80
+  秒直接按用法错误拒掉。
+
+**断言依据**（`StepClient::SendReqInsertOrder` 的不变量）：`Price == 100 + Volume`、
+`Volume == ClientOrderId == index`、三个字符串字段与三个枚举字段恒为定值。服务端每 1000 条
+记一行、客户端每 10000 条记一行，故样本序号**必须严格等间隔递增**——这一条同时证明流没有
+错位、没有重连。另断言两端日志里不出现 `Garbage Stream Detected` / `CheckSum not Match` /
+`FieldId not Match` 等读路径失败字句，也不出现任何 `ERROR` 行。
+
+**每侧至少 2 帧才算数**：客户端每 10000 条才记一行，跑太短就只剩 1 帧，此时「间隔恒定」
+无从校验。样本不足按**失败**计（而不是照常给绿灯），否则「条数与字段全部吻合」这句结论
+名不副实。客户端跑满 1,000,000 条时会把收尾那一帧连记两遍，脚本会折叠相邻重复序号后再算
+间隔，免得把收尾行为误诊成流错位。
+
+**前置**：先构建出 `bin/<配置>/TestServer.exe` 与 `TestClient.exe`（本脚本不会替你构建；
+Windows 下用 MSVC，注意先 `vcvars64`，否则 `cl.exe` 找不到 `stdint.h`）。
+
+**就绪判定靠日志、不靠固定等待**：`listen()` 成功没有对应的日志行，可轮询的唯一证据是
+`CreateIo ServerType:Server`，故脚本先轮询该行（最多 15 秒）再留 1 秒等 bind+listen 完成。
+不做端口探测，是因为探测连接会在服务端留下一个真实会话，可能反过来污染「日志里不得出现
+`ERROR`」这条断言。
+
+**注意**：起进程时 stdout 一律 `DEVNULL`。给 `PIPE` 而不读，日志线程写满管道后会阻塞，
+表现成「跑十几条就不动了」的假卡死（2026-09-18 已用同型实验刻意复现过，当时的「13 条后
+卡死」就是这么来的，不是回归）。子进程的回收放在 `finally` 里，中途抛错也会先杀客户端、
+再杀服务端，不会留下占着 `127.0.0.1:20001` 的僵尸进程。
+
+退出码：
+
+| 码 | 含义 |
+| ---- | ---- |
+| `0` | 断言全过 |
+| `1` | 断言未过（有 `ERROR`、字段不符、序号间隔异常、样本不足 2 帧、或压根没读到帧） |
+| `2` | 用法/环境错误（参数写错、缺可执行文件、服务端 15 秒未就绪、本次没落下日志文件——**没日志就不给绿灯**） |
+
+---
+
+## 7. 依赖
+
+只用 Python 标准库（`os` / `re` / `subprocess` / `sys` / `time` / `typing`），无第三方依赖。
+
+以下两句针对两个**扫描脚本**（`step_e2e.py` 不吃这套：它的仓库根是从脚本自身位置推出来的，
+不查 git）：须在 git 仓库内运行（无参数时的文件列表取自 `git rev-parse --show-toplevel`
 与 `git ls-files`，两者都要求有 git 环境；不在仓库内时须显式给路径）。
 目录展开另需一次 `git ls-files --others --ignored --exclude-standard --directory`
 来取忽略目录表；取不到 git 时退化为「不跳过」而非静默跳过。
