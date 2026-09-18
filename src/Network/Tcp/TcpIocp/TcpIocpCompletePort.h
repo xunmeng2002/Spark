@@ -4,13 +4,13 @@
 
 namespace Spark::Network
 {
-class IoCompletePort
+class TcpIocpCompletePort
 {
 public:
-    IoCompletePort();
-    ~IoCompletePort();
-    IoCompletePort(const IoCompletePort&) = delete;
-    IoCompletePort& operator=(const IoCompletePort&) = delete;
+    TcpIocpCompletePort();
+    ~TcpIocpCompletePort();
+    TcpIocpCompletePort(const TcpIocpCompletePort&) = delete;
+    TcpIocpCompletePort& operator=(const TcpIocpCompletePort&) = delete;
 
     bool Create(int maxConcurrency = 0);
     bool Close();

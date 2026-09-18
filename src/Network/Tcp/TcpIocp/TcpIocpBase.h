@@ -33,7 +33,7 @@ protected:
     virtual void OnRecvComplete(MyOverlapped* overlapped, int bytesTransferred);
 
     int backLog_;
-    IoCompletePort* ioCompletePort_;
+    TcpIocpCompletePort* ioCompletePort_;
 };
 }
 #endif // _WIN32

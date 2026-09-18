@@ -5,8 +5,10 @@
 #include <Spark/Network/Protocol/StepUtility.h>
 #include <Spark/Network/Protocol/Items.h>
 #include <Spark/Network/Protocol/ProtocolVersion.h>
+#include <Spark/Network/Protocol/ProtocolUtility.h>
 #include <gtest/gtest.h>
 
+#include <cstdio>
 #include <cstring>
 #include <format>
 #include <limits>
@@ -668,4 +670,144 @@ TEST(PackageSerializationTest, MakePackage_NullBufferRejected)
     EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Xtp, nullptr, MaxPackageSize), 0);
     EXPECT_EQ(pkg.MakePackage(ProtocolTypeType::Step, nullptr, MaxPackageSize), 0);
     EXPECT_FALSE(pkg.WasMeasured());
+}
+
+// ============================================================
+// int32s 桶字段的读路径
+// 读侧由 atoi 改为 StepUtility::ParseInteger（越界拒绝而非静默截断），
+// 这里用含 int32 字段的真实包把该分支打进：取值正确、越界被拒。
+// 原有用例只覆盖 NotifyComponentConnectStatusPackage，其三个字段分属 int64s/enums/bools，
+// 一条都到不了这个分支。
+// ============================================================
+
+namespace
+{
+// 就地改写某个 item 的十进制值。新旧值必须等宽：线上字段以 SOH 分隔，
+// 宽度一变就会挪动后面的分隔符，构造出的帧不再是"只改了值"的那一条。
+// 定位靠"键 + 期望值"两段一起匹配，而不是只看键——同一个 item 可能在一条帧里出现多次
+// （同名具名类型被多个包引用），撞上别处就会改错地方
+bool PatchStepItemValue(std::string& frame, UInt16Type itemId, const std::string& origin, const std::string& replacement)
+{
+    if (origin.size() != replacement.size())
+    {
+        return false;
+    }
+    std::string key = std::format("{:04X}=", itemId);
+    size_t pos = frame.find(key);
+    while (pos != std::string::npos)
+    {
+        size_t valuePos = pos + key.size();
+        if (frame.compare(valuePos, origin.size(), origin) == 0)
+        {
+            frame.replace(valuePos, origin.size(), replacement);
+            return true;
+        }
+        pos = frame.find(key, pos + 1);
+    }
+    return false;
+}
+
+// 值改过之后 CRC 必然失配，而读侧是"先校 CRC 再进解析"，不重算报尾就永远走不到读字段那一步
+void RefreshStepTail(char* buff, int totalLen)
+{
+    int tailIndex = totalLen - static_cast<int>(StepTailLen);
+    TailField tail = {};
+    tail.CheckSum = CalculateCrc32c(reinterpret_cast<const unsigned char*>(buff), tailIndex);
+    EXPECT_EQ(StepUtility::TailToStream(&tail, buff + tailIndex, static_cast<int>(StepTailLen)), static_cast<int>(StepTailLen));
+}
+
+ReqInsertOrderPackage* CreateSampleInsertOrder(ClientOrderIdType clientOrderId)
+{
+    auto* pkg = ReqInsertOrderPackage::Allocate();
+    pkg->Prepare(SessionId, 0, 1001);
+
+    auto* field = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
+    std::memset(field, 0, sizeof(*field));
+    std::snprintf(field->AccountId, sizeof(field->AccountId), "Xunmeng001");
+    std::snprintf(field->ExchangeId, sizeof(field->ExchangeId), "SHSE");
+    std::snprintf(field->InstrumentId, sizeof(field->InstrumentId), "600036");
+    field->Direction = DirectionType::Buy;
+    field->OffsetFlag = OffsetFlagType::Open;
+    field->OrderPriceType = OrderPriceTypeType::LimitPrice;
+    field->Price = 88.88;
+    field->Volume = 1000;
+    field->ClientOrderId = clientOrderId;
+
+    pkg->ReqInsertOrder = field;
+    return pkg;
+}
+}
+
+TEST(PackageSerializationTest, StepRoundTrip_Int32FieldPreserved)
+{
+    // 取 int32 值域上沿附近的值：atoi 与 from_chars 在合法十进制下取值一致，
+    // 但一旦写侧改成补位/带符号，这里的写法断言会先报出来
+    constexpr ClientOrderIdType ExpectedClientOrderId = 2000000000;
+
+    auto* pkg = CreateSampleInsertOrder(ExpectedClientOrderId);
+    char buff[MaxPackageSize] = {};
+    int totalLen = pkg->MakePackage(ProtocolTypeType::Step, buff, MaxPackageSize);
+    EXPECT_GT(totalLen, 0);
+    pkg->Deallocate();
+
+    std::string frame(buff, totalLen);
+    EXPECT_NE(frame.find(std::format("{:04X}={:d}", Items::ClientOrderId, ExpectedClientOrderId)), std::string::npos)
+        << "int32 字段必须写成裸十进制（无补位、无前导空格、无正号），否则严格解析会拒绝自家输出";
+
+    PackageFactory factory;
+    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
+    EXPECT_EQ(static_cast<int>(reader.Append(buff, totalLen)), totalLen);
+
+    Package* parsedRaw = nullptr;
+    ASSERT_TRUE(reader.ParsePackage(parsedRaw));
+    ASSERT_NE(parsedRaw, nullptr);
+
+    auto* parsed = static_cast<ReqInsertOrderPackage*>(parsedRaw);
+    ASSERT_NE(parsed->ReqInsertOrder, nullptr);
+    EXPECT_EQ(parsed->ReqInsertOrder->ClientOrderId, ExpectedClientOrderId);
+    // 相邻字段一并核对：Volume 属 int64s（atoll）、Price 属 doubles（atof），本次改动不应波及
+    EXPECT_EQ(parsed->ReqInsertOrder->Volume, 1000);
+    EXPECT_DOUBLE_EQ(parsed->ReqInsertOrder->Price, 88.88);
+    EXPECT_EQ(static_cast<int>(parsed->ReqInsertOrder->Direction), static_cast<int>(DirectionType::Buy));
+
+    parsed->Deallocate();
+}
+
+TEST(PackageSerializationTest, StepRoundTrip_Int32OutOfRangeIsRejected)
+{
+    // 改前 atoi 对越界值静默截断（实现定义），报文照常解析成功并落进一个错值；
+    // 改后必须整包拒绝。本用例先跑一条未改写的对照帧，确认"失败"不是别的原因造成的假绿
+    const std::string InRangeValue = "2000000000";
+    const std::string OverflowValue = "9999999999";
+
+    auto* pkg = CreateSampleInsertOrder(2000000000);
+    char buff[MaxPackageSize] = {};
+    int totalLen = pkg->MakePackage(ProtocolTypeType::Step, buff, MaxPackageSize);
+    EXPECT_GT(totalLen, 0);
+    pkg->Deallocate();
+
+    std::string frame(buff, totalLen);
+    ASSERT_TRUE(PatchStepItemValue(frame, Items::ClientOrderId, InRangeValue, OverflowValue));
+
+    {
+        PackageFactory factory;
+        PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
+        reader.Append(buff, totalLen);
+        Package* controlRaw = nullptr;
+        ASSERT_TRUE(reader.ParsePackage(controlRaw)) << "对照帧都解析不了，下面的失败结论不作数";
+        ASSERT_NE(controlRaw, nullptr);
+        EXPECT_EQ(static_cast<ReqInsertOrderPackage*>(controlRaw)->ReqInsertOrder->ClientOrderId, 2000000000);
+        controlRaw->Deallocate();
+    }
+
+    std::memcpy(buff, frame.data(), frame.size());
+    RefreshStepTail(buff, totalLen);
+
+    PackageFactory factory;
+    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
+    EXPECT_EQ(static_cast<int>(reader.Append(buff, totalLen)), totalLen);
+
+    Package* parsedRaw = nullptr;
+    EXPECT_FALSE(reader.ParsePackage(parsedRaw));
+    EXPECT_EQ(parsedRaw, nullptr);
 }

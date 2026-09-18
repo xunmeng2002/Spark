@@ -15,7 +15,7 @@ namespace Spark::Network
 TcpIocpBase::TcpIocpBase(ServerTypeType serverType, const char* addressName, int milliSeconds, int backlog)
     : TcpBase(serverType, addressName, milliSeconds), backLog_(backlog)
 {
-    ioCompletePort_ = new IoCompletePort();
+    ioCompletePort_ = new TcpIocpCompletePort();
 }
 TcpIocpBase::~TcpIocpBase()
 {
@@ -49,7 +49,7 @@ bool TcpIocpBase::Init()
     }
     if (!ioCompletePort_->Create())
     {
-        WriteErrorLog(LogLevel::Error, "Create IoCompletePort Failed.");
+        WriteErrorLog(LogLevel::Error, "Create TcpIocpCompletePort Failed.");
         return false;
     }
     if (!ioCompletePort_->AssociateDevice((HANDLE)socket_, socket_))
