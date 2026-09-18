@@ -11,6 +11,21 @@ stages:
     executor: []
     steps:
       - step: build@gcc
+        name: style_check
+        displayName: 规范静态检查（§4 类内顺序 + 初始化顺序）
+        gccVersion: 11.1.0
+        commands:
+          - '# 本仓规范静态检查。两条都不带路径——带路径会让通道 B 的跨文件类表失效（假绿灯）。'
+          - '# --exempt-struct-default-access：struct/union 靠默认访问、不写首标签，属本仓既定约定；'
+          - '#   豁免条目仍会列在输出末节，不是静默丢弃。'
+          - 'command -v python3 >/dev/null 2>&1 || { echo "CI 缺少 python3：静态检查无法执行，按失败处理"; exit 1; }'
+          - python3 tools/initcheck.py --gate
+          - python3 tools/s4scan.py --gate --exempt-struct-default-access
+        caches: []
+        notify: []
+        strategy:
+          retry: '0'
+      - step: build@gcc
         name: build_gcc
         displayName: GCC 构建
         gccVersion: 11.1.0

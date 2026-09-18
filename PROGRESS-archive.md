@@ -177,7 +177,7 @@
   - **两处我此前的测量是错的，已更正**：①`HandleIOEvent` 在原始清单里根本没有——用「以 `IO` 开头」的前缀式 grep，**结构上不可能匹配到它**（它不以 `IO` 开头），漏了 8 处，含 `IoBase.h:40` 的公开纯虚（被 `ShmBase`/`SingleShm`/`TcpBase` override）。②`GetIOThread`/`GetIO` 同理必须各自单列规则——`\bIOThread\b` 匹配不到 `GetIOThread` 里那一段。**与 `PROGRESS.md:17 ⑧`「扫描口径写窄 = 假绿灯」同型**：判据本身失明时，「0 命中」毫无意义。
   - **批量替换的三道自保（承批 1 那 20 处字面量误改的教训）**：①**状态机屏蔽**——按区间标出字符串/字符/注释，只在 `code` 区间求替换位置再按原偏移回写，`#include` 行是**唯一**白名单出口；②**等长不变式**——所有替换只翻一个字母大小写，断言 `len(new) == len(old)`，把偏移漂移这一整类 bug 变成不可能；③**15 例自测语料先行**（`IOBaseXXX`/`MyIOBase` 边界、`"IOBase"`/`'I'`/`// IOBase` 屏蔽、转义引号、`AppPlatformType::IOS`、`TimeConditionType::IOC`、`1'000'000` 数字分隔符），语料全绿才上真实文件。
   - **假阳性清单（全部实测原样保留）**：`FIONBIO` 6、`ERROR_IO_PENDING` 5、`ERROR_OPERATION_ABORTED` 1、`SIO_GET_EXTENSION_FUNCTION_POINTER` 4、`CreateIoCompletionPort` 2，以及 `AppPlatformType::IOS`（Apple 平台）与 `TimeConditionType::IOC`（即时成交或撤销）各 2。**后两条是「绝不允许写裸 `IO` 前缀规则」的死证**——前缀规则会把它们改成 `IoS`/`IoC`。
-  - **刻意保留（附理由）**：①`IoFactory.cpp:45` 的日志**字段标签** `IOType`/`IOModel` 未改（规则管标识符，代码里从不存在叫 `IOType` 的标识符）；但规范拼写确由上游 `Model/Types.xml:222,227` 定为 `IoType`/`IoModel`，且同行 `ServerType` 恰是「类型名去尾 `Type`」的写法，故它是这行里唯一拼法落后于类型名的标签——**登记待决**。②中文散文里的 `IO`（`Types.h` 的 `//IO模型`/`//IO类型`、`TcpBase` 的「IO 循环」、`Protocol.cpp` 的 `static_assert` 消息、README 的「IO 线程」）保留，并作为闸门 3 的「应保留」正样本核验。③**`types.h`/`EnumString.h` 里那些 `IO` 不是手写文本而是生成物**（源在 `Model/Types.xml`，首行自述「请勿手改」），在 Spark 单仓改会被下次 `pumpall.py` 静默回滚——保留是唯一正确选择，不只是风格判断。
+  - **刻意保留（附理由）**：①`IoFactory.cpp:45` 的日志**字段标签** `IoType`/`IoModel` 未改（规则管标识符，代码里从不存在叫 `IoType` 的标识符）；但规范拼写确由上游 `Model/Types.xml:222,227` 定为 `IoType`/`IoModel`，且同行 `ServerType` 恰是「类型名去尾 `Type`」的写法，故它是这行里唯一拼法落后于类型名的标签——**登记待决**。②中文散文里的 `IO`（`Types.h` 的 `//IO模型`/`//IO类型`、`TcpBase` 的「IO 循环」、`Protocol.cpp` 的 `static_assert` 消息、README 的「IO 线程」）保留，并作为闸门 3 的「应保留」正样本核验。③**`types.h`/`EnumString.h` 里那些 `IO` 不是手写文本而是生成物**（源在 `Model/Types.xml`，首行自述「请勿手改」），在 Spark 单仓改会被下次 `pumpall.py` 静默回滚——保留是唯一正确选择，不只是风格判断。
   - **六道闸门（全绿）**：①旧名残留 0，假阳性反向核验全部原样；②字符串字面量多重集比对 **13 删 / 13 增**且逐条可枚举（6 条 include basename + 6 条日志 + 1 条 `"Create IoCompletePort Failed."`），`"IOS"`/`"IOC"`/`"FIONBIO"` 无混入；③陈旧注释 0，中文正样本保留；④`pumpall.py` rc=0 且 **232 个跟踪文件逐字节零 churn**、无 `.pumptmp` 残留；⑤MSVC `x64-Debug`/`x64-Release` 0 error、`UnitTests` **392/392 ×2**；⑥`TestServer` + `TestClient` 端到端冒烟 **Tcp 与 Shm 两条路径均通过**（覆盖 `HandleIoEvent` 纯虚在 `ShmBase`/`SingleShm` 与 `TcpBase` 的实现）。
   - **本批最强的一条证据（新增闸门 1d）**：把 `git show HEAD:<旧路径>` 原文**按改名规则机械变换后**与工作区逐字节比对——**44 文件全等**。这比看 diff 强：它直接证明「除改名外无任何其他改动混入」。独立审查 agent 用自己的映射独立复现了同一结论，并额外做子串级普查（确认 `SERIALIZATION`/`VERSION` 这类**词内** `…ION…` 未被误伤成 `SERIALIZATIoN`）。
   - **另加的一道硬校验（Linux）**：`WSL-GCC-Debug` 构建 rc=0 / 0 error，`UnitTests` **391/391**（差 1 个平台专属用例）。对「只改大小写」这类改动，**大小写敏感的 Linux 构建才是硬校验**——Windows 上 `#include <Spark/Network/Io/IoBase.h>` 与残留的 `IO/IOBase.h` 会互相匹配，可能静默编到旧头从而绕掉闸门 1。（用户已定：仅 Windows 需通过，Linux 不投入。）
@@ -613,6 +613,72 @@
     方向是"此前静默跳过的字段开始被赋值"，属**行为变更**（修漏），已确认对现有全部消费方零输出。
 
 ## ❓ 原待讨论 / 待决策
+
+### Q.30
+
+原文（2026-09-18 从 `PROGRESS.md` ❓ 区搬入，只移动未删改）：
+
+- **`.gitignore` 的两处缺口（2026-09-16 发现，本批未动）**：`log/`（Logger 的运行时产物目录）与 `TestShm`（Shm 测试落盘文件）**都未被忽略**。证据：本批冒烟实测产出了 `log/TestClient.*.log`、`log/TestServer.*.log` 与一个 8 MB 的 `TestShm`，三者**既不在 `HEAD`、也不被忽略**——一次 `git add -A` 就会把日志与 8 MB 文件连同代码一起提交。**待决：补 `.gitignore`，还是把产物改到已被忽略的路径。**
+
+**已关闭（2026-09-18）**：按裁定**补 `.gitignore`**（新增 `log/` 与 `TestShm`），**未动产物路径**。本次冒烟实测仓根未留 `TestShm`（保留该忽略项是为防跨平台/改名后的落盘）；`log/` 则是每次冒烟都会产出的。
+
+### Q.29
+
+原文（2026-09-18 从 `PROGRESS.md` ❓ 区搬入，只移动未删改）：
+
+- **`TcpIocpCompletePort.{h,cpp}` 的文件名与它实现的类 `IoCompletePort` 不一致（2026-09-16 复核，**既有**违 §2，影响面 0）**：本批只改大小写、不改词根，故未一并处理（真改名会牵动 `include/` 与 `src/` 下 4 个文件 + 全部 include 行，属独立改动）。**需单独授权。**
+
+**已关闭（2026-09-18）**：类 `IoCompletePort` 更名为 `TcpIocpCompletePort`，与文件名一致（`TcpIocpBase.{h,cpp}` 同批）。改动只含类名/构造/析构/方法名与两处日志字面量（`new IoCompletePort()` → `new TcpIocpCompletePort()`、`"Create IoCompletePort Failed."` → `"Create TcpIocpCompletePort Failed."`）；成员名 `ioCompletePort_` **刻意保留**（私有成员，不属类名拼写一致性范围）。MSVC 构建 0 error / 0 warning。
+
+### Q.28
+
+原文（2026-09-18 从 `PROGRESS.md` ❓ 区搬入，只移动未删改）：
+
+- **`IoFactory.cpp:45` 的日志字段标签 `IoType`/`IoModel`（2026-09-16 发现，待决）**：本批**未改**，理由是该行是日志文本、规则约束的是标识符，且代码里从不存在叫 `IoType` 的标识符。**但它与「本批改了 7 处日志字面量」并不矛盾**——那 7 处的判据是「字面量内容就是类名本身」（自指），**不是「字符串一律可改」**。规范拼写确由上游 `Model/Types.xml:222,227` 定为 `IoType`/`IoModel`，且同一行里 `ServerType` 恰是「类型名 `ServerTypeType` 去尾 `Type`」的写法，**故它是这行里唯一拼法落后于类型名的标签**。若改，需先与日志消费方（日志解析 / 告警规则）确认这些字段名有没有被当作键使用。**待决。**
+
+**已关闭（2026-09-18）**：**用户本人**把 `src/Network/Io/IoFactory.cpp:45` 日志字面量里的 `IOType`/`IOModel` 改为 `IoType`/`IoModel`，与上游 `Model/Types.xml:222,227` 的规范拼写一致（该改动无运行时效应，仅日志文本）。
+
+### Q.27
+
+原文（2026-09-18 从 `PROGRESS.md` ❓ 区搬入，只移动未删改）：
+
+- **Step 头上的 `Reserved` 字段暂不上线（本轮决策，待复核）**：`Head.xml` 里 `HeadField` 有 7 个字段（含 `Reserved`），但 Step 的文本包头只序列化 6 个（`HeadItemCount = 6`），`Reserved` 仅 Xtp 分支有。理由：`Reserved` 的定义是"保留字段，必须为 false"，缺省即 false，上线只会让包头多 12 字节；如果希望两端能校验"对端没乱用保留位"，需要把它加进 `HeadToStream`/`HeadFromStream` 并把 `HeadItemCount` 改成 7。
+
+**已关闭（2026-09-18）**：**不上线**。`HeadItemCount` 维持 6，`Reserved` 仍仅 Xtp 分支有，Step 文本包头不多出 12 字节。
+
+### Q.26
+
+原文（2026-09-18 从 `PROGRESS.md` ❓ 区搬入，只移动未删改）：
+
+- **`ProtocolVersionValue` 要不要按协议类型拆成两个（2026-09-14 由代码审查提出，用户未决）**：
+  该常量由 **XTP 与 Step 共用**，两者都在报文头里写它、也都在读侧校验它。本批 Step 的线格式
+  破坏性变更把它从 2 升到 3，而 **XTP 的线格式本批没有变化**（`MsgSeqNum`/`CheckSum` 与相邻字段
+  同宽同位，`memcpy` 出来的字节逐位相同），却会跟着升到 3，于是 XTP 对端也必须同步升级，
+  否则在"协议版本不匹配"上被直接判死。本批按**共用版本号 + 注释说明**落地，未拆分。
+
+  | 方案 | 代价 |
+  | :--- | :--- |
+  | (i) 保持共用（本批现状） | XTP 对端需"无理由"升级一次；无代码改动 |
+  | (ii) 按协议类型拆两个版本号 | 要改两处校验分支；两类协议日后可独立演进 |
+
+**已关闭（2026-09-17）**：**(i) 保持共用**，不按协议类型拆分。代价已确认接受：本批 Step 线格式破坏性变更把它从 2 升到 3，而 XTP 线格式本批无变化却跟着升到 3，XTP 对端需同步升级。
+
+### Q.25
+
+原文（2026-09-18 从 `PROGRESS.md` ❓ 区搬入，只移动未删改）：
+
+- **文本协议反序列化对 `uint16s`/`int32s` 仍走 `else: atoi`（2026-09-13 记；2026-09-17 复核仍在）**：生成的整数分支是 `elif $type in ('uint8','int8','int16','uint32','uint64')` + `else: atoi(value.c_str())`，故这两个段拿不到 `StepUtility::ParseInteger` 的范围检查，命中的是**行为变更**（从「超范围静默截断 / `atoi` 溢出 UB」变成「拒绝并报错」）。**修法在本仓之外**（模板 `Templates/Cpp/Protocol/Packages/Packages.cpp.tpl`，2026-09-17 复核仍未修），改完须重 pump 本仓 `test/Packages/Packages.cpp`。**待你点头。**
+
+**已关闭（2026-09-18）**：模板 `Templates/Cpp/Protocol/Packages/Packages.cpp.tpl` 的整数分支元组补入 `uint16`/`int32`（原为 `('uint8', 'int8', 'int16', 'uint32', 'uint64')`），重 pump 后本仓 `test/Packages/Packages.cpp` 恰**244 处** `atoi` → `StepUtility::ParseInteger`（越界即 `WriteLog(LogLevel::Warning, "... Out Of Range ...")` + `return false`）。`uint16s` 桶只有 `UInt16` 一个具名类型，本仓 `Packages.xml` 一处在用都没有，故该半条是**本地空操作**；算术闭合可自证：244（int32 字段）+ 0（uint16）+ 12（Bool）= 256 = 改前的裸 `atoi` 总数。证据：逐 opcode 断言「除该分支外无任何字节变化」；新增 2 条 `PackageSerializationTest`（往返 + 越界拒绝，后者用「还原模板 → 重 pump → 重编译」证明**改前即失败**，具判别力）；Windows 单测 392→**394**、WSL-GCC 391→**393**。该 `else` 分支此后**只剩 `bool` 一种类型命中**。**同时得到一条覆盖结论：标准 TestServer/TestClient 冒烟是原样回显，不走 `FromStepStream`，该路径的唯一证据是上述 2 条单测。**
+
+### Q.24
+
+原文（2026-09-18 从 `PROGRESS.md` ❓ 区搬入，只移动未删改）：
+
+- **是否把 `tools/` 的检查接成 CI 门禁（未决）**（原属「§4 新规对齐的收尾登记」④；该登记的 ①②③ 已全部关闭，原文见归档 `Q.21`）：本仓 `.workflow/pipeline.yml` 只有 1 个 Build 阶段（`build@gcc`，gcc 11.1.0，`cmake -G 'Unix Makefiles' ../ && make -j2`），且 **`trigger: manual`——不自动跑**，故门禁挂了也拦不住任何东西。真要接，关键在于**扫哪些文件**：全仓扫会立刻报 24 条 `struct` `NO_FIRST_LABEL`（既定例外）→ 门禁从第一天起就是红的；只扫改动文件则可绿，但 **`initcheck.py` 的通道 B 会跨文件失效**（它要先全仓建「类名 → 成员声明顺序」表，只喂子集时表里只剩这几个文件的类，其余 `cls not in table` 直接静默 continue）。**建议分两步**：先只接 `initcheck.py`（今天 0 命中，接进去立刻有效且不误伤），`s4scan.py` 等把 `struct` 例外在检查器里显式建模之后再接。**两个前置障碍已于 2026-09-17 排除**：①脚本原本 `git ls-files` 未固定 `cwd`，在子目录下会静默报「0 命中」——CI 的工作目录不受本仓控制，这个 bug 会让门禁**永远绿**，现已改为与 cwd 无关（并新增 `-h` 与空列表 `exit 2`）；②判别力语料已入库 `tools/selfcheck/`，门禁的可信度可以随时自证，而不必「相信上次那个人跑过」。**注意 `tools/selfcheck/` 已在 `EXCLUDE` 中，CI 也不要显式扫它**——更要紧的是：**显式点名的文件按设计绕过 `EXCLUDE`**（语料自检靠的就是这个口子），所以「CI 把改动文件显式喂给脚本」这种接法，一旦某次提交动了 `tools/selfcheck/`，就会**红在故意写坏的语料上**。接门禁时须在文件筛选那步排除该路径。
+  **2026-09-17 续记（本条建议的适用条件变了）**：`s4scan.py` 当天又修掉一个**既有误报**（跨行函数声明的续行被当成数据成员，见归档 `D.29`），并补了判别力语料 `tools/selfcheck/wrappedsig.h`。**故上面「`s4scan.py` 等把 `struct` 例外显式建模之后再接」这句的前提已不再成立**——它现在能在真实代码上给出 24 条稳定结果，其中 24 条全部是既定的 `struct` 例外。**剩下要决定的不是「脚本能不能信」，而是「门禁怎么处理这 24 条既定例外」**：①把 `struct` 桶在 `s4scan.py` 里显式建模成可配置例外（条目数变 0，门禁直接绿）；②保留 24 条、门禁按「不新增」比对基线快照。两条都可行，**待用户择一**。文件筛选那步仍须排除 `tools/selfcheck/`。
+
+**已关闭（2026-09-18）**：按裁定把 `struct` 桶在 `s4scan.py` 里建成**可配置例外**（`--exempt-struct-default-access`：`struct` 的 `NO_FIRST_LABEL` 不再计入候选，例外行照旧打印供复核），命中 0；`initcheck.py --gate` 乱序 0（176 文件 / 456 类）；两者写进 `.workflow/pipeline.yml` 的 style_check 步。**两个前置障碍均已修复并验证**（`git ls-files` 未固定 `cwd` 导致的假绿、判别力语料入库）；**文件筛选那步已显式排除 `tools/selfcheck/`**——该目录按设计绕过 `EXCLUDE`，不排除会**红在故意写坏的语料上**。本条的未决问题「CI 门禁怎么处理那 24 条既定例外」**按①收口**，②「按基线快照比对」未采用。
 
 ### Q.23
 

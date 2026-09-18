@@ -12,11 +12,13 @@
 只读。用法：
   python tools/initcheck.py              # 全仓（推荐；通道 B 需要全仓的类表）
   python tools/initcheck.py src/Network  # 只扫指定路径（路径相对当前目录）
+  python tools/initcheck.py --gate       # CI 门禁用法：有乱序即退出码 1
 
 **给定的路径只是子集时，通道 B 的结论不作数**：它要先全仓建「类名 → 成员声明顺序」
 表，子集里看不到的类会被静默跳过（`cls not in table`）。脚本会在这种情况下打印告警。
+**故门禁必须不带路径整仓运行**（`--gate` 后面不要跟路径）。
 
-退出码: 0 = 扫描完成（有乱序也算 0）；2 = 用法/路径错误或扫到 0 个文件。
+退出码: 0 = 扫描完成（有乱序也算 0）；1 = 给了 --gate 且有乱序；2 = 用法/路径错误或扫到 0 个文件。
 """
 import os
 import re
@@ -198,7 +200,7 @@ def judge(seq, index_of, declared):
 
 
 def main():
-    args = sys.argv[1:]
+    flags, args = S.split_flags(sys.argv[1:])
     files = S.parse_targets(args)
     if args:
         all_files = S.parse_targets([])
@@ -260,6 +262,13 @@ def main():
           + (f'（跳过 EXCLUDE 内 {skipped} 个文件）' if skipped else ''))
     if ambiguous:
         print(f'---- 因类名歧义跳过通道 B 的类: {sorted(ambiguous)}')
+    if S.GATE_FLAG in flags and (hits or ambiguous or args):
+        print('---- 门禁未通过: 乱序 %d 处%s%s（%s）'
+              % (len(hits),
+                 '' if not ambiguous else '、类名歧义 %d 个类' % len(ambiguous),
+                 '' if not args else '、给了路径子集（通道 B 结论不作数）',
+                 S.GATE_FLAG), file=sys.stderr)
+        raise SystemExit(1)
 
 
 if __name__ == '__main__':

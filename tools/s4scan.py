@@ -16,6 +16,14 @@
   python tools/s4scan.py                 # 扫描 git 跟踪的全部 .h/.cpp/.hpp/.cc
   python tools/s4scan.py src/Network     # 只扫指定路径（目录会递归展开）
   python tools/s4scan.py a.h b.cpp       # 也可直接给文件
+  python tools/s4scan.py --gate --exempt-struct-default-access   # CI 门禁用法
+
+两个开关（可组合，也可单独使用）：
+  --exempt-struct-default-access  把 `struct`/`union` 的 NO_FIRST_LABEL 记为**已豁免**
+                                  （本仓既定约定：结构体靠默认访问，不写首标签），
+                                  计入末节的「已豁免」清单而不再算作候选发现。
+  --gate                          有**未豁免**条目、或存在解析失败的文件时退出码 1。
+                                  未给定时退出码恒为 0（条目交人判读），保持原有语义。
 
 **可从任意子目录调用**：无参数时的文件列表取自 `git rev-parse --show-toplevel`，
 不随当前目录变化。扫描到 0 个文件时**响亮失败**并返回非 0 退出码——扫描器对空输入
@@ -30,22 +38,32 @@ import subprocess
 import sys
 
 EXCLUDE = ("Serialization/json/", "tools/selfcheck/")
+GATE_FLAG = '--gate'
+EXEMPT_FLAG = '--exempt-struct-default-access'
+FLAGS = (GATE_FLAG, EXEMPT_FLAG)
+EXEMPT_KINDS = ('NO_FIRST_LABEL',)
+EXEMPT_KEYWORDS = ('struct', 'union')
 CPP_EXTS = ('.h', '.hpp', '.hxx', '.cpp', '.cc', '.cxx')
 OPENER = re.compile(r'(?<!enum )\b(class|struct|union)\s+([A-Za-z_]\w*)')
 LABEL = re.compile(r'^\s*(public|protected|private)\s*:\s*$')
 RANK = {'public': 0, 'protected': 1, 'private': 2}
 GROUP_NAMES = {1: 'type-alias/嵌套类型', 2: '常量', 3: '特殊成员函数', 4: '其他操作符重载',
                5: '普通成员函数', 6: '数据成员'}
-USAGE = """用法: python tools/s4scan.py [路径...]
+USAGE = """用法: python tools/s4scan.py [路径...] [--gate] [--exempt-struct-default-access]
 
   无参数   扫描 git 跟踪的全部 .h/.cpp/.hpp/.cc（可从任意子目录调用）
   路径     文件或目录；目录会递归展开成其中的 C++ 文件
+  --exempt-struct-default-access
+           把 `struct`/`union` 的 NO_FIRST_LABEL 记为「已豁免」（本仓既定约定），
+           计入末节的已豁免清单，不计入候选发现
+  --gate   有未豁免条目、或存在解析失败的文件时退出码 1（CI 用）
   -h       显示本帮助
 
 目录展开时会跳过 git 忽略的子目录（`out/`、`bin/`、`lib/` 等构建产物），跳过数在末行
 报出；显式点名的文件不受此约束，也不受 EXCLUDE 约束。
 
-退出码: 0 = 扫描完成（有候选发现也算 0，条目需人工判读）；2 = 用法/路径错误或扫到 0 个文件。"""
+退出码: 0 = 扫描完成（有候选发现也算 0，条目需人工判读）；1 = 给了 --gate 且未通过；
+2 = 用法/路径错误或扫到 0 个文件。"""
 
 _ROOT = []
 _SKIPPED = []
@@ -56,6 +74,31 @@ def fail(msg, code=2):
     """用法级错误：必须响亮失败，不能退回「0 命中」。"""
     print('错误: ' + msg, file=sys.stderr)
     raise SystemExit(code)
+
+
+def split_flags(args):
+    """把开关与路径分开：返回 (开关集合, 剩余参数)。
+
+    开关必须在这里摘掉再交给 parse_targets——后者见到 `-` 开头的参数一律报错。
+    未识别的 `-` 开头参数仍留给 parse_targets 报错，不会静默当成路径。
+    """
+    flags, paths = set(), []
+    for a in args:
+        if a in FLAGS:
+            flags.add(a)
+        else:
+            paths.append(a)
+    return flags, paths
+
+
+def is_exempt(finding, flags):
+    """`--exempt-struct-default-access` 下，struct/union 缺首标签属本仓既定约定。
+
+    豁免只在**显式给出开关**时生效，默认行为（24 条候选照报）一字不变；
+    且豁免条目仍会被列出（见 `main` 末节），不是悄悄丢掉——判据本身要始终可见。
+    """
+    kind, kw = finding[0], finding[1]
+    return EXEMPT_FLAG in flags and kind in EXEMPT_KINDS and kw in EXEMPT_KEYWORDS
 
 
 def repo_root():
@@ -110,7 +153,7 @@ def parse_targets(args):
         raise SystemExit(0)
     for a in args:
         if a.startswith('-'):
-            fail('未知选项 %r（本脚本没有可配置项，用 -h 看用法）' % a)
+            fail('未知选项 %r（可用选项见 -h）' % a)
     if args:
         out, pinned = [], set()
         for a in args:
@@ -468,8 +511,10 @@ def check(path):
 
 
 def main():
-    files = parse_targets(sys.argv[1:])
-    total_classes, total, failed = 0, 0, 0
+    flags, paths = split_flags(sys.argv[1:])
+    files = parse_targets(paths)
+    total_classes, total, failed, exempt_total = 0, 0, 0, 0
+    exempt_rows = []
     for f in files:
         try:
             found = check(f)
@@ -479,15 +524,32 @@ def main():
             failed += 1
             continue
         total_classes += n_cls
-        if found:
+        kept = []
+        for row in found:
+            if is_exempt(row, flags):
+                exempt_total += 1
+                exempt_rows.append((f, row))
+            else:
+                kept.append(row)
+        if kept:
             print(f'===== {rel(f)}  ({n_cls} 个类)')
-            for kind, kw, name, oline, ln, detail in sorted(found, key=lambda x: x[4]):
+            for kind, kw, name, oline, ln, detail in sorted(kept, key=lambda x: x[4]):
                 total += 1
                 print(f'  [{kind}] {kw} {name} (第 {oline} 行起) 第 {ln} 行: {detail}')
-    print('---- 扫描 %d 个文件、%d 个类/结构体，候选发现: %d%s%s'
+    print('---- 扫描 %d 个文件、%d 个类/结构体，候选发现: %d%s%s%s'
           % (len(files), total_classes, total,
              '' if not failed else '（另有 %d 个文件解析失败）' % failed,
-             '' if not _SKIPPED or not _SKIPPED[0] else '（跳过 EXCLUDE 内 %d 个文件）' % _SKIPPED[0]))
+             '' if not _SKIPPED or not _SKIPPED[0] else '（跳过 EXCLUDE 内 %d 个文件）' % _SKIPPED[0],
+             '' if not exempt_total else '（其中已豁免 %d 条，见下）' % exempt_total))
+    if exempt_rows:
+        print('---- 已豁免 %d 条（%s；本仓约定：结构体靠默认访问，不写首标签）'
+              % (exempt_total, EXEMPT_FLAG))
+        for f, (kind, kw, name, oline, ln, _detail) in exempt_rows:
+            print(f'  [{kind}] {kw} {name}  ({rel(f)} 第 {oline} 行起)')
+    if GATE_FLAG in flags and (total or failed):
+        print('---- 门禁未通过: 未豁免发现 %d 条、解析失败 %d 个文件（%s）'
+              % (total, failed, GATE_FLAG), file=sys.stderr)
+        raise SystemExit(1)
 
 
 if __name__ == '__main__':
