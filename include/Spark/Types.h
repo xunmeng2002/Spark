@@ -3,266 +3,266 @@
 #include <stdint.h>
 
 //布尔类型
-typedef bool BoolType;
+using BoolType = bool;
 
 
 //无符号8位整型类型
-typedef uint8_t UInt8Type;
+using UInt8Type = uint8_t;
 
 
 //8位整型类型
-typedef int8_t Int8Type;
+using Int8Type = int8_t;
 
 
 //无符号16位整型类型
-typedef uint16_t UInt16Type;
+using UInt16Type = uint16_t;
 
 
 //16位整型类型
-typedef int16_t Int16Type;
+using Int16Type = int16_t;
 
 
 //无符号32位整型类型
-typedef uint32_t UInt32Type;
+using UInt32Type = uint32_t;
 
 
 //32位整型类型
-typedef int32_t Int32Type;
+using Int32Type = int32_t;
 
 //客户端委托编号类型
-typedef int32_t ClientOrderIdType;
+using ClientOrderIdType = int32_t;
 
 //指令类型
-typedef int32_t CommandType;
+using CommandType = int32_t;
 
 //错误代码类型
-typedef int32_t ErrorIdType;
+using ErrorIdType = int32_t;
 
 //前置代码类型
-typedef int32_t FrontIdType;
+using FrontIdType = int32_t;
 
 //组代码类型
-typedef int32_t GroupIdType;
+using GroupIdType = int32_t;
 
 //最大委托编号类型
-typedef int32_t MaxOrderIdType;
+using MaxOrderIdType = int32_t;
 
 //整型类型
-typedef int32_t NumberType;
+using NumberType = int32_t;
 
 //报盘代码类型
-typedef int32_t OfferIdType;
+using OfferIdType = int32_t;
 
 //委托编号类型
-typedef int32_t OrderIdType;
+using OrderIdType = int32_t;
 
 //请求代码类型
-typedef int32_t RequestIdType;
+using RequestIdType = int32_t;
 
 //风控代码类型
-typedef int32_t RiskIdType;
+using RiskIdType = int32_t;
 
 //风控指标代码类型
-typedef int32_t RiskIndexIdType;
+using RiskIndexIdType = int32_t;
 
 //风控等级
-typedef int32_t RiskLevelType;
+using RiskLevelType = int32_t;
 
 //风控规则代码类型
-typedef int32_t RiskRuleIdType;
+using RiskRuleIdType = int32_t;
 
 //风控规则子项代码类型
-typedef int32_t RiskRuleItemIdType;
+using RiskRuleItemIdType = int32_t;
 
 //风控文本引用序号
-typedef int32_t RiskTextRefType;
+using RiskTextRefType = int32_t;
 
 //角色代码类型
-typedef int32_t RoleIdType;
+using RoleIdType = int32_t;
 
 //时间秒数类型
-typedef int32_t SecondType;
+using SecondType = int32_t;
 
 //序号类型
-typedef int32_t SequenceNoType;
+using SequenceNoType = int32_t;
 
 //合约乘数类型
-typedef int32_t VolumeMultipleType;
+using VolumeMultipleType = int32_t;
 
 
 //无符号64位整型类型
-typedef unsigned long long UInt64Type;
+using UInt64Type = unsigned long long;
 
 
 	//64位整型类型
-typedef long long Int64Type;
+using Int64Type = long long;
 
 	//会话代码类型
-typedef long long SessionIdType;
+using SessionIdType = long long;
 
 	//数量类型
-typedef long long VolumeType;
+using VolumeType = long long;
 
 
 //双精度浮点类型
-typedef double DoubleType;
+using DoubleType = double;
 
 //金额类型
-typedef double MoneyType;
+using MoneyType = double;
 
 //价格类型
-typedef double PriceType;
+using PriceType = double;
 
 //比率
-typedef double RateType;
+using RateType = double;
 
 //大额数量
-typedef double LargeVolumeType;
+using LargeVolumeType = double;
 
 
 //账号类型
-typedef char AccountIdType[32];
+using AccountIdType = char[32];
 
 //账号名称类型
-typedef char AccountNameType[64];
+using AccountNameType = char[64];
 
 //App代码类型
-typedef char AppIdType[32];
+using AppIdType = char[32];
 
 //App版本类型
-typedef char AppVersionType[32];
+using AppVersionType = char[32];
 
 //授权码类型
-typedef char AuthCodeType[64];
+using AuthCodeType = char[64];
 
 //银行卡号类型
-typedef char BankCardIdType[32];
+using BankCardIdType = char[32];
 
 //主板时间类型
-typedef char BiosTimeType[16];
+using BiosTimeType = char[16];
 
 //经纪公司代码
-typedef char BrokerIdType[16];
+using BrokerIdType = char[16];
 
 //经纪公司名称
-typedef char BrokerNameType[16];
+using BrokerNameType = char[16];
 
 //经纪公司委托编号类型
-typedef char BrokerOrderIdType[32];
+using BrokerOrderIdType = char[32];
 
 //币种类型
-typedef char CurrencyIdType[8];
+using CurrencyIdType = char[8];
 
 //币种组类型
-typedef char CurrencyGroupType[8];
+using CurrencyGroupType = char[8];
 
 //CPU编号类型
-typedef char CpuIdType[32];
+using CpuIdType = char[32];
 
 //日期类型
-typedef char DateType[16];
+using DateType = char[16];
 
 //数据库名称类型
-typedef char DbNameType[32];
+using DbNameType = char[32];
 
 //磁盘序号类型
-typedef char DiskIdType[64];
+using DiskIdType = char[64];
 
 //磁盘路径类型
-typedef char DiskPathType[32];
+using DiskPathType = char[32];
 
 //交易所代码类型
-typedef char ExchangeIdType[8];
+using ExchangeIdType = char[8];
 
 //交易所名称类型
-typedef char ExchangeNameType[64];
+using ExchangeNameType = char[64];
 
 //交易所成交编号类型
-typedef char ExchangeTradeIdType[32];
+using ExchangeTradeIdType = char[32];
 
 //组名称类型
-typedef char GroupNameType[64];
+using GroupNameType = char[64];
 
 //主机名类型
-typedef char HostNameType[32];
+using HostNameType = char[32];
 
 //合约代码类型
-typedef char InstrumentIdType[32];
+using InstrumentIdType = char[32];
 
 //合约名称类型
-typedef char InstrumentNameType[64];
+using InstrumentNameType = char[64];
 
 //Ip地址类型
-typedef char IpAddressType[32];
+using IpAddressType = char[32];
 
 //Mac地址类型
-typedef char MacAddressType[32];
+using MacAddressType = char[32];
 
 //错误信息类型
-typedef char MessageType[256];
+using MessageType = char[256];
 
 //名称类型
-typedef char NameType[64];
+using NameType = char[64];
 
 //报盘名称类型
-typedef char OfferNameType[32];
+using OfferNameType = char[32];
 
 //机构代码类型
-typedef char OrgIdType[16];
+using OrgIdType = char[16];
 
 //系统委托编号类型
-typedef char OrderSysIdType[64];
+using OrderSysIdType = char[64];
 
 //密码类型
-typedef char PasswordType[64];
+using PasswordType = char[64];
 
 //参数值类型
-typedef char ParamValueType[256];
+using ParamValueType = char[256];
 
 //手机号码类型
-typedef char PhoneNumberType[32];
+using PhoneNumberType = char[32];
 
 //品种代码类型
-typedef char ProductIdType[32];
+using ProductIdType = char[32];
 
 //用户产品信息类型
-typedef char ProductInfoType[32];
+using ProductInfoType = char[32];
 
 //品种名称类型
-typedef char ProductNameType[32];
+using ProductNameType = char[32];
 
 //协议地址类型
-typedef char ProtocolAddressType[32];
+using ProtocolAddressType = char[32];
 
 //预留字段类型
-typedef char ReserveType[32];
+using ReserveType = char[32];
 
 //风控名称
-typedef char RiskNameType[256];
+using RiskNameType = char[256];
 
 //角色名称类型
-typedef char RoleNameType[32];
+using RoleNameType = char[32];
 
 //席位号
-typedef char SeatNoType[24];
+using SeatNoType = char[24];
 
 //交易节名称
-typedef char SessionNameType[32];
+using SessionNameType = char[32];
 
 //Tick买卖标志
-typedef char TickBSFlagType[8];
+using TickBSFlagType = char[8];
 
 //时间类型
-typedef char TimeType[16];
+using TimeType = char[16];
 
 //成交编号类型
-typedef char TradeIdType[64];
+using TradeIdType = char[64];
 
 //用户代码类型
-typedef char UserIdType[32];
+using UserIdType = char[32];
 
 //用户名称类型
-typedef char UserNameType[64];
+using UserNameType = char[64];
 
 
 //账户类别
