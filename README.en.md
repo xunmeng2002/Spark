@@ -47,7 +47,7 @@ Data encoding/decoding, format parsing, and character encoding conversion:
 
 High-performance data structures and reusable business components:
 - **Buffer**: Generic buffer
-- **RingBuffer**: Ring buffer (lock-free and locked variants)
+- **SpscRingBuffer**: Single-producer single-consumer ring buffer (lock-free)
 - **ShmBuffer**: Shared memory buffer
 - **ObjectPool**: Object pool to reduce frequent memory allocation overhead
 - **LockFreeQueue**: Lock-free queue
@@ -360,8 +360,8 @@ The project includes a comprehensive **Google Test**-based unit test suite with 
 | **TemplateLib** | `BufferTest` | Buffer read/write and expansion |
 | | `LockFreeQueueTest` | Lock-free queue push/pop |
 | | `ObjectPoolTest` | Object pool allocation and reuse |
-| | `RingBufferTest` | Ring buffer read/write wrap-around |
 | | `ShmBufferTest` | Shared memory buffer |
+| | `SpscRingBufferTest` | Ring buffer read/write and boundaries |
 | | `ThreadSafeListTest` | Thread-safe insert/delete/traverse |
 
 ### Running All Tests

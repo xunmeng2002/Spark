@@ -47,7 +47,7 @@ Created by [Fireseeker](https://fireseeker.cn/)
 
 高性能数据结构与通用业务组件：
 - **Buffer**：通用缓冲区
-- **RingBuffer**：环形缓冲区（无锁 / 有锁）
+- **SpscRingBuffer**：单生产者单消费者环形缓冲区（无锁）
 - **ShmBuffer**：共享内存缓冲区
 - **ObjectPool**：对象池，减少频繁内存分配开销
 - **LockFreeQueue**：无锁队列
@@ -359,8 +359,8 @@ int main(int argc, const char* argv[])
 | **TemplateLib** | `BufferTest` | 缓冲区读写、扩容 |
 | | `LockFreeQueueTest` | 无锁队列入队出队 |
 | | `ObjectPoolTest` | 对象池分配、复用 |
-| | `RingBufferTest` | 环形缓冲区读写覆盖 |
 | | `ShmBufferTest` | 共享内存缓冲 |
+| | `SpscRingBufferTest` | 环形缓冲区读写、绕回与边界 |
 | | `ThreadSafeListTest` | 线程安全增删遍历 |
 
 ### 运行全部测试
