@@ -31,7 +31,7 @@ public:
 
     virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) override;
     virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) override;
-    virtual void OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
+    virtual void OnRecv(SessionIdType sessionId, Buffer<BufferSize>* buffer) override;
 
 protected:
     ProtocolTypeType protocolType_;

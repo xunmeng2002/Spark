@@ -4,17 +4,17 @@ using namespace std;
 
 namespace Spark::Network
 {
-void Connect::PushBack(Buffer<BuffSize>* buffer)
+void Connect::PushBack(Buffer<BufferSize>* buffer)
 {
     lock_guard<mutex> guard(BuffersMutex);
     Buffers.push_back(buffer);
 }
-void Connect::PushFront(Buffer<BuffSize>* buffer)
+void Connect::PushFront(Buffer<BufferSize>* buffer)
 {
     lock_guard<mutex> guard(BuffersMutex);
     Buffers.push_front(buffer);
 }
-Buffer<BuffSize>* Connect::GetNextBuffer()
+Buffer<BufferSize>* Connect::GetNextBuffer()
 {
     lock_guard<mutex> guard(BuffersMutex);
     if (Buffers.empty())

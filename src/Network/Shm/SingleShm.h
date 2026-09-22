@@ -14,7 +14,7 @@ public:
     virtual ~SingleShm();
     virtual bool Init() override;
 
-    virtual void Send(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
+    virtual void Send(SessionIdType sessionId, Buffer<BufferSize>* buffer) override;
     virtual void DoRecv(Connect* connect) override;
     virtual void HandleIoEvent() override;
 
@@ -27,7 +27,7 @@ protected:
     bool connected_;
     SessionIdType sessionId_;
     void* shmAddr_;
-    ShmBuffer<ShmBuffSize>* shmBuffer_;
+    ShmBuffer<ShmBufferSize>* shmBuffer_;
 #ifdef _WIN32
     void* file_;
     void* fileMap_;

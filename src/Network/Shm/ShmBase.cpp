@@ -57,7 +57,7 @@ ShmBase::~ShmBase()
     }
 #endif
 #ifdef __linux__
-    if (munmap(shmAddr_, ShmBuffSize * maxConnectSize_ * 2) < 0)
+    if (munmap(shmAddr_, ShmBufferSize * maxConnectSize_ * 2) < 0)
     {
         perror("shm_unlink");
         WriteLog(LogLevel::Warning, "munmap Failed. ErrNo:%d", errno);
@@ -92,7 +92,7 @@ bool ShmBase::Init()
     commonShmHeader_ = (SingleShmHeader*)shmAddr_;
     if (serverType_ == ServerTypeType::Server)
     {
-        memset(shmAddr_, 0, ShmBuffSize * maxConnectSize_ * 2);
+        memset(shmAddr_, 0, ShmBufferSize * maxConnectSize_ * 2);
         commonShmHeader_->Status = ConnectStatusType::UnConnected;
         for (auto i = 1u; i < maxConnectSize_; ++i)
         {
@@ -104,9 +104,9 @@ bool ShmBase::Init()
     return true;
 }
 
-void ShmBase::Send(SessionIdType sessionId, Buffer<BuffSize>* buffer)
+void ShmBase::Send(SessionIdType sessionId, Buffer<BufferSize>* buffer)
 {
-    auto shmConnect = (ShmConnect<ShmBuffSize>*)GetConnect(sessionId);
+    auto shmConnect = (ShmConnect<ShmBufferSize>*)GetConnect(sessionId);
     if (shmConnect == nullptr)
     {
         buffer->Deallocate();
@@ -114,7 +114,7 @@ void ShmBase::Send(SessionIdType sessionId, Buffer<BuffSize>* buffer)
     }
     while (buffer->GetLength() > 0)
     {
-        auto len = shmConnect->GetBuffer()->Write(buffer->GetData(), buffer->GetLength());
+        auto len = shmConnect->GetBuffer()->Write(buffer->GetData(), static_cast<unsigned>(buffer->GetLength()));
         if (len > 0)
         {
             buffer->Shift(len);
@@ -148,11 +148,11 @@ void ShmBase::HandleIoEvent()
 }
 void ShmBase::DoSend(Connect* connect)
 {
-    auto shmConnect = (ShmConnect<ShmBuffSize>*)connect;
+    auto shmConnect = (ShmConnect<ShmBufferSize>*)connect;
     auto buffer = connect->GetNextBuffer();
     while (buffer != nullptr)
     {
-        int len = shmConnect->GetBuffer()->Write(buffer->GetData(), buffer->GetLength());
+        int len = shmConnect->GetBuffer()->Write(buffer->GetData(), static_cast<unsigned>(buffer->GetLength()));
         buffer->Shift(len);
         if (buffer->GetLength() == 0)
         {
@@ -168,10 +168,10 @@ void ShmBase::DoSend(Connect* connect)
 }
 void ShmBase::DoRecv(Connect* connect)
 {
-    auto shmConnect = (ShmConnect<ShmBuffSize>*)connect;
+    auto shmConnect = (ShmConnect<ShmBufferSize>*)connect;
 
-    Buffer<BuffSize>* buffer = Buffer<BuffSize>::Allocate();
-    auto len = shmConnect->GetBuffer()->Read(buffer->GetWritePos(), BuffSize);
+    Buffer<BufferSize>* buffer = Buffer<BufferSize>::Allocate();
+    auto len = shmConnect->GetBuffer()->Read(buffer->GetWritePos(), BufferSize);
     buffer->SetLength(len);
     if (ioSubscriber_ != nullptr)
         ioSubscriber_->OnRecv(shmConnect->SessionId, buffer);
@@ -191,7 +191,7 @@ bool ShmBase::WindowsInit()
             WriteLog(LogLevel::Warning, "CreateFileA Failed. ErrNo:%d", GetLastError());
             return false;
         }
-        fileMap_ = CreateFileMappingA(file_, NULL, PAGE_READWRITE, 0, ShmBuffSize * maxConnectSize_ * 2, shmName_.c_str());
+        fileMap_ = CreateFileMappingA(file_, NULL, PAGE_READWRITE, 0, ShmBufferSize * maxConnectSize_ * 2, shmName_.c_str());
     }
     else
     {
@@ -202,7 +202,7 @@ bool ShmBase::WindowsInit()
         WriteLog(LogLevel::Warning, "Create Or Open FileMapping Failed. ErrNo:%d", GetLastError());
         return false;
     }
-    shmAddr_ = (char*)MapViewOfFile(fileMap_, FILE_MAP_ALL_ACCESS, 0, 0, ShmBuffSize * maxConnectSize_ * 2);
+    shmAddr_ = (char*)MapViewOfFile(fileMap_, FILE_MAP_ALL_ACCESS, 0, 0, ShmBufferSize * maxConnectSize_ * 2);
     if (shmAddr_ == NULL)
     {
         WriteLog(LogLevel::Warning, "MapViewOfFile Failed. ErrNo:%d", GetLastError());
@@ -228,12 +228,12 @@ bool ShmBase::LinuxInit()
         WriteLog(LogLevel::Warning, "shm_open Failed. ErrNo:%d", errno);
         return false;
     }
-    if (ftruncate(fd, ShmBuffSize * maxConnectSize_ * 2) == -1)
+    if (ftruncate(fd, ShmBufferSize * maxConnectSize_ * 2) == -1)
     {
         WriteLog(LogLevel::Warning, "ftruncate Failed. ErrNo:%d", errno);
         return false;
     }
-    shmAddr_ = (char*)mmap(nullptr, ShmBuffSize * maxConnectSize_ * 2, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    shmAddr_ = (char*)mmap(nullptr, ShmBufferSize * maxConnectSize_ * 2, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (shmAddr_ == MAP_FAILED)
     {
         WriteLog(LogLevel::Warning, "mmap Failed. ErrNo:%d", errno);

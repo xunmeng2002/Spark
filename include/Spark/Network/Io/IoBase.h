@@ -18,7 +18,7 @@ class IoSubscriber
 public:
     virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) = 0;
     virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) = 0;
-    virtual void OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer) = 0;
+    virtual void OnRecv(SessionIdType sessionId, Buffer<BufferSize>* buffer) = 0;
 };
 
 class NETWORK_EXPORTS IoBase
@@ -34,7 +34,7 @@ public:
     virtual bool ConnectToServer(const char* addressName) { return false; }
     virtual void DisConnect(SessionIdType sessionId);
     virtual void DisConnectAll();
-    virtual void Send(SessionIdType sessionId, Buffer<BuffSize>* buffer) = 0;
+    virtual void Send(SessionIdType sessionId, Buffer<BufferSize>* buffer) = 0;
 
     virtual void HandleIoEvent() = 0;
 

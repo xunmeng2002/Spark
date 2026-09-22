@@ -60,7 +60,7 @@ bool TcpIocpBase::Init()
 
     return true;
 }
-void TcpIocpBase::Send(SessionIdType sessionId, Buffer<BuffSize>* buffer)
+void TcpIocpBase::Send(SessionIdType sessionId, Buffer<BufferSize>* buffer)
 {
     if (buffer->GetLength() == 0)
     {
@@ -71,7 +71,7 @@ void TcpIocpBase::Send(SessionIdType sessionId, Buffer<BuffSize>* buffer)
     auto connect = (TcpIocpConnect*)GetConnect(sessionId);
     if (connect == nullptr)
     {
-        WriteLog(LogLevel::Warning, "Send Connect Not Exist, Drop Buffer. SessionId:%lld, Len:%d", sessionId, buffer->GetLength());
+        WriteLog(LogLevel::Warning, "Send Connect Not Exist, Drop Buffer. SessionId:%lld, Len:%zu", sessionId, buffer->GetLength());
         buffer->Deallocate();
         return;
     }
@@ -136,7 +136,7 @@ void TcpIocpBase::HandleTcpEvent()
 
     if (len == 0 && (overlapped->EventId == IocpEvent::EventSend || overlapped->EventId == IocpEvent::EventRecv))
     {
-        WriteLog(LogLevel::Warning, "CompetionKey:%d, Len is 0, EventId:%d overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%d", competionKey,
+        WriteLog(LogLevel::Warning, "CompetionKey:%d, Len is 0, EventId:%d overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu", competionKey,
                  overlapped->EventId, overlapped, overlapped->MyBuffer, overlapped->MyBuffer->GetLength());
         PostDisConnect(overlapped);
         return;
@@ -181,7 +181,7 @@ bool TcpIocpBase::PostDisConnect(Connect* connect)
 {
     auto tcpIocpConnect = (TcpIocpConnect*)connect;
     MyOverlapped* overlapped = MyOverlapped::Allocate();
-    overlapped->SetBuffer(Buffer<BuffSize>::Allocate());
+    overlapped->SetBuffer(Buffer<BufferSize>::Allocate());
     overlapped->EventId = IocpEvent::EventDisConnect;
     overlapped->Connect = tcpIocpConnect;
 
@@ -209,11 +209,11 @@ bool TcpIocpBase::PostSend(MyOverlapped* overlapped)
 {
     overlapped->EventId = IocpEvent::EventSend;
 
-    WriteLog(LogLevel::Debug, "PostSend SessionId:%lld, Socket:%lld, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%d",
+    WriteLog(LogLevel::Debug, "PostSend SessionId:%lld, Socket:%lld, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu",
              overlapped->Connect->SessionId, overlapped->Connect->SocketId, overlapped, overlapped->MyBuffer, overlapped->MyBuffer->GetLength());
     if (overlapped->MyBuffer->GetLength() == 0)
     {
-        WriteLog(LogLevel::Warning, "PostSend BufferLen is 0. SessionId:%lld, Socket:%lld, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%d",
+        WriteLog(LogLevel::Warning, "PostSend BufferLen is 0. SessionId:%lld, Socket:%lld, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu",
                  overlapped->Connect->SessionId, overlapped->Connect->SocketId, overlapped, overlapped->MyBuffer, overlapped->MyBuffer->GetLength());
     }
     DWORD transBytes = 0, flag = 0;
@@ -238,7 +238,7 @@ bool TcpIocpBase::PostRecv(MyOverlapped* overlapped)
     overlapped->EventId = IocpEvent::EventRecv;
     overlapped->Connect = tcpIocpConnect;
 
-    WriteLog(LogLevel::Debug, "PostRecv SessionId:%lld, Socket:%lld, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%d", tcpIocpConnect->SessionId,
+    WriteLog(LogLevel::Debug, "PostRecv SessionId:%lld, Socket:%lld, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu", tcpIocpConnect->SessionId,
              tcpIocpConnect->SocketId, overlapped, overlapped->MyBuffer, overlapped->MyBuffer->GetLength());
     DWORD transBytes = 0, flag = 0;
     auto ret = WSARecv(tcpIocpConnect->SocketId, &overlapped->WsaBuffer, 1, nullptr, &flag, overlapped, NULL);
@@ -264,20 +264,20 @@ void TcpIocpBase::OnDisConnectComplete(MyOverlapped* overlapped)
 }
 void TcpIocpBase::OnSendComplete(MyOverlapped* overlapped, int bytesTransferred)
 {
-    WriteLog(LogLevel::Debug, "OnSendComplete SessionId:%lld, Socket:%lld, bytesTransferred:%d, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%d",
+    WriteLog(LogLevel::Debug, "OnSendComplete SessionId:%lld, Socket:%lld, bytesTransferred:%d, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu",
              overlapped->Connect->SessionId, overlapped->Connect->SocketId, bytesTransferred, overlapped, overlapped->MyBuffer,
              overlapped->MyBuffer->GetLength());
-    if (bytesTransferred < overlapped->MyBuffer->GetLength())
+    if (static_cast<size_t>(bytesTransferred) < overlapped->MyBuffer->GetLength())
     {
         WriteLog(LogLevel::Warning,
-                 "OnSendComplete PartSended. PostSend Again. BufferLen:%d, bytesTransferred:%d, overlapped:%p, overlapped->MyBuffer:%p",
+                 "OnSendComplete PartSended. PostSend Again. BufferLen:%zu, bytesTransferred:%d, overlapped:%p, overlapped->MyBuffer:%p",
                  overlapped->MyBuffer->GetLength(), bytesTransferred, overlapped, overlapped->MyBuffer);
         overlapped->Shift(bytesTransferred);
         PostSend(overlapped);
     }
     else
     {
-        Buffer<BuffSize>* buffer;
+        Buffer<BufferSize>* buffer;
         {
             lock_guard<mutex> guard(overlapped->Connect->BuffersMutex);
             if (overlapped->Connect->Buffers.empty())
@@ -298,10 +298,10 @@ void TcpIocpBase::OnSendComplete(MyOverlapped* overlapped, int bytesTransferred)
 }
 void TcpIocpBase::OnRecvComplete(MyOverlapped* overlapped, int bytesTransferred)
 {
-    WriteLog(LogLevel::Debug, "OnRecvComplete SessionId:%lld, Socket:%lld, bytesTransferred:%d, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%d",
+    WriteLog(LogLevel::Debug, "OnRecvComplete SessionId:%lld, Socket:%lld, bytesTransferred:%d, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu",
              overlapped->Connect->SessionId, overlapped->Connect->SocketId, bytesTransferred, overlapped, overlapped->MyBuffer,
              overlapped->MyBuffer->GetLength());
-    overlapped->MyBuffer->SetLength(bytesTransferred);
+    overlapped->MyBuffer->SetLength(static_cast<size_t>(bytesTransferred));
     auto tcpConnect = (TcpConnect*)overlapped->Connect;
     if (ioSubscriber_)
     {

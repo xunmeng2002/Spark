@@ -65,7 +65,7 @@ void MyOverlapped::Deallocate()
 {
     ObjectPool<MyOverlapped>::GetInstance().Deallocate(this);
 }
-void MyOverlapped::SetBuffer(Buffer<BuffSize>* buffer)
+void MyOverlapped::SetBuffer(Buffer<BufferSize>* buffer)
 {
     if (MyBuffer != nullptr)
     {
@@ -73,13 +73,13 @@ void MyOverlapped::SetBuffer(Buffer<BuffSize>* buffer)
     }
     MyBuffer = buffer;
     WsaBuffer.buf = MyBuffer->GetData();
-    WsaBuffer.len = MyBuffer->GetLength();
+    WsaBuffer.len = static_cast<ULONG>(MyBuffer->GetLength());
 }
 void MyOverlapped::Shift(unsigned int len)
 {
     MyBuffer->Shift(len);
     WsaBuffer.buf = MyBuffer->GetData();
-    WsaBuffer.len = MyBuffer->GetLength();
+    WsaBuffer.len = static_cast<ULONG>(MyBuffer->GetLength());
 }
 void MyOverlapped::Reset()
 {
@@ -92,7 +92,7 @@ void MyOverlapped::Reset()
     {
         MyBuffer->Reset();
         WsaBuffer.buf = MyBuffer->GetData();
-        WsaBuffer.len = BuffSize;
+        WsaBuffer.len = BufferSize;
     }
     else
     {

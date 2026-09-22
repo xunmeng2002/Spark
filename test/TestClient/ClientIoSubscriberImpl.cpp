@@ -33,12 +33,12 @@ void ClientIoSubscriberImpl::OnDisConnect(SessionIdType sessionId, const char* i
 
     ioThread_->Stop();
 }
-void ClientIoSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer)
+void ClientIoSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BufferSize>* buffer)
 {
     auto count = messageCounts_[sessionId];
     if (count % 100 == 0)
     {
-        WriteLog(LogLevel::Info, "ClientIoSubscriberImpl::OnRecv SessionId:[%lld], Length:[%d], Data:[%s]", sessionId, buffer->GetLength(),
+        WriteLog(LogLevel::Info, "ClientIoSubscriberImpl::OnRecv SessionId:[%lld], Length:[%zu], Data:[%s]", sessionId, buffer->GetLength(),
                  buffer->GetData());
     }
     if (messageCounts_[sessionId] < 10000)
@@ -71,18 +71,18 @@ void ClientIoSubscriberImpl::Send(SessionIdType sessionId)
     reqInsertOrder.ReqInsertOrder->ClientOrderId = count;
     auto message = reqInsertOrder.GetDebugString();
 
-    Buffer<BuffSize>* buffer = Buffer<BuffSize>::Allocate();
+    Buffer<BufferSize>* buffer = Buffer<BufferSize>::Allocate();
     auto data = buffer->GetData();
     auto len = strlen(message);
     memcpy(data, message, len);
-    buffer->SetLength((unsigned)len);
+    buffer->SetLength(len);
 
     io_->Send(sessionId, buffer);
 }
 void ClientIoSubscriberImpl::SendCommand(SessionIdType sessionId, const char* cmd)
 {
     ++messageCounts_[sessionId];
-    Buffer<BuffSize>* buffer = Buffer<BuffSize>::Allocate();
+    Buffer<BufferSize>* buffer = Buffer<BufferSize>::Allocate();
     int n = sprintf(buffer->GetData(), "%s\r\n", cmd);
     buffer->SetLength(n);
     io_->Send(sessionId, buffer);

@@ -4,6 +4,18 @@
 
 ## ✅ 原已完成
 
+### D.32
+
+- **2026-09-18 · 上一条的独立代码审查已全部处置（两轮合计：0 严重 / 2 高 / 8 中 / 10 低）**：①**两条高危**——两个 `main` 里 7 行复制块（违 Harness §5）抽成 `ApplyTestProtocolFromCommandLine`（连带把「名字不识别」的报错与退出码从解析函数里移出，`TryParseTestProtocol` 改为返回 `std::optional`）；`tools/step_e2e.py` 缺 `finally` 会遗留占着 `127.0.0.1:20001` 的子进程，**脚本会被反复跑，遗留进程会让下一次运行直接失败**。②**中危**含：用法错误（`--seconds abc` / 缺取值）误返退出码 1、与「断言未过」撞车，现改 **2**；单帧样本会静默给绿灯（客户端每 10000 条才记一行，跑短即只剩 1 帧，间隔断言无从校验却照报「条数与字段全部吻合」），现**样本不足即响亮失败**（需 ≥2 帧）；`volatile` 之外还补了 8/16 位与 base 16 的用例；`%` 格式化全改 f-string；固定 2 秒等待改就绪轮询——`listen()` 成功**没有**日志行可轮询，取 `CreateIo ServerType:Server` 为唯一证据，再留 1 秒常量等 bind+listen，并记明**为何不做端口探测**（探测连接会在服务端留下真实会话，可能反过来污染「日志不得出现 `ERROR`」这条断言）。③**新增 8 条单测**覆盖新公开函数（`TryParseTestProtocol` / `ApplyTestProtocolFromCommandLine`：四个已配置名字、大小写敏感、`nullptr`、空串、不识别名、解析失败不得改动全局 `TestProtocol`），单测 397 → **405**；并做判别力自检：把失败路径注入改成 `TestProtocol = Shm; return 0;` 后该用例**变红**、另 3 条仍绿（失败可归因），随后还原重跑全绿。④退出码三态实测：`--seconds abc` 与缺取值均退 **2**，`--seconds 7`（客户端只记 1 行）退 **1** 并打印「样本仅 1 帧，不足以证明流未错位」——**修前这后一种是假绿灯**。⑤**一条审查建议被证据推翻、有意不采纳**：建议把 base 16 的 `0x10` 钉成「拒绝」；实测 MSVC 确实拒绝，但标准允许该前缀，钉住会在别的标准库上造成**假钉**，故只钉「`FFFF`/`ffff` 接受、`10000`/`-1`/`FF FG` 拒绝」，并把设计意图写进注释与文档。⑥门禁复核全绿：clang-format `--dry-run -Werror` 干净、`initcheck.py --gate` 全仓 **0 乱序**（176 文件）、「`s4scan.py --gate`」0 候选、单测 **405** 全过、`step_e2e.py --seconds 20` 退 0。⑦`PROGRESS.md` 与之同时把两条已关闭的 ❓ 条（读路径端到端、模板仓）原文移入归档 `Q.31`/`Q.32`。**本批改动仍未提交**（新增 1 个测试文件）。
+
+### D.31
+
+- **2026-09-18 · 读路径的端到端覆盖从零补上（STEP 帧真往返）**：①`TestClient`/`TestServer` 的 `main` 现在接受命令行第一个参数覆盖 `TestProtocol`（新增 `TryParseTestProtocol`，名字不识别即报错并 `return 2`，不改动全局），于是「选 Step 协议」不必再手改 `TestUtility.cpp` 的初值再按字节还原——那套补丁法此前已造成过一次误改。②新增 `tools/step_e2e.py`：起 `TestServer.exe Step` + `TestClient.exe Step`，读 `log/` 下的日志，断言 `Price == 100 + Volume`、`Volume == ClientOrderId`、三个字符串/三个枚举字段恒定，并要求样本序号**严格等间隔递增**（顺带证明流无错位、无重连）、日志中不出现读路径失败字句与任何 `ERROR` 行；退出码 2 区分用法/环境错误（含「没落下日志」——**没日志就不给绿灯**）。③实测 20 秒两端各解出 40 / 4 帧全过；另做判别力自检：价格改 1、序号跳变、Volume 与 ClientOrderId 打架、字符串不符、枚举不符、空日志共 6 种注入**逐一报错**，正常样本静默。④另补 3 条 `StepUtility::ParseInteger` 用例（接受集 / 拒绝集 + 各宽度边界，含「被拒绝时不得改动出参」），**Windows 单测 394 → 397**；`tools/` 两条门禁与 clang-format 复核均绿。⑤**这补上了归档 `Q.24`/`Q.25` 里记的盲区**：此前 244 处 `ParseInteger` 的唯一证据是单测，而标准冒烟走的是原样回显、两端都不解析。⑥`tools/README.md` 增第 6 节记录该脚本。**本批改动未提交**（4 个 C++ + 1 个 Python + `tools/README.md` + 本文件）。
+
+### D.30
+
+- **2026-09-18 · 七项待决一次性落地（协议整数解析收紧 + `tools/` 接进 CI 门禁 + 五处登记项关闭）**：①**L25**：模板 `Packages.cpp.tpl` 的整数分支元组补入 `uint16`/`int32`，重 pump 后 `test/Packages/Packages.cpp` 恰 **244 处** `atoi` → `StepUtility::ParseInteger`（带范围检查，越界即警告 + 整包拒绝）；`uint16s` 桶只有 `UInt16` 一个具名类型、本仓 `Packages.xml` 一处在用都没有，故该半条是**本地空操作**。改动经「逐 opcode 断言只有 1 删 / 5 增」证明**除该分支外无任何字节变化**。②新增 2 条 `PackageSerializationTest`（往返 + 越界拒绝），用「还原模板 → 重 pump → 重编译」实验证明负向用例**改前即失败**；Windows 单测 392→**394**、WSL-GCC 391→**393**。③**`tools/` 接进 CI 门禁**：按裁定把 `struct` 桶在 `s4scan.py` 里建成**可配置例外**（`--exempt-struct-default-access`，命中 0），`initcheck.py --gate` 乱序 0，两者写进 `.workflow/pipeline.yml`，并显式排除 `tools/selfcheck/`（该目录按设计绕过 `EXCLUDE`，不排除会**红在故意写坏的语料上**）。④其余关闭项：`ProtocolVersionValue` 维持**共用**、Step `Reserved` **不上线**、`.gitignore` 补 `log/` 与 `TestShm`、`TcpIocpCompletePort` **类名对齐文件名**（纯词法改动）、`IoFactory.cpp:45` 的 `IOType`/`IOModel` 由**用户本人**改为 `IoType`/`IoModel`。⑤**两条必须记住的测量结论**：标准 TestServer/TestClient 冒烟是**原样回显**（`ServerIoSubscriberImpl::OnRecv` 只 memcpy 回发），**根本不走 `FromStepStream`**，故它证明不了读路径，本批读路径的证据只有上述 2 条单测；首轮冒烟的「13 条后卡死」已定位为**我的驱动**（未读 `stdout=PIPE` 堵死日志线程，并用同型实验刻意复现），**不是回归**。原文见归档 `Q.24`–`Q.30`。
+
 ### D.29
 
 - **默认值审计与钉死：`template` 并行是配置漏写、不是工具坏；重排 16 文件并修掉它掀开的 `s4scan` 误报（2026-09-17）**：

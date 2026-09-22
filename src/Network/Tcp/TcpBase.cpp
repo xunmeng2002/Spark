@@ -74,12 +74,12 @@ bool TcpBase::Init()
     }
     return true;
 }
-void TcpBase::Send(SessionIdType sessionId, Buffer<BuffSize>* buffer)
+void TcpBase::Send(SessionIdType sessionId, Buffer<BufferSize>* buffer)
 {
     auto connect = (TcpConnect*)GetConnect(sessionId);
     if (connect == nullptr)
     {
-        WriteLog(LogLevel::Warning, "Send Connect Not Exist, Drop Buffer. SessionId:%lld, Len:%d", sessionId, buffer->GetLength());
+        WriteLog(LogLevel::Warning, "Send Connect Not Exist, Drop Buffer. SessionId:%lld, Len:%zu", sessionId, buffer->GetLength());
         buffer->Deallocate();
         return;
     }
@@ -134,7 +134,7 @@ void TcpBase::DoSend(Connect* connect)
     auto buffer = connect->GetNextBuffer();
     while (buffer != nullptr)
     {
-        int len = send(((TcpConnect*)connect)->SocketId, buffer->GetData(), buffer->GetLength(), 0);
+        int len = send(((TcpConnect*)connect)->SocketId, buffer->GetData(), static_cast<int>(buffer->GetLength()), 0);
         if (len > 0)
         {
             buffer->Shift(len);
@@ -174,9 +174,9 @@ void TcpBase::DoSend(Connect* connect)
 void TcpBase::DoRecv(Connect* connect)
 {
     auto tcpConnect = (TcpConnect*)connect;
-    Buffer<BuffSize>* buffer = Buffer<BuffSize>::Allocate();
+    Buffer<BufferSize>* buffer = Buffer<BufferSize>::Allocate();
     auto data = buffer->GetData();
-    int len = recv(tcpConnect->SocketId, data, BuffSize - 1, 0);
+    int len = recv(tcpConnect->SocketId, data, BufferSize - 1, 0);
     if (len <= 0)
     {
         WriteLog(LogLevel::Info, "DisConnect For Recv. SessionId:%lld, Socket:%lld, ErrorId:%d", tcpConnect->SessionId, tcpConnect->SocketId, len);

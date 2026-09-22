@@ -20,7 +20,7 @@ namespace Spark::Network
 SingleShm::SingleShm(ServerTypeType shmType, const char* shmName)
     : IoBase(shmType, shmName, 0), shmName_(shmName), connected_(false), sessionId_(0LL), shmAddr_(nullptr)
 {
-    shmBuffer_ = new ShmBuffer<ShmBuffSize>();
+    shmBuffer_ = new ShmBuffer<ShmBufferSize>();
 #ifdef _WIN32
     file_ = nullptr;
     fileMap_ = nullptr;
@@ -51,7 +51,7 @@ SingleShm::~SingleShm()
     }
 #endif
 #ifdef __linux__
-    if (munmap(shmAddr_, sizeof(SingleShmHeader) + 2 * ShmBuffSize) < 0)
+    if (munmap(shmAddr_, sizeof(SingleShmHeader) + 2 * ShmBufferSize) < 0)
     {
         perror("shm_unlink");
         WriteLog(LogLevel::Warning, "munmap Failed. ErrNo:%d", errno);
@@ -79,14 +79,14 @@ bool SingleShm::Init()
     }
     else
     {
-        fileMap_ = CreateFileMappingA(file_, NULL, PAGE_READWRITE, 0, sizeof(SingleShmHeader) + 2 * ShmBuffSize, shmName_.c_str());
+        fileMap_ = CreateFileMappingA(file_, NULL, PAGE_READWRITE, 0, sizeof(SingleShmHeader) + 2 * ShmBufferSize, shmName_.c_str());
     }
     if (fileMap_ == NULL)
     {
         WriteLog(LogLevel::Warning, "Create Or Open FileMapping Failed. ErrNo:%d", GetLastError());
         return false;
     }
-    shmAddr_ = (char*)MapViewOfFile(fileMap_, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(SingleShmHeader) + 2 * ShmBuffSize);
+    shmAddr_ = (char*)MapViewOfFile(fileMap_, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(SingleShmHeader) + 2 * ShmBufferSize);
     if (shmAddr_ == NULL)
     {
         WriteLog(LogLevel::Warning, "MapViewOfFile Failed. ErrNo:%d", GetLastError());
@@ -105,12 +105,12 @@ bool SingleShm::Init()
             return false;
         }
     }
-    if (ftruncate(fd, sizeof(SingleShmHeader) + 2 * ShmBuffSize) == -1)
+    if (ftruncate(fd, sizeof(SingleShmHeader) + 2 * ShmBufferSize) == -1)
     {
         WriteLog(LogLevel::Warning, "ftruncate Failed. ErrNo:%d", errno);
         return false;
     }
-    shmAddr_ = (char*)mmap(nullptr, sizeof(SingleShmHeader) + 2 * ShmBuffSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    shmAddr_ = (char*)mmap(nullptr, sizeof(SingleShmHeader) + 2 * ShmBufferSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (shmAddr_ == MAP_FAILED)
     {
         WriteLog(LogLevel::Warning, "mmap Failed. ErrNo:%d", errno);
@@ -120,7 +120,7 @@ bool SingleShm::Init()
     shmBuffer_->ShmHeader = (SingleShmHeader*)shmAddr_;
     shmBuffer_->ServerType = serverType_;
     shmBuffer_->UpBuffer = (char*)shmAddr_ + sizeof(SingleShmHeader);
-    shmBuffer_->DownBuffer = (char*)shmAddr_ + sizeof(SingleShmHeader) + ShmBuffSize;
+    shmBuffer_->DownBuffer = (char*)shmAddr_ + sizeof(SingleShmHeader) + ShmBufferSize;
     if (firstOpen)
     {
         shmBuffer_->ShmHeader->Status = ConnectStatusType::UnConnected;
@@ -137,14 +137,14 @@ bool SingleShm::Init()
     return true;
 }
 
-void SingleShm::Send(SessionIdType sessionId, Buffer<BuffSize>* buffer)
+void SingleShm::Send(SessionIdType sessionId, Buffer<BufferSize>* buffer)
 {
-    shmBuffer_->Write(buffer->GetData(), buffer->GetLength());
+    shmBuffer_->Write(buffer->GetData(), static_cast<unsigned>(buffer->GetLength()));
 }
 void SingleShm::DoRecv(Connect* connect)
 {
-    Buffer<BuffSize>* buffer = Buffer<BuffSize>::Allocate();
-    auto len = shmBuffer_->Read(buffer->GetWritePos(), BuffSize);
+    Buffer<BufferSize>* buffer = Buffer<BufferSize>::Allocate();
+    auto len = shmBuffer_->Read(buffer->GetWritePos(), BufferSize);
     buffer->SetLength(len);
 
     if (ioSubscriber_ != nullptr)

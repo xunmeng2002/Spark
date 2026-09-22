@@ -19,7 +19,7 @@ public:
     virtual ~ShmBase();
 
     virtual bool Init() override;
-    virtual void Send(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
+    virtual void Send(SessionIdType sessionId, Buffer<BufferSize>* buffer) override;
 
     virtual void HandleIoEvent() override;
 

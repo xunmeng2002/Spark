@@ -11,7 +11,7 @@ using namespace Spark::Network;
 static int g_Count = 0;
 ShmSubscriberImpl::ShmSubscriberImpl(IoBase* io, ServerTypeType serverType) : connected_(false), sessionId_(0LL), io_(io), serverType_(serverType)
 {
-    buff_ = new char[BuffSize];
+    buff_ = new char[BufferSize];
     length_ = 0;
 
     io_->Subscribe(this);
@@ -27,14 +27,14 @@ void ShmSubscriberImpl::OnDisConnect(SessionIdType sessionId, const char* ip, in
     WriteLog(LogLevel::Info, "OnDisConnect sessionId:%lld, ip:%s, port:%d", sessionId, ip, port);
     connected_ = false;
 }
-void ShmSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer)
+void ShmSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BufferSize>* buffer)
 {
     while (buffer->GetLength() > 0)
     {
         ShmPackage* shmPackage = nullptr;
         if (length_ > 0)
         {
-            unsigned len = sizeof(ShmPackage) - length_;
+            size_t len = sizeof(ShmPackage) - length_;
             len = std::min(len, buffer->GetLength());
             memcpy(buff_ + length_, buffer->GetData(), len);
             length_ += len;
@@ -66,7 +66,7 @@ void ShmSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer
             if (serverType_ == ServerTypeType::Server)
             {
                 shmPackage->ShmType = (int)ServerTypeType::Server;
-                auto sendBuff = new Buffer<BuffSize>();
+                auto sendBuff = new Buffer<BufferSize>();
                 sendBuff->Append((char*)shmPackage, sizeof(ShmPackage));
                 io_->Send(sessionId, sendBuff);
             }

@@ -6,7 +6,7 @@
 using namespace Spark::Core;
 namespace Spark::Network
 {
-static_assert(BuffSize >= MaxFrameSize, "IO 层的收发缓冲必须容纳一帧上限，否则 MakePackage 会写出界");
+static_assert(BufferSize >= MaxFrameSize, "IO 层的收发缓冲必须容纳一帧上限，否则 MakePackage 会写出界");
 
 Protocol::Protocol(ProtocolTypeType protocolType, ServerTypeType serverType, IoModelType ioModel, int milliSeconds,
                    PackageFactoryBase* packageFactory)
@@ -106,8 +106,8 @@ bool Protocol::Send(Package* package)
 {
     if (ioBase_ == nullptr)
         return false;
-    Buffer<BuffSize>* buffer = Buffer<BuffSize>::Allocate();
-    auto len = package->MakePackage(protocolType_, buffer->GetData(), BuffSize);
+    Buffer<BufferSize>* buffer = Buffer<BufferSize>::Allocate();
+    auto len = package->MakePackage(protocolType_, buffer->GetData(), BufferSize);
     if (len <= 0)
     {
         WriteLog(LogLevel::Info, "MakePackage len is 0");
@@ -140,7 +140,7 @@ void Protocol::OnDisConnect(SessionIdType sessionId, const char* ip, int port)
         subscriber_->OnProtocolDisConnect(sessionId, ip, port);
     }
 }
-void Protocol::OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer)
+void Protocol::OnRecv(SessionIdType sessionId, Buffer<BufferSize>* buffer)
 {
     if (ioBase_ == nullptr)
     {
@@ -156,7 +156,7 @@ void Protocol::OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer)
         return;
     }
     auto packageReader = it->second;
-    packageReader->Append(buffer->GetData(), buffer->GetLength());
+    packageReader->Append(buffer->GetData(), static_cast<unsigned int>(buffer->GetLength()));
     //Append 已经拷走字节，之后再无引用，所以在这里归还，后面的解析路径不必再考虑释放
     buffer->Deallocate();
     while (true)

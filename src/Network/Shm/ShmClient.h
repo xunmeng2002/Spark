@@ -23,6 +23,6 @@ protected:
 
     bool connected_;
     bool hasSendConnect_;
-    ShmConnect<ShmBuffSize>* shmConnect_;
+    ShmConnect<ShmBufferSize>* shmConnect_;
 };
 }

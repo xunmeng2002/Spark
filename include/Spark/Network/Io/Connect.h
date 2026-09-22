@@ -7,6 +7,8 @@
 
 namespace Spark::Network
 {
+constexpr unsigned int BufferSize = 64 * 1024;
+
 class NETWORK_EXPORTS Connect
 {
 public:
@@ -18,15 +20,15 @@ public:
     virtual ~Connect() = default;
 
     virtual void Deallocate() = 0;
-    void PushBack(Buffer<BuffSize>* buffer);
-    void PushFront(Buffer<BuffSize>* buffer);
-    Buffer<BuffSize>* GetNextBuffer();
+    void PushBack(Buffer<BufferSize>* buffer);
+    void PushFront(Buffer<BufferSize>* buffer);
+    Buffer<BufferSize>* GetNextBuffer();
 
     SessionIdType SessionId = 0LL;
     ConnectStatusType ConnectStatus = ConnectStatusType::UnConnected;
     char RemoteAddress[40]{0};
     int RemotePort = 0;
-    std::list<Buffer<BuffSize>*> Buffers;
+    std::list<Buffer<BufferSize>*> Buffers;
     std::mutex BuffersMutex;
 };
 }

@@ -3,12 +3,13 @@
 
 #include <cstring>
 #include <string>
+#include <type_traits>
 using namespace Spark;
 // ============================================================
-// Buffer 测试 — 固定大小缓冲区（Append / Shift / Reset / MemMove）
+// Buffer 测试 — 固定大小缓冲区（Append / SetLength / Shift / Reset / MemMove）
 // ============================================================
 
-static constexpr unsigned kBufferSize = 64;
+static constexpr size_t kBufferSize = 64;
 
 // ---------- 构造 / 初始状态 ----------
 
@@ -25,7 +26,7 @@ TEST(BufferTest, Append_Basic)
 {
     Buffer<kBufferSize> buf;
     const char* data = "Hello";
-    unsigned written = buf.Append(data, 5);
+    size_t written = buf.Append(data, 5);
     EXPECT_EQ(written, 5u);
     EXPECT_EQ(buf.GetLength(), 5u);
     EXPECT_EQ(std::memcmp(buf.GetData(), data, 5), 0);
@@ -35,7 +36,7 @@ TEST(BufferTest, Append_ExactFit)
 {
     Buffer<kBufferSize> buf;
     std::string data(kBufferSize, 'A');
-    unsigned written = buf.Append(data.data(), kBufferSize);
+    size_t written = buf.Append(data.data(), kBufferSize);
     EXPECT_EQ(written, kBufferSize);
     EXPECT_EQ(buf.GetLength(), kBufferSize);
 }
@@ -44,7 +45,7 @@ TEST(BufferTest, Append_Overflow)
 {
     Buffer<kBufferSize> buf;
     std::string data(kBufferSize + 10, 'B');
-    unsigned written = buf.Append(data.data(), static_cast<unsigned>(data.size()));
+    size_t written = buf.Append(data.data(), data.size());
     // Should truncate to available space
     EXPECT_EQ(written, kBufferSize);
     EXPECT_EQ(buf.GetLength(), kBufferSize);
@@ -57,6 +58,16 @@ TEST(BufferTest, Append_Multiple)
     EXPECT_EQ(buf.Append("BBB", 3), 3u);
     EXPECT_EQ(buf.GetLength(), 6u);
     EXPECT_EQ(std::memcmp(buf.GetData(), "AAABBB", 6), 0);
+}
+
+TEST(BufferTest, Append_ZeroLengthKeepsState)
+{
+    Buffer<kBufferSize> buf;
+    buf.Append("Hello", 5);
+    EXPECT_EQ(buf.Append("", 0), 0u);
+    EXPECT_EQ(buf.GetLength(), 5u);
+    EXPECT_EQ(buf.GetWriteBufferSize(), kBufferSize - 5);
+    EXPECT_EQ(std::memcmp(buf.GetData(), "Hello", 5), 0);
 }
 
 // ---------- Shift ----------
@@ -115,12 +126,32 @@ TEST(BufferTest, ShiftThenMemMoveThenAppend_ReusesSpace)
     buf.MemMove();
     EXPECT_GT(buf.GetWriteBufferSize(), 0u);
 
-    unsigned written = buf.Append("YYY", 3);
+    size_t written = buf.Append("YYY", 3);
     EXPECT_EQ(written, 3u);
     EXPECT_EQ(buf.GetLength(), kBufferSize / 2 + 3);
 }
 
 // ---------- SetLength ----------
+
+// 已写入 10 字节、已消费 5 字节：读位置到缓冲末尾只剩 kBufferSize - 5 字节
+class PartiallyConsumedBufferTest : public ::testing::Test
+{
+protected:
+    void SetUp() override
+    {
+        buffer_.Append("HelloWorld", 10);
+        buffer_.Shift(5);
+    }
+
+    void ExpectFilledToEndOfCapacity()
+    {
+        EXPECT_EQ(buffer_.GetLength(), kBufferSize - 5);
+        EXPECT_EQ(buffer_.GetWriteBufferSize(), 0u);
+        EXPECT_EQ(buffer_.Append("Z", 1), 0u);
+    }
+
+    Buffer<kBufferSize> buffer_;
+};
 
 TEST(BufferTest, SetLength)
 {
@@ -130,6 +161,43 @@ TEST(BufferTest, SetLength)
     buf.SetLength(0);
     EXPECT_EQ(buf.GetLength(), 0u);
 }
+
+TEST_F(PartiallyConsumedBufferTest, SetLength_AtCapacityFillsWriteWindow)
+{
+    // 从读位置到缓冲末尾的容量 = 剩余长度 + 写窗口；登记满容量后写窗口应为 0
+    const size_t capacity = buffer_.GetLength() + buffer_.GetWriteBufferSize();
+    ASSERT_EQ(capacity, kBufferSize - 5);
+    buffer_.SetLength(capacity);
+    ExpectFilledToEndOfCapacity();
+}
+
+TEST_F(PartiallyConsumedBufferTest, SetLength_ReportsLengthFromReadPosition)
+{
+    // 登记的是「从读位置起的有效字节数」，不搬移数据、也不是写入增量
+    buffer_.SetLength(3);
+    EXPECT_EQ(buffer_.GetLength(), 3u);
+    EXPECT_EQ(buffer_.GetWriteBufferSize(), kBufferSize - 8);
+    EXPECT_EQ(std::memcmp(buffer_.GetData(), "Wor", 3), 0);
+    EXPECT_EQ(buffer_.Append("ZZ", 2), 2u);
+    EXPECT_EQ(buffer_.GetLength(), 5u);
+}
+
+#if defined(GTEST_HAS_DEATH_TEST) && !defined(NDEBUG)
+TEST_F(PartiallyConsumedBufferTest, SetLength_BeyondCapacityTripsAssert)
+{
+    // 超出读位置到缓冲末尾的距离，Debug 构建下必须由断言当场拦下
+    ASSERT_DEATH(buffer_.SetLength(kBufferSize), "len <= capacity");
+}
+#endif
+
+#ifdef NDEBUG
+// 断言关闭后钳位是唯一防线，故本用例只在 Release 构建下有意义
+TEST_F(PartiallyConsumedBufferTest, SetLength_BeyondCapacityClampsWithoutAssert)
+{
+    buffer_.SetLength(kBufferSize);
+    ExpectFilledToEndOfCapacity();
+}
+#endif
 
 // ---------- GetWriteBufferSize ----------
 
@@ -186,6 +254,16 @@ TEST(BufferTest, MemMove_EnablesMoreWrites)
     // But there's free space at the front (0..31) — MemMove fixes that
     buf.MemMove();
     EXPECT_GT(buf.GetWriteBufferSize(), 0u);
+}
+
+// ---------- 拷贝 / 移动 ----------
+
+TEST(BufferTest, CopyAndMoveAreDeleted)
+{
+    EXPECT_FALSE(std::is_copy_constructible_v<Buffer<kBufferSize>>);
+    EXPECT_FALSE(std::is_copy_assignable_v<Buffer<kBufferSize>>);
+    EXPECT_FALSE(std::is_move_constructible_v<Buffer<kBufferSize>>);
+    EXPECT_FALSE(std::is_move_assignable_v<Buffer<kBufferSize>>);
 }
 
 // ---------- Reset ----------

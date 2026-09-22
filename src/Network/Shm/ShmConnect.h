@@ -7,6 +7,8 @@
 
 namespace Spark::Network
 {
+constexpr unsigned int ShmBufferSize = 1024 * 1024;
+
 template <unsigned SIZE>
 class ShmConnect : public Connect
 {

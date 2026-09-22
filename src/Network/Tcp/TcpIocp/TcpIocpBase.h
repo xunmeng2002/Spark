@@ -13,7 +13,7 @@ public:
     ~TcpIocpBase();
 
     virtual bool Init() override;
-    virtual void Send(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
+    virtual void Send(SessionIdType sessionId, Buffer<BufferSize>* buffer) override;
 
 protected:
     virtual void HandleTcpEvent() override;

@@ -3,6 +3,8 @@
 #include <Spark/Network/Io/IoThread.h>
 #include <Spark/TemplateLib/Buffer/Buffer.h>
 
+#include <cstddef>
+
 using namespace Spark;
 using namespace Spark::Network;
 class ShmSubscriberImpl : public IoSubscriber
@@ -12,7 +14,7 @@ public:
 
     virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) override;
     virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) override;
-    virtual void OnRecv(SessionIdType sessionId, Buffer<BuffSize>* buffer) override;
+    virtual void OnRecv(SessionIdType sessionId, Buffer<BufferSize>* buffer) override;
 
     bool connected_;
     SessionIdType sessionId_;
@@ -22,5 +24,5 @@ private:
     ServerTypeType serverType_;
 
     char* buff_;
-    int length_;
+    size_t length_;
 };
