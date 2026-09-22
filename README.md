@@ -356,7 +356,7 @@ int main(int argc, const char* argv[])
 | | `CsvParserTest` | CSV 解析行、列、引号转义 |
 | | `CsvRecordTest` | CSV 记录读写 |
 | | `EncodeTest` | GBK/UTF-8/Unicode 互转 |
-| **TemplateLib** | `LinearBufferTest` | 缓冲区读写、扩容 |
+| **TemplateLib** | `LinearBufferTest` | 定长缓冲区读写、紧凑与空间重用 |
 | | `LockFreeQueueTest` | 无锁队列入队出队 |
 | | `ObjectPoolTest` | 对象池分配、复用 |
 | | `ShmBufferTest` | 共享内存缓冲 |

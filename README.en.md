@@ -357,7 +357,7 @@ The project includes a comprehensive **Google Test**-based unit test suite with 
 | | `CsvParserTest` | CSV row/column parsing, quote escaping |
 | | `CsvRecordTest` | CSV record reading/writing |
 | | `EncodeTest` | GBK/UTF-8/Unicode conversion |
-| **TemplateLib** | `LinearBufferTest` | LinearBuffer read/write and expansion |
+| **TemplateLib** | `LinearBufferTest` | Fixed-size buffer read/write, compaction and space reuse |
 | | `LockFreeQueueTest` | Lock-free queue push/pop |
 | | `ObjectPoolTest` | Object pool allocation and reuse |
 | | `ShmBufferTest` | Shared memory buffer |
