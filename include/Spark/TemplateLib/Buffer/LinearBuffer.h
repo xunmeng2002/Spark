@@ -8,12 +8,10 @@
 
 namespace Spark
 {
-// 线性字节缓冲：自身不提供任何并发保护。跨线程传递必须由调用方保证所有权转移——
-// 交出后即不得再访问该对象（含 Reset），否则会与池中重新分配出去的同名对象混叠。
-template <size_t SIZE>
+template <size_t Size>
 class LinearBuffer
 {
-    static_assert(SIZE > 0, "SIZE must be greater than 0");
+    static_assert(Size > 0, "Size must be greater than 0");
 
 public:
     LinearBuffer() : buffer_{0} { ClearIndices(); }
@@ -22,24 +20,22 @@ public:
     LinearBuffer(LinearBuffer&&) = delete;
     LinearBuffer& operator=(LinearBuffer&&) = delete;
 
-    static LinearBuffer* Allocate() { return ObjectPool<LinearBuffer<SIZE>>::GetInstance().Allocate(); }
-    void Deallocate() { ObjectPool<LinearBuffer<SIZE>>::GetInstance().Deallocate(this); }
+    static LinearBuffer* Allocate() { return ObjectPool<LinearBuffer<Size>>::GetInstance().Allocate(); }
+    void Deallocate() { ObjectPool<LinearBuffer<Size>>::GetInstance().Deallocate(this); }
 
-    size_t Append(const char* data, size_t len)
+    size_t Append(const char* source, size_t len)
     {
         len = (std::min)(len, GetWriteBufferSize());
         if (len > 0)
         {
-            std::memcpy(buffer_ + writeIndex_, data, len);
+            std::memcpy(buffer_ + writeIndex_, source, len);
             writeIndex_ += len;
         }
         return len;
     }
-    // 登记从读位置起的有效字节数（不是写入增量），超出容量时钳到缓冲末尾；
-    // 调用方传入的有符号负值会先被转成极大值，再被钳成整段容量，故 len 必须来自可信的非负长度。
     void SetLength(size_t len)
     {
-        const size_t capacity = SIZE - readIndex_;
+        const size_t capacity = Size - readIndex_;
         assert(len <= capacity);
         writeIndex_ = readIndex_ + (std::min)(len, capacity);
     }
@@ -54,7 +50,6 @@ public:
             readIndex_ += len;
         }
     }
-    // 仅在缓冲未参与任何在途读写时调用：复位会改变 GetData() 的取值。
     void Reset()
     {
         ClearIndices();
@@ -76,7 +71,7 @@ public:
     char* GetWritePos() { return buffer_ + writeIndex_; }
     const char* GetWritePos() const { return buffer_ + writeIndex_; }
     size_t GetLength() const { return writeIndex_ - readIndex_; }
-    size_t GetWriteBufferSize() const { return SIZE - writeIndex_; }
+    size_t GetWriteBufferSize() const { return Size - writeIndex_; }
 
 private:
     void ClearIndices()
@@ -85,7 +80,7 @@ private:
         writeIndex_ = 0;
     }
 
-    char buffer_[SIZE];
+    char buffer_[Size];
     size_t readIndex_;
     size_t writeIndex_;
 };

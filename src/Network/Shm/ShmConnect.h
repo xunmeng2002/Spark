@@ -9,7 +9,7 @@ namespace Spark::Network
 {
 constexpr unsigned int ShmBufferSize = 1024 * 1024;
 
-template <unsigned SIZE>
+template <unsigned Size>
 class ShmConnect : public Connect
 {
 public:
@@ -17,7 +17,7 @@ public:
                ConnectStatusType connectStatus)
         : Connect(sessionId, remoteAddress, remotePort, connectStatus)
     {
-        shmBuffer_ = ShmBuffer<SIZE>::Allocate(serverType, remotePort, shmAddr, connectStatus);
+        shmBuffer_ = ShmBuffer<Size>::Allocate(serverType, remotePort, shmAddr, connectStatus);
     }
     virtual ~ShmConnect()
     {
@@ -28,12 +28,12 @@ public:
     static ShmConnect* Allocate(SessionIdType sessionId, const char* remoteAddress, int remotePort, ServerTypeType serverType, void* shmAddr,
                                 ConnectStatusType connectStatus)
     {
-        return ObjectPool<ShmConnect<SIZE>>::GetInstance().Allocate(sessionId, remoteAddress, remotePort, serverType, shmAddr, connectStatus);
+        return ObjectPool<ShmConnect<Size>>::GetInstance().Allocate(sessionId, remoteAddress, remotePort, serverType, shmAddr, connectStatus);
     }
-    virtual void Deallocate() override { ObjectPool<ShmConnect<SIZE>>::GetInstance().Deallocate(this); }
-    ShmBuffer<SIZE>* GetBuffer() { return shmBuffer_; }
+    virtual void Deallocate() override { ObjectPool<ShmConnect<Size>>::GetInstance().Deallocate(this); }
+    ShmBuffer<Size>* GetBuffer() { return shmBuffer_; }
 
 private:
-    ShmBuffer<SIZE>* shmBuffer_;
+    ShmBuffer<Size>* shmBuffer_;
 };
 }

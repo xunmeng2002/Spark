@@ -20,9 +20,9 @@ struct ShmTestFixture : public ::testing::Test
     {
         // 内存布局 (index=1):
         //   [0 .. sizeof(SingleShmHeader))  — header (index=0)
-        //   [sizeof(SingleShmHeader) .. 2*SIZE) — 填充
-        //   [2*SIZE .. 3*SIZE)              — UpBuffer
-        //   [3*SIZE .. 4*SIZE)              — DownBuffer
+        //   [sizeof(SingleShmHeader) .. 2*Size) — 填充
+        //   [2*Size .. 3*Size)              — UpBuffer
+        //   [3*Size .. 4*Size)              — DownBuffer
         size_t total = sizeof(SingleShmHeader) + ShmBufferSize * 4;
         memory_.resize(total, 0);
 
@@ -137,12 +137,12 @@ TEST_F(ShmTestFixture, ReadWhenDisconnected_ReturnsZero)
 TEST_F(ShmTestFixture, GetWriteBufferSize_Client)
 {
     // Client WriteBufferSize = GetUpWriteBufferSize
-    // 初始: SIZE - 0 - 1 = ShmBufferSize - 1
+    // 初始: Size - 0 - 1 = ShmBufferSize - 1
     EXPECT_EQ(client_->GetWriteBufferSize(), ShmBufferSize - 1);
 
     client_->Write("Hello", 5);
     // UpWriteCount = 5, UpReadCount = 0
-    // GetUpWriteBufferSize: Read > Write? no, so SIZE - (5 - 0) - 1 = SIZE - 6
+    // GetUpWriteBufferSize: Read > Write? no, so Size - (5 - 0) - 1 = Size - 6
     EXPECT_EQ(client_->GetWriteBufferSize(), ShmBufferSize - 6);
 }
 

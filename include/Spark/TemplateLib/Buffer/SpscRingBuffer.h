@@ -7,12 +7,11 @@
 
 namespace Spark
 {
-// 单生产者单消费者环形缓冲区：Write 仅允许唯一的生产者线程调用，Read / Peek / Skip 仅允许唯一的消费者线程调用。
-template <size_t SIZE>
+template <size_t Size>
 class SpscRingBuffer
 {
-    static_assert(SIZE > 0, "SIZE must be greater than 0");
-    static_assert((SIZE & (SIZE - 1)) == 0, "SIZE must be a power of two, because the wrap-around uses a bit mask");
+    static_assert(Size > 0, "Size must be greater than 0");
+    static_assert((Size & (Size - 1)) == 0, "Size must be a power of two, because the wrap-around uses a bit mask");
     static_assert(std::atomic<size_t>::is_always_lock_free, "size_t atomic must be lock free");
 
 public:
@@ -68,7 +67,6 @@ public:
     size_t GetWriteBufferSize() const { return CountWritableBytes(writeIndex_.load(std::memory_order_relaxed)); }
     bool IsEmpty() const { return GetReadBufferSize() == 0; }
     bool IsFull() const { return GetWriteBufferSize() == 0; }
-    // 仅在生产者与消费者均已停止访问时调用；并发调用会使两个索引失去前后关系，w - r 下溢成极大值后越界拷贝。
     void ResetWhenIdle()
     {
         writeIndex_.store(0, std::memory_order_relaxed);
@@ -76,7 +74,7 @@ public:
     }
 
 private:
-    static constexpr size_t Mask = SIZE - 1;
+    static constexpr size_t Mask = Size - 1;
 
     size_t CountReadableBytes(size_t readIndex) const
     {
@@ -84,13 +82,13 @@ private:
     }
     size_t CountWritableBytes(size_t writeIndex) const
     {
-        return SIZE - (writeIndex - readIndex_.load(std::memory_order_acquire));
+        return Size - (writeIndex - readIndex_.load(std::memory_order_acquire));
     }
     void CopyIntoRing(size_t writeIndex, const char* sourceBuffer, size_t length)
     {
-        assert(length <= SIZE);
+        assert(length <= Size);
         const size_t writePosition = writeIndex & Mask;
-        const size_t headLength = (std::min)(length, SIZE - writePosition);
+        const size_t headLength = (std::min)(length, Size - writePosition);
         std::memcpy(buffer_ + writePosition, sourceBuffer, headLength);
         if (headLength < length)
         {
@@ -99,9 +97,9 @@ private:
     }
     void CopyOutOfRing(size_t readIndex, char* destinationBuffer, size_t length) const
     {
-        assert(length <= SIZE);
+        assert(length <= Size);
         const size_t readPosition = readIndex & Mask;
-        const size_t headLength = (std::min)(length, SIZE - readPosition);
+        const size_t headLength = (std::min)(length, Size - readPosition);
         std::memcpy(destinationBuffer, buffer_ + readPosition, headLength);
         if (headLength < length)
         {
@@ -111,6 +109,6 @@ private:
 
     alignas(64) std::atomic<size_t> writeIndex_{0};
     alignas(64) std::atomic<size_t> readIndex_{0};
-    alignas(64) char buffer_[SIZE];
+    alignas(64) char buffer_[Size];
 };
 }
