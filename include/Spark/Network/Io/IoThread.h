@@ -3,7 +3,7 @@
 #include <Spark/Types.h>
 #include <Spark/Core/Thread/ThreadBase.h>
 #include <Spark/Network/Io/IoBase.h>
-#include <Spark/TemplateLib/Buffer/Buffer.h>
+#include <Spark/TemplateLib/Buffer/LinearBuffer.h>
 #include <Spark/Network/Io/Connect.h>
 #include <string>
 #include <mutex>

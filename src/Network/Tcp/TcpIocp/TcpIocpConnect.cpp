@@ -65,7 +65,7 @@ void MyOverlapped::Deallocate()
 {
     ObjectPool<MyOverlapped>::GetInstance().Deallocate(this);
 }
-void MyOverlapped::SetBuffer(Buffer<BufferSize>* buffer)
+void MyOverlapped::SetBuffer(LinearBuffer<BufferSize>* buffer)
 {
     if (MyBuffer != nullptr)
     {

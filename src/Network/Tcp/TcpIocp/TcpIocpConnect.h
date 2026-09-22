@@ -4,7 +4,7 @@
 #include "Tcp/SocketInit.h"
 #include "Tcp/TcpConnect.h"
 #include <Spark/Network/Io/Connect.h>
-#include <Spark/TemplateLib/Buffer/Buffer.h>
+#include <Spark/TemplateLib/Buffer/LinearBuffer.h>
 
 namespace Spark::Network
 {
@@ -39,13 +39,13 @@ public:
     ~MyOverlapped();
     static MyOverlapped* Allocate();
     void Deallocate();
-    void SetBuffer(Buffer<BufferSize>* buffer);
+    void SetBuffer(LinearBuffer<BufferSize>* buffer);
     void Shift(unsigned int len);
     void Reset();
 
     IocpEvent EventId;
     WSABUF WsaBuffer;
-    Buffer<BufferSize>* MyBuffer;
+    LinearBuffer<BufferSize>* MyBuffer;
     TcpIocpConnect* Connect;
 };
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include "Shm/ShmConnect.h"
 #include <Spark/Types.h>
-#include <Spark/TemplateLib/Buffer/Buffer.h>
+#include <Spark/TemplateLib/Buffer/LinearBuffer.h>
 #include <Spark/Network/Io/IoBase.h>
 #include <string>
 
@@ -14,7 +14,7 @@ public:
     virtual ~SingleShm();
     virtual bool Init() override;
 
-    virtual void Send(SessionIdType sessionId, Buffer<BufferSize>* buffer) override;
+    virtual void Send(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer) override;
     virtual void DoRecv(Connect* connect) override;
     virtual void HandleIoEvent() override;
 

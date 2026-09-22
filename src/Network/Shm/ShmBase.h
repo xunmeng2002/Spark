@@ -2,7 +2,7 @@
 #include "Shm/Sem.h"
 #include "Shm/ShmConnect.h"
 #include <Spark/Types.h>
-#include <Spark/TemplateLib/Buffer/Buffer.h>
+#include <Spark/TemplateLib/Buffer/LinearBuffer.h>
 #include <Spark/Network/Io/IoBase.h>
 #include <string>
 #include <map>
@@ -19,7 +19,7 @@ public:
     virtual ~ShmBase();
 
     virtual bool Init() override;
-    virtual void Send(SessionIdType sessionId, Buffer<BufferSize>* buffer) override;
+    virtual void Send(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer) override;
 
     virtual void HandleIoEvent() override;
 

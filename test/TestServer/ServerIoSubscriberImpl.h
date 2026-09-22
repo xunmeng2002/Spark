@@ -13,7 +13,7 @@ public:
 
     virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) override;
     virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) override;
-    virtual void OnRecv(SessionIdType sessionId, Spark::Buffer<Spark::Network::BufferSize>* buffer) override;
+    virtual void OnRecv(SessionIdType sessionId, Spark::LinearBuffer<Spark::Network::BufferSize>* buffer) override;
 
 private:
     IoBase* io_;

@@ -6,7 +6,7 @@ namespace Spark::Core
 LogData::LogData()
 {
     LogFile = nullptr;
-    CurrBuffer = Buffer<LogBufferSize>::Allocate();
+    CurrBuffer = LinearBuffer<LogBufferSize>::Allocate();
 }
 LogData::~LogData()
 {
@@ -31,6 +31,6 @@ LogData::~LogData()
 void LogData::PushBuffer()
 {
     LogBuffers.push_back(CurrBuffer);
-    CurrBuffer = Buffer<LogBufferSize>::Allocate();
+    CurrBuffer = LinearBuffer<LogBufferSize>::Allocate();
 }
 }

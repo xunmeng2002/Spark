@@ -60,7 +60,7 @@ bool TcpIocpBase::Init()
 
     return true;
 }
-void TcpIocpBase::Send(SessionIdType sessionId, Buffer<BufferSize>* buffer)
+void TcpIocpBase::Send(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer)
 {
     if (buffer->GetLength() == 0)
     {
@@ -181,7 +181,7 @@ bool TcpIocpBase::PostDisConnect(Connect* connect)
 {
     auto tcpIocpConnect = (TcpIocpConnect*)connect;
     MyOverlapped* overlapped = MyOverlapped::Allocate();
-    overlapped->SetBuffer(Buffer<BufferSize>::Allocate());
+    overlapped->SetBuffer(LinearBuffer<BufferSize>::Allocate());
     overlapped->EventId = IocpEvent::EventDisConnect;
     overlapped->Connect = tcpIocpConnect;
 
@@ -277,7 +277,7 @@ void TcpIocpBase::OnSendComplete(MyOverlapped* overlapped, int bytesTransferred)
     }
     else
     {
-        Buffer<BufferSize>* buffer;
+        LinearBuffer<BufferSize>* buffer;
         {
             lock_guard<mutex> guard(overlapped->Connect->BuffersMutex);
             if (overlapped->Connect->Buffers.empty())

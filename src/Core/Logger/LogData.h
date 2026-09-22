@@ -1,5 +1,5 @@
 #pragma once
-#include <Spark/TemplateLib/Buffer/Buffer.h>
+#include <Spark/TemplateLib/Buffer/LinearBuffer.h>
 #include <stdio.h>
 #include <list>
 #include <mutex>
@@ -17,9 +17,9 @@ struct LogData
     void PushBuffer();
 
     FILE* LogFile;
-    Spark::Buffer<LogBufferSize>* CurrBuffer;
-    std::list<Spark::Buffer<LogBufferSize>*> LogBuffers;
-    std::list<Spark::Buffer<LogBufferSize>*> InnerLogBuffers;
+    Spark::LinearBuffer<LogBufferSize>* CurrBuffer;
+    std::list<Spark::LinearBuffer<LogBufferSize>*> LogBuffers;
+    std::list<Spark::LinearBuffer<LogBufferSize>*> InnerLogBuffers;
 
     std::mutex Mutex;
     std::condition_variable ConditionVariable;

@@ -46,7 +46,7 @@ Data encoding/decoding, format parsing, and character encoding conversion:
 ### 2.4 Template Library (TemplateLib)
 
 High-performance data structures and reusable business components:
-- **Buffer**: Generic buffer
+- **LinearBuffer**: Generic buffer
 - **SpscRingBuffer**: Single-producer single-consumer ring buffer (lock-free)
 - **ShmBuffer**: Shared memory buffer
 - **ObjectPool**: Object pool to reduce frequent memory allocation overhead
@@ -357,7 +357,7 @@ The project includes a comprehensive **Google Test**-based unit test suite with 
 | | `CsvParserTest` | CSV row/column parsing, quote escaping |
 | | `CsvRecordTest` | CSV record reading/writing |
 | | `EncodeTest` | GBK/UTF-8/Unicode conversion |
-| **TemplateLib** | `BufferTest` | Buffer read/write and expansion |
+| **TemplateLib** | `LinearBufferTest` | LinearBuffer read/write and expansion |
 | | `LockFreeQueueTest` | Lock-free queue push/pop |
 | | `ObjectPoolTest` | Object pool allocation and reuse |
 | | `ShmBufferTest` | Shared memory buffer |

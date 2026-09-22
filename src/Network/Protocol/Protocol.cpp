@@ -106,7 +106,7 @@ bool Protocol::Send(Package* package)
 {
     if (ioBase_ == nullptr)
         return false;
-    Buffer<BufferSize>* buffer = Buffer<BufferSize>::Allocate();
+    LinearBuffer<BufferSize>* buffer = LinearBuffer<BufferSize>::Allocate();
     auto len = package->MakePackage(protocolType_, buffer->GetData(), BufferSize);
     if (len <= 0)
     {
@@ -140,7 +140,7 @@ void Protocol::OnDisConnect(SessionIdType sessionId, const char* ip, int port)
         subscriber_->OnProtocolDisConnect(sessionId, ip, port);
     }
 }
-void Protocol::OnRecv(SessionIdType sessionId, Buffer<BufferSize>* buffer)
+void Protocol::OnRecv(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer)
 {
     if (ioBase_ == nullptr)
     {

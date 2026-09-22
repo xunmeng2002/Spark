@@ -51,7 +51,7 @@ bool TcpIocpClient::PostConnect()
     }
     TcpIocpConnect* tcpIocpConnect = TcpIocpConnect::Allocate(GetSessionId(), socketId, address_, port_);
     MyOverlapped* overlapped = MyOverlapped::Allocate();
-    overlapped->SetBuffer(Buffer<BufferSize>::Allocate());
+    overlapped->SetBuffer(LinearBuffer<BufferSize>::Allocate());
     overlapped->EventId = IocpEvent::EventConnect;
     overlapped->Connect = tcpIocpConnect;
 
@@ -70,7 +70,7 @@ void TcpIocpClient::OnConnectComplete(MyOverlapped* overlapped)
 {
     PostRecv(overlapped);
     auto overlapped2 = MyOverlapped::Allocate();
-    overlapped2->SetBuffer(Buffer<BufferSize>::Allocate());
+    overlapped2->SetBuffer(LinearBuffer<BufferSize>::Allocate());
     overlapped2->Connect = overlapped->Connect;
     PostRecv(overlapped2);
     AddConnect(overlapped->Connect);

@@ -11,19 +11,19 @@ namespace Spark
 // 线性字节缓冲：自身不提供任何并发保护。跨线程传递必须由调用方保证所有权转移——
 // 交出后即不得再访问该对象（含 Reset），否则会与池中重新分配出去的同名对象混叠。
 template <size_t SIZE>
-class Buffer
+class LinearBuffer
 {
     static_assert(SIZE > 0, "SIZE must be greater than 0");
 
 public:
-    Buffer() : buffer_{0} { ClearIndices(); }
-    Buffer(const Buffer&) = delete;
-    Buffer& operator=(const Buffer&) = delete;
-    Buffer(Buffer&&) = delete;
-    Buffer& operator=(Buffer&&) = delete;
+    LinearBuffer() : buffer_{0} { ClearIndices(); }
+    LinearBuffer(const LinearBuffer&) = delete;
+    LinearBuffer& operator=(const LinearBuffer&) = delete;
+    LinearBuffer(LinearBuffer&&) = delete;
+    LinearBuffer& operator=(LinearBuffer&&) = delete;
 
-    static Buffer* Allocate() { return ObjectPool<Buffer<SIZE>>::GetInstance().Allocate(); }
-    void Deallocate() { ObjectPool<Buffer<SIZE>>::GetInstance().Deallocate(this); }
+    static LinearBuffer* Allocate() { return ObjectPool<LinearBuffer<SIZE>>::GetInstance().Allocate(); }
+    void Deallocate() { ObjectPool<LinearBuffer<SIZE>>::GetInstance().Deallocate(this); }
 
     size_t Append(const char* data, size_t len)
     {

@@ -1,7 +1,7 @@
 #pragma once
 #include <Spark/Network/NetworkExport.h>
 #include <Spark/Types.h>
-#include <Spark/TemplateLib/Buffer/Buffer.h>
+#include <Spark/TemplateLib/Buffer/LinearBuffer.h>
 #include <list>
 #include <mutex>
 
@@ -20,15 +20,15 @@ public:
     virtual ~Connect() = default;
 
     virtual void Deallocate() = 0;
-    void PushBack(Buffer<BufferSize>* buffer);
-    void PushFront(Buffer<BufferSize>* buffer);
-    Buffer<BufferSize>* GetNextBuffer();
+    void PushBack(LinearBuffer<BufferSize>* buffer);
+    void PushFront(LinearBuffer<BufferSize>* buffer);
+    LinearBuffer<BufferSize>* GetNextBuffer();
 
     SessionIdType SessionId = 0LL;
     ConnectStatusType ConnectStatus = ConnectStatusType::UnConnected;
     char RemoteAddress[40]{0};
     int RemotePort = 0;
-    std::list<Buffer<BufferSize>*> Buffers;
+    std::list<LinearBuffer<BufferSize>*> Buffers;
     std::mutex BuffersMutex;
 };
 }

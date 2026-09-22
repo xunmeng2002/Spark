@@ -1,5 +1,5 @@
 #include <Spark/Core/Logger/Logger.h>
-#include <Spark/TemplateLib/Buffer/Buffer.h>
+#include <Spark/TemplateLib/Buffer/LinearBuffer.h>
 #include <Spark/Core/Utility/Utility.h>
 #include <Spark/Core/Utility/TimeUtility.h>
 #include "Logger/LogData.h"

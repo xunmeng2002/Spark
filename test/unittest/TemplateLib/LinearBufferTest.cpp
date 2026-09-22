@@ -1,30 +1,30 @@
 #include <gtest/gtest.h>
-#include <Spark/TemplateLib/Buffer/Buffer.h>
+#include <Spark/TemplateLib/Buffer/LinearBuffer.h>
 
 #include <cstring>
 #include <string>
 #include <type_traits>
 using namespace Spark;
 // ============================================================
-// Buffer 测试 — 固定大小缓冲区（Append / SetLength / Shift / Reset / MemMove）
+// LinearBuffer 测试 — 固定大小缓冲区（Append / SetLength / Shift / Reset / MemMove）
 // ============================================================
 
 static constexpr size_t kBufferSize = 64;
 
 // ---------- 构造 / 初始状态 ----------
 
-TEST(BufferTest, DefaultConstructor)
+TEST(LinearBufferTest, DefaultConstructor)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
     EXPECT_EQ(buf.GetLength(), 0u);
     EXPECT_EQ(buf.GetData(), buf.GetWritePos());
 }
 
 // ---------- Append ----------
 
-TEST(BufferTest, Append_Basic)
+TEST(LinearBufferTest, Append_Basic)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
     const char* data = "Hello";
     size_t written = buf.Append(data, 5);
     EXPECT_EQ(written, 5u);
@@ -32,18 +32,18 @@ TEST(BufferTest, Append_Basic)
     EXPECT_EQ(std::memcmp(buf.GetData(), data, 5), 0);
 }
 
-TEST(BufferTest, Append_ExactFit)
+TEST(LinearBufferTest, Append_ExactFit)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
     std::string data(kBufferSize, 'A');
     size_t written = buf.Append(data.data(), kBufferSize);
     EXPECT_EQ(written, kBufferSize);
     EXPECT_EQ(buf.GetLength(), kBufferSize);
 }
 
-TEST(BufferTest, Append_Overflow)
+TEST(LinearBufferTest, Append_Overflow)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
     std::string data(kBufferSize + 10, 'B');
     size_t written = buf.Append(data.data(), data.size());
     // Should truncate to available space
@@ -51,18 +51,18 @@ TEST(BufferTest, Append_Overflow)
     EXPECT_EQ(buf.GetLength(), kBufferSize);
 }
 
-TEST(BufferTest, Append_Multiple)
+TEST(LinearBufferTest, Append_Multiple)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
     EXPECT_EQ(buf.Append("AAA", 3), 3u);
     EXPECT_EQ(buf.Append("BBB", 3), 3u);
     EXPECT_EQ(buf.GetLength(), 6u);
     EXPECT_EQ(std::memcmp(buf.GetData(), "AAABBB", 6), 0);
 }
 
-TEST(BufferTest, Append_ZeroLengthKeepsState)
+TEST(LinearBufferTest, Append_ZeroLengthKeepsState)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
     buf.Append("Hello", 5);
     EXPECT_EQ(buf.Append("", 0), 0u);
     EXPECT_EQ(buf.GetLength(), 5u);
@@ -72,18 +72,18 @@ TEST(BufferTest, Append_ZeroLengthKeepsState)
 
 // ---------- Shift ----------
 
-TEST(BufferTest, Shift_Partial)
+TEST(LinearBufferTest, Shift_Partial)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
     buf.Append("HelloWorld", 10);
     buf.Shift(5);
     EXPECT_EQ(buf.GetLength(), 5u);
     EXPECT_EQ(std::memcmp(buf.GetData(), "World", 5), 0);
 }
 
-TEST(BufferTest, Shift_All)
+TEST(LinearBufferTest, Shift_All)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
     buf.Append("Hello", 5);
     buf.Shift(5);
     EXPECT_EQ(buf.GetLength(), 0u);
@@ -91,17 +91,17 @@ TEST(BufferTest, Shift_All)
     EXPECT_EQ(buf.GetData(), buf.GetWritePos());
 }
 
-TEST(BufferTest, Shift_Excess)
+TEST(LinearBufferTest, Shift_Excess)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
     buf.Append("Hello", 5);
     buf.Shift(10); // more than length
     EXPECT_EQ(buf.GetLength(), 0u);
 }
 
-TEST(BufferTest, Shift_Zero)
+TEST(LinearBufferTest, Shift_Zero)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
     buf.Append("Hello", 5);
     buf.Shift(0);
     EXPECT_EQ(buf.GetLength(), 5u);
@@ -109,13 +109,13 @@ TEST(BufferTest, Shift_Zero)
 
 // ---------- Shift + Append (环形复用) ----------
 
-TEST(BufferTest, ShiftThenMemMoveThenAppend_ReusesSpace)
+TEST(LinearBufferTest, ShiftThenMemMoveThenAppend_ReusesSpace)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
     buf.Append(std::string(kBufferSize, 'X').data(), kBufferSize);
     EXPECT_EQ(buf.GetLength(), kBufferSize);
 
-    // Shift half — 但 Buffer 是线性缓冲区，Shift 只移动读指针，写位置不变
+    // Shift half — 但 LinearBuffer 是线性缓冲区，Shift 只移动读指针，写位置不变
     buf.Shift(kBufferSize / 2);
     EXPECT_EQ(buf.GetLength(), kBufferSize / 2);
 
@@ -150,12 +150,12 @@ protected:
         EXPECT_EQ(buffer_.Append("Z", 1), 0u);
     }
 
-    Buffer<kBufferSize> buffer_;
+    LinearBuffer<kBufferSize> buffer_;
 };
 
-TEST(BufferTest, SetLength)
+TEST(LinearBufferTest, SetLength)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
     buf.SetLength(10);
     EXPECT_EQ(buf.GetLength(), 10u);
     buf.SetLength(0);
@@ -201,9 +201,9 @@ TEST_F(PartiallyConsumedBufferTest, SetLength_BeyondCapacityClampsWithoutAssert)
 
 // ---------- GetWriteBufferSize ----------
 
-TEST(BufferTest, GetWriteBufferSize)
+TEST(LinearBufferTest, GetWriteBufferSize)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
     // Initially: full buffer available
     EXPECT_EQ(buf.GetWriteBufferSize(), kBufferSize);
 
@@ -218,9 +218,9 @@ TEST(BufferTest, GetWriteBufferSize)
 
 // ---------- MemMove ----------
 
-TEST(BufferTest, MemMove_CompactsToFront)
+TEST(LinearBufferTest, MemMove_CompactsToFront)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
     // Fill, shift some, then MemMove should compact remaining to front
     buf.Append(std::string(kBufferSize, 'A').data(), kBufferSize);
     buf.Shift(kBufferSize - 10); // keep last 10 bytes
@@ -232,16 +232,16 @@ TEST(BufferTest, MemMove_CompactsToFront)
     EXPECT_EQ(buf.GetData(), buf.GetWritePos() - 10);
 }
 
-TEST(BufferTest, MemMove_EmptyBuffer)
+TEST(LinearBufferTest, MemMove_EmptyBuffer)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
     buf.MemMove(); // should be a no-op
     EXPECT_EQ(buf.GetLength(), 0u);
 }
 
-TEST(BufferTest, MemMove_EnablesMoreWrites)
+TEST(LinearBufferTest, MemMove_EnablesMoreWrites)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
 
     // Fill, shift most, then MemMove to get write space back
     buf.Append(std::string(kBufferSize, 'A').data(), kBufferSize);
@@ -258,19 +258,19 @@ TEST(BufferTest, MemMove_EnablesMoreWrites)
 
 // ---------- 拷贝 / 移动 ----------
 
-TEST(BufferTest, CopyAndMoveAreDeleted)
+TEST(LinearBufferTest, CopyAndMoveAreDeleted)
 {
-    EXPECT_FALSE(std::is_copy_constructible_v<Buffer<kBufferSize>>);
-    EXPECT_FALSE(std::is_copy_assignable_v<Buffer<kBufferSize>>);
-    EXPECT_FALSE(std::is_move_constructible_v<Buffer<kBufferSize>>);
-    EXPECT_FALSE(std::is_move_assignable_v<Buffer<kBufferSize>>);
+    EXPECT_FALSE(std::is_copy_constructible_v<LinearBuffer<kBufferSize>>);
+    EXPECT_FALSE(std::is_copy_assignable_v<LinearBuffer<kBufferSize>>);
+    EXPECT_FALSE(std::is_move_constructible_v<LinearBuffer<kBufferSize>>);
+    EXPECT_FALSE(std::is_move_assignable_v<LinearBuffer<kBufferSize>>);
 }
 
 // ---------- Reset ----------
 
-TEST(BufferTest, Reset)
+TEST(LinearBufferTest, Reset)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
     buf.Append("Hello", 5);
     buf.Shift(2);
     buf.Reset();
@@ -280,9 +280,9 @@ TEST(BufferTest, Reset)
 
 // ---------- 完整工作流 ----------
 
-TEST(BufferTest, FullWorkflow)
+TEST(LinearBufferTest, FullWorkflow)
 {
-    Buffer<kBufferSize> buf;
+    LinearBuffer<kBufferSize> buf;
 
     // Append data
     EXPECT_EQ(buf.Append("Hello", 5), 5u);

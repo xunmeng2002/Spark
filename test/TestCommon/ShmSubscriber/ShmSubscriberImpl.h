@@ -1,7 +1,7 @@
 #pragma once
 #include <Spark/Network/Io/IoBase.h>
 #include <Spark/Network/Io/IoThread.h>
-#include <Spark/TemplateLib/Buffer/Buffer.h>
+#include <Spark/TemplateLib/Buffer/LinearBuffer.h>
 
 #include <cstddef>
 
@@ -14,7 +14,7 @@ public:
 
     virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) override;
     virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) override;
-    virtual void OnRecv(SessionIdType sessionId, Buffer<BufferSize>* buffer) override;
+    virtual void OnRecv(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer) override;
 
     bool connected_;
     SessionIdType sessionId_;

@@ -46,7 +46,7 @@ Created by [Fireseeker](https://fireseeker.cn/)
 ### 4. 模板工具库（TemplateLib）
 
 高性能数据结构与通用业务组件：
-- **Buffer**：通用缓冲区
+- **LinearBuffer**：通用缓冲区
 - **SpscRingBuffer**：单生产者单消费者环形缓冲区（无锁）
 - **ShmBuffer**：共享内存缓冲区
 - **ObjectPool**：对象池，减少频繁内存分配开销
@@ -356,7 +356,7 @@ int main(int argc, const char* argv[])
 | | `CsvParserTest` | CSV 解析行、列、引号转义 |
 | | `CsvRecordTest` | CSV 记录读写 |
 | | `EncodeTest` | GBK/UTF-8/Unicode 互转 |
-| **TemplateLib** | `BufferTest` | 缓冲区读写、扩容 |
+| **TemplateLib** | `LinearBufferTest` | 缓冲区读写、扩容 |
 | | `LockFreeQueueTest` | 无锁队列入队出队 |
 | | `ObjectPoolTest` | 对象池分配、复用 |
 | | `ShmBufferTest` | 共享内存缓冲 |

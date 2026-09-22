@@ -74,7 +74,7 @@ bool TcpBase::Init()
     }
     return true;
 }
-void TcpBase::Send(SessionIdType sessionId, Buffer<BufferSize>* buffer)
+void TcpBase::Send(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer)
 {
     auto connect = (TcpConnect*)GetConnect(sessionId);
     if (connect == nullptr)
@@ -174,7 +174,7 @@ void TcpBase::DoSend(Connect* connect)
 void TcpBase::DoRecv(Connect* connect)
 {
     auto tcpConnect = (TcpConnect*)connect;
-    Buffer<BufferSize>* buffer = Buffer<BufferSize>::Allocate();
+    LinearBuffer<BufferSize>* buffer = LinearBuffer<BufferSize>::Allocate();
     auto data = buffer->GetData();
     int len = recv(tcpConnect->SocketId, data, BufferSize - 1, 0);
     if (len <= 0)

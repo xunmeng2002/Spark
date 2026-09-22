@@ -4,7 +4,7 @@
 #include "Tcp/TcpConnect.h"
 #include "Tcp/SocketNotify.h"
 #include <Spark/Network/Io/IoBase.h>
-#include <Spark/TemplateLib/Buffer/Buffer.h>
+#include <Spark/TemplateLib/Buffer/LinearBuffer.h>
 #include <list>
 #include <map>
 #include <mutex>
@@ -20,7 +20,7 @@ public:
 
     virtual bool Init() override;
 
-    virtual void Send(SessionIdType sessionId, Buffer<BufferSize>* buffer) override;
+    virtual void Send(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer) override;
     virtual bool ConnectToServer(const char* address) override;
     virtual bool ConnectToServer(const char* ip, unsigned short port) { return false; }
     virtual void HandleIoEvent() override;

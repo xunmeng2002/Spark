@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <Spark/TemplateLib/Buffer/Buffer.h>
+#include <Spark/TemplateLib/Buffer/LinearBuffer.h>
 #include <Spark/TemplateLib/Buffer/ShmBuffer.h>
 #include <Spark/TemplateLib/Buffer/SpscRingBuffer.h>
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>

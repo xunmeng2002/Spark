@@ -137,13 +137,13 @@ bool SingleShm::Init()
     return true;
 }
 
-void SingleShm::Send(SessionIdType sessionId, Buffer<BufferSize>* buffer)
+void SingleShm::Send(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer)
 {
     shmBuffer_->Write(buffer->GetData(), static_cast<unsigned>(buffer->GetLength()));
 }
 void SingleShm::DoRecv(Connect* connect)
 {
-    Buffer<BufferSize>* buffer = Buffer<BufferSize>::Allocate();
+    LinearBuffer<BufferSize>* buffer = LinearBuffer<BufferSize>::Allocate();
     auto len = shmBuffer_->Read(buffer->GetWritePos(), BufferSize);
     buffer->SetLength(len);
 

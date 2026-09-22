@@ -27,7 +27,7 @@ void ShmSubscriberImpl::OnDisConnect(SessionIdType sessionId, const char* ip, in
     WriteLog(LogLevel::Info, "OnDisConnect sessionId:%lld, ip:%s, port:%d", sessionId, ip, port);
     connected_ = false;
 }
-void ShmSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BufferSize>* buffer)
+void ShmSubscriberImpl::OnRecv(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer)
 {
     while (buffer->GetLength() > 0)
     {
@@ -66,7 +66,7 @@ void ShmSubscriberImpl::OnRecv(SessionIdType sessionId, Buffer<BufferSize>* buff
             if (serverType_ == ServerTypeType::Server)
             {
                 shmPackage->ShmType = (int)ServerTypeType::Server;
-                auto sendBuff = new Buffer<BufferSize>();
+                auto sendBuff = new LinearBuffer<BufferSize>();
                 sendBuff->Append((char*)shmPackage, sizeof(ShmPackage));
                 io_->Send(sessionId, sendBuff);
             }
