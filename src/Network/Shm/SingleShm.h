@@ -32,5 +32,8 @@ protected:
     void* file_;
     void* fileMap_;
 #endif // _WIN32
+
+private:
+    static constexpr unsigned GetSharedMemoryMappingSize();
 };
 }

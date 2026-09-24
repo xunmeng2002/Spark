@@ -48,7 +48,7 @@ SingleShm::~SingleShm()
     }
 #endif
 #ifdef __linux__
-    if (shmAddr_ != nullptr && munmap(shmAddr_, sizeof(SingleShmHeader) + 2 * ShmBufferSize) < 0)
+    if (shmAddr_ != nullptr && munmap(shmAddr_, GetSharedMemoryMappingSize()) < 0)
     {
         perror("shm_unlink");
         WriteLog(LogLevel::Warning, "munmap Failed. ErrNo:%d", errno);
@@ -63,6 +63,10 @@ SingleShm::~SingleShm()
     }
 #endif
 }
+constexpr unsigned SingleShm::GetSharedMemoryMappingSize()
+{
+    return sizeof(SingleShmHeader) + 2 * ShmBufferSize;
+}
 bool SingleShm::Init()
 {
     bool firstOpen = true;
@@ -76,14 +80,14 @@ bool SingleShm::Init()
     }
     else
     {
-        fileMap_ = CreateFileMappingA(file_, NULL, PAGE_READWRITE, 0, sizeof(SingleShmHeader) + 2 * ShmBufferSize, shmName_.c_str());
+        fileMap_ = CreateFileMappingA(file_, NULL, PAGE_READWRITE, 0, GetSharedMemoryMappingSize(), shmName_.c_str());
     }
     if (fileMap_ == NULL)
     {
         WriteLog(LogLevel::Warning, "Create Or Open FileMapping Failed. ErrNo:%d", GetLastError());
         return false;
     }
-    shmAddr_ = static_cast<char*>(MapViewOfFile(fileMap_, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(SingleShmHeader) + 2 * ShmBufferSize));
+    shmAddr_ = static_cast<char*>(MapViewOfFile(fileMap_, FILE_MAP_ALL_ACCESS, 0, 0, GetSharedMemoryMappingSize()));
     if (shmAddr_ == NULL)
     {
         WriteLog(LogLevel::Warning, "MapViewOfFile Failed. ErrNo:%d", GetLastError());
@@ -102,12 +106,12 @@ bool SingleShm::Init()
             return false;
         }
     }
-    if (ftruncate(fd, sizeof(SingleShmHeader) + 2 * ShmBufferSize) == -1)
+    if (ftruncate(fd, GetSharedMemoryMappingSize()) == -1)
     {
         WriteLog(LogLevel::Warning, "ftruncate Failed. ErrNo:%d", errno);
         return false;
     }
-    shmAddr_ = static_cast<char*>(mmap(nullptr, sizeof(SingleShmHeader) + 2 * ShmBufferSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
+    shmAddr_ = static_cast<char*>(mmap(nullptr, GetSharedMemoryMappingSize(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
     if (shmAddr_ == MAP_FAILED)
     {
         WriteLog(LogLevel::Warning, "mmap Failed. ErrNo:%d", errno);
