@@ -9,7 +9,6 @@
 #endif
 #include "Tcp/TcpSelect/TcpSelectClient.h"
 #include "Tcp/TcpSelect/TcpSelectServer.h"
-#include "Shm/SingleShm.h"
 #include "Shm/ShmClient.h"
 #include "Shm/ShmServer.h"
 #include <Spark/Core/Core.h>

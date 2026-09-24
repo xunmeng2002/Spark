@@ -30,7 +30,7 @@ python tools/initcheck.py
 
 # 只扫指定路径：目录会递归展开，也可直接给文件
 python tools/s4scan.py src/Network
-python tools/s4scan.py src/Network/Shm/SingleShm.h src/Core/Logger.cpp
+python tools/s4scan.py src/Network/Shm/ShmBase.h src/Core/Logger.cpp
 
 # 帮助
 python tools/s4scan.py -h
