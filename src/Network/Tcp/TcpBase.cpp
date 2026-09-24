@@ -76,7 +76,7 @@ bool TcpBase::Init()
 }
 void TcpBase::Send(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer)
 {
-    auto connect = (TcpConnect*)GetConnect(sessionId);
+    auto connect = static_cast<TcpConnect*>(GetConnect(sessionId));
     if (connect == nullptr)
     {
         WriteLog(LogLevel::Warning, "Send Connect Not Exist, Drop Buffer. SessionId:%lld, Len:%zu", sessionId, buffer->GetLength());
@@ -134,7 +134,7 @@ void TcpBase::DoSend(Connect* connect)
     auto buffer = connect->GetNextBuffer();
     while (buffer != nullptr)
     {
-        int len = send(((TcpConnect*)connect)->SocketId, buffer->GetData(), static_cast<int>(buffer->GetLength()), 0);
+        int len = send((static_cast<TcpConnect*>(connect))->SocketId, buffer->GetData(), static_cast<int>(buffer->GetLength()), 0);
         if (len > 0)
         {
             buffer->Shift(len);
@@ -173,7 +173,7 @@ void TcpBase::DoSend(Connect* connect)
 }
 void TcpBase::DoRecv(Connect* connect)
 {
-    auto tcpConnect = (TcpConnect*)connect;
+    auto tcpConnect = static_cast<TcpConnect*>(connect);
     LinearBuffer<BufferSize>* buffer = LinearBuffer<BufferSize>::Allocate();
     auto data = buffer->GetData();
     int len = recv(tcpConnect->SocketId, data, BufferSize - 1, 0);
@@ -200,13 +200,13 @@ void TcpBase::DoAccept()
 {
     for (int i = 0; i < 5; i++)
     {
-        SOCKET socketId = accept(socket_, (sockaddr*)&remoteAddress_, &remoteAddressLen_);
+        SOCKET socketId = accept(socket_, reinterpret_cast<sockaddr*>(&remoteAddress_), &remoteAddressLen_);
         if (socketId == INVALID_SOCKET)
         {
             break;
         }
         std::string ip, port;
-        auto ret = TcpUtility::GetNameinfo((sockaddr*)&remoteAddress_, remoteAddressLen_, ip, port);
+        auto ret = TcpUtility::GetNameinfo(reinterpret_cast<sockaddr*>(&remoteAddress_), remoteAddressLen_, ip, port);
         TcpUtility::SetSockNodelay(socketId);
         auto connect = TcpConnect::Allocate(GetSessionId(), socketId, ip, port);
         AddConnect(connect);

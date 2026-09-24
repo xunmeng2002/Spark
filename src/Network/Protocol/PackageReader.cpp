@@ -97,7 +97,7 @@ bool PackageReader::ParseXtpPackage(Package*& package)
 {
     while (true)
     {
-        AlignResult alignResult = AlignToAnchor((const char*)&ProtocolMagicValue, sizeof(ProtocolMagicValue));
+        AlignResult alignResult = AlignToAnchor(reinterpret_cast<const char*>(&ProtocolMagicValue), sizeof(ProtocolMagicValue));
         if (alignResult == AlignResult::GarbageStream)
         {
             return false;

@@ -17,7 +17,7 @@ CsvParser::CsvParser(const char* csvText)
     separator_[0] = ',';
     separator_[1] = '\0';
     csvText_ = csvText;
-    cursor_ = (char*)csvText_;
+    cursor_ = const_cast<char*>(csvText_);
     NextChar();
 
     currentWord_ = new char[TokenMaxLen + 1];
@@ -26,7 +26,7 @@ CsvParser::CsvParser(const char* csvText)
 void CsvParser::Parse(const char* csvText)
 {
     csvText_ = csvText;
-    cursor_ = (char*)csvText_;
+    cursor_ = const_cast<char*>(csvText_);
     errorCode_ = CsvParserError::HasNext;
     NextChar();
 

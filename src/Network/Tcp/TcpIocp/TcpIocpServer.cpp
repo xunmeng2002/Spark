@@ -64,12 +64,13 @@ bool TcpIocpServer::PostAccept()
 }
 void TcpIocpServer::OnAcceptComplete(MyOverlapped* overlapped)
 {
-    auto tcpIocpConnect = (TcpIocpConnect*)overlapped->Connect;
+    auto tcpIocpConnect = static_cast<TcpIocpConnect*>(overlapped->Connect);
     SOCKADDR_IN* remoteAddr = NULL;
     SOCKADDR_IN* localAddr = NULL;
     int remoteLen = sizeof(SOCKADDR_IN), localLen = sizeof(SOCKADDR_IN);
     SocketApi::GetInstance().GetAcceptExSockAddrs(overlapped->WsaBuffer.buf, 0, (sizeof(SOCKADDR_IN) + 16), (sizeof(SOCKADDR_IN) + 16),
-                                                  (LPSOCKADDR*)&localAddr, &localLen, (LPSOCKADDR*)&remoteAddr, &remoteLen);
+                                                  reinterpret_cast<LPSOCKADDR*>(&localAddr), &localLen, reinterpret_cast<LPSOCKADDR*>(&remoteAddr),
+                                                  &remoteLen);
     snprintf(tcpIocpConnect->RemoteAddress, sizeof(tcpIocpConnect->RemoteAddress), inet_ntoa(remoteAddr->sin_addr));
     tcpIocpConnect->RemotePort = ntohs(remoteAddr->sin_port);
 

@@ -77,7 +77,7 @@ bool TcpUtility::SetSockUnblock(SOCKET socketId, unsigned long unblock)
 }
 bool TcpUtility::SetSockReuse(SOCKET socketId, int resue)
 {
-    if (::setsockopt(socketId, SOL_SOCKET, SO_REUSEADDR, (char*)&resue, sizeof(int)) == SOCKET_ERROR)
+    if (::setsockopt(socketId, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&resue), sizeof(int)) == SOCKET_ERROR)
     {
         WriteLog(LogLevel::Error, "setsockopt SO_REUSEADDR:%d Failed. ErrorId:%d", resue, WSAGetLastError());
         return false;
@@ -87,7 +87,7 @@ bool TcpUtility::SetSockReuse(SOCKET socketId, int resue)
 }
 bool TcpUtility::SetSockNodelay(SOCKET socketId, int nodelay)
 {
-    if (::setsockopt(socketId, IPPROTO_TCP, TCP_NODELAY, (char*)&nodelay, sizeof(int)) == SOCKET_ERROR)
+    if (::setsockopt(socketId, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&nodelay), sizeof(int)) == SOCKET_ERROR)
     {
         WriteLog(LogLevel::Error, "setsockopt TCP_NODELAY:%d Failed. ErrorId:%d", nodelay, WSAGetLastError());
         return false;
@@ -97,7 +97,7 @@ bool TcpUtility::SetSockNodelay(SOCKET socketId, int nodelay)
 }
 bool TcpUtility::SetSockIPV6Only(SOCKET socketId, int ipv6Only)
 {
-    if (::setsockopt(socketId, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6Only, sizeof(int)) == SOCKET_ERROR)
+    if (::setsockopt(socketId, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<char*>(&ipv6Only), sizeof(int)) == SOCKET_ERROR)
     {
         WriteLog(LogLevel::Error, "setsockopt IPV6_V6ONLY:%d Failed. ErrorId:%d", ipv6Only, WSAGetLastError());
         return false;

@@ -40,7 +40,7 @@ void ShmSubscriberImpl::OnRecv(SessionIdType sessionId, LinearBuffer<BufferSize>
             length_ += len;
             if (length_ == sizeof(ShmPackage))
             {
-                shmPackage = (ShmPackage*)buff_;
+                shmPackage = reinterpret_cast<ShmPackage*>(buff_);
                 length_ = 0;
             }
             buffer->Shift(len);
@@ -49,7 +49,7 @@ void ShmSubscriberImpl::OnRecv(SessionIdType sessionId, LinearBuffer<BufferSize>
         {
             if (buffer->GetLength() >= sizeof(ShmPackage))
             {
-                shmPackage = (ShmPackage*)buffer->GetData();
+                shmPackage = reinterpret_cast<ShmPackage*>(buffer->GetData());
                 buffer->Shift(sizeof(ShmPackage));
             }
             else
@@ -67,7 +67,7 @@ void ShmSubscriberImpl::OnRecv(SessionIdType sessionId, LinearBuffer<BufferSize>
             {
                 shmPackage->ShmType = (int)ServerTypeType::Server;
                 auto sendBuff = new LinearBuffer<BufferSize>();
-                sendBuff->Append((char*)shmPackage, sizeof(ShmPackage));
+                sendBuff->Append(reinterpret_cast<char*>(shmPackage), sizeof(ShmPackage));
                 io_->Send(sessionId, sendBuff);
             }
         }

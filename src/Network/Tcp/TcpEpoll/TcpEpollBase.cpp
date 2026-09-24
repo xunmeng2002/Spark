@@ -38,7 +38,7 @@ void TcpEpollBase::HandleTcpEvent()
     for (int i = 0; i < number; i++)
     {
         auto epollEvent = epollEvents_[i];
-        auto tcpConnect = (TcpConnect*)epollEvents_[i].data.ptr;
+        auto tcpConnect = static_cast<TcpConnect*>(epollEvents_[i].data.ptr);
         if (serverType_ == ServerTypeType::Server && tcpConnect->SocketId == socket_)
         {
             DoAccept();
@@ -55,7 +55,7 @@ void TcpEpollBase::HandleTcpEvent()
                 }
                 if (!connect->Buffers.empty())
                 {
-                    AddWriteEpollEvent((TcpConnect*)connect);
+                    AddWriteEpollEvent(static_cast<TcpConnect*>(connect));
                 }
             }
         }
@@ -104,11 +104,11 @@ void TcpEpollBase::HandleTcpEvent()
 void TcpEpollBase::AddConnect(Connect* connect)
 {
     TcpBase::AddConnect(connect);
-    AddEpollEvent((TcpConnect*)connect);
+    AddEpollEvent(static_cast<TcpConnect*>(connect));
 }
 void TcpEpollBase::RemoveConnect(Connect* connect)
 {
-    RemoveEpollEvent((TcpConnect*)connect);
+    RemoveEpollEvent(static_cast<TcpConnect*>(connect));
     TcpBase::RemoveConnect(connect);
 }
 

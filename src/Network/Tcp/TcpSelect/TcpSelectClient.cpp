@@ -78,7 +78,7 @@ void TcpSelectClient::CheckConnect()
     ::select((int)maxId_, nullptr, &writeFds_, &errorFds_, &selectSocketTimeOutTemp_);
     for (auto& it : connectings_)
     {
-        auto connect = (TcpConnect*)it.second;
+        auto connect = static_cast<TcpConnect*>(it.second);
         if (FD_ISSET(connect->SocketId, &writeFds_))
         {
             AddConnect(connect);

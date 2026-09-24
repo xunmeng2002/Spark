@@ -81,7 +81,7 @@ bool SocketNotify::CreateSocketPair()
     }
     sockaddr_in actualAddr;
     int addrLen = sizeof(actualAddr);
-    if (getsockname(sockets_[0], (sockaddr*)&actualAddr, &addrLen) == SOCKET_ERROR)
+    if (getsockname(sockets_[0], reinterpret_cast<sockaddr*>(&actualAddr), &addrLen) == SOCKET_ERROR)
     {
         WriteLog(LogLevel::Error, "getsockname failed: %d", WSAGetLastError());
         closesocket(sockets_[0]);
@@ -95,7 +95,7 @@ bool SocketNotify::CreateSocketPair()
         closesocket(sockets_[0]);
         return false;
     }
-    ret = connect(sockets_[1], (sockaddr*)&actualAddr, addrLen);
+    ret = connect(sockets_[1], reinterpret_cast<sockaddr*>(&actualAddr), addrLen);
     if (ret != 0)
     {
         WriteLog(LogLevel::Error, "Connect Failed. ret:%d, errorId:%d", ret, WSAGetLastError());

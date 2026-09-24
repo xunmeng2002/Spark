@@ -32,7 +32,7 @@ void TcpSelectBase::PrepareFds()
     FD_SET(socketNotify_->GetReadSocket(), &readFds_);
     for (auto& it : connects_)
     {
-        auto connect = (TcpConnect*)it.second;
+        auto connect = static_cast<TcpConnect*>(it.second);
         FD_SET(connect->SocketId, &readFds_);
         FD_SET(connect->SocketId, &errorFds_);
         if (!connect->Buffers.empty())
@@ -65,7 +65,7 @@ void TcpSelectBase::HandleTcpEvent()
     }
     for (auto& it : connects_)
     {
-        auto connect = (TcpConnect*)it.second;
+        auto connect = static_cast<TcpConnect*>(it.second);
         if (FD_ISSET(connect->SocketId, &writeFds_))
         {
             DoSend(connect);
@@ -77,7 +77,7 @@ void TcpSelectBase::HandleTcpEvent()
     }
     for (auto& it : connects_)
     {
-        auto connect = (TcpConnect*)it.second;
+        auto connect = static_cast<TcpConnect*>(it.second);
         if (FD_ISSET(connect->SocketId, &errorFds_))
         {
             DisConnect(connect->SessionId);

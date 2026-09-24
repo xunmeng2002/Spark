@@ -57,8 +57,8 @@ bool TcpIocpClient::PostConnect()
 
     WriteLog(LogLevel::Info, "PostConnect For SessionId:%lld, Socket:%lld", tcpIocpConnect->SessionId, tcpIocpConnect->SocketId);
     DWORD transBytes = 0;
-    auto ret = SocketApi::GetInstance().ConnectEx(tcpIocpConnect->SocketId, (const sockaddr*)addressInfo_->ai_addr, sizeof(SOCKADDR_IN), NULL, 0,
-                                                  &transBytes, overlapped);
+    auto ret = SocketApi::GetInstance().ConnectEx(tcpIocpConnect->SocketId, static_cast<const sockaddr*>(addressInfo_->ai_addr), sizeof(SOCKADDR_IN),
+                                                  NULL, 0, &transBytes, overlapped);
     if (!ret && WSAGetLastError() != ERROR_IO_PENDING)
     {
         WriteErrorLog(WSAGetLastError(), "Call ConnectEx Failed.");
@@ -87,7 +87,7 @@ SOCKET TcpIocpClient::PrepareConnectSocket()
         return INVALID_SOCKET;
     }
     int on = 1;
-    if (setsockopt(socketId, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on)) != 0)
+    if (setsockopt(socketId, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&on), sizeof(on)) != 0)
     {
         WriteErrorLog(WSAGetLastError(), "setsockopt Failed. ErrorId:%d, result:%d");
         closesocket(socketId);
