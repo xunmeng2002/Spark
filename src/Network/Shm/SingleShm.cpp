@@ -83,7 +83,7 @@ bool SingleShm::Init()
         WriteLog(LogLevel::Warning, "Create Or Open FileMapping Failed. ErrNo:%d", GetLastError());
         return false;
     }
-    shmAddr_ = (char*)MapViewOfFile(fileMap_, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(SingleShmHeader) + 2 * ShmBufferSize);
+    shmAddr_ = static_cast<char*>(MapViewOfFile(fileMap_, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(SingleShmHeader) + 2 * ShmBufferSize));
     if (shmAddr_ == NULL)
     {
         WriteLog(LogLevel::Warning, "MapViewOfFile Failed. ErrNo:%d", GetLastError());
@@ -107,7 +107,7 @@ bool SingleShm::Init()
         WriteLog(LogLevel::Warning, "ftruncate Failed. ErrNo:%d", errno);
         return false;
     }
-    shmAddr_ = (char*)mmap(nullptr, sizeof(SingleShmHeader) + 2 * ShmBufferSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    shmAddr_ = static_cast<char*>(mmap(nullptr, sizeof(SingleShmHeader) + 2 * ShmBufferSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
     if (shmAddr_ == MAP_FAILED)
     {
         WriteLog(LogLevel::Warning, "mmap Failed. ErrNo:%d", errno);

@@ -60,7 +60,7 @@ void ShmServer::Accept()
             {
                 if (commonShmHeader_->Status == ConnectStatusType::Accepted || commonShmHeader_->Status == ConnectStatusType::Rejected)
                 {
-                    printf("Reset Connect From Server,  Status:%d\n", (int)commonShmHeader_->Status);
+                    printf("Reset Connect From Server,  Status:%d\n", static_cast<int>(commonShmHeader_->Status));
                     if (commonShmHeader_->Status == ConnectStatusType::Accepted)
                     {
                         auto index = commonShmHeader_->DownWriteCount;
@@ -89,7 +89,7 @@ void ShmServer::CheckConnect()
 {
     for (auto& it : connects_)
     {
-        auto shmConnect = (ShmConnect<ShmBufferSize>*)it.second;
+        auto shmConnect = static_cast<ShmConnect<ShmBufferSize>*>(it.second);
         if (shmConnect->GetBuffer()->GetConnectStatus() == ConnectStatusType::DisConnected)
         {
             lock_guard<mutex> guard(disConnectSessionIdsMutex_);
@@ -101,7 +101,7 @@ void ShmServer::CheckData()
 {
     for (auto& it : connects_)
     {
-        auto shmConnect = (ShmConnect<ShmBufferSize>*)it.second;
+        auto shmConnect = static_cast<ShmConnect<ShmBufferSize>*>(it.second);
         if (shmConnect->GetBuffer()->GetReadBufferSize() > 0)
             return;
     }
@@ -111,7 +111,7 @@ void ShmServer::HandleData()
 {
     for (auto& it : connects_)
     {
-        auto shmConnect = (ShmConnect<ShmBufferSize>*)it.second;
+        auto shmConnect = static_cast<ShmConnect<ShmBufferSize>*>(it.second);
         if (shmConnect->GetBuffer()->GetReadBufferSize() > 0)
         {
             DoRecv(shmConnect);

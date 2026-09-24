@@ -119,7 +119,7 @@ void ShmClient::CheckConnectResult()
         }
         else
         {
-            WriteLog(LogLevel::Info, "UnExpected Status:%d\n", (int)commonShmHeader_->Status);
+            WriteLog(LogLevel::Info, "UnExpected Status:%d\n", static_cast<int>(commonShmHeader_->Status));
         }
         semConnect_->UnLock();
         if (!connected_)
