@@ -29,16 +29,24 @@ SingleShm::SingleShm(ServerTypeType shmType, const char* shmName)
 SingleShm::~SingleShm()
 {
     bool isLast = false;
-    if (shmBuffer_->ShmHeader->Status == ConnectStatusType::DisConnected)
+    if (shmBuffer_ != nullptr && shmBuffer_->ShmHeader != nullptr)
     {
-        isLast = true;
+        if (shmBuffer_->ShmHeader->Status == ConnectStatusType::DisConnected)
+        {
+            isLast = true;
+        }
+        else
+        {
+            shmBuffer_->ShmHeader->Status = ConnectStatusType::DisConnected;
+        }
     }
-    else
-    {
-        shmBuffer_->ShmHeader->Status = ConnectStatusType::DisConnected;
-    }
+    delete shmBuffer_;
+    shmBuffer_ = nullptr;
 #ifdef _WIN32
-    UnmapViewOfFile(shmAddr_);
+    if (shmAddr_ != nullptr)
+    {
+        UnmapViewOfFile(shmAddr_);
+    }
     CloseHandle(fileMap_);
     if (file_ != nullptr)
     {
@@ -51,7 +59,7 @@ SingleShm::~SingleShm()
     }
 #endif
 #ifdef __linux__
-    if (munmap(shmAddr_, sizeof(SingleShmHeader) + 2 * ShmBufferSize) < 0)
+    if (shmAddr_ != nullptr && munmap(shmAddr_, sizeof(SingleShmHeader) + 2 * ShmBufferSize) < 0)
     {
         perror("shm_unlink");
         WriteLog(LogLevel::Warning, "munmap Failed. ErrNo:%d", errno);

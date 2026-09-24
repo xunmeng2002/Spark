@@ -1,8 +1,11 @@
 #pragma once
-#include <Spark/Types.h>
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
+#include <Spark/Types.h>
+
 #include <algorithm>
 #include <atomic>
+#include <cassert>
+#include <cstddef>
 #include <cstring>
 
 namespace Spark
@@ -20,20 +23,17 @@ template <unsigned Size>
 class ShmBuffer
 {
 public:
-    ShmBuffer()
-    {
-        ShmHeader = nullptr;
-        UpBuffer = nullptr;
-        DownBuffer = nullptr;
-    }
+    ShmBuffer() = default;
     ShmBuffer(ServerTypeType serverType, int index, void* shmAddr, ConnectStatusType connectStatus)
     {
+        assert(index >= 0);
         ServerType = serverType;
         Index = index;
-        ShmHeader = (SingleShmHeader*)shmAddr + index;
+        ShmHeader = static_cast<SingleShmHeader*>(shmAddr) + index;
         ShmHeader->Status = connectStatus;
-        UpBuffer = (char*)shmAddr + Size * index * 2;
-        DownBuffer = (char*)shmAddr + Size * (index * 2 + 1);
+        const size_t groupOffset = static_cast<size_t>(index) * 2 * Size;
+        UpBuffer = static_cast<char*>(shmAddr) + groupOffset;
+        DownBuffer = UpBuffer + Size;
     }
     ~ShmBuffer()
     {
@@ -47,55 +47,58 @@ public:
     }
     void Deallocate()
     {
-        if (ShmHeader->Status != ConnectStatusType::DisConnected)
+        if (ShmHeader != nullptr)
         {
-            ShmHeader->Status = ConnectStatusType::DisConnected;
-        }
-        else
-        {
-            ShmHeader->Status = ConnectStatusType::UnConnected;
-            ShmHeader->UpWriteCount = 0;
-            ShmHeader->UpReadCount = 0;
-            ShmHeader->DownWriteCount = 0;
-            ShmHeader->DownReadCount = 0;
+            if (ShmHeader->Status != ConnectStatusType::DisConnected)
+            {
+                ShmHeader->Status = ConnectStatusType::DisConnected;
+            }
+            else
+            {
+                ShmHeader->Status = ConnectStatusType::UnConnected;
+                ShmHeader->UpWriteCount = 0;
+                ShmHeader->UpReadCount = 0;
+                ShmHeader->DownWriteCount = 0;
+                ShmHeader->DownReadCount = 0;
+            }
         }
         ObjectPool<ShmBuffer<Size>>::GetInstance().Deallocate(this);
     }
 
-    unsigned Write(const char* data, unsigned len)
+    unsigned Write(const char* source, unsigned len)
     {
         if (ServerType == ServerTypeType::Client)
-            return UpWrite(data, len);
-        return DownWrite(data, len);
+            return UpWrite(source, len);
+        return DownWrite(source, len);
     }
-    unsigned Read(char* buff, unsigned len)
+    unsigned Read(char* destination, unsigned len)
     {
         if (ServerType == ServerTypeType::Client)
-            return DownRead(buff, len);
-        return UpRead(buff, len);
+            return DownRead(destination, len);
+        return UpRead(destination, len);
     }
 
-    unsigned GetWriteBufferSize()
+    unsigned GetWriteBufferSize() const
     {
         if (ServerType == ServerTypeType::Client)
             return GetUpWriteBufferSize();
         return GetDownWriteBufferSize();
     }
-    unsigned GetReadBufferSize()
+    unsigned GetReadBufferSize() const
     {
         if (ServerType == ServerTypeType::Client)
             return GetDownReadBufferSize();
         return GetUpReadBufferSize();
     }
 
-    SingleShmHeader* ShmHeader;
-    ServerTypeType ServerType;
-    int Index;
-    char* UpBuffer;
-    char* DownBuffer;
+    SingleShmHeader* ShmHeader = nullptr;
+    ServerTypeType ServerType = ServerTypeType::Client;
+    int Index = 0;
+    char* UpBuffer = nullptr;
+    char* DownBuffer = nullptr;
 
 private:
-    unsigned GetUpWriteBufferSize()
+    unsigned GetUpWriteBufferSize() const
     {
         if (ShmHeader->UpReadCount > ShmHeader->UpWriteCount)
         {
@@ -103,7 +106,7 @@ private:
         }
         return Size - (ShmHeader->UpWriteCount - ShmHeader->UpReadCount) - 1;
     }
-    unsigned GetUpReadBufferSize()
+    unsigned GetUpReadBufferSize() const
     {
         if (ShmHeader->UpWriteCount >= ShmHeader->UpReadCount)
         {
@@ -111,7 +114,7 @@ private:
         }
         return Size - (ShmHeader->UpReadCount - ShmHeader->UpWriteCount);
     }
-    unsigned GetDownWriteBufferSize()
+    unsigned GetDownWriteBufferSize() const
     {
         if (ShmHeader->DownReadCount > ShmHeader->DownWriteCount)
         {
@@ -119,7 +122,7 @@ private:
         }
         return Size - (ShmHeader->DownWriteCount - ShmHeader->DownReadCount) - 1;
     }
-    unsigned GetDownReadBufferSize()
+    unsigned GetDownReadBufferSize() const
     {
         if (ShmHeader->DownWriteCount >= ShmHeader->DownReadCount)
         {
@@ -128,7 +131,7 @@ private:
         return Size - (ShmHeader->DownReadCount - ShmHeader->DownWriteCount);
     }
 
-    unsigned UpWrite(const char* data, unsigned len)
+    unsigned UpWrite(const char* source, unsigned len)
     {
         if (ShmHeader->Status != ConnectStatusType::Connected)
             return 0;
@@ -137,10 +140,10 @@ private:
         if (currLen == 0)
             return 0;
         unsigned int tailLen = std::min<unsigned>(currLen, Size - ShmHeader->UpWriteCount);
-        memcpy(UpBuffer + ShmHeader->UpWriteCount, data, tailLen);
+        std::memcpy(UpBuffer + ShmHeader->UpWriteCount, source, tailLen);
         if (tailLen < currLen)
         {
-            memcpy(UpBuffer, data + tailLen, size_t(currLen - tailLen));
+            std::memcpy(UpBuffer, source + tailLen, currLen - tailLen);
             std::atomic_thread_fence(std::memory_order_release);
             ShmHeader->UpWriteCount = currLen - tailLen;
         }
@@ -151,7 +154,7 @@ private:
         }
         return currLen;
     }
-    unsigned UpRead(char* buff, unsigned len)
+    unsigned UpRead(char* destination, unsigned len)
     {
         if (ShmHeader->Status != ConnectStatusType::Connected)
             return 0;
@@ -160,10 +163,10 @@ private:
         if (currLen == 0)
             return 0;
         auto tailLen = std::min<unsigned>(currLen, Size - ShmHeader->UpReadCount);
-        memcpy(buff, UpBuffer + ShmHeader->UpReadCount, tailLen);
+        std::memcpy(destination, UpBuffer + ShmHeader->UpReadCount, tailLen);
         if (tailLen < currLen)
         {
-            memcpy(buff + tailLen, UpBuffer, currLen - tailLen);
+            std::memcpy(destination + tailLen, UpBuffer, currLen - tailLen);
             std::atomic_thread_fence(std::memory_order_release);
             ShmHeader->UpReadCount = currLen - tailLen;
         }
@@ -174,7 +177,7 @@ private:
         }
         return currLen;
     }
-    unsigned DownWrite(const char* data, unsigned len)
+    unsigned DownWrite(const char* source, unsigned len)
     {
         if (ShmHeader->Status != ConnectStatusType::Connected)
             return 0;
@@ -183,10 +186,10 @@ private:
         if (currLen == 0)
             return 0;
         unsigned int tailLen = std::min<unsigned>(currLen, Size - ShmHeader->DownWriteCount);
-        memcpy(DownBuffer + ShmHeader->DownWriteCount, data, tailLen);
+        std::memcpy(DownBuffer + ShmHeader->DownWriteCount, source, tailLen);
         if (tailLen < currLen)
         {
-            memcpy(DownBuffer, data + tailLen, size_t(currLen - tailLen));
+            std::memcpy(DownBuffer, source + tailLen, currLen - tailLen);
             std::atomic_thread_fence(std::memory_order_release);
             ShmHeader->DownWriteCount = currLen - tailLen;
         }
@@ -197,7 +200,7 @@ private:
         }
         return currLen;
     }
-    unsigned DownRead(char* buff, unsigned len)
+    unsigned DownRead(char* destination, unsigned len)
     {
         if (ShmHeader->Status != ConnectStatusType::Connected)
             return 0;
@@ -206,10 +209,10 @@ private:
         if (currLen == 0)
             return 0;
         auto tailLen = std::min<unsigned>(currLen, Size - ShmHeader->DownReadCount);
-        memcpy(buff, DownBuffer + ShmHeader->DownReadCount, tailLen);
+        std::memcpy(destination, DownBuffer + ShmHeader->DownReadCount, tailLen);
         if (tailLen < currLen)
         {
-            memcpy(buff + tailLen, DownBuffer, currLen - tailLen);
+            std::memcpy(destination + tailLen, DownBuffer, currLen - tailLen);
             std::atomic_thread_fence(std::memory_order_release);
             ShmHeader->DownReadCount = currLen - tailLen;
         }
