@@ -129,7 +129,7 @@ bool SingleShm::Init()
 
 void SingleShm::Send(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer)
 {
-    shmBuffer_->Write(buffer->GetData(), static_cast<unsigned>(buffer->GetLength()));
+    shmBuffer_->Write(buffer->GetData(), buffer->GetLength());
 }
 void SingleShm::DoRecv(Connect* connect)
 {

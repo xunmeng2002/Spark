@@ -110,7 +110,7 @@ TEST(ShmBufferTest, ConnectionIndexZeroOverwritesHeaderWithoutAssert)
 TEST_F(ShmTestFixture, ClientWrite_UpBuffer)
 {
     const char* data = "HelloShm";
-    unsigned written = client_->Write(data, 8);
+    size_t written = client_->Write(data, 8);
     EXPECT_EQ(written, 8u);
 
     // Client Write → UpWrite → data in UpBuffer
@@ -127,7 +127,7 @@ TEST_F(ShmTestFixture, ClientRead_DownBuffer)
 
     // Client 读取 DownBuffer (Client → DownRead)
     char output[32] = {};
-    unsigned read = client_->Read(output, 10);
+    size_t read = client_->Read(output, 10);
     EXPECT_EQ(read, 10u);
     EXPECT_EQ(std::memcmp(output, "FromServer", 10), 0);
     EXPECT_EQ(header_->DownReadCount, 10u);
@@ -138,7 +138,7 @@ TEST_F(ShmTestFixture, ClientRead_DownBuffer)
 TEST_F(ShmTestFixture, ServerWrite_DownBuffer)
 {
     const char* data = "ServerData";
-    unsigned written = server_->Write(data, 10);
+    size_t written = server_->Write(data, 10);
     EXPECT_EQ(written, 10u);
 
     // Server Write → DownWrite → data in DownBuffer
@@ -155,7 +155,7 @@ TEST_F(ShmTestFixture, ServerRead_UpBuffer)
 
     // Server 读取 UpBuffer (Server → UpRead)
     char output[32] = {};
-    unsigned read = server_->Read(output, 10);
+    size_t read = server_->Read(output, 10);
     EXPECT_EQ(read, 10u);
     EXPECT_EQ(std::memcmp(output, "FromClient", 10), 0);
     EXPECT_EQ(header_->UpReadCount, 10u);
@@ -274,7 +274,7 @@ TEST_F(ShmTestFixture, Write_WrapsAround)
     // Step 3: 写 105 字节 — 尾部 6 字节 (250→256) + 头部 99 字节 (0→99) 绕回
     //   GetUpWriteBufferSize() = 256 - (250-100) - 1 = 105
     std::string second(105, 'B');
-    unsigned written = client_->Write(second.data(), 105);
+    size_t written = client_->Write(second.data(), 105);
     EXPECT_EQ(written, 105u);
     EXPECT_EQ(header_->UpWriteCount, 99u); // 105 - 6 = 99 (绕回值)
 
@@ -284,7 +284,7 @@ TEST_F(ShmTestFixture, Write_WrapsAround)
     // Step 4: Server 读取全部数据
     //   内存布局: [0..99)=B, [100..250)=A, [250..256)=B
     char output[TestShmBufferSize] = {};
-    unsigned read = server_->Read(output, TestShmBufferSize);
+    size_t read = server_->Read(output, TestShmBufferSize);
     EXPECT_EQ(read, 255u);
 
     // 前 150 字节是为读取的 'A' (从位置 100 到 249)
@@ -319,6 +319,39 @@ TEST_F(ShmTestFixture, DownChannel_WrapsAround)
         EXPECT_EQ(output[i], 'B');
 }
 
+// ========== 计数器达到通道容量 Size ==========
+
+TEST_F(ShmTestFixture, CountersReachChannelSizeExactly)
+{
+    // 写指针恰好停在 Size 上：writeIndex 不取模，而是让 writeCount 直接等于 Size
+    std::string head(TestShmBufferSize - 6, 'A');
+    EXPECT_EQ(client_->Write(head.data(), TestShmBufferSize - 6), TestShmBufferSize - 6);
+    EXPECT_EQ(header_->UpWriteCount, TestShmBufferSize - 6);
+
+    char drained[TestShmBufferSize] = {};
+    EXPECT_EQ(server_->Read(drained, TestShmBufferSize - 6), TestShmBufferSize - 6);
+    EXPECT_EQ(header_->UpReadCount, TestShmBufferSize - 6);
+
+    // 尾部正好剩 6 字节，本次写入不绕回，writeCount 落在 Size 上
+    EXPECT_EQ(client_->Write("BBBBBB", 6), 6u);
+    EXPECT_EQ(header_->UpWriteCount, TestShmBufferSize);
+    EXPECT_EQ(server_->GetReadBufferSize(), 6u);
+    EXPECT_EQ(client_->GetWriteBufferSize(), TestShmBufferSize - 7);
+
+    char tail[8] = {};
+    EXPECT_EQ(server_->Read(tail, 6), 6u);
+    EXPECT_EQ(header_->UpReadCount, TestShmBufferSize);
+
+    // writeIndex == Size 时头部拷贝长度为 0，写入必须整段落进绕回分支
+    EXPECT_EQ(client_->Write("C", 1), 1u);
+    EXPECT_EQ(header_->UpWriteCount, 1u);
+
+    char wrapped[4] = {};
+    EXPECT_EQ(server_->Read(wrapped, 1), 1u);
+    EXPECT_EQ(wrapped[0], 'C');
+    EXPECT_EQ(header_->UpReadCount, 1u);
+}
+
 // ========== 多次 Write / Read 周期 ==========
 
 TEST_F(ShmTestFixture, MultiCycle)
@@ -326,7 +359,7 @@ TEST_F(ShmTestFixture, MultiCycle)
     for (int i = 0; i < 5; ++i)
     {
         std::string msg = "Msg" + std::to_string(i);
-        client_->Write(msg.data(), static_cast<unsigned>(msg.size()));
+        client_->Write(msg.data(), msg.size());
     }
     EXPECT_EQ(header_->UpWriteCount, 20u); // "Msg0".."Msg4" each 4 bytes
 

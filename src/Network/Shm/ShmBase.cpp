@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #endif
+#include <cstddef>
 
 using namespace std;
 using namespace Spark::Core;
@@ -27,7 +28,7 @@ ShmBase::ShmBase(ServerTypeType serverType, const char* shmName, int milliSecond
     maxConnectSize_ = atoi(port_.c_str());
 
     semConnect_ = new Sem((shmName_ + "SemConnect").c_str(), serverType);
-    for (auto i = 0; i < maxConnectSize_; ++i)
+    for (auto i = 0u; i < maxConnectSize_; ++i)
     {
         auto sem = new Sem((shmName_ + "Sem" + to_string(i)).c_str(), serverType);
         sems_.push_back(sem);
@@ -57,7 +58,7 @@ ShmBase::~ShmBase()
     }
 #endif
 #ifdef __linux__
-    if (munmap(shmAddr_, ShmBufferSize * maxConnectSize_ * 2) < 0)
+    if (munmap(shmAddr_, GetSharedMemoryMappingSize()) < 0)
     {
         perror("shm_unlink");
         WriteLog(LogLevel::Warning, "munmap Failed. ErrNo:%d", errno);
@@ -72,11 +73,15 @@ ShmBase::~ShmBase()
     }
 #endif
 }
+unsigned ShmBase::GetSharedMemoryMappingSize() const
+{
+    return ShmBufferSize * maxConnectSize_ * 2;
+}
 bool ShmBase::Init()
 {
     if (!semConnect_->Init())
         return false;
-    for (auto i = 0; i < maxConnectSize_; ++i)
+    for (auto i = 0u; i < maxConnectSize_; ++i)
     {
         if (!sems_[i]->Init())
             return false;
@@ -92,7 +97,7 @@ bool ShmBase::Init()
     commonShmHeader_ = static_cast<SingleShmHeader*>(shmAddr_);
     if (serverType_ == ServerTypeType::Server)
     {
-        memset(shmAddr_, 0, ShmBufferSize * maxConnectSize_ * 2);
+        memset(shmAddr_, 0, GetSharedMemoryMappingSize());
         commonShmHeader_->Status = ConnectStatusType::UnConnected;
         for (auto i = 1u; i < maxConnectSize_; ++i)
         {
@@ -114,7 +119,7 @@ void ShmBase::Send(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer)
     }
     while (buffer->GetLength() > 0)
     {
-        auto len = shmConnect->GetBuffer()->Write(buffer->GetData(), static_cast<unsigned>(buffer->GetLength()));
+        auto len = shmConnect->GetBuffer()->Write(buffer->GetData(), buffer->GetLength());
         if (len > 0)
         {
             buffer->Shift(len);
@@ -152,7 +157,7 @@ void ShmBase::DoSend(Connect* connect)
     auto buffer = connect->GetNextBuffer();
     while (buffer != nullptr)
     {
-        int len = shmConnect->GetBuffer()->Write(buffer->GetData(), static_cast<unsigned>(buffer->GetLength()));
+        size_t len = shmConnect->GetBuffer()->Write(buffer->GetData(), buffer->GetLength());
         buffer->Shift(len);
         if (buffer->GetLength() == 0)
         {
@@ -191,7 +196,7 @@ bool ShmBase::WindowsInit()
             WriteLog(LogLevel::Warning, "CreateFileA Failed. ErrNo:%d", GetLastError());
             return false;
         }
-        fileMap_ = CreateFileMappingA(file_, NULL, PAGE_READWRITE, 0, ShmBufferSize * maxConnectSize_ * 2, shmName_.c_str());
+        fileMap_ = CreateFileMappingA(file_, NULL, PAGE_READWRITE, 0, GetSharedMemoryMappingSize(), shmName_.c_str());
     }
     else
     {
@@ -202,7 +207,7 @@ bool ShmBase::WindowsInit()
         WriteLog(LogLevel::Warning, "Create Or Open FileMapping Failed. ErrNo:%d", GetLastError());
         return false;
     }
-    shmAddr_ = static_cast<char*>(MapViewOfFile(fileMap_, FILE_MAP_ALL_ACCESS, 0, 0, ShmBufferSize * maxConnectSize_ * 2));
+    shmAddr_ = static_cast<char*>(MapViewOfFile(fileMap_, FILE_MAP_ALL_ACCESS, 0, 0, GetSharedMemoryMappingSize()));
     if (shmAddr_ == NULL)
     {
         WriteLog(LogLevel::Warning, "MapViewOfFile Failed. ErrNo:%d", GetLastError());
@@ -228,12 +233,12 @@ bool ShmBase::LinuxInit()
         WriteLog(LogLevel::Warning, "shm_open Failed. ErrNo:%d", errno);
         return false;
     }
-    if (ftruncate(fd, ShmBufferSize * maxConnectSize_ * 2) == -1)
+    if (ftruncate(fd, GetSharedMemoryMappingSize()) == -1)
     {
         WriteLog(LogLevel::Warning, "ftruncate Failed. ErrNo:%d", errno);
         return false;
     }
-    shmAddr_ = static_cast<char*>(mmap(nullptr, ShmBufferSize * maxConnectSize_ * 2, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
+    shmAddr_ = static_cast<char*>(mmap(nullptr, GetSharedMemoryMappingSize(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
     if (shmAddr_ == MAP_FAILED)
     {
         WriteLog(LogLevel::Warning, "mmap Failed. ErrNo:%d", errno);

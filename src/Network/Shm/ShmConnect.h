@@ -5,11 +5,13 @@
 #include <Spark/TemplateLib/Buffer/ShmBuffer.h>
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 
+#include <cstddef>
+
 namespace Spark::Network
 {
 constexpr unsigned int ShmBufferSize = 1024 * 1024;
 
-template <unsigned Size>
+template <size_t Size>
 class ShmConnect : public Connect
 {
 public:

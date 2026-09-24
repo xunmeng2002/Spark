@@ -7,6 +7,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include <vector>
 #include <mutex>
 #include <chrono>
 
@@ -50,5 +51,6 @@ protected:
 private:
     bool WindowsInit();
     bool LinuxInit();
+    unsigned GetSharedMemoryMappingSize() const;
 };
 }

@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstring>
+#include <limits>
 
 namespace Spark
 {
@@ -19,10 +20,11 @@ struct SingleShmHeader
     volatile unsigned DownReadCount;
 };
 
-template <unsigned Size>
+template <size_t Size>
 class ShmBuffer
 {
     static_assert(Size > 0, "Size must be greater than 0");
+    static_assert(Size <= (std::numeric_limits<unsigned>::max)(), "Size must fit the 32-bit shared memory counters");
 
 public:
     ShmBuffer() = default;
@@ -97,26 +99,26 @@ public:
         return false;
     }
 
-    unsigned Write(const char* source, unsigned len)
+    size_t Write(const char* source, size_t len)
     {
         if (serverType_ == ServerTypeType::Client)
             return UpWrite(source, len);
         return DownWrite(source, len);
     }
-    unsigned Read(char* destination, unsigned len)
+    size_t Read(char* destination, size_t len)
     {
         if (serverType_ == ServerTypeType::Client)
             return DownRead(destination, len);
         return UpRead(destination, len);
     }
 
-    unsigned GetWriteBufferSize() const
+    size_t GetWriteBufferSize() const
     {
         if (serverType_ == ServerTypeType::Client)
             return GetUpWriteBufferSize();
         return GetDownWriteBufferSize();
     }
-    unsigned GetReadBufferSize() const
+    size_t GetReadBufferSize() const
     {
         if (serverType_ == ServerTypeType::Client)
             return GetDownReadBufferSize();
@@ -126,77 +128,77 @@ public:
 private:
     static constexpr bool IsValidConnectionIndex(int connectionIndex) { return connectionIndex >= 1; }
 
-    unsigned GetUpWriteBufferSize() const { return CountWritableBytes(shmHeader_->UpWriteCount, shmHeader_->UpReadCount); }
-    unsigned GetUpReadBufferSize() const { return CountReadableBytes(shmHeader_->UpWriteCount, shmHeader_->UpReadCount); }
-    unsigned GetDownWriteBufferSize() const { return CountWritableBytes(shmHeader_->DownWriteCount, shmHeader_->DownReadCount); }
-    unsigned GetDownReadBufferSize() const { return CountReadableBytes(shmHeader_->DownWriteCount, shmHeader_->DownReadCount); }
+    size_t GetUpWriteBufferSize() const { return CountWritableBytes(shmHeader_->UpWriteCount, shmHeader_->UpReadCount); }
+    size_t GetUpReadBufferSize() const { return CountReadableBytes(shmHeader_->UpWriteCount, shmHeader_->UpReadCount); }
+    size_t GetDownWriteBufferSize() const { return CountWritableBytes(shmHeader_->DownWriteCount, shmHeader_->DownReadCount); }
+    size_t GetDownReadBufferSize() const { return CountReadableBytes(shmHeader_->DownWriteCount, shmHeader_->DownReadCount); }
 
-    static unsigned CountWritableBytes(unsigned writeCount, unsigned readCount)
+    static size_t CountWritableBytes(unsigned writeCount, unsigned readCount)
     {
         return readCount > writeCount ? readCount - writeCount - 1 : Size - (writeCount - readCount) - 1;
     }
-    static unsigned CountReadableBytes(unsigned writeCount, unsigned readCount)
+    static size_t CountReadableBytes(unsigned writeCount, unsigned readCount)
     {
         return writeCount >= readCount ? writeCount - readCount : Size - (readCount - writeCount);
     }
 
-    unsigned UpWrite(const char* source, unsigned len)
+    size_t UpWrite(const char* source, size_t len)
     {
         return WriteIntoChannel(upBuffer_, shmHeader_->UpWriteCount, shmHeader_->UpReadCount, source, len);
     }
-    unsigned UpRead(char* destination, unsigned len)
+    size_t UpRead(char* destination, size_t len)
     {
         return ReadFromChannel(upBuffer_, shmHeader_->UpWriteCount, shmHeader_->UpReadCount, destination, len);
     }
-    unsigned DownWrite(const char* source, unsigned len)
+    size_t DownWrite(const char* source, size_t len)
     {
         return WriteIntoChannel(downBuffer_, shmHeader_->DownWriteCount, shmHeader_->DownReadCount, source, len);
     }
-    unsigned DownRead(char* destination, unsigned len)
+    size_t DownRead(char* destination, size_t len)
     {
         return ReadFromChannel(downBuffer_, shmHeader_->DownWriteCount, shmHeader_->DownReadCount, destination, len);
     }
 
-    unsigned WriteIntoChannel(char* channelBuffer, volatile unsigned& writeCount, volatile unsigned& readCount, const char* source, unsigned len)
+    size_t WriteIntoChannel(char* channelBuffer, volatile unsigned& writeCount, volatile unsigned& readCount, const char* source, size_t len)
     {
         if (shmHeader_->Status != ConnectStatusType::Connected)
             return 0;
-        const unsigned writableBytes = CountWritableBytes(writeCount, readCount);
-        const unsigned copiedLength = (std::min)(len, writableBytes);
+        const size_t writableBytes = CountWritableBytes(writeCount, readCount);
+        const size_t copiedLength = (std::min)(len, writableBytes);
         if (copiedLength == 0)
             return 0;
         std::atomic_thread_fence(std::memory_order_acquire);
-        const unsigned writeIndex = writeCount;
+        const size_t writeIndex = writeCount;
         assert(writeIndex <= Size);
-        const unsigned headLength = (std::min)(copiedLength, Size - writeIndex);
+        const size_t headLength = (std::min)(copiedLength, Size - writeIndex);
         std::memcpy(channelBuffer + writeIndex, source, headLength);
         if (headLength < copiedLength)
         {
             std::memcpy(channelBuffer, source + headLength, copiedLength - headLength);
         }
         std::atomic_thread_fence(std::memory_order_release);
-        writeCount = headLength < copiedLength ? copiedLength - headLength : writeIndex + copiedLength;
+        writeCount = static_cast<unsigned>(headLength < copiedLength ? copiedLength - headLength : writeIndex + copiedLength);
         return copiedLength;
     }
-    unsigned ReadFromChannel(char* channelBuffer, volatile unsigned& writeCount, volatile unsigned& readCount, char* destination, unsigned len)
+    size_t ReadFromChannel(char* channelBuffer, volatile unsigned& writeCount, volatile unsigned& readCount, char* destination, size_t len)
     {
         if (shmHeader_->Status != ConnectStatusType::Connected)
             return 0;
-        const unsigned readableBytes = CountReadableBytes(writeCount, readCount);
-        const unsigned copiedLength = (std::min)(len, readableBytes);
+        const size_t readableBytes = CountReadableBytes(writeCount, readCount);
+        const size_t copiedLength = (std::min)(len, readableBytes);
         if (copiedLength == 0)
             return 0;
         std::atomic_thread_fence(std::memory_order_acquire);
-        const unsigned readIndex = readCount;
+        const size_t readIndex = readCount;
         assert(readIndex <= Size);
-        const unsigned headLength = (std::min)(copiedLength, Size - readIndex);
+        const size_t headLength = (std::min)(copiedLength, Size - readIndex);
         std::memcpy(destination, channelBuffer + readIndex, headLength);
         if (headLength < copiedLength)
         {
             std::memcpy(destination + headLength, channelBuffer, copiedLength - headLength);
         }
         std::atomic_thread_fence(std::memory_order_release);
-        readCount = headLength < copiedLength ? copiedLength - headLength : readIndex + copiedLength;
+        readCount = static_cast<unsigned>(headLength < copiedLength ? copiedLength - headLength : readIndex + copiedLength);
         return copiedLength;
     }
 
