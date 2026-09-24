@@ -1,6 +1,7 @@
 #include "Shm/ShmBase.h"
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Core/Utility/TimeUtility.h>
+#include <Spark/Network/Protocol/StepUtility.h>
 #ifdef _WIN32
 #include <Windows.h>
 #endif
@@ -27,7 +28,10 @@ ShmBase::ShmBase(ServerTypeType serverType, const char* shmName, int milliSecond
 #endif // _WIN32
 
     shmName_ = address_;
-    maxConnectSize_ = atoi(port_.c_str());
+    if (!StepUtility::ParseInteger(port_, maxConnectSize_))
+    {
+        maxConnectSize_ = 0;
+    }
 
     semConnect_ = new Sem((shmName_ + "SemConnect").c_str(), serverType);
     for (auto i = 0u; i < maxConnectSize_; ++i)
@@ -81,6 +85,11 @@ unsigned ShmBase::GetSharedMemoryMappingSize() const
 }
 bool ShmBase::Init()
 {
+    if (maxConnectSize_ < 1)
+    {
+        WriteLog(LogLevel::Warning, "Invalid Shm ConnectSize:%u, Address:%s", maxConnectSize_, shmName_.c_str());
+        return false;
+    }
     if (!semConnect_->Init())
         return false;
     for (auto i = 0u; i < maxConnectSize_; ++i)

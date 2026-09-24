@@ -65,17 +65,17 @@ public:
         downBuffer_ = upBuffer_ + Size;
     }
     const SingleShmHeader* GetShmHeader() const { return shmHeader_; }
-    ConnectStatusType GetConnectStatus() const { return shmHeader_ != nullptr ? shmHeader_->Status : ConnectStatusType::UnConnected; }
+    ConnectStatusType GetConnectStatus() const { return IsAttached() ? shmHeader_->Status : ConnectStatusType::UnConnected; }
     void SetConnectStatus(ConnectStatusType status)
     {
-        if (shmHeader_ != nullptr)
+        if (IsAttached())
         {
             shmHeader_->Status = status;
         }
     }
     void ResetSharedHeader()
     {
-        if (shmHeader_ == nullptr)
+        if (!IsAttached())
         {
             return;
         }
@@ -87,7 +87,7 @@ public:
     }
     bool MarkDisconnected()
     {
-        if (shmHeader_ == nullptr)
+        if (!IsAttached())
         {
             return false;
         }
@@ -101,12 +101,20 @@ public:
 
     size_t Write(const char* source, size_t len)
     {
+        if (!IsAttached())
+        {
+            return 0;
+        }
         if (serverType_ == ServerTypeType::Client)
             return UpWrite(source, len);
         return DownWrite(source, len);
     }
     size_t Read(char* destination, size_t len)
     {
+        if (!IsAttached())
+        {
+            return 0;
+        }
         if (serverType_ == ServerTypeType::Client)
             return DownRead(destination, len);
         return UpRead(destination, len);
@@ -114,12 +122,20 @@ public:
 
     size_t GetWriteBufferSize() const
     {
+        if (!IsAttached())
+        {
+            return 0;
+        }
         if (serverType_ == ServerTypeType::Client)
             return GetUpWriteBufferSize();
         return GetDownWriteBufferSize();
     }
     size_t GetReadBufferSize() const
     {
+        if (!IsAttached())
+        {
+            return 0;
+        }
         if (serverType_ == ServerTypeType::Client)
             return GetDownReadBufferSize();
         return GetUpReadBufferSize();
@@ -127,6 +143,7 @@ public:
 
 private:
     static constexpr bool IsValidConnectionIndex(int connectionIndex) { return connectionIndex >= 1; }
+    bool IsAttached() const { return shmHeader_ != nullptr; }
 
     size_t GetUpWriteBufferSize() const { return CountWritableBytes(shmHeader_->UpWriteCount, shmHeader_->UpReadCount); }
     size_t GetUpReadBufferSize() const { return CountReadableBytes(shmHeader_->UpWriteCount, shmHeader_->UpReadCount); }
