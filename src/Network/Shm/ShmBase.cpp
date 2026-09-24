@@ -9,7 +9,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #endif
+#include <chrono>
 #include <cstddef>
+#include <thread>
 
 using namespace std;
 using namespace Spark::Core;
@@ -120,17 +122,24 @@ void ShmBase::Send(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer)
     while (buffer->GetLength() > 0)
     {
         auto len = shmConnect->GetBuffer()->Write(buffer->GetData(), buffer->GetLength());
-        if (len > 0)
+        if (len == 0)
         {
-            buffer->Shift(len);
-            if (serverType_ == ServerTypeType::Server)
+            if (shmConnect->GetBuffer()->GetConnectStatus() != ConnectStatusType::Connected)
             {
-                sems_[shmConnect->RemotePort]->UnLock();
+                WriteLog(LogLevel::Warning, "Send Peer DisConnected, Drop Buffer. SessionId:%lld, Len:%zu", sessionId, buffer->GetLength());
+                break;
             }
-            else
-            {
-                sems_[0]->UnLock();
-            }
+            this_thread::sleep_for(chrono::milliseconds(1));
+            continue;
+        }
+        buffer->Shift(len);
+        if (serverType_ == ServerTypeType::Server)
+        {
+            sems_[shmConnect->RemotePort]->UnLock();
+        }
+        else
+        {
+            sems_[0]->UnLock();
         }
     }
     buffer->Deallocate();
