@@ -1,8 +1,12 @@
 # Spark 进度归档
 
-主文件：`PROGRESS.md`。本文件保存已关闭条目的**原文**，只移动不删改，按 Id 倒序分段。
+主文件：`PROGRESS.md`。本文件保存已关闭条目的**原文**，按 Id 倒序分段。搬运规则以 Harness §8.1 为准（2026-09-18 修订：条目可删可改、以简洁为准，但**必须保住 ID、原日期、原结论**）。
 
 ## ✅ 原已完成
+
+### D.41
+
+- **2026-09-24 · `ShmBuffer` 批 B：接口层 `unsigned`→`size_t` 收口 + `static_assert` + 边界单测 + `GetSharedMemoryMappingSize()` 消 DRY（零行为变更）**：①`ShmBuffer<Size>` 的 NTTP、`Write`/`Read` 的 `len`、两个 `GetXxxBufferSize` 与四个私有辅助函数的返回类型全改 `size_t`，`ShmConnect` 的 NTTP 同步——与兄弟模板 `LinearBuffer`/`SpscRingBuffer`（均 `template <size_t Size>`）对齐，发送/接收路径由此单一宽度。②**共享头 `SingleShmHeader` 的 4 个 `volatile unsigned` 计数器刻意不动**（用户裁定）：其字节布局**本身就是跨进程 ABI**（`sizeof(SingleShmHeader)` 既是单连接通道偏移、也是多连接 header 数组的步长），`size_t` 在 ILP32/LP64 宽度不同，改宽会让不同位宽的对端读到错位计数器。③同理 `CountWritableBytes`/`CountReadableBytes` 的形参保持 `unsigned`（与共享字段同类型），窄化点收敛为各通道函数末尾 2 处显式 `static_cast<unsigned>`。④补 `static_assert(Size > 0)` 与 `Size <= (std::numeric_limits<unsigned>::max)()`（括号是防 Windows `max` 宏的既有写法），后者把「`Size` 超出 32 位计数器可表示范围」拦在编译期。⑤`ShmBase::GetSharedMemoryMappingSize()` 消掉 `ShmBufferSize * maxConnectSize_ * 2` 在 `ShmBase.cpp` 重复 **6 次**（munmap / memset / CreateFileMappingA / MapViewOfFile / ftruncate / mmap）；返回类型**刻意选 `unsigned`**——改宽会让 `CreateFileMappingA` 的 `DWORD` 形参仍截断、而 `memset`/`munmap`/`mmap` 拿到真值，在 >4 GiB 时**制造新的不一致**（现状是 6 处「一致地环绕」），且引入 C4267。⑥`ShmBase.cpp` 两处 `for (auto i = 0; ...)` → `0u`。⑦新增单测 `ShmTestFixture.CountersReachChannelSizeExactly` 钉 `writeCount == Size` 边界：写 250 + 读 250 后再写 6，`writeIndex` 不取模、`writeCount` 直接等于 `Size`；此后 `Size - writeIndex == 0`，头部拷贝为 0 长度，必须整段落进绕回分支（再写 1 字节后计数回到 1）。⑧四档 0 warning；单测 MSVC 两档 **439/439**、WSL GCC 两档 **438/438**（较批 A 各 +1）；`clang-format --dry-run -Werror`、`initcheck.py` 通过；`s4scan --gate` 仍 6 条候选（见 ❓ 区）。⑨**本批揭开一处比改动本身更重要的事实**：本仓 MSVC 实跑 **`/W1`**（`CMAKE_CXX_FLAGS` = `/DWIN32 /D_WINDOWS /EHsc`，既无 `/W3` 也无 `/GR`），故四档「0 warning」的判别力低于一直以为的——详见 ❓ 区新增条。我以 `/W3 /W4` 专项探针做 A/B（基线 C4251×28 + C4100×4 + **C4018×2**；改后 C4251×28 + C4100×4），既证明批 2 记的那 2 条 C4018 被本批清掉、也证明**未引入任何新告警类别**。⑩冒烟（每轮先 `taskkill` 两端 + 删 gitignore 的 `TestShm`）：Debug 5 轮 4 干净，其中一轮 30 条 `Sem UnLock Failed.`；**同一二进制立刻重跑 5/5 干净**，Release 5/5 干净——该失败**实测不稳定**，且本批 `git diff` **不出现 `Sem`/`UnLock`**，与 ❓ 区那条既有教训同源。⑪**独立审查（`code-reviewer`）0 严重 / 0 中 / 4 低**，8 条声明全成立。**L1 经我实测证实并已修**：`ShmBase.h` 一直非自包含——用 `std::vector<Sem*>` 却无 `<vector>`，仅靠 C++20 传递包含才编过（反事实探针：删该 include 后 C++17 报错、C++20 不报）；已补 `<vector>`，并把该头误加的 `<cstddef>` 移入真用 `size_t` 的 `ShmBase.cpp`。**未动项**：`SingleShm.cpp` 同式映射尺寸重复 5 处，已由下条批 C 处置。
 
 ### D.40
 
@@ -657,6 +661,12 @@
     方向是"此前静默跳过的字段开始被赋值"，属**行为变更**（修漏），已确认对现有全部消费方零输出。
 
 ## ❓ 原待讨论 / 待决策
+
+### Q.33
+
+- **`SingleShm` 无构造点（2026-09-24 发现并复核，待决）**：全仓检索 `SingleShm`，对**类**的引用只有：自身 `.h`/`.cpp`、`IoFactory.cpp:12` 的死 `#include`（该 shm 分支实际返回 `ShmClient`/`ShmServer`，`IoModelType` 无 Single 档）、`tools/README.md:33`（**只是 s4scan 命令行的示例路径参数**，不是示例代码）、`ShmBufferTest.cpp:427` 的**分节注释**（其下的 `AttachSingleConnectionSharedMemory_PlacesChannelsAfterHeader` 测的是 `ShmBuffer` 的公开方法）。**没有任何 `new SingleShm(...)`**，即该类被编译链接却从不实例化。**2026-09-24 复核补齐**：(a) **未导出**——`SingleShm.h`/`.cpp` 里 `NetworkExport`/`NETWORK_EXPORTS` 零出现；(b) `class SingleShm : public IoBase`，`Send`/`DoRecv` 为 `public`（`ShmBase` 同名者 `protected`），可见性不一致；(c) `SingleShm::Send`（`SingleShm.cpp:134`）只有一句 `shmBuffer_->Write(...)`——**忽略返回值**（满即静默丢包）**且不 `Deallocate()`**（每次发送漏还一个池对象）。**删除的连带代价**：`ShmBuffer::AttachSingleConnectionSharedMemory`（`ShmBuffer.h:60`，公开方法、位于**已安装**头）会失去唯一真实调用者，`ShmBufferTest.cpp:427` 的布局钉桩须同步处理——**这条链进到公开头，故属设计裁定而非例行清理**。**待决三选**：①**（我的建议）**删 `SingleShm.h`/`.cpp` 与 `IoFactory.cpp:12` 的死 include，**保留** `ShmBuffer` 的单连接 API（它在公开头且被单测覆盖，删它才真踩 §3.1）；因 `SingleShm` 未导出，此选公开面零变化。②接进 `IoFactory` 作单连接 `shm://` 变体（须新增 IoModel 档并补 e2e）。③保留并知悉其无覆盖——则今后改动只能靠编译与单测兜底。
+
+**裁定与执行（2026-09-24，用户）**：选①——「`SingleShm` 可以删除，本就是为了测试写的」。连带 `IoFactory.cpp:12` 的死 include、`tools/README.md:33` 的示例路径、`ShmBufferTest.cpp:427` 分节注释一并处理；`ShmBuffer` 的单连接 API 保留（其失去唯一调用者一事转入主文件 ❓ 区）。**执行结果**：四档 0 warning、单测 MSVC 439→443 / WSL GCC 438→442（+4 即本轮四条新用例）、`s4scan` 候选 6 条未增、Shm 冒烟 5/5、`step_e2e` 通过。
 
 ### Q.32
 
