@@ -43,3 +43,4 @@ __pycache__/
 # 运行时与冒烟产物（均落在仓库根）
 /log/
 /TestShm
+/SparkShmUnitTest*

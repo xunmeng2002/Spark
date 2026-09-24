@@ -75,6 +75,23 @@ TEST(ShmBufferTest, GetConnectStatusIsUnConnectedOnDefaultConstructedBuffer)
     EXPECT_EQ(buf.GetConnectStatus(), ConnectStatusType::UnConnected);
 }
 
+// 未 Attach 的实例（shmHeader_ 为空）不得触碰任何共享内存：入口一律惰性返回，写状态一律不生效
+TEST(ShmBufferTest, UnAttachedBufferRejectsAllChannelAccess)
+{
+    ShmBuffer<TestShmBufferSize> buffer;
+    char byte = 0;
+
+    EXPECT_EQ(buffer.Write(&byte, 1), 0u);
+    EXPECT_EQ(buffer.Read(&byte, 1), 0u);
+    EXPECT_EQ(buffer.GetWriteBufferSize(), 0u);
+    EXPECT_EQ(buffer.GetReadBufferSize(), 0u);
+    EXPECT_FALSE(buffer.MarkDisconnected());
+    buffer.SetConnectStatus(ConnectStatusType::Connected);
+    buffer.ResetSharedHeader();
+    EXPECT_EQ(buffer.GetShmHeader(), nullptr);
+    EXPECT_EQ(buffer.GetConnectStatus(), ConnectStatusType::UnConnected);
+}
+
 #if defined(GTEST_HAS_DEATH_TEST) && !defined(NDEBUG)
 TEST(ShmBufferTest, ConnectionIndexZeroTripsAssert)
 {
@@ -424,7 +441,7 @@ TEST_F(ShmTestFixture, Deallocate_ResetsSharedHeaderWhenAlreadyDisconnected)
     EXPECT_EQ(HeaderOfSecondConnection()->UpWriteCount, 0u);
 }
 
-// ========== 单连接布局（SingleShm 接线）==========
+// ========== 单连接布局（头在偏移 0，双向通道紧随其后）==========
 
 TEST(ShmBufferTest, AttachSingleConnectionSharedMemory_PlacesChannelsAfterHeader)
 {
