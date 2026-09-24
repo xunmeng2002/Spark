@@ -28,18 +28,7 @@ SingleShm::SingleShm(ServerTypeType shmType, const char* shmName)
 }
 SingleShm::~SingleShm()
 {
-    bool isLast = false;
-    if (shmBuffer_ != nullptr && shmBuffer_->ShmHeader != nullptr)
-    {
-        if (shmBuffer_->ShmHeader->Status == ConnectStatusType::DisConnected)
-        {
-            isLast = true;
-        }
-        else
-        {
-            shmBuffer_->ShmHeader->Status = ConnectStatusType::DisConnected;
-        }
-    }
+    const bool isLastOwner = shmBuffer_ != nullptr && shmBuffer_->MarkDisconnected();
     delete shmBuffer_;
     shmBuffer_ = nullptr;
 #ifdef _WIN32
@@ -53,7 +42,7 @@ SingleShm::~SingleShm()
         CloseHandle(file_);
         file_ = nullptr;
     }
-    if (isLast)
+    if (isLastOwner)
     {
         DeleteFileA(shmName_.c_str());
     }
@@ -64,7 +53,7 @@ SingleShm::~SingleShm()
         perror("shm_unlink");
         WriteLog(LogLevel::Warning, "munmap Failed. ErrNo:%d", errno);
     }
-    if (isLast)
+    if (isLastOwner)
     {
         if (shm_unlink(shmName_.c_str()) < 0)
         {
@@ -125,23 +114,16 @@ bool SingleShm::Init()
         return false;
     }
 #endif
-    shmBuffer_->ShmHeader = (SingleShmHeader*)shmAddr_;
-    shmBuffer_->ServerType = serverType_;
-    shmBuffer_->UpBuffer = (char*)shmAddr_ + sizeof(SingleShmHeader);
-    shmBuffer_->DownBuffer = (char*)shmAddr_ + sizeof(SingleShmHeader) + ShmBufferSize;
+    shmBuffer_->AttachSingleConnectionSharedMemory(shmAddr_, serverType_);
     if (firstOpen)
     {
-        shmBuffer_->ShmHeader->Status = ConnectStatusType::UnConnected;
-        shmBuffer_->ShmHeader->UpWriteCount = 0;
-        shmBuffer_->ShmHeader->UpReadCount = 0;
-        shmBuffer_->ShmHeader->DownWriteCount = 0;
-        shmBuffer_->ShmHeader->DownReadCount = 0;
+        shmBuffer_->ResetSharedHeader();
     }
     else
     {
-        shmBuffer_->ShmHeader->Status = ConnectStatusType::Connected;
+        shmBuffer_->SetConnectStatus(ConnectStatusType::Connected);
     }
-    WriteLog(LogLevel::Info, "Create Or Open FileMapping Successed. Status:%d", shmBuffer_->ShmHeader->Status);
+    WriteLog(LogLevel::Info, "Create Or Open FileMapping Successed. Status:%d", static_cast<int>(shmBuffer_->GetConnectStatus()));
     return true;
 }
 
@@ -169,13 +151,13 @@ void SingleShm::HandleIoEvent()
 
 void SingleShm::CheckConnectStatus()
 {
-    if (!connected_ && shmBuffer_->ShmHeader->Status == ConnectStatusType::Connected && ioSubscriber_ != nullptr)
+    if (!connected_ && shmBuffer_->GetConnectStatus() == ConnectStatusType::Connected && ioSubscriber_ != nullptr)
     {
         connected_ = true;
         sessionId_ = GetSessionId();
         ioSubscriber_->OnConnect(sessionId_, shmName_.c_str(), 0);
     }
-    if (connected_ && shmBuffer_->ShmHeader->Status == ConnectStatusType::UnConnected && ioSubscriber_ != nullptr)
+    if (connected_ && shmBuffer_->GetConnectStatus() == ConnectStatusType::UnConnected && ioSubscriber_ != nullptr)
     {
         connected_ = false;
         ioSubscriber_->OnDisConnect(sessionId_, shmName_.c_str(), 0);

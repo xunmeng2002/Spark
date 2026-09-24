@@ -59,7 +59,7 @@ void ShmClient::CheckConnect()
 {
     if (!connected_)
         return;
-    if (shmConnect_->GetBuffer()->ShmHeader->Status == ConnectStatusType::DisConnected)
+    if (shmConnect_->GetBuffer()->GetConnectStatus() == ConnectStatusType::DisConnected)
     {
         RemoveConnect(shmConnect_);
     }
