@@ -674,6 +674,10 @@
 
 ## ❓ 原待讨论 / 待决策
 
+### Q.39
+
+- **`ObjectPool` 的实例不跨模块共享，而 `LinearBuffer<BufferSize>` 恰好跨了这道边界（2026-09-26 新检测器实测，待决）**：①**现象**：Debug 下原始订阅者冒烟（`TestClient.exe Tcp`/`Shm`）两端都被新检测器拦下，报 `ObjectPool<class Spark::LinearBuffer<65536>> Deallocate got an item that is not currently held`；Release 无检测器，故此前无人察觉。②**取证（探针已删）**：同一进程内打印 `&ObjectPool<LinearBuffer<BufferSize>>::GetInstance()`，客户端 EXE 得 `0x…CC02F8C0`、`Network.dll` 得 `0x…DC2E3920`——**两个不同的单例**；紧接着 DLL 侧日志出现 `buffer=0x…A5376430`，正是先前 EXE 侧打印的那个地址，即 **EXE 领出的对象被 DLL 归还进 DLL 的池，DLL 又把同一地址发了出去**。③**根因**：`ObjectPool<T>::GetInstance()` 是头文件模板里的函数内静态量，**每个模块各有一份**；`LinearBuffer<Size>::Allocate/Deallocate` 都是内联成员，「谁调用」就决定用哪个池。本仓跨模块单例的既有做法是「导出类 + 类外静态数据成员」（`Logger`、`SocketApi`），`ObjectPool` 没有这一层。④**影响面**：**只有 `LinearBuffer<BufferSize>` 跨了这道边界**——包类都在 `PackagesStatic`/`TestCommonStatic` 这两个静态库里、领还同侧；生产路径（`Protocol::Send` 领、`TcpBase`/`TcpIocpBase` 还）全在 DLL 内，一致。踩线的只有绕过 `Protocol`、直接挂 `IoBase` 的原始订阅者（`ClientIoSubscriberImpl`、`ServerIoSubscriberImpl`、`TestCommon/ShmSubscriber/ShmSubscriberImpl`）：EXE 领、DLL 还。后果是**EXE 侧池的记账单调增长**（原始客户端每发一单泄漏一个 64 KiB 节点）+ 该对象被 DLL 池二次发出（契约违反）；**未观测到立即损坏**（两个池不会同时持有同一指针）。**HEAD 即如此**（`ClientIoSubscriberImpl.cpp` 的 `LinearBuffer<BufferSize>::Allocate()` 紧接 `io_->Send(...)` 在 HEAD 逐字存在），**非本批引入**。⑤**待决三选**：**（我的建议）**给 IO 层加一个「取发送缓冲」出口（如 `IoBase::AllocateSendBuffer()`，在 DLL 内实现），让应用不再自领一个「DLL 会去归还」的对象——加法式、不动 ABI、最小改动；或把 `ObjectPool<LinearBuffer<BufferSize>>` 在 `Network.dll` 侧显式实例化并导出（`Logger` 模式）使两模块共享同一实例——根治，但触公开头与跨模块 ABI，且 `Core.dll` 也用同类池，须先定「谁是唯一属主」；或维持现状 + 只留检测器（Debug 下原始冒烟被拦、Release 不受影响）。**注**：检测器只认「本实例发过的指针」，故**无法区分「跨模块借还」与「真的重复归还」**——两者在单个池内是同一现象。
+
 ### Q.38
 
 - **❓ 区的一处非未决残留与归档的一处就地改写（2026-09-18 复核，待决）**：①❓ 区里那条「CSV 族收尾三项」已**关闭**，仅靠删除线留在原处（其自述理由是「以防重复立项」）——按 §8.1「❓ 仅未决」应予移出，但移出会失去这道防重复的提示，**故未擅动**；②`PROGRESS-archive.md` 里 `D.24` 段「刻意保留（附理由）①」一行被**用户本人就地改写**（原文 `IOType`/`IOModel` → 现文 `IoType`/`IoModel`），与 §8.1「只移动不删改」相抵；`Q.21` 的「173/173」是先例——正文保留原文、由归档索引行注明更正。**待决**：②是否照此先例在 `D.24` 索引行加注，①是否移入归档。
