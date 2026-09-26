@@ -1,10 +1,20 @@
 #pragma once
-#include <atomic>
-#include <mutex>
+#include <cstddef>
 #include <memory>
+#include <mutex>
+#include <stdexcept>
+#include <utility>
 
 namespace Spark
 {
+namespace ObjectPoolDetail
+{
+// 槽位步长：槽位必须同时容下 T 与压在 T 首部的空闲节点，两者对齐要求不同，
+// 故把 sizeof(T) 按节点所需的对齐向上取整，尾部补齐
+template <typename T, typename FreeNode>
+constexpr size_t SlotByteCountFor = ((sizeof(T) + alignof(FreeNode) - 1) / alignof(FreeNode)) * alignof(FreeNode);
+}
+
 template <typename T>
 class ObjectPool
 {
@@ -15,49 +25,54 @@ public:
         return instance_;
     }
 
-    void SetBlockUnitNum(int blockUnitNum) { blockUnitNum_ = blockUnitNum; }
+    void SetBlockUnitNum(int blockUnitNum)
+    {
+        if (blockUnitNum <= 0)
+        {
+            throw std::invalid_argument("ObjectPool::SetBlockUnitNum requires a positive blockUnitNum");
+        }
+        blockUnitNum_ = blockUnitNum;
+    }
 
     template <typename... Args>
     T* Allocate(Args&&... args)
     {
-        while (true)
+        if (threadLocalCache_.FreeListHead == nullptr)
         {
-            FreeNode* oldHead = freeList_.load(std::memory_order_acquire);
-            FreeNode* nextNode = nullptr;
-            if (oldHead != nullptr)
-            {
-                do
-                {
-                    nextNode = oldHead->Next.load(std::memory_order_acquire);
-                } while (!freeList_.compare_exchange_weak(oldHead, nextNode, std::memory_order_release, std::memory_order_acquire) &&
-                         oldHead != nullptr);
-                if (oldHead != nullptr)
-                {
-                    T* obj = reinterpret_cast<T*>(oldHead);
-                    new (obj) T(std::forward<Args>(args)...);
-                    return obj;
-                }
-            }
-            Expand();
+            RefillThreadLocalFreeList();
         }
+
+        FreeNode* node = threadLocalCache_.FreeListHead;
+        threadLocalCache_.FreeListHead = node->Next;
+        --threadLocalCache_.FreeNodeCount;
+
+        T* obj = reinterpret_cast<T*>(node);
+        new (obj) T(std::forward<Args>(args)...);
+        return obj;
     }
+
     template <typename... Args>
     std::shared_ptr<T> AllocateShared(Args&&... args)
     {
         T* obj = Allocate(std::forward<Args>(args)...);
         return std::shared_ptr<T>(obj, [](T* ptr) { ObjectPool<T>::GetInstance().Deallocate(ptr); });
     }
+
     void Deallocate(T* item)
     {
         if (item == nullptr) [[unlikely]]
             return;
+
         item->~T();
         FreeNode* node = reinterpret_cast<FreeNode*>(item);
-        FreeNode* oldHead = freeList_.load(std::memory_order_acquire);
-        do
+        node->Next = threadLocalCache_.FreeListHead;
+        threadLocalCache_.FreeListHead = node;
+        ++threadLocalCache_.FreeNodeCount;
+
+        if (threadLocalCache_.FreeNodeCount > blockUnitNum_)
         {
-            node->Next.store(oldHead, std::memory_order_release);
-        } while (!freeList_.compare_exchange_weak(oldHead, node, std::memory_order_release, std::memory_order_acquire));
+            ReturnExcessThreadLocalNodesToSharedList();
+        }
     }
 
 private:
@@ -68,13 +83,29 @@ private:
         T* Objects;
         Block* Next;
     };
+    // 空闲节点与 T 复用同一片内存，Next 就压在 T 的首 8 字节上
     struct FreeNode
     {
-        std::atomic<FreeNode*> Next;
+        FreeNode* Next;
     };
 
+    // 每个线程只在自己私有的空闲链上 pop/push，共享链一律在 mutex_ 内读写。
+    // 若允许多线程直接在共享链上 pop/push，「读 Next → CAS」这段窗口里链头被别的
+    // 线程弹出、构造、再推回（ABA）就会让 CAS 把已在使用的对象发布成新链头。
+    struct ThreadLocalCache
+    {
+        FreeNode* FreeListHead = nullptr;
+        int FreeNodeCount = 0;
+    };
+
+    // 槽位步长按空闲节点所需的对齐取整：T 的 sizeof 不是 alignof(FreeNode) 的整数倍时
+    // （4 字节对齐的字段类型即如此），&newObjects[i] 会落在 8 字节对齐之外，节点指针即错位访问
+    static constexpr size_t SlotByteCount = ObjectPoolDetail::SlotByteCountFor<T, FreeNode>;
+
     static_assert(sizeof(FreeNode) <= sizeof(T), "The T type is too small to hold the free list node!");
-    ObjectPool() : blockUnitNum_(64), blocks_(nullptr) {}
+    static_assert(alignof(T) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__, "The T type is over-aligned for the block allocation!");
+
+    ObjectPool() : blockUnitNum_(64), blocks_(nullptr), sharedFreeList_(nullptr) {}
     ~ObjectPool()
     {
         Block* current = blocks_;
@@ -88,43 +119,94 @@ private:
     }
     ObjectPool(const ObjectPool&) = delete;
     ObjectPool& operator=(const ObjectPool&) = delete;
-    void Expand()
+
+    // 本地链耗尽时调用：池内已无空闲节点则先申请一块，再从共享链摘一批到本地链
+    void RefillThreadLocalFreeList()
     {
         std::lock_guard<std::mutex> guard(mutex_);
-        T* newObjects = static_cast<T*>(operator new(sizeof(T) * blockUnitNum_));
+        if (sharedFreeList_ == nullptr)
+        {
+            AppendNewBlockToSharedListLocked();
+        }
+
+        FreeNode* batchHead = sharedFreeList_;
+        FreeNode* batchTail = batchHead;
+        int batchCount = 1;
+        while (batchCount < blockUnitNum_ && batchTail->Next != nullptr)
+        {
+            batchTail = batchTail->Next;
+            ++batchCount;
+        }
+
+        sharedFreeList_ = batchTail->Next;
+        batchTail->Next = nullptr;
+        threadLocalCache_.FreeListHead = batchHead;
+        threadLocalCache_.FreeNodeCount = batchCount;
+    }
+
+    // 本地链积压超过一块时调用：整批交回共享链，使线程本地缓存的占用有上界
+    void ReturnExcessThreadLocalNodesToSharedList()
+    {
+        std::lock_guard<std::mutex> guard(mutex_);
+        const int returnCount = (threadLocalCache_.FreeNodeCount < blockUnitNum_) ? threadLocalCache_.FreeNodeCount : blockUnitNum_;
+
+        FreeNode* returnHead = threadLocalCache_.FreeListHead;
+        FreeNode* returnTail = returnHead;
+        for (int i = 1; i < returnCount; ++i)
+        {
+            returnTail = returnTail->Next;
+        }
+
+        threadLocalCache_.FreeListHead = returnTail->Next;
+        threadLocalCache_.FreeNodeCount -= returnCount;
+        returnTail->Next = sharedFreeList_;
+        sharedFreeList_ = returnHead;
+    }
+
+    void AppendNewBlockToSharedListLocked()
+    {
+        const size_t blockByteCount = static_cast<size_t>(blockUnitNum_) * SlotByteCount;
+        if (blockByteCount / SlotByteCount != static_cast<size_t>(blockUnitNum_))
+        {
+            throw std::length_error("ObjectPool block byte count overflows");
+        }
+
+        char* const blockBytes = static_cast<char*>(operator new(blockByteCount));
+        T* const newObjects = reinterpret_cast<T*>(blockBytes);
         try
         {
-            Block* newBlock = new Block(newObjects, blocks_);
-            blocks_ = newBlock;
+            blocks_ = new Block(newObjects, blocks_);
         }
         catch (...)
         {
-            operator delete(newObjects);
+            operator delete(blockBytes);
             throw;
         }
 
         FreeNode* newFreeList = nullptr;
+        FreeNode* newFreeListTail = nullptr;
         for (int i = 0; i < blockUnitNum_; ++i)
         {
-            FreeNode* node = reinterpret_cast<FreeNode*>(&newObjects[i]);
-            node->Next.store(newFreeList, std::memory_order_relaxed);
+            FreeNode* node = reinterpret_cast<FreeNode*>(blockBytes + static_cast<size_t>(i) * SlotByteCount);
+            node->Next = newFreeList;
             newFreeList = node;
+            newFreeListTail = node;
         }
 
-        FreeNode* oldHead = freeList_.load(std::memory_order_acquire);
-        FreeNode* newHead = newFreeList;
-        FreeNode* tail = reinterpret_cast<FreeNode*>(&newObjects[0]);
-        do
-        {
-            tail->Next.store(oldHead, std::memory_order_relaxed);
-        } while (!freeList_.compare_exchange_weak(oldHead, newHead, std::memory_order_release, std::memory_order_acquire));
+        // 循环逐个前插，故最后前插的那个正是这条新链的尾节点，把它接上原有共享链
+        newFreeListTail->Next = sharedFreeList_;
+        sharedFreeList_ = newFreeList;
     }
 
     int blockUnitNum_;
     std::mutex mutex_;
     Block* blocks_;
-    std::atomic<FreeNode*> freeList_ = nullptr;
+    FreeNode* sharedFreeList_;
+    static thread_local ThreadLocalCache threadLocalCache_;
 };
+
+template <typename T>
+thread_local typename ObjectPool<T>::ThreadLocalCache ObjectPool<T>::threadLocalCache_;
 
 template <typename T>
 T* Allocate()

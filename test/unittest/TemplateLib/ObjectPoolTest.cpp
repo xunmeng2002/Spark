@@ -1,7 +1,11 @@
 #include <gtest/gtest.h>
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 
+#include <algorithm>
 #include <atomic>
+#include <mutex>
+#include <set>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 using namespace Spark;
@@ -164,6 +168,86 @@ TEST(ObjectPoolTest, Expand_Blocks)
     }
 }
 
+// ---------- 块容量取值门禁 ----------
+
+TEST(ObjectPoolTest, SetBlockUnitNum_RejectsNonPositive)
+{
+    struct BlockUnitNumType
+    {
+        BlockUnitNumType() : value(0) {}
+
+        long long value;
+    };
+
+    ObjectPool<BlockUnitNumType>& pool = ObjectPool<BlockUnitNumType>::GetInstance();
+    EXPECT_THROW(pool.SetBlockUnitNum(0), std::invalid_argument);
+    EXPECT_THROW(pool.SetBlockUnitNum(-8), std::invalid_argument);
+
+    // 被拒绝后池仍可用：默认块容量未受影响，分配照常
+    BlockUnitNumType* obj = pool.Allocate();
+    ASSERT_NE(obj, nullptr);
+    pool.Deallocate(obj);
+
+    pool.SetBlockUnitNum(8); // 合法值照收
+    BlockUnitNumType* item = pool.Allocate();
+    ASSERT_NE(item, nullptr);
+    pool.Deallocate(item);
+}
+
+// ---------- 线程本地缓存整批交回 ----------
+
+TEST(ObjectPoolTest, RecycleAfterExcessReturnToSharedList)
+{
+    struct ExcessReturnType
+    {
+        ExcessReturnType() : value(0) {}
+
+        long long value;
+    };
+
+    ObjectPool<ExcessReturnType>& pool = ObjectPool<ExcessReturnType>::GetInstance();
+    pool.SetBlockUnitNum(8); // 小块 + 40 个对象：归还时必然多次触发本地缓存整批交回
+
+    std::vector<ExcessReturnType*> allocated;
+    for (int i = 0; i < 40; ++i)
+    {
+        ExcessReturnType* item = pool.Allocate();
+        ASSERT_NE(item, nullptr);
+        item->value = i;
+        allocated.push_back(item);
+    }
+    for (ExcessReturnType* item : allocated)
+    {
+        pool.Deallocate(item);
+    }
+
+    // 全部归还后再同时取 40 个：必须全部来自原槽位（本地缓存有上界，节点已整批回到共享链），
+    // 且互不重复——重复即同一节点被发出两次
+    std::vector<ExcessReturnType*> recycled;
+    for (int i = 0; i < 40; ++i)
+    {
+        ExcessReturnType* item = pool.Allocate();
+        ASSERT_NE(item, nullptr);
+        recycled.push_back(item);
+    }
+
+    std::vector<ExcessReturnType*> sortedRecycled = recycled;
+    std::sort(sortedRecycled.begin(), sortedRecycled.end());
+    EXPECT_EQ(std::adjacent_find(sortedRecycled.begin(), sortedRecycled.end()), sortedRecycled.end());
+
+    for (int i = 0; i < 40; ++i)
+    {
+        EXPECT_NE(std::find(allocated.begin(), allocated.end(), recycled[i]), allocated.end());
+        recycled[i]->value = 100 + i;
+        EXPECT_EQ(recycled[i]->value, 100 + i);
+    }
+
+    for (ExcessReturnType* item : recycled)
+    {
+        pool.Deallocate(item);
+    }
+}
+
 // ---------- 多线程分配 ----------
 
 TEST(ObjectPoolTest, MultiThreadAllocate)
@@ -206,6 +290,126 @@ TEST(ObjectPoolTest, MultiThreadAllocate)
 
     // Clean up any remaining items left in pool
     // (no-op: pool destructor cleans all blocks)
+}
+
+// ---------- 跨线程归还 ----------
+
+TEST(ObjectPoolTest, CrossThreadDeallocate)
+{
+    struct CrossThreadType
+    {
+        CrossThreadType() : value(0) {}
+
+        long long value;
+    };
+
+    constexpr int kItemCount = 64;
+    ObjectPool<CrossThreadType>& pool = ObjectPool<CrossThreadType>::GetInstance();
+
+    std::vector<CrossThreadType*> allocated;
+    for (int i = 0; i < kItemCount; ++i)
+    {
+        CrossThreadType* item = pool.Allocate();
+        ASSERT_NE(item, nullptr);
+        item->value = i;
+        allocated.push_back(item);
+    }
+
+    // 换一个线程归还：节点先落到归还线程自己的本地链上，之后必须经共享链重新可取
+    std::thread releaser(
+        [&pool, &allocated]()
+        {
+            for (CrossThreadType* item : allocated)
+            {
+                pool.Deallocate(item);
+            }
+        });
+    releaser.join();
+
+    for (int i = 0; i < kItemCount; ++i)
+    {
+        CrossThreadType* item = pool.Allocate();
+        ASSERT_NE(item, nullptr);
+        item->value = 900 + i;
+        EXPECT_EQ(item->value, 900 + i);
+        pool.Deallocate(item);
+    }
+}
+
+// ---------- 多线程并发取还与整批搬运 ----------
+
+TEST(ObjectPoolTest, ConcurrentBatchAllocateDeallocate)
+{
+    struct ConcurrentBatchType
+    {
+        ConcurrentBatchType() : value(0) {}
+
+        long long value;
+    };
+
+    constexpr int kThreadCount = 8;
+    constexpr int kRoundCount = 40;
+    constexpr int kBatchSize = 12; // 每线程每轮同时持有 12 个（远超本地上限的一半），反复触发整批取回与整批交回
+
+    ObjectPool<ConcurrentBatchType>& pool = ObjectPool<ConcurrentBatchType>::GetInstance();
+    pool.SetBlockUnitNum(16);
+
+    // 「同一地址不得同时属于两个线程」是本池的核心不变量，ABA 破坏的正是它。
+    // 每轮把各线程持有的地址登记进共享集合，重复登记即同一节点被发出两次。
+    std::mutex livePointerMutex;
+    std::set<ConcurrentBatchType*> livePointers;
+    std::atomic<bool> duplicatePointerSeen{false};
+
+    std::vector<std::thread> workers;
+    workers.reserve(kThreadCount);
+    for (int t = 0; t < kThreadCount; ++t)
+    {
+        workers.emplace_back(
+            [&pool, &livePointerMutex, &livePointers, &duplicatePointerSeen, t]()
+            {
+                for (int round = 0; round < kRoundCount; ++round)
+                {
+                    std::vector<ConcurrentBatchType*> batch;
+                    batch.reserve(kBatchSize);
+                    for (int i = 0; i < kBatchSize; ++i)
+                    {
+                        ConcurrentBatchType* item = pool.Allocate();
+                        item->value = static_cast<long long>(t) * 1000 + i;
+                        batch.push_back(item);
+
+                        std::lock_guard<std::mutex> guard(livePointerMutex);
+                        if (!livePointers.insert(item).second)
+                        {
+                            duplicatePointerSeen.store(true);
+                        }
+                    }
+
+                    for (ConcurrentBatchType* item : batch)
+                    {
+                        {
+                            std::lock_guard<std::mutex> guard(livePointerMutex);
+                            livePointers.erase(item);
+                        }
+                        pool.Deallocate(item);
+                    }
+                }
+            });
+    }
+
+    for (std::thread& worker : workers)
+    {
+        worker.join();
+    }
+
+    ASSERT_FALSE(duplicatePointerSeen.load());
+    EXPECT_TRUE(livePointers.empty());
+
+    // 全部归还后池仍可正常取还
+    ConcurrentBatchType* item = pool.Allocate();
+    ASSERT_NE(item, nullptr);
+    item->value = 7;
+    EXPECT_EQ(item->value, 7);
+    pool.Deallocate(item);
 }
 
 // ---------- 析构/构造计数 ----------
