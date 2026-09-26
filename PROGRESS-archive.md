@@ -4,6 +4,10 @@
 
 ## ✅ 原已完成
 
+### D.42
+
+- **2026-09-24 · `SingleShm` 映射尺寸消 DRY（承独立审查 L2）**：①`sizeof(SingleShmHeader) + 2 * ShmBufferSize` 在 `SingleShm.cpp` 逐字重复 **5 处**（5 个调用点见提交 `e716df5`），与本批刚在 `ShmBase` 消掉的形态同构，按 §5 抽为私有 `static constexpr unsigned GetSharedMemoryMappingSize()`（定义置于 `Init()` 前）。②该值是**编译期常量** `20 + 2×1048576 = 2097172`，远小于 2^32，故 `unsigned` 返回值收窄精确、5 处取值与改前逐位相同；与 `ShmBase` 版**刻意不同**的是这里能用 `constexpr`——`ShmBase` 版读运行期成员 `maxConnectSize_`，不能。③**两版公式不同是真实布局差异、不是重复，故不合并**（§5「拒绝过度封装」）：多连接把 header **数组**放偏移 0、通道也从 0 起（`ShmBuffer` 用 `connectionIndex * 2 * Size`，`maxConnectSize_ * 2 * Size` 已覆盖 header 区）；单连接则一个 header 在 0、通道在其**之后**（`+ sizeof(SingleShmHeader)`）。④四档 0 warning；MSVC 两档 **439/439**、WSL GCC 两档 **438/438**；`clang-format`、`initcheck`（乱序 0）、`s4scan`（候选 6 条）通过。⑤**覆盖诚实说明**：该改动**无 e2e 路径可验**（`SingleShm` 无构造点，见 ❓ 区），依据是「helper 正文即被删除的那个表达式」+ 四档编译与全量单测，非运行期验证。
+
 ### D.41
 
 - **2026-09-24 · `ShmBuffer` 批 B：接口层 `unsigned`→`size_t` 收口 + `static_assert` + 边界单测 + `GetSharedMemoryMappingSize()` 消 DRY（零行为变更）**：①`ShmBuffer<Size>` 的 NTTP、`Write`/`Read` 的 `len`、两个 `GetXxxBufferSize` 与四个私有辅助函数的返回类型全改 `size_t`，`ShmConnect` 的 NTTP 同步——与兄弟模板 `LinearBuffer`/`SpscRingBuffer`（均 `template <size_t Size>`）对齐，发送/接收路径由此单一宽度。②**共享头 `SingleShmHeader` 的 4 个 `volatile unsigned` 计数器刻意不动**（用户裁定）：其字节布局**本身就是跨进程 ABI**（`sizeof(SingleShmHeader)` 既是单连接通道偏移、也是多连接 header 数组的步长），`size_t` 在 ILP32/LP64 宽度不同，改宽会让不同位宽的对端读到错位计数器。③同理 `CountWritableBytes`/`CountReadableBytes` 的形参保持 `unsigned`（与共享字段同类型），窄化点收敛为各通道函数末尾 2 处显式 `static_cast<unsigned>`。④补 `static_assert(Size > 0)` 与 `Size <= (std::numeric_limits<unsigned>::max)()`（括号是防 Windows `max` 宏的既有写法），后者把「`Size` 超出 32 位计数器可表示范围」拦在编译期。⑤`ShmBase::GetSharedMemoryMappingSize()` 消掉 `ShmBufferSize * maxConnectSize_ * 2` 在 `ShmBase.cpp` 重复 **6 次**（munmap / memset / CreateFileMappingA / MapViewOfFile / ftruncate / mmap）；返回类型**刻意选 `unsigned`**——改宽会让 `CreateFileMappingA` 的 `DWORD` 形参仍截断、而 `memset`/`munmap`/`mmap` 拿到真值，在 >4 GiB 时**制造新的不一致**（现状是 6 处「一致地环绕」），且引入 C4267。⑥`ShmBase.cpp` 两处 `for (auto i = 0; ...)` → `0u`。⑦新增单测 `ShmTestFixture.CountersReachChannelSizeExactly` 钉 `writeCount == Size` 边界：写 250 + 读 250 后再写 6，`writeIndex` 不取模、`writeCount` 直接等于 `Size`；此后 `Size - writeIndex == 0`，头部拷贝为 0 长度，必须整段落进绕回分支（再写 1 字节后计数回到 1）。⑧四档 0 warning；单测 MSVC 两档 **439/439**、WSL GCC 两档 **438/438**（较批 A 各 +1）；`clang-format --dry-run -Werror`、`initcheck.py` 通过；`s4scan --gate` 仍 6 条候选（见 ❓ 区）。⑨**本批揭开一处比改动本身更重要的事实**：本仓 MSVC 实跑 **`/W1`**（`CMAKE_CXX_FLAGS` = `/DWIN32 /D_WINDOWS /EHsc`，既无 `/W3` 也无 `/GR`），故四档「0 warning」的判别力低于一直以为的——详见 ❓ 区新增条。我以 `/W3 /W4` 专项探针做 A/B（基线 C4251×28 + C4100×4 + **C4018×2**；改后 C4251×28 + C4100×4），既证明批 2 记的那 2 条 C4018 被本批清掉、也证明**未引入任何新告警类别**。⑩冒烟（每轮先 `taskkill` 两端 + 删 gitignore 的 `TestShm`）：Debug 5 轮 4 干净，其中一轮 30 条 `Sem UnLock Failed.`；**同一二进制立刻重跑 5/5 干净**，Release 5/5 干净——该失败**实测不稳定**，且本批 `git diff` **不出现 `Sem`/`UnLock`**，与 ❓ 区那条既有教训同源。⑪**独立审查（`code-reviewer`）0 严重 / 0 中 / 4 低**，8 条声明全成立。**L1 经我实测证实并已修**：`ShmBase.h` 一直非自包含——用 `std::vector<Sem*>` 却无 `<vector>`，仅靠 C++20 传递包含才编过（反事实探针：删该 include 后 C++17 报错、C++20 不报）；已补 `<vector>`，并把该头误加的 `<cstddef>` 移入真用 `size_t` 的 `ShmBase.cpp`。**未动项**：`SingleShm.cpp` 同式映射尺寸重复 5 处，已由下条批 C 处置。
@@ -661,6 +665,10 @@
     方向是"此前静默跳过的字段开始被赋值"，属**行为变更**（修漏），已确认对现有全部消费方零输出。
 
 ## ❓ 原待讨论 / 待决策
+
+### Q.34
+
+- **`ObjectPool` 并发访问偶发崩溃（2026-09-18 判定为**既有**缺陷；27.5% 实测触发率；按 Harness §3.2 已停手待授权）**：单跑 `UnitTests.exe --gtest_filter=ObjectPoolTest.MultiThreadAllocate` **40 次里 11 次以 `0xC0000005`（访问违例）退出**；全量套件 40 次里 3 次异常（2 次同一违例、1 次 `abort`；gtest 的 stdout 是块缓冲，崩溃点被缓冲吃掉，只能看到最后一个 `[ RUN ]` 行）。**该用例与 `ObjectPool` 源码与 HEAD 逐字节相同**（`test/unittest/TemplateLib/`、`include/Spark/TemplateLib/ObjectPool/` 均无 diff），**故不是本批引入**；且**单独跑比全量跑更易崩**（27.5% vs 7.5%），怀疑与冷池要先并发 `Expand` 有关，但这是推测、**未证实**。**影响面待评估**：`Allocate`/`Deallocate` 走无锁链表、只有 `Expand` 上锁，三者的交互疑有问题；而 `ObjectPool<T>::GetInstance()` 生产路径在用（`StepClient::SendReqInsertOrder` 每发一单 `Allocate` 一次）。**待决**：①是否立项修（属多线程/内存管理，须单独授权、单独评审）；②修前门禁怎么办——套件现有约 7.5% 的偶发假红，是接受、还是把该用例暂时摘出。**在授权之前，「单测全过」这句话不能当作完全可信的绿灯。**（原文记的是当日套件规模 405；2026-09-22 已增至 **426**，2026-09-24 再增至 MSVC **438** / WSL GCC **437**，见 ✅ 区对应两条。2026-09-24 当日四档共 4 次全量跑未见该崩溃，但**未专门重测触发率**，本条结论不因此减弱）
 
 ### Q.33
 
