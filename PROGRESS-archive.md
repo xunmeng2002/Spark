@@ -4,6 +4,14 @@
 
 ## ✅ 原已完成
 
+### D.44
+
+- **2026-09-24 · §6 收紧：Shm 连接数改走 `ParseInteger` + `ShmBuffer` 空指针收口（提交 `4f1775c`）**：①`ShmBase.cpp` 的 `maxConnectSize_ = atoi(port_.c_str())` 改走仓内既有 `StepUtility::ParseInteger`（依据 `StepUtility.h:109` 明写「窄类型直接 `atoi` 会静默截断，所以必须走这里」；该实现基于 `from_chars`，格式非法/越界均返 `false` 且**不回写出参**，故失败时显式置 0——`maxConnectSize_` 无类内初始值）。**危害链**：该值经 `GetSharedMemoryMappingSize() = ShmBufferSize * maxConnectSize_ * 2` 决定映射长度，非数字端口 → 0 → 映射 0 字节 → 写 `Status` 即解引用 0 长度映射；负值经 `unsigned` 回绕成巨大值。②`Init()` 新增 `maxConnectSize_ < 1` 门禁（构造无法返失败，故判定放 `Init()`），记 `Warning` 返 `false`，早于 `semConnect_->Init()`、**不创建任何 OS 资源**。③`ShmBuffer` 侧按 §5 把内联判空抽为私有 `IsAttached()`、10 处统一走它，并给 `Write`/`Read`/`GetWriteBufferSize`/`GetReadBufferSize` 补同样判空（返 0）——这四处是全部私有通道函数的唯一入口，判在外层即覆盖四个方向；合法路径零变更。④验证：四档 0 warning；MSVC 两档 **439/439**、WSL GCC 两档 **438/438**；`clang-format`/`initcheck`（乱序 0）/`s4scan`（候选 6 条未增）通过；Shm 冒烟 5/5 干净。⑤本批同时关闭 ❓ 区批 A 登记项 **⑤** 与 **⑧中-3**；两条新增用例无覆盖的原因已单列 ❓ 条。
+
+### D.43
+
+- **2026-09-24 · `ShmBase::Send` 死自旋收口（提交 `b9e4ccf`）**：①缺陷是 `while (buffer->GetLength() > 0)` 在 `Write` 返 0（通道满、对端不读）时**无退出分支**，一旦对端停止读取即无限忙等、钉住一个核。②**先证伪两条替代方案**：(a) 不照抄 `TcpBase::Send` 的 `PushBack` + 唤醒重投——全仓 grep 证明 `ShmBase::DoSend`（`ShmBase.cpp:172`）**无任何调用点**（`DoSend` 只被 Tcp 后端调用：`TcpEpollBase.cpp:54,94`、`TcpSelectBase.cpp:71`），重投的缓冲**永不会被取走**、只会泄漏；(b) 不拿 `timeOut_` 当发送截止——它是 `TcpSelect` 的 poll 间隔（`TcpSelectBase.cpp:18`），复用会让 `SetTimeOut` **隐式造成丢包**。③落地：`Write` 返 0 时先查对端 `GetConnectStatus()`，非 `Connected` 即记 `Warning` 并 `break`（丢弃余量），否则 `sleep_for(1ms)` 重试；四条出口**各 `Deallocate()` 恰好一次**。④验证：四档 0 warning；MSVC 两档 **439/439**、WSL GCC 两档 **438/438**；`clang-format`/`initcheck`/`s4scan`（候选 6 条）通过；Shm 冒烟两轮各 5/5 干净。⑤**覆盖诚实说明**：「通道写满」分支**无自动化覆盖**（冒烟每轮 10000 次往返也难填满 1 MiB 通道），正确性依赖 `ShmBuffer::Write` 的返 0 语义（已由 `ShmTestFixture.CountersReachChannelSizeExactly` 钉住）与四条出口的归还唯一性。
+
 ### D.42
 
 - **2026-09-24 · `SingleShm` 映射尺寸消 DRY（承独立审查 L2）**：①`sizeof(SingleShmHeader) + 2 * ShmBufferSize` 在 `SingleShm.cpp` 逐字重复 **5 处**（5 个调用点见提交 `e716df5`），与本批刚在 `ShmBase` 消掉的形态同构，按 §5 抽为私有 `static constexpr unsigned GetSharedMemoryMappingSize()`（定义置于 `Init()` 前）。②该值是**编译期常量** `20 + 2×1048576 = 2097172`，远小于 2^32，故 `unsigned` 返回值收窄精确、5 处取值与改前逐位相同；与 `ShmBase` 版**刻意不同**的是这里能用 `constexpr`——`ShmBase` 版读运行期成员 `maxConnectSize_`，不能。③**两版公式不同是真实布局差异、不是重复，故不合并**（§5「拒绝过度封装」）：多连接把 header **数组**放偏移 0、通道也从 0 起（`ShmBuffer` 用 `connectionIndex * 2 * Size`，`maxConnectSize_ * 2 * Size` 已覆盖 header 区）；单连接则一个 header 在 0、通道在其**之后**（`+ sizeof(SingleShmHeader)`）。④四档 0 warning；MSVC 两档 **439/439**、WSL GCC 两档 **438/438**；`clang-format`、`initcheck`（乱序 0）、`s4scan`（候选 6 条）通过。⑤**覆盖诚实说明**：该改动**无 e2e 路径可验**（`SingleShm` 无构造点，见 ❓ 区），依据是「helper 正文即被删除的那个表达式」+ 四档编译与全量单测，非运行期验证。
@@ -665,6 +673,14 @@
     方向是"此前静默跳过的字段开始被赋值"，属**行为变更**（修漏），已确认对现有全部消费方零输出。
 
 ## ❓ 原待讨论 / 待决策
+
+### Q.35
+
+- **`TcpIocpBase::OnRecvComplete` 在订阅者可能已归还缓冲区之后仍操作该缓冲区（2026-09-22 代码审查发现，**既有**缺陷；按 Harness §3.2 已停手待授权）**：`OnRecvComplete`（`src/Network/Tcp/TcpIocp/TcpIocpBase.cpp:308`）把 `overlapped->MyBuffer` 交给 `ioSubscriber_->OnRecv(...)`，而生产路径的订阅者 `Protocol::OnRecv`（`src/Network/Protocol/Protocol.cpp:161`）就在其中调 `buffer->Deallocate()`，把该对象**还回了 `ObjectPool`**；`OnRecv` 返回后第 310 行紧接着 `PostRecv(overlapped)` → `MyOverlapped::Reset()`（`TcpIocpConnect.cpp:93`）→ **对同一个已归还对象**执行 `MyBuffer->Reset()`，再把 `WsaBuffer.buf` 重新指向它的 `GetData()` 去 `WSARecv`。若该槽在此期间被别的线程 `Allocate` 走，就是**跨线程覆写别人的缓冲区**——ASan 抓不到（对象仍在进程内、地址有效）。**与 HEAD 等价**：旧 `Reset()` 是 `readPos_ = buffer_`，危害一模一样，故**非本批引入**。**根因不是「订阅者乱归还」，而是 `IoSubscriber::OnRecv` 从来没有成文契约、四个后端自己分裂成两派**（2026-09-22 用户质疑后重新核对；我先前写成「订阅者契约把它当可自由归还的池对象」，那是把两派说成了一派，措辞已改准）：`TcpBase::DoRecv:177`、`ShmBase::DoRecv:173`、`SingleShm::DoRecv:146` **每次 recv 都现 `Allocate()` 一个池对象**再交出去（收方理应归还），只有 `TcpIocpBase:308` 交的是**每连接常驻**的 `MyBuffer`（收方**不得**归还）。`Protocol::OnRecv` 三条出口（147/154/161）**全部** `Deallocate()`，跟的是前三个后端的多数派，于是与 IOCP 这一派撞车；`Protocol.cpp:160` 那句注释（「Append 已经拷走字节，之后再无引用，所以在这里归还」）正是它选择那一派的书面理由。**接线取证**：`Protocol.cpp:40` 的 `ioBase_->Subscribe(this)` 加 `Protocol.h:12` 的 `class Protocol : public IoSubscriber`，证明 IOCP 路径上的 `ioSubscriber_` 就是 `Protocol` 自己——**不可与 `ClientIoSubscriberImpl` 混淆**，后者是 `TestTcpClient`/`TestShmClient` 绕过 `Protocol` 直接挂在 `IoBase` 上的订阅者（`ClientIoSubscriberImpl.cpp:15` `io_->Subscribe(this)`），它「只在主动断连时归还」的写法恰好**符合** IOCP 那一派（反过来说，它在 Select 派下每次 recv 都漏归还一个 64 KiB 池对象）。**另：IOCP 目前无任何自动化覆盖**——`TestUtility.cpp:14` 的 `IoModel = IoModelType::Select` 是全仓唯一赋值处，所有测试都跑 Select 分支。**待决**：①是否立项修（涉内存管理与跨线程，须单独授权、单独评审）；②修法取「IO 层自持收包缓冲、不借给订阅者」还是「投递 `OnRecv` 前先换上新缓冲」。
+
+### Q.36
+
+- **`ServerIoSubscriberImpl.cpp:37-38` 的无界 `sprintf` + 格式化串注入（2026-09-16 扫描时发现，**既有缺陷**，本批未动）**：属 §6 明令禁止项（禁止 `sprintf`；外部输入不得直接拼接构造）。虽在 `test/` 下，但它是**端到端冒烟测试唯一走的收发回调**，改它与改生产代码同样要走闸门与授权。**登记，择批修。**
 
 ### Q.34
 
