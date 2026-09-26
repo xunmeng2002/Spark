@@ -38,6 +38,9 @@ public:
     virtual void DisConnect(SessionIdType sessionId);
     virtual void DisConnectAll();
     virtual void Send(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer) = 0;
+    // 发送缓冲须由此取得：缓冲的归还在 IO 层内部完成，而 ObjectPool 实例不跨模块共享，
+    // 应用侧自行 Allocate 得到的对象会被归还进一个非属主的池。
+    LinearBuffer<BufferSize>* AllocateSendBuffer();
 
     virtual void HandleIoEvent() = 0;
 

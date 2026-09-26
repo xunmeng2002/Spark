@@ -68,7 +68,7 @@ void ShmSubscriberImpl::OnRecv(SessionIdType sessionId, const char* data, size_t
             if (serverType_ == ServerTypeType::Server)
             {
                 shmPackage->ShmType = (int)ServerTypeType::Server;
-                auto sendBuff = LinearBuffer<BufferSize>::Allocate();
+                auto sendBuff = io_->AllocateSendBuffer();
                 sendBuff->Append(reinterpret_cast<char*>(shmPackage), sizeof(ShmPackage));
                 io_->Send(sessionId, sendBuff);
             }

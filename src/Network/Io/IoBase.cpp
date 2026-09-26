@@ -42,6 +42,11 @@ void IoBase::DisConnectAll()
     }
 }
 
+LinearBuffer<BufferSize>* IoBase::AllocateSendBuffer()
+{
+    return LinearBuffer<BufferSize>::Allocate();
+}
+
 void IoBase::DoDisConnect()
 {
     if (disConnectSessionIds_.empty())

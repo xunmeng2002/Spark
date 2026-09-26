@@ -72,7 +72,7 @@ void ClientIoSubscriberImpl::Send(SessionIdType sessionId)
     reqInsertOrder.ReqInsertOrder->ClientOrderId = count;
     auto message = reqInsertOrder.GetDebugString();
 
-    LinearBuffer<BufferSize>* buffer = LinearBuffer<BufferSize>::Allocate();
+    LinearBuffer<BufferSize>* buffer = io_->AllocateSendBuffer();
     auto data = buffer->GetData();
     auto len = strlen(message);
     memcpy(data, message, len);
@@ -83,7 +83,7 @@ void ClientIoSubscriberImpl::Send(SessionIdType sessionId)
 void ClientIoSubscriberImpl::SendCommand(SessionIdType sessionId, const char* cmd)
 {
     ++messageCounts_[sessionId];
-    LinearBuffer<BufferSize>* buffer = LinearBuffer<BufferSize>::Allocate();
+    LinearBuffer<BufferSize>* buffer = io_->AllocateSendBuffer();
     const size_t writeBufferSize = buffer->GetWriteBufferSize();
     const int formattedLength = (writeBufferSize > 0) ? snprintf(buffer->GetData(), writeBufferSize, "%s\r\n", cmd) : 0;
     // snprintf 返回"应有长度"而非实际写入量：被截断时该值大于写入量，

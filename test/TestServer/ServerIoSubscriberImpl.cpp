@@ -36,7 +36,7 @@ void ServerIoSubscriberImpl::OnRecv(SessionIdType sessionId, const char* data, s
         WriteLog(LogLevel::Info, message);
     }
 
-    auto responseBuffer = LinearBuffer<BufferSize>::Allocate();
+    auto responseBuffer = io_->AllocateSendBuffer();
     responseBuffer->Append(data, length);
     io_->Send(sessionId, responseBuffer);
 }
