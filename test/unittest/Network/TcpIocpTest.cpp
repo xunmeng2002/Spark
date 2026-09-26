@@ -117,9 +117,7 @@ void ExpectAllOrdersIntact(const std::vector<EchoedOrder>& orders)
 class IocpLoopbackServer : public Protocol, public ProtocolSubscriber
 {
 public:
-    IocpLoopbackServer()
-        : Protocol(ProtocolTypeType::Step, ServerTypeType::Server, IoModelType::Iocp, 0, new PackageFactory()), connectCount_(0),
-          disConnectCount_(0), unexpectedFrameCount_(0)
+    IocpLoopbackServer() : Protocol(ProtocolTypeType::Step, ServerTypeType::Server, IoModelType::Iocp, 0, new PackageFactory())
     {
         Subscribe(this);
         RegisterFront(kIocpLoopbackAddress);
@@ -161,18 +159,16 @@ public:
     std::vector<EchoedOrder> ReceivedOrders() const { return receivedOrders_.Snapshot(); }
 
 private:
-    std::atomic<int> connectCount_;
-    std::atomic<int> disConnectCount_;
-    std::atomic<int> unexpectedFrameCount_;
+    std::atomic<int> connectCount_{0};
+    std::atomic<int> disConnectCount_{0};
+    std::atomic<int> unexpectedFrameCount_{0};
     EchoedOrderRecorder receivedOrders_;
 };
 
 class IocpLoopbackClient : public Protocol, public ProtocolSubscriber
 {
 public:
-    IocpLoopbackClient()
-        : Protocol(ProtocolTypeType::Step, ServerTypeType::Client, IoModelType::Iocp, 0, new PackageFactory()), connectCount_(0),
-          disConnectCount_(0), unexpectedFrameCount_(0), sessionId_(0)
+    IocpLoopbackClient() : Protocol(ProtocolTypeType::Step, ServerTypeType::Client, IoModelType::Iocp, 0, new PackageFactory())
     {
         Subscribe(this);
         RegisterFront(kIocpLoopbackAddress);
@@ -240,10 +236,10 @@ private:
         reqInsertOrder->Deallocate();
     }
 
-    std::atomic<int> connectCount_;
-    std::atomic<int> disConnectCount_;
-    std::atomic<int> unexpectedFrameCount_;
-    SessionIdType sessionId_;
+    std::atomic<int> connectCount_{0};
+    std::atomic<int> disConnectCount_{0};
+    std::atomic<int> unexpectedFrameCount_{0};
+    SessionIdType sessionId_{0};
     EchoedOrderRecorder receivedOrders_;
 };
 

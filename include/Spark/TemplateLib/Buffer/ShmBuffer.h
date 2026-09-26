@@ -23,10 +23,10 @@ struct SingleShmHeader
 template <size_t Size>
 class ShmBuffer
 {
+public:
     static_assert(Size > 0, "Size must be greater than 0");
     static_assert(Size <= (std::numeric_limits<unsigned>::max)(), "Size must fit the 32-bit shared memory counters");
 
-public:
     ShmBuffer() = default;
     ShmBuffer(ServerTypeType serverType, int connectionIndex, void* shmBase, ConnectStatusType connectStatus)
     {

@@ -11,9 +11,9 @@ namespace Spark
 template <size_t Size>
 class LinearBuffer
 {
+public:
     static_assert(Size > 0, "Size must be greater than 0");
 
-public:
     LinearBuffer() : buffer_{0} { ClearIndices(); }
     LinearBuffer(const LinearBuffer&) = delete;
     LinearBuffer& operator=(const LinearBuffer&) = delete;

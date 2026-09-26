@@ -10,11 +10,11 @@ namespace Spark
 template <size_t Size>
 class SpscRingBuffer
 {
+public:
     static_assert(Size > 0, "Size must be greater than 0");
     static_assert((Size & (Size - 1)) == 0, "Size must be a power of two, because the wrap-around uses a bit mask");
     static_assert(std::atomic<size_t>::is_always_lock_free, "size_t atomic must be lock free");
 
-public:
     SpscRingBuffer() = default;
     SpscRingBuffer(const SpscRingBuffer&) = delete;
     SpscRingBuffer& operator=(const SpscRingBuffer&) = delete;
