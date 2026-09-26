@@ -185,11 +185,9 @@ void TcpBase::DoRecv(Connect* connect)
     }
     else if (ioSubscriber_)
     {
-        data[len] = '\0';
         WriteLog(LogLevel::Ignore, "OnRecv: SessionId:%lld, Socket:%lld, RecvLen:%d", tcpConnect->SessionId, tcpConnect->SocketId, len);
-        buffer->SetLength(len);
-
-        ioSubscriber_->OnRecv(tcpConnect->SessionId, buffer);
+        ioSubscriber_->OnRecv(tcpConnect->SessionId, data, static_cast<size_t>(len));
+        buffer->Deallocate();
     }
     else
     {

@@ -18,6 +18,10 @@ int main(int argc, const char* argv[])
     {
         return startupExitCode;
     }
+    if (const int startupExitCode = ApplyIoModelFromCommandLine(argc, argv); startupExitCode != 0)
+    {
+        return startupExitCode;
+    }
 
     switch (TestProtocol)
     {

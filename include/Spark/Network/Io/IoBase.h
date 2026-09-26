@@ -6,6 +6,7 @@
 #include <Spark/Network/Io/IoUtility.h>
 #include <string>
 #include <chrono>
+#include <cstddef>
 #include <mutex>
 #include <list>
 #include <map>
@@ -18,7 +19,9 @@ class IoSubscriber
 public:
     virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) = 0;
     virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) = 0;
-    virtual void OnRecv(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer) = 0;
+    // 收包缓冲由 IO 层持有、仅在本次回调期间有效：订阅者不得归还、不得留存该指针，
+    // 需要留存请当场拷贝。data 不保证以 NUL 结尾，有效字节数以 length 为准。
+    virtual void OnRecv(SessionIdType sessionId, const char* data, size_t length) = 0;
 };
 
 class NETWORK_EXPORTS IoBase

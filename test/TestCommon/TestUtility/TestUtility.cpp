@@ -1,5 +1,6 @@
 #include "TestUtility/TestUtility.h"
 #include <Spark/Core/Logger/Logger.h>
+#include <Spark/EnumString.h>
 
 #include <cstring>
 
@@ -59,6 +60,39 @@ int ApplyTestProtocolFromCommandLine(int argc, const char* const argv[])
         return 2;
     }
     TestProtocol = *protocol;
+    return 0;
+}
+
+std::optional<IoModelType> TryParseIoModel(const char* name)
+{
+    if (name == nullptr)
+    {
+        return std::nullopt;
+    }
+    for (const IoModelType candidate : {IoModelType::Select, IoModelType::Epoll, IoModelType::Iocp})
+    {
+        if (strcmp(name, Spark::GetIoModelString(candidate)) == 0)
+        {
+            return candidate;
+        }
+    }
+    return std::nullopt;
+}
+
+int ApplyIoModelFromCommandLine(int argc, const char* const argv[])
+{
+    if (argc <= 2)
+    {
+        return 0;
+    }
+    const std::optional<IoModelType> ioModel = TryParseIoModel(argv[2]);
+    if (!ioModel.has_value())
+    {
+        WriteLog(LogLevel::Error, "Unknown IoModel:[%s], Expected: Select/Epoll/Iocp", argv[2]);
+        ShutdownTestLogger();
+        return 2;
+    }
+    IoModel = *ioModel;
     return 0;
 }
 

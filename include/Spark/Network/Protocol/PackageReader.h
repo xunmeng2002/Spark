@@ -14,7 +14,7 @@ public:
     void Deallocate();
     void Reset();
 
-    unsigned int Append(char* data, unsigned int len);
+    unsigned int Append(const char* data, unsigned int len);
     void PopFront(unsigned int len);
     int Length();
     unsigned int TailSize();

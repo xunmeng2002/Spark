@@ -15,7 +15,7 @@ public:
 
     virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) override;
     virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) override;
-    virtual void OnRecv(SessionIdType sessionId, Spark::LinearBuffer<Spark::Network::BufferSize>* buffer) override;
+    virtual void OnRecv(SessionIdType sessionId, const char* data, size_t length) override;
 
     void Send(SessionIdType sessionId);
     void SendCommand(SessionIdType sessionId, const char* cmd);

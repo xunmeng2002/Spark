@@ -140,25 +140,21 @@ void Protocol::OnDisConnect(SessionIdType sessionId, const char* ip, int port)
         subscriber_->OnProtocolDisConnect(sessionId, ip, port);
     }
 }
-void Protocol::OnRecv(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer)
+void Protocol::OnRecv(SessionIdType sessionId, const char* data, size_t length)
 {
     if (ioBase_ == nullptr)
     {
-        buffer->Deallocate();
         return;
     }
     auto it = sessionPackageReaders_.find(sessionId);
     if (it == sessionPackageReaders_.end() || it->second == nullptr)
     {
         WriteLog(LogLevel::Error, "Cannot Find PackageReader for SessionId:%lld", sessionId);
-        buffer->Deallocate();
         ioBase_->DisConnect(sessionId);
         return;
     }
     auto packageReader = it->second;
-    packageReader->Append(buffer->GetData(), static_cast<unsigned int>(buffer->GetLength()));
-    //Append 已经拷走字节，之后再无引用，所以在这里归还，后面的解析路径不必再考虑释放
-    buffer->Deallocate();
+    packageReader->Append(data, static_cast<unsigned int>(length));
     while (true)
     {
         Package* package = nullptr;

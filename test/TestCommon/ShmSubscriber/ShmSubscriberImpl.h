@@ -14,7 +14,7 @@ public:
 
     virtual void OnConnect(SessionIdType sessionId, const char* ip, int port) override;
     virtual void OnDisConnect(SessionIdType sessionId, const char* ip, int port) override;
-    virtual void OnRecv(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer) override;
+    virtual void OnRecv(SessionIdType sessionId, const char* data, size_t length) override;
 
     bool connected_;
     SessionIdType sessionId_;

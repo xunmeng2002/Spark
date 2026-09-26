@@ -194,12 +194,11 @@ void ShmBase::DoRecv(Connect* connect)
     auto shmConnect = static_cast<ShmConnect<ShmBufferSize>*>(connect);
 
     LinearBuffer<BufferSize>* buffer = LinearBuffer<BufferSize>::Allocate();
-    auto len = shmConnect->GetBuffer()->Read(buffer->GetWritePos(), BufferSize);
-    buffer->SetLength(len);
+    auto data = buffer->GetWritePos();
+    auto len = shmConnect->GetBuffer()->Read(data, BufferSize);
     if (ioSubscriber_ != nullptr)
-        ioSubscriber_->OnRecv(shmConnect->SessionId, buffer);
-    else
-        buffer->Deallocate();
+        ioSubscriber_->OnRecv(shmConnect->SessionId, data, len);
+    buffer->Deallocate();
 }
 
 bool ShmBase::WindowsInit()

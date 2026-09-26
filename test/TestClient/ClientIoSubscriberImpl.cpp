@@ -1,7 +1,9 @@
 #include "ClientIoSubscriberImpl.h"
 #include "Packages.h"
 #include <Spark/Core/Core.h>
+#include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 #include <cstring>
+#include <cstdio>
 
 using namespace std;
 using namespace std::chrono;
@@ -33,13 +35,13 @@ void ClientIoSubscriberImpl::OnDisConnect(SessionIdType sessionId, const char* i
 
     ioThread_->Stop();
 }
-void ClientIoSubscriberImpl::OnRecv(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer)
+void ClientIoSubscriberImpl::OnRecv(SessionIdType sessionId, const char* data, size_t length)
 {
     auto count = messageCounts_[sessionId];
     if (count % 100 == 0)
     {
-        WriteLog(LogLevel::Info, "ClientIoSubscriberImpl::OnRecv SessionId:[%lld], Length:[%zu], Data:[%s]", sessionId, buffer->GetLength(),
-                 buffer->GetData());
+        WriteLog(LogLevel::Info, "ClientIoSubscriberImpl::OnRecv SessionId:[%lld], Length:[%zu], Data:[%.*s]", sessionId, length,
+                 static_cast<int>(length), data);
     }
     if (messageCounts_[sessionId] < 10000)
     {
@@ -51,7 +53,6 @@ void ClientIoSubscriberImpl::OnRecv(SessionIdType sessionId, LinearBuffer<Buffer
         WriteLog(LogLevel::Info, "TimeCost:%lld ms", duration);
 
         io_->DisConnect(sessionId);
-        buffer->Deallocate();
     }
 }
 void ClientIoSubscriberImpl::Send(SessionIdType sessionId)
@@ -59,7 +60,7 @@ void ClientIoSubscriberImpl::Send(SessionIdType sessionId)
     auto count = ++messageCounts_[sessionId];
 
     ReqInsertOrderPackage reqInsertOrder;
-    reqInsertOrder.ReqInsertOrder = new ReqInsertOrderField();
+    reqInsertOrder.ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
     Utility::Strcpy(reqInsertOrder.ReqInsertOrder->AccountId, "Xunmeng001");
     Utility::Strcpy(reqInsertOrder.ReqInsertOrder->ExchangeId, "SHSE");
     Utility::Strcpy(reqInsertOrder.ReqInsertOrder->InstrumentId, "600036");
@@ -83,7 +84,12 @@ void ClientIoSubscriberImpl::SendCommand(SessionIdType sessionId, const char* cm
 {
     ++messageCounts_[sessionId];
     LinearBuffer<BufferSize>* buffer = LinearBuffer<BufferSize>::Allocate();
-    int n = sprintf(buffer->GetData(), "%s\r\n", cmd);
-    buffer->SetLength(n);
+    const size_t writeBufferSize = buffer->GetWriteBufferSize();
+    const int formattedLength = (writeBufferSize > 0) ? snprintf(buffer->GetData(), writeBufferSize, "%s\r\n", cmd) : 0;
+    // snprintf 返回"应有长度"而非实际写入量：被截断时该值大于写入量，
+    // 必须按容量上限收敛，否则 SetLength 的越界断言会被触发
+    const size_t boundedLength =
+        (formattedLength > 0 && static_cast<size_t>(formattedLength) < writeBufferSize) ? static_cast<size_t>(formattedLength) : 0;
+    buffer->SetLength(boundedLength);
     io_->Send(sessionId, buffer);
 }

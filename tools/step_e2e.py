@@ -24,10 +24,18 @@
   跑太短就只剩 1 帧）。此时不做间隔校验会让"条数与字段全部吻合"这句话**名不副实**，
   故按帧数不足直接判失败，而不是照常给绿灯。
 
+`--io-model` 选后端（见 `ApplyIoModelFromCommandLine`，即命令行第二个参数）。默认
+`Select`；`Iocp` 走 Windows 完成端口那套收发（`TcpIocp*`），其 `OnRecv` 回调拿到的是
+每连接常驻的缓冲区视图而非池借出物——两条读路径的缓冲所有权契约不同，故**两种模型都要各跑
+一轮**，只跑一种会漏掉另一套实现的回归。`Epoll` 按 `#ifdef __linux__` 编译，Windows 构建下
+`IoFactory` 会静默回退到 `Select`，于是这一轮就成了 `Select` 的重复跑（结论标注成 Epoll 却是
+Select 的成绩），故在此直接拒绝。
+
 用法：
-    python tools/step_e2e.py                     # 跑 40 秒，Debug 配置
+    python tools/step_e2e.py                          # 跑 40 秒，Debug 配置，Select 后端
     python tools/step_e2e.py --seconds 60
     python tools/step_e2e.py --config Release
+    python tools/step_e2e.py --io-model Iocp
 
 `--seconds` 有上限：服务端连上后 90 秒自停（`TestStepServer` 的 `sleep_for(90s)`），
 跑过这个窗口的后果是**后段成了死时间**——帧仍然存在、序号仍然等间隔，断言看不出
@@ -53,6 +61,10 @@ LOG_DIR = os.path.join(REPO_ROOT, 'log')
 # 20 秒只够凑出 2 帧，第 2 帧还可能被 terminate 连缓冲区一起丢掉
 DEFAULT_SECONDS = 40
 MAX_SECONDS = 80
+DEFAULT_IO_MODEL = 'Select'
+# TestClient/TestServer 接受的名字（与 GetIoModelString 同源）。Epoll 按 #ifdef __linux__ 编译，
+# Windows 构建下 IoFactory 静默回退 Select，跑出来的是 Select 的成绩却会挂 Epoll 的名，故挡在用法层
+PASSABLE_IO_MODELS = ('Select', 'Iocp')
 READY_TIMEOUT_SECONDS = 15
 READY_POLL_INTERVAL_SECONDS = 0.2
 # listen() 成功无日志可轮询，进程就绪后再留一段等 bind+listen 完成
@@ -94,17 +106,19 @@ SERVER_LOG_INTERVAL = 1000
 CLIENT_LOG_INTERVAL = 10000
 
 
-def parse_options(argv: list[str]) -> tuple[int, str]:
+def parse_options(argv: list[str]) -> tuple[int, str, str]:
     seconds = DEFAULT_SECONDS
     config = 'Debug'
+    io_model = DEFAULT_IO_MODEL
     index = 0
     while index < len(argv):
         argument = argv[index]
         if argument in ('-h', '--help'):
             print(__doc__)
             raise SystemExit(EXIT_PASS)
-        if argument not in ('--seconds', '--config'):
-            print(f'---- 无法识别的参数: {argument}（可用 --seconds N / --config Debug|Release / -h）', file=sys.stderr)
+        if argument not in ('--seconds', '--config', '--io-model'):
+            print(f'---- 无法识别的参数: {argument}（可用 --seconds N / --config Debug|Release / --io-model {"|".join(PASSABLE_IO_MODELS)} / -h）',
+                  file=sys.stderr)
             raise SystemExit(EXIT_USAGE)
         if index + 1 >= len(argv):
             print(f'---- {argument} 缺少取值', file=sys.stderr)
@@ -120,10 +134,16 @@ def parse_options(argv: list[str]) -> tuple[int, str]:
                 print(f'---- --seconds 需为 1~{MAX_SECONDS} 的正整数，收到 "{value}"（上限见模块文档：服务端 90 秒自停）',
                       file=sys.stderr)
                 raise SystemExit(EXIT_USAGE)
-        else:
+        elif argument == '--config':
             config = value
+        else:
+            if value not in PASSABLE_IO_MODELS:
+                print(f'---- --io-model 需为 {"|".join(PASSABLE_IO_MODELS)}，收到 "{value}"'
+                      f'（Epoll 按 #ifdef __linux__ 编译，Windows 下会静默回退 Select，故不接受）', file=sys.stderr)
+                raise SystemExit(EXIT_USAGE)
+            io_model = value
         index += 2
-    return seconds, config
+    return seconds, config, io_model
 
 
 def snapshot_log_names() -> set[str]:
@@ -142,10 +162,10 @@ def new_log_names(names_before: set[str], process_name: str) -> list[str]:
                   if name.startswith(process_name) and name.endswith('.log'))
 
 
-def start_test_process(executable_path: str, protocol_name: str) -> subprocess.Popen:
+def start_test_process(executable_path: str, protocol_name: str, io_model: str) -> subprocess.Popen:
     # stdout 一律 DEVNULL：给 PIPE 而不读，日志线程写满管道后会阻塞，
     # 表现成"跑十几条就不动了"的假卡死（2026-09-18 已用同型实验复现过）
-    return subprocess.Popen([executable_path, protocol_name], cwd=REPO_ROOT,
+    return subprocess.Popen([executable_path, protocol_name, io_model], cwd=REPO_ROOT,
                             stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
 
@@ -185,6 +205,13 @@ def check_log_health(log_name: str, text: str, failures: list[str]) -> None:
         print(f'  [WARNING 行（不计失败）] {log_name}: {line.strip()[:200]}')
 
 
+def check_io_model(role: str, log_name: str, text: str, io_model: str, failures: list[str]) -> None:
+    """`CreateIo` 打的是**请求**的模型，故本断言只证明参数抵达了工厂，不证明工厂选中了哪个后端类。"""
+    if f'IoModel:{io_model}' not in text:
+        failures.append(f'{role}（{log_name}）日志里没有 IoModel:{io_model}——命令行第二个参数没传到进程，'
+                        f'本轮并非所声明的后端')
+
+
 def check_frames(role: str, log_name: str, text: str, log_interval: int, failures: list[str]) -> None:
     """按 `Price == 100 + Volume == 100 + ClientOrderId` 校验每一帧，并查等间隔递增。"""
     frames = FRAME_PATTERN.findall(text)
@@ -219,7 +246,7 @@ def check_frames(role: str, log_name: str, text: str, log_interval: int, failure
 
 
 def main() -> None:
-    seconds, config = parse_options(sys.argv[1:])
+    seconds, config, io_model = parse_options(sys.argv[1:])
     executable_dir = os.path.join(REPO_ROOT, 'bin', config)
     server_exe = os.path.join(executable_dir, 'TestServer.exe')
     client_exe = os.path.join(executable_dir, 'TestClient.exe')
@@ -229,16 +256,16 @@ def main() -> None:
             raise SystemExit(EXIT_USAGE)
 
     names_before = snapshot_log_names()
-    print(f'---- STEP 端到端冒烟：{config} 配置，跑 {seconds} 秒')
+    print(f'---- STEP 端到端冒烟：{config} 配置，IO 模型 {io_model}，跑 {seconds} 秒')
     server_process = None
     client_process = None
     try:
-        server_process = start_test_process(server_exe, 'Step')
+        server_process = start_test_process(server_exe, 'Step', io_model)
         if not wait_for_server_ready(names_before, READY_TIMEOUT_SECONDS):
             print(f'---- 服务端 {READY_TIMEOUT_SECONDS} 秒内未就绪（日志里没出现 "{SERVER_READY_MARKER}"）', file=sys.stderr)
             raise SystemExit(EXIT_USAGE)
         time.sleep(BIND_LISTEN_GRACE_SECONDS)
-        client_process = start_test_process(client_exe, 'Step')
+        client_process = start_test_process(client_exe, 'Step', io_model)
         time.sleep(seconds)
     finally:
         terminate_process(client_process)
@@ -259,6 +286,8 @@ def main() -> None:
         failures.append('服务端没记录到客户端连接')
     if 'StepClient::OnConnect' not in client_text:
         failures.append('客户端没连上服务端（可能是启动竞态而非解析回归，先看两侧日志的时间戳）')
+    check_io_model('服务端', server_logs[0], server_text, io_model, failures)
+    check_io_model('客户端', client_logs[0], client_text, io_model, failures)
     check_frames('服务端读路径', server_logs[0], server_text, SERVER_LOG_INTERVAL, failures)
     check_frames('客户端读路径', client_logs[0], client_text, CLIENT_LOG_INTERVAL, failures)
 
@@ -267,7 +296,7 @@ def main() -> None:
         for failure in failures[:20]:
             print(f'  * {failure}')
         raise SystemExit(EXIT_FAILURE)
-    print('---- 通过：两端均解析成功，条数与字段全部吻合')
+    print(f'---- 通过（IO 模型 {io_model}）：两端均解析成功，条数与字段全部吻合')
 
 
 if __name__ == '__main__':

@@ -18,7 +18,6 @@ using namespace Spark::Packages;
 XtpClient::XtpClient()
     : Protocol(ProtocolTypeType::Xtp, ServerTypeType::Client, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
 {
-    reqInsertOrder_ = new ReqInsertOrderPackage();
     Subscribe(this);
     RegisterFront(TcpAddress);
 }
@@ -60,20 +59,22 @@ void XtpClient::OnMessage(Package* package)
 
 void XtpClient::SendReqInsertOrder(int index)
 {
-    reqInsertOrder_->Prepare(sessionId_, false, index);
-    reqInsertOrder_->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
-    memset(reqInsertOrder_->ReqInsertOrder, 0, sizeof(ReqInsertOrderField));
-    Utility::Strcpy(reqInsertOrder_->ReqInsertOrder->AccountId, "Xunmeng001");
-    Utility::Strcpy(reqInsertOrder_->ReqInsertOrder->ExchangeId, "SHSE");
-    Utility::Strcpy(reqInsertOrder_->ReqInsertOrder->InstrumentId, "600036");
-    reqInsertOrder_->ReqInsertOrder->Direction = DirectionType::Buy;
-    reqInsertOrder_->ReqInsertOrder->OffsetFlag = OffsetFlagType::Open;
-    reqInsertOrder_->ReqInsertOrder->OrderPriceType = OrderPriceTypeType::LimitPrice;
-    reqInsertOrder_->ReqInsertOrder->Price = 100 + index;
-    reqInsertOrder_->ReqInsertOrder->Volume = index;
-    reqInsertOrder_->ReqInsertOrder->ClientOrderId = index;
-    Send(reqInsertOrder_);
-    reqInsertOrder_->Deallocate();
+    // 与 StepClient 同理：包与其字段都按次领取、按次归还，不留在成员里跨次复用
+    ReqInsertOrderPackage* reqInsertOrder = ReqInsertOrderPackage::Allocate();
+    reqInsertOrder->Prepare(sessionId_, false, index);
+    reqInsertOrder->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
+    memset(reqInsertOrder->ReqInsertOrder, 0, sizeof(ReqInsertOrderField));
+    Utility::Strcpy(reqInsertOrder->ReqInsertOrder->AccountId, "Xunmeng001");
+    Utility::Strcpy(reqInsertOrder->ReqInsertOrder->ExchangeId, "SHSE");
+    Utility::Strcpy(reqInsertOrder->ReqInsertOrder->InstrumentId, "600036");
+    reqInsertOrder->ReqInsertOrder->Direction = DirectionType::Buy;
+    reqInsertOrder->ReqInsertOrder->OffsetFlag = OffsetFlagType::Open;
+    reqInsertOrder->ReqInsertOrder->OrderPriceType = OrderPriceTypeType::LimitPrice;
+    reqInsertOrder->ReqInsertOrder->Price = 100 + index;
+    reqInsertOrder->ReqInsertOrder->Volume = index;
+    reqInsertOrder->ReqInsertOrder->ClientOrderId = index;
+    Send(reqInsertOrder);
+    reqInsertOrder->Deallocate();
 }
 
 void TestXtpClient()

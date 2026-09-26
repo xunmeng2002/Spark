@@ -25,17 +25,18 @@ void ServerIoSubscriberImpl::OnDisConnect(SessionIdType sessionId, const char* i
     WriteLog(LogLevel::Info, "ServerIoSubscriberImpl::OnDisConnect SessionId:[%lld], IP:[%s], Port:[%d]", sessionId, ip, port);
 }
 
-void ServerIoSubscriberImpl::OnRecv(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer)
+void ServerIoSubscriberImpl::OnRecv(SessionIdType sessionId, const char* data, size_t length)
 {
     auto count = ++messageCounts_[sessionId];
     //if (count % 1000 == 0)
     {
         char message[2048] = {0};
-        auto n = sprintf(message, "ServerIoSubscriberImpl::OnRecv SessionId:[%lld], Data:[%s]", (long long)sessionId, buffer->GetData());
+        snprintf(message, sizeof(message), "ServerIoSubscriberImpl::OnRecv SessionId:[%lld], Data:[%.*s]", (long long)sessionId,
+                 static_cast<int>(length), data);
         WriteLog(LogLevel::Info, message);
     }
 
-    auto responseBuffer = new LinearBuffer<BufferSize>();
-    responseBuffer->Append(buffer->GetData(), buffer->GetLength());
+    auto responseBuffer = LinearBuffer<BufferSize>::Allocate();
+    responseBuffer->Append(data, length);
     io_->Send(sessionId, responseBuffer);
 }

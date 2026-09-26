@@ -25,7 +25,13 @@ bool TcpIocpClient::Init()
         WriteLog(LogLevel::Info, "GetAddrinfo for clientLocalAddressInfo_ Failed. ret:%d, Errno:%d", ret, WSAGetLastError());
         return false;
     }
-    PostConnect();
+    // 首连走 PostConnect 而非 TcpBase::Init 的 ConnectToServer，必须自行复位该标志：
+    // 否则 IOCP 的 IO 循环会认为没有在途连接，TryAutoReconnect 再连一次，出现双连接
+    autoConnectPending_ = true;
+    if (!PostConnect())
+    {
+        autoConnectPending_ = false;
+    }
     return true;
 }
 bool TcpIocpClient::ConnectToServer(const char* ip, unsigned short port)

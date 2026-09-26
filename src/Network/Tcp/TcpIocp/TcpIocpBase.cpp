@@ -305,7 +305,7 @@ void TcpIocpBase::OnRecvComplete(MyOverlapped* overlapped, int bytesTransferred)
     auto tcpConnect = static_cast<TcpConnect*>(overlapped->Connect);
     if (ioSubscriber_)
     {
-        ioSubscriber_->OnRecv(tcpConnect->SessionId, overlapped->MyBuffer);
+        ioSubscriber_->OnRecv(tcpConnect->SessionId, overlapped->MyBuffer->GetData(), static_cast<size_t>(bytesTransferred));
     }
     PostRecv(overlapped);
 }

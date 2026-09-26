@@ -20,7 +20,6 @@ public:
 
     std::chrono::steady_clock::time_point startTime_;
     int recvCount_;
-    Spark::Packages::ReqInsertOrderPackage* reqInsertOrder_;
 };
 
 void TestXtpClient();

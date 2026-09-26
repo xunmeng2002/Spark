@@ -17,7 +17,6 @@ using namespace Spark::Packages;
 StepClient::StepClient()
     : Protocol(ProtocolTypeType::Step, ServerTypeType::Client, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
 {
-    reqInsertOrder_ = new ReqInsertOrderPackage();
     Subscribe(this);
     RegisterFront(TcpAddress);
 }
@@ -58,20 +57,24 @@ void StepClient::OnMessage(Package* package)
 }
 void StepClient::SendReqInsertOrder(int index)
 {
-    reqInsertOrder_->Prepare(sessionId_, false, index);
-    reqInsertOrder_->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
-    memset(reqInsertOrder_->ReqInsertOrder, 0, sizeof(ReqInsertOrderField));
-    Utility::Strcpy(reqInsertOrder_->ReqInsertOrder->AccountId, "Xunmeng001");
-    Utility::Strcpy(reqInsertOrder_->ReqInsertOrder->ExchangeId, "SHSE");
-    Utility::Strcpy(reqInsertOrder_->ReqInsertOrder->InstrumentId, "600036");
-    reqInsertOrder_->ReqInsertOrder->Direction = DirectionType::Buy;
-    reqInsertOrder_->ReqInsertOrder->OffsetFlag = OffsetFlagType::Open;
-    reqInsertOrder_->ReqInsertOrder->OrderPriceType = OrderPriceTypeType::LimitPrice;
-    reqInsertOrder_->ReqInsertOrder->Price = 100 + index;
-    reqInsertOrder_->ReqInsertOrder->Volume = index;
-    reqInsertOrder_->ReqInsertOrder->ClientOrderId = index;
-    Send(reqInsertOrder_);
-    reqInsertOrder_->Deallocate();
+    // 池只认自己发出去的指针：本对象与其中的字段都必须在本次调用内成对领取/归还，
+    // 故按次领一个包而非常驻成员——常驻成员归还后再用，既是池契约下的未定义行为，
+    // 也会把同一个指针重复推入空闲链
+    ReqInsertOrderPackage* reqInsertOrder = ReqInsertOrderPackage::Allocate();
+    reqInsertOrder->Prepare(sessionId_, false, index);
+    reqInsertOrder->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
+    memset(reqInsertOrder->ReqInsertOrder, 0, sizeof(ReqInsertOrderField));
+    Utility::Strcpy(reqInsertOrder->ReqInsertOrder->AccountId, "Xunmeng001");
+    Utility::Strcpy(reqInsertOrder->ReqInsertOrder->ExchangeId, "SHSE");
+    Utility::Strcpy(reqInsertOrder->ReqInsertOrder->InstrumentId, "600036");
+    reqInsertOrder->ReqInsertOrder->Direction = DirectionType::Buy;
+    reqInsertOrder->ReqInsertOrder->OffsetFlag = OffsetFlagType::Open;
+    reqInsertOrder->ReqInsertOrder->OrderPriceType = OrderPriceTypeType::LimitPrice;
+    reqInsertOrder->ReqInsertOrder->Price = 100 + index;
+    reqInsertOrder->ReqInsertOrder->Volume = index;
+    reqInsertOrder->ReqInsertOrder->ClientOrderId = index;
+    Send(reqInsertOrder);
+    reqInsertOrder->Deallocate();
 }
 
 void TestStepClient()

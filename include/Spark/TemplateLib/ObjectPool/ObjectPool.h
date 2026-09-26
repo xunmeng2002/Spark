@@ -4,6 +4,12 @@
 #include <mutex>
 #include <stdexcept>
 #include <utility>
+#ifndef NDEBUG
+#include <cassert>
+#include <cstdio>
+#include <typeinfo>
+#include <unordered_set>
+#endif
 
 namespace Spark
 {
@@ -48,6 +54,9 @@ public:
 
         T* obj = reinterpret_cast<T*>(node);
         new (obj) T(std::forward<Args>(args)...);
+#ifndef NDEBUG
+        RegisterAllocatedItem(obj);
+#endif
         return obj;
     }
 
@@ -63,6 +72,9 @@ public:
         if (item == nullptr) [[unlikely]]
             return;
 
+#ifndef NDEBUG
+        AssertAndUnregisterOwnedItem(item);
+#endif
         item->~T();
         FreeNode* node = reinterpret_cast<FreeNode*>(item);
         node->Next = threadLocalCache_.FreeListHead;
@@ -98,6 +110,17 @@ private:
         int FreeNodeCount = 0;
     };
 
+#ifndef NDEBUG
+    // 池只认自己发出去的指针：同一指针被归还两次，或把 new 出来的外来指针交给池，
+    // 都只会先把空闲链写成自环（或把外部内存挂进链里），此后才以别处的越界写、
+    // 串数据甚至崩溃现形——现场离根因很远。故在这一步就地拦下，并报出类型与指针。
+    struct OwnedItemRegistry
+    {
+        std::mutex Mutex;
+        std::unordered_set<T*> LiveItems;
+    };
+#endif
+
     // 槽位步长按空闲节点所需的对齐取整：T 的 sizeof 不是 alignof(FreeNode) 的整数倍时
     // （4 字节对齐的字段类型即如此），&newObjects[i] 会落在 8 字节对齐之外，节点指针即错位访问
     static constexpr size_t SlotByteCount = ObjectPoolDetail::SlotByteCountFor<T, FreeNode>;
@@ -119,6 +142,49 @@ private:
     }
     ObjectPool(const ObjectPool&) = delete;
     ObjectPool& operator=(const ObjectPool&) = delete;
+
+#ifndef NDEBUG
+    static OwnedItemRegistry& GetOwnedItemRegistry()
+    {
+        static OwnedItemRegistry registry;
+        return registry;
+    }
+
+    static void ReportOwnershipViolation(const char* violation, T* item)
+    {
+        fprintf(stderr, "ObjectPool<%s> %s: item:%p\n", typeid(T).name(), violation, static_cast<const void*>(item));
+        assert(false && "ObjectPool ownership violation");
+    }
+
+    static void RegisterAllocatedItem(T* item)
+    {
+        bool wasNewlyHeld = false;
+        {
+            OwnedItemRegistry& registry = GetOwnedItemRegistry();
+            std::lock_guard<std::mutex> guard(registry.Mutex);
+            wasNewlyHeld = registry.LiveItems.insert(item).second;
+        }
+        if (!wasNewlyHeld)
+        {
+            ReportOwnershipViolation("Allocate handed out an item that is already held", item);
+        }
+    }
+
+    // 摘牌与解构分成两步：先释放登记表的锁，再调析构——析构里若归还本池的另一个对象便不会自锁
+    static void AssertAndUnregisterOwnedItem(T* item)
+    {
+        bool wasHeld = false;
+        {
+            OwnedItemRegistry& registry = GetOwnedItemRegistry();
+            std::lock_guard<std::mutex> guard(registry.Mutex);
+            wasHeld = registry.LiveItems.erase(item) == 1;
+        }
+        if (!wasHeld)
+        {
+            ReportOwnershipViolation("Deallocate got an item that is not currently held", item);
+        }
+    }
+#endif
 
     // 本地链耗尽时调用：池内已无空闲节点则先申请一块，再从共享链摘一批到本地链
     void RefillThreadLocalFreeList()

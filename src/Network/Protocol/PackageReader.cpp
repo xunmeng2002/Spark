@@ -46,7 +46,7 @@ void PackageReader::Reset()
     discardLength_ = 0;
 }
 
-unsigned int PackageReader::Append(char* data, unsigned int len)
+unsigned int PackageReader::Append(const char* data, unsigned int len)
 {
     len = std::min(len, TailSize());
     memcpy(Tail(), data, len);
