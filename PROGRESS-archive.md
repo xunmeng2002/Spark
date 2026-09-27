@@ -4,6 +4,10 @@
 
 ## ✅ 原已完成
 
+### D.48
+
+- **2026-09-26 · 收包契约改借出视图 + `IoModel` 命令行开关 + `ObjectPool` 所有权检测器 + IOCP 首次自动化覆盖（提交 `b4b26a8`）**：①**契约（批 1）**：`IoSubscriber::OnRecv` 形参由 `(SessionIdType, LinearBuffer<BufferSize>*)` 改为 `(SessionIdType, const char* data, size_t length)`——收包缓冲归 IO 层、仅在本次回调期间有效，订阅者不得归还或留存，`data` 不保证 NUL 结尾（`TcpBase::DoRecv` 原先补的 `data[len] = '\0'` 随之删除）。旧签名把「归还」写成可写动作，而四后端分成两派（`TcpBase`/`ShmBase` 每次 recv 现领、`TcpIocpBase` 交每连接常驻缓冲），`Protocol::OnRecv` 跟了多数派 → 在 IOCP 上把常驻缓冲还进了池（归档 `Q.35`）；改签名后归还动作在类型上不可写，`Protocol::OnRecv` 与 `PackageReader::Append` 随之内改为只读视图（后者形参加 `const`，**导出符号名随之改变**）。②**`IoModel` 开关（批 2）**：此前全仓唯一赋值处是 `TestUtility.cpp:15` 的 `Select`，IOCP/Epoll 分支**从未被任何测试或冒烟选中**；新增 `TryParseIoModel`/`ApplyIoModelFromCommandLine`（名字取自 `GetIoModelString`、与日志同源），`TestServer`/`TestClient` 读第二个命令行参数，`step_e2e.py` 增 `--io-model` 并断言日志里的 `IoModel` 串（**只证明参数抵达工厂、不证明工厂选中哪个后端类**）；单测 +8 条，并把 4 条既有用例的 RAII 守卫抽成 `GlobalValueGuard<T>` 消 DRY。③**IOCP 从未工作过，本批才暴露**：四个文件把 `new` 出来的池对象交给池归还（`ReqInsertOrderPackage`/`ReqInsertOrderField` 共 4 处）→ 空闲链自环、堆损坏，表现为**连接后约 5 ms 段错误、崩溃点每次运行都换**；定位靠新写的 Debug-only 检测器（`ObjectPool` 维护「已发放指针」集合，归还时校验并报类型与指针），首次发送即点名 `ReqInsertOrderPackage`。④**同批揪出双连接**：`TcpIocpClient::Init()` 走 `PostConnect` 而非 `TcpBase::ConnectToServer`、从不置 `autoConnectPending_` → `TryAutoReconnect` 在首轮 IO 循环再连一次（两端各 2 条 `Protocol::OnConnect`）；补该标志（3 行，与 `TcpBase::Init` 同构）后两端各 1 条。⑤**验证**：四档 0 warning，单测 MSVC **456/456**、WSL GCC **454/454**；`initcheck --gate` 乱序 0、`s4scan --gate` 通过；`step_e2e.py` **Select 与 Iocp 两档均通过**（Iocp 首次通过）；新增 `TcpIocpTest`（Windows-only 真实回环：服务器逐帧回显 200 条互不相同的委托单，断言两端各 1 条连接、往返零断连、逐帧字段与顺序完好），**并做过敏感性验证**——临时撤回那 3 行，该用例立刻变红（2 条连接 / 服务端 400 条 / 客户端 256 条），恢复后转绿；Release 下原始订阅者冒烟（Tcp 与 Shm）各 0 ERROR、回显持续。⑥**覆盖诚实说明与超出计划部分**：IOCP 的自动化覆盖**只有这一条用例**（CI 只跑 `initcheck`/`s4scan` 与 GCC 编译，**不跑单测、不跑 e2e**）；原始 `IoBase` 订阅者路径在 **Debug 下会被检测器拦下**——那是**独立的既有缺陷**（跨模块池实例不共享，见归档 `Q.39`）。修 IOCP 崩溃与双连接**都不在「批 1 + 批 2」字面范围内**，是「让 IOCP 真跑起来」才暴露的既有缺陷（分别落在内存回收路径与连接建立路径），按 Harness §3.2 在此留痕供复核。
+
 ### D.47
 
 - **2026-09-26 · `ObjectPool` 并发崩溃定性 + B 方案落地（线程本地空闲链 + 冷路径整批搬运）**：①**定性为既有缺陷，根因是 `Allocate` 的 Treiber pop 的 ABA**——「读 `Next`→CAS」非原子对，另一线程在同窗口内 pop 走同一节点、placement-new 覆写其首 8 字节（节点 `Next` 与 `T` 负载共用同一片内存）再推回，CAS 遂以**陈旧 `Next`** 成功、把活对象的**负载**发布成新链头；物证是 SIGSEGV 恒为 `si_code=1`、故障地址（`0x1`–`0x1779`）恰为另一线程写下的负载标签。②**同负载同检测器前后对照**（8 线程 × 2000 轮 × 每轮持 12 个，冷池起步）：旧实现（HEAD 原文、仅换命名空间）**23/400** 进程失败、样本全部先报 `DOUBLE OWNERSHIP` 再崩，新实现 **0/1000**；窗口论另见受控实验（插 `yield()` 的副本 17/25 vs 原版 0–2/60）。**`Release`/`-O2` 干净是时序侥幸，不是安全。**③**B 方案**（用户授权）：每线程只在自己私有的空闲链上 pop/push（热路径退化为普通指针操作），共享链改为**只在 `mutex_` 内读写的普通单链表**、取还各按一块整批搬运，ABA 由构造消除；公开 API 与调用点零改动。④**顺带修一处既有错位访问（超出 B 草图，已在代码后说明）**：`RspInfoField`（`sizeof 260`、`alignof 4` → `260 % 8 = 4`）使奇数槽位上的节点一直落在 8 字节对齐之外（x86 不炸、属 UB）；现按 `alignof(FreeNode)` 取整槽位步长（`ObjectPoolDetail::SlotByteCountFor`）并补过对齐断言，原 `sizeof(T) % 8 == 0` 断言撤销。⑤**验证**：四档 0 warning；单测 **MSVC 447/447、WSL GCC 446/446**（各 +4）；新并发用例（登记「此刻被持有地址」、重复登记即同一节点被发出两次）WSL Debug 100 次、`MultiThreadAllocate` 200 次、整套 60 次 0 失败；`clang-format`/`initcheck`（乱序 0）/`s4scan --gate`（6 条未增）/`step_e2e`（真 STEP 帧往返、服务端走 IOCP）通过。⑥**覆盖诚实说明**：整批搬运只在并发用例里被压到（`MultiThreadAllocate` 每线程只持 1 个）；线程退出时本地链残留节点**不回收**（上界约每退出线程一块），回收须 TLS 析构调 `GetInstance()`、撞静态析构顺序，本批接受并说明。
@@ -685,6 +689,30 @@
     方向是"此前静默跳过的字段开始被赋值"，属**行为变更**（修漏），已确认对现有全部消费方零输出。
 
 ## ❓ 原待讨论 / 待决策
+
+### Q.47
+
+- **Shm 后端两处健壮性缺口（2026-09-24 实测登记，待决）**：①**同名对象残留会让 `Init` 永久失败**：Server 侧用独占创建（Windows `CreateFileA(…, CREATE_NEW, …)` / Linux `shm_open(O_CREAT\|O_EXCL)`）且**无「已存在则改为打开」的回退**；已删除的 `SingleShm::Init` 里**有**这条回退（`CREATE_NEW` 失败即 `OpenFileMappingA`），`ShmBase` 没有。冒烟侧的操作规则与实测数字见本区「Shm 冒烟必须先清残留进程与 `TestShm`」条。**待决**：是否给 `ShmBase` 补回退（行为变更，宜与下条同批裁定）。
+
+**半关闭（2026-09-27，提交 `a87f611`）**：①服务端独占创建失败且错误恰为「已存在」时改为打开既有对象（Windows `ERROR_FILE_EXISTS` → `OPEN_EXISTING`；Linux `EEXIST` → `shm_open(O_RDWR)`），复用前 Linux 侧以 `fstat` 校验 `st_size`（不够则拒绝）、Windows 侧靠 `MapViewOfFile` 响亮失败兜住；②`Sem` 名称的前导 `/` **未动**、仍留主文件 ❓ 区（须与 `ShmBase::LinuxInit` 的 `shm_open` 同批补）。相关约定见 `docs/shm-shared-object-lifecycle.md` 第三、四节。
+
+### Q.46
+
+- **本轮三批的覆盖缺口 / 死代码 / 既有格式违规（2026-09-24 登记，待决）**：①**覆盖缺口两处**：(a) `ShmBase::Send` 的「通道写满」分支（返 0 → 等 1ms 重试 / 对端断连则丢弃）**无覆盖**——冒烟每轮 10000 次往返也难填满 1 MiB 通道，正确性依赖 `ShmBuffer::Write` 的返 0 语义（已由 `ShmTestFixture.CountersReachChannelSizeExactly` 钉住）；(b) `Init()` 的 `maxConnectSize_ < 1` 门禁与未 Attach 返 0 的覆盖**已于 2026-09-24 补上**（见 ✅ 区；登记时写的两处理由均不成立）。**覆盖深度诚实说明**：四条用例钉的是**契约**（非法连接数 → `Init` 返 `false`；未 Attach → 各入口惰性），**不是门禁本身**——门禁若撤除，`abc`/`0` 两例在四档下**仍会返 `false`**（映射长度 0 会让 `CreateFileMappingA`/`mmap` 失败），差别只在「早拒、且不创建任何 OS 资源」，而该差别无法从公开 API 观测，故未强加平台相关的实现断言。②**Shm 侧两处死代码**：`ShmBase.h:44` 的 `lastSendTime_` 全仓**零引用**；`ShmBase::DoSend`（`ShmBase.cpp:172`）override 了 `IoBase` 纯虚却**从无调用点**（调用只在 Tcp 后端：`TcpEpollBase.cpp:54,94`、`TcpSelectBase.cpp:71`）——这正是本轮 `Send` 不能照抄 `TcpBase::Send`（重投 + 唤醒）的根据。**待决**：删 `lastSendTime_`（一行、无连累）；`DoSend` 的 shm 实现留作接口对齐还是连同 `IoBase` 该纯虚一起重审。
+
+**半关闭（2026-09-27，提交 `a87f611`）**：删 `ShmBase.h` 的 `lastSendTime_`（全仓零引用）。`ShmBase::DoSend` 未动，其去留要连同 `IoBase::DoSend` 这条纯虚一起裁定、仍留主文件；本条 ① 的覆盖缺口与 ③ 的 4 处 clang-format 违规（既有）亦未动、仍留主文件。
+
+### Q.45
+
+- **`ShmBuffer::AttachSingleConnectionSharedMemory` 失去唯一真实调用者（2026-09-24 `SingleShm` 删除的连带代价，待决）**：该公开方法（`ShmBuffer.h:60`，位于**已安装**头 `include/Spark/TemplateLib/Buffer/ShmBuffer.h`）此前唯一的生产调用点是 `SingleShm::Init`；删除后只剩 `ShmBufferTest.cpp` 的布局钉桩在用它，即**测试成了它唯一的存续理由**。**待决**：①**（我的建议）保留**——它是公开头里的已发布 API，删它按 Harness §3.1 须单独授权，且「由测试钉住的公开方法」并不自相矛盾（它钉的是单连接布局：头在偏移 0、双向通道紧随其后）；②若一并删除，须连同该布局钉桩与 `SingleShmHeader` 的单连接用法一起清，属公开 API 收缩。删除决策的完整论证（三选一、导出实测、无构造点复核）见归档 `Q.33`。
+
+**关闭（2026-09-27，本批裁定）**：**保留不动**。用户 2026-09-27 授权本批范围时未授权删除公开 API（Harness §3.1），故不删；「测试成了唯一调用者」不构成收缩理由，理由见归档 `Q.33`。
+
+### Q.44
+
+- **`ShmBase::GetSharedMemoryMappingSize()` 的 32 位环绕（2026-09-24 批 B 登记，**既有**缺陷）**：`ShmBufferSize * maxConnectSize_ * 2`（1 MiB × N × 2）以 `unsigned` 计算，`maxConnectSize_ ≥ 2048` 即溢出 2^32。**恰好 2048 → 0**：`mmap(…, 0, …)` 必定 `EINVAL` 返 `MAP_FAILED`（`ftruncate(fd, 0)` 会先成功），Windows 侧 `CreateFileMappingA` 的 `dwMaximumSize == 0` 语义是「取文件当前大小」而该文件刚以 `CREATE_NEW` 建出、长度为 0，故亦失败——**这一档是响亮失败**。**2049 及以上 → 一个小的非零值**（2049 → 2 MiB）：三个映射调用**全部成功**、映射却被严重欠配，随后 `ShmConnect` 按 `index * 2 * Size` 定位通道时**越界写**——**这一档是静默的**。`maxConnectSize_` 来自 `atoi(port_.c_str())`（地址串 `shm://<name>:<port>` 的 port 段），**无任何值域校验**。**2026-09-24 已补下限**（`ParseInteger` + `Init()` 的 `maxConnectSize_ < 1` 拒绝，提交 `4f1775c`），**上限仍无**：2048..4294967295 全部可达，本条缺陷主体（≥2048 静默欠配 / =2048 响亮失败）不变——仅 > `UINT_MAX` 一档被解析失败拦下。**本批把 6 处重复收敛为 `GetSharedMemoryMappingSize()` 一个定义点，故修法现在只需改一行**（加 `assert` / 钳位 / 改 `size_t` + 值域校验）；未擅动是因为改返回类型会连带改变上面 6 个调用点「一致地环绕」的既有语义，属行为变更，须单独裁定。
+
+**关闭（2026-09-27，提交 `a87f611`）**：新增 `MaxSharedMemoryConnectSize = (std::numeric_limits<unsigned>::max)() / (ShmBufferSize * 2) = 2047` 与 `IsConnectSizeAllowed()`，在创建任何 OS 资源之前拒掉，`Init()` 首行调用；未走「改返回类型」那条路（会改 6 个调用点一致环绕的既有语义，当前无需）。新增用例 `Init_RejectsConnectSizeWhoseMappingWouldWrap` 钉住 2049，撤掉门禁即变红（`Init()` 返 `true`）。相关约定见 `docs/shm-shared-object-lifecycle.md` 第二节。
 
 ### Q.43
 
