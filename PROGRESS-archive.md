@@ -4,6 +4,14 @@
 
 ## ✅ 原已完成
 
+### D.46
+
+- **2026-09-24 · 按用户裁定删除 `SingleShm`（220 行）+ 补 Shm 单测 4 条（`Init` 门禁 ×3、未 Attach 惰性 ×1）**：①**删除**（用户裁定「本就是为了测试写的」）：`SingleShm.h`/`.cpp` 220 行，连带 `IoFactory.cpp:12` 的死 `#include`、`tools/README.md:33` 的示例路径、`ShmBufferTest.cpp:427` 分节注释。**代价**：批 C 刚为它做的 5 处映射尺寸消 DRY 随之归零，留痕备查而非抹去。删前已核该文件未导出、全仓无 `new SingleShm`，公开面零变化（导出符号实测见归档 `Q.33`）。②**补 4 条单测**：新增 `test/unittest/Network/ShmInitTest.cpp`，经 `IoFactory::CreateIo` + `IoBase*` 钉 `Init()` 门禁——连接数段 `abc`（`from_chars` 拒收）与 `0`（触 `< 1` 门禁）各返 `false`，`1`（最小合法值＝门禁边界）返 `true` 作正对照，使「返 false」不至于在 shm 整体不可用时**假绿**；`ShmBufferTest.UnAttachedBufferRejectsAllChannelAccess` 钉未 Attach 实例的惰性（`Write`/`Read`/两个 `GetXxxBufferSize` 返 0、`MarkDisconnected` 返 `false`、两个 setter 不生效）。③**有一条已获授权但未使用**：测试走工厂而非 include `src/Network`——实测放开 include 后 MSVC **编得过、链不过**（该类族在 `Networkd.lib` 中命中 0），Linux 却因默认全导出能过、会造成档间分裂（数字见 `Q.33`）；授权保持未使用。④验证：四档 0 warning，单测 **MSVC 两档 443/443、WSL GCC 两档 442/442**（各 +4 即本批四条）；`s4scan` 候选仍 6 条、`initcheck` 乱序 0、`clang-format` 三个改动文件通过；Shm 冒烟 **5/5**、`step_e2e` 通过。⑤**顺带关闭**：`CsvParser` 属第三方库（用户裁定「别动了」），`cursor_ = const_cast<char*>(csvText_)` 保持原样、该 const 剥离问题就此关闭——**该裁定只覆盖 `CsvParser.*`**，`CsvRecord.*` 那批偏差（见 ❓ 区）不在其内。⑥`.gitignore` 加一行 `/SparkShmUnitTest*`：新用例按运行取唯一名、异常退出会在仓库根残留（与既有 `/TestShm` 同因）。
+
+### D.45
+
+- **2026-09-24 · 指针类 C 风格 cast 清零 36 处 / 12 文件（提交 `2d546ab`）**：①**逐条判定**而非机械替换——先用实测确立 `static_cast` 的可适用范围（GCC 13 试例 `casttest.cpp`）：仅 (a) 多态基类指针→派生类指针、(b) `void*`→对象指针、(c) 加 `const` 三类可用；`int*`→`char*`/`const char*` 与**无继承关系的结构体指针互转**（含 `MyOverlapped**`→`OVERLAPPED**`，指针的指针不具协变性）均被 GCC 拒绝，故一律 `reinterpret_cast`——取交集，避免「MSVC 通过而 GCC 拒绝」的分裂。②**单列发现**：`CsvParser.cpp` 的 `cursor_ = (char*)csvText_` 实为**丢 `const`**（`csvText_` 是 `const char*`、`cursor_` 是 `char*`），改 `const_cast` 把这一处显式标出——剥 `const` 后若写穿 `cursor_` 而实参本是 const 缓冲，即 UB。③3 行因 cast 变长超列宽，按 `clang-format` 重排（`TcpIocpClient.cpp` 1、`TcpIocpServer.cpp` 1）；**未顺手动** `TcpIocpBase.cpp` 既有 4 处违规（HEAD 即 4 处，另登记 ❓ 区）。④验证：四档 0 warning；MSVC 两档 **439/439**、WSL GCC 两档 **438/438**；`s4scan` 候选 6 条、`initcheck` 乱序 0；**Step over TCP 端到端**（`tools/step_e2e.py --seconds 20`：42 服务端帧 / 4 客户端帧，两端解析成功、条数字段吻合）通过；Shm 冒烟 5/5 干净。⑤**覆盖诚实说明**：IOCP 与 Epoll 分支的 cast（`TcpIocpBase` 7、`TcpIocpClient` 2、`TcpIocpServer` 3、`TcpEpollBase` 4）是 Windows/Linux 各自独有的编译分支，本机两档 WSL 不编译，**仅经 MSVC 编译验证、无运行期覆盖**（IOCP 全无自动化覆盖：全仓 `IoModel` 唯一赋值处 `TestUtility.cpp:14` 是 `Select`）。
+
 ### D.44
 
 - **2026-09-24 · §6 收紧：Shm 连接数改走 `ParseInteger` + `ShmBuffer` 空指针收口（提交 `4f1775c`）**：①`ShmBase.cpp` 的 `maxConnectSize_ = atoi(port_.c_str())` 改走仓内既有 `StepUtility::ParseInteger`（依据 `StepUtility.h:109` 明写「窄类型直接 `atoi` 会静默截断，所以必须走这里」；该实现基于 `from_chars`，格式非法/越界均返 `false` 且**不回写出参**，故失败时显式置 0——`maxConnectSize_` 无类内初始值）。**危害链**：该值经 `GetSharedMemoryMappingSize() = ShmBufferSize * maxConnectSize_ * 2` 决定映射长度，非数字端口 → 0 → 映射 0 字节 → 写 `Status` 即解引用 0 长度映射；负值经 `unsigned` 回绕成巨大值。②`Init()` 新增 `maxConnectSize_ < 1` 门禁（构造无法返失败，故判定放 `Init()`），记 `Warning` 返 `false`，早于 `semConnect_->Init()`、**不创建任何 OS 资源**。③`ShmBuffer` 侧按 §5 把内联判空抽为私有 `IsAttached()`、10 处统一走它，并给 `Write`/`Read`/`GetWriteBufferSize`/`GetReadBufferSize` 补同样判空（返 0）——这四处是全部私有通道函数的唯一入口，判在外层即覆盖四个方向；合法路径零变更。④验证：四档 0 warning；MSVC 两档 **439/439**、WSL GCC 两档 **438/438**；`clang-format`/`initcheck`（乱序 0）/`s4scan`（候选 6 条未增）通过；Shm 冒烟 5/5 干净。⑤本批同时关闭 ❓ 区批 A 登记项 **⑤** 与 **⑧中-3**；两条新增用例无覆盖的原因已单列 ❓ 条。
@@ -673,6 +681,18 @@
     方向是"此前静默跳过的字段开始被赋值"，属**行为变更**（修漏），已确认对现有全部消费方零输出。
 
 ## ❓ 原待讨论 / 待决策
+
+### Q.42
+
+- **判据写反（最要紧的一条）**：`TcpIocpServer::PostAccept` 用 `ret != 0 && lastError != ERROR_IO_PENDING` 判失败，而 `AcceptEx` 是 Win32 `BOOL`（成功 TRUE、失败 FALSE）——**真失败时该条件永不成立**（实测一次 Iocp 运行：6 次 `PostAccept`／1 次完成／0 次该分支），于是失败被静默吞掉、`PostAccept` 照返 `true` 而实际没有任何在途 accept，本该被关掉的那个 socket 与连接对象也一并漏下。**待决**：判据是否改为 `!ret && lastError != ERROR_IO_PENDING`（一行）——修正后 ✅ 区那条撤回的回收一行即可启用。
+
+### Q.41
+
+- **STEP 冒烟收到的包对象从不归还（2026-09-26 复查新登记，**既有**）**：`StepClient::OnMessage` 与 `StepServer::OnMessage` 拿到 `Package*` 后**都不 `Deallocate()`**，`Protocol::OnRecv` 也不代还（契约应属订阅者），于是每帧泄漏一个包对象与其中的字段对象。实测量级：40 秒 Select 冒烟服务端记 113 行样本（每 1000 帧一行）≈ 11 万个包；Debug 下检测器为每个在册对象保留一条记录，等于把这处泄漏的代价放大（也是本轮 Debug 吞吐低于 Release 的原因之一）。**待决**：是否随下一批一并修（每处一行），或与「收包包所有权」的成文契约一并定夺。
+
+### Q.40
+
+- **`TcpIocpClient::PostConnect` 失败路径不回收资源（2026-09-26 复查新登记，**既有**）**：`ConnectEx` 立即失败（非 `ERROR_IO_PENDING`）时直接 `return false`，此前领的 `TcpIocpConnect`、`MyOverlapped` 与其 `MyBuffer`（64 KiB 池对象）、以及 `PrepareConnectSocket()` 建的 socket **一个都不回收**；`TryAutoReconnect` 每 3 秒重试一次，即每 3 秒泄漏一份。**本批的双连接修复不改变该泄漏的存在与频率**（修复前标志恒 `false`，同样由 3 秒间隔驱动）。**待决**：是否立项回收（涉 IOCP 连接建立路径，须单独授权）。
 
 ### Q.39
 
