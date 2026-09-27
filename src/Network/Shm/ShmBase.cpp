@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #endif
+#include <cassert>
 #include <chrono>
 #include <cstddef>
 #include <thread>
@@ -227,6 +228,11 @@ void ShmBase::DoRecv(Connect* connect)
     buffer->Deallocate();
 }
 
+void ShmBase::AddConnect(Connect* connect)
+{
+    assert(connect != nullptr && dynamic_cast<ShmConnect<ShmBufferSize>*>(connect) != nullptr);
+    IoBase::AddConnect(connect);
+}
 bool ShmBase::WindowsInit()
 {
 #ifdef _WIN32

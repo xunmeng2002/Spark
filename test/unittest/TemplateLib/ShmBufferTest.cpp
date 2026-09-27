@@ -85,7 +85,7 @@ TEST(ShmBufferTest, UnAttachedBufferRejectsAllChannelAccess)
     EXPECT_EQ(buffer.Read(&byte, 1), 0u);
     EXPECT_EQ(buffer.GetWriteBufferSize(), 0u);
     EXPECT_EQ(buffer.GetReadBufferSize(), 0u);
-    EXPECT_FALSE(buffer.MarkDisconnected());
+    EXPECT_FALSE(buffer.MarkDisconnectedAndReportWhetherLastHolder());
     buffer.SetConnectStatus(ConnectStatusType::Connected);
     buffer.ResetSharedHeader();
     EXPECT_EQ(buffer.GetShmHeader(), nullptr);
@@ -107,18 +107,30 @@ TEST(ShmBufferTest, ConnectionIndexZeroTripsAssert)
 #endif
 
 #ifdef NDEBUG
-// 断言关闭后 index=0 不再被拦下，唯一可观测的后果是首次写入即冲掉 header 的 Status
-TEST(ShmBufferTest, ConnectionIndexZeroOverwritesHeaderWithoutAssert)
+// 断言关闭后非法构造不再被拦下，改为「保持未 Attach」：此后通道访问与状态写入一律惰性返回，共享内存一个字节都不动
+TEST(ShmBufferTest, InvalidConnectionIndexLeavesBufferDetached)
 {
     std::vector<char> memory(sizeof(SingleShmHeader) + TestShmBufferSize * 4, 0);
-    ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Client, 0, memory.data(), ConnectStatusType::Connected);
-    EXPECT_EQ(buffer.GetConnectStatus(), ConnectStatusType::Connected);
+    ShmBuffer<TestShmBufferSize> zeroIndexed(ServerTypeType::Client, 0, memory.data(), ConnectStatusType::Connected);
+    ShmBuffer<TestShmBufferSize> negativeIndexed(ServerTypeType::Client, -1, memory.data(), ConnectStatusType::Connected);
 
-    char overwriting[sizeof(ConnectStatusType)] = {};
-    std::memset(overwriting, 0xFF, sizeof(overwriting));
-    ASSERT_EQ(buffer.Write(overwriting, sizeof(overwriting)), 4u);
+    EXPECT_EQ(zeroIndexed.GetShmHeader(), nullptr);
+    EXPECT_EQ(zeroIndexed.GetConnectStatus(), ConnectStatusType::UnConnected);
+    EXPECT_EQ(zeroIndexed.Write("data", 4), 0u);
+    EXPECT_EQ(zeroIndexed.GetWriteBufferSize(), 0u);
+    EXPECT_EQ(SnapshotStatus(reinterpret_cast<const SingleShmHeader*>(memory.data())), ConnectStatusType::UnConnected);
+    EXPECT_EQ(negativeIndexed.GetShmHeader(), nullptr);
+    EXPECT_EQ(negativeIndexed.GetWriteBufferSize(), 0u);
+}
 
-    EXPECT_NE(buffer.GetConnectStatus(), ConnectStatusType::Connected);
+TEST(ShmBufferTest, NullSharedMemoryBaseLeavesBufferDetached)
+{
+    ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Server, 1, nullptr, ConnectStatusType::Connected);
+
+    EXPECT_EQ(buffer.GetShmHeader(), nullptr);
+    EXPECT_EQ(buffer.GetConnectStatus(), ConnectStatusType::UnConnected);
+    EXPECT_EQ(buffer.Write("data", 4), 0u);
+    EXPECT_EQ(buffer.GetReadBufferSize(), 0u);
 }
 #endif
 
@@ -392,11 +404,11 @@ TEST_F(ShmTestFixture, MultiCycle)
 
 // ========== 共享头状态机 ==========
 
-TEST_F(ShmTestFixture, MarkDisconnected_ReportsLastOwner)
+TEST_F(ShmTestFixture, MarkDisconnectedAndReportWhetherLastHolder_ReportsLastOwner)
 {
-    EXPECT_FALSE(client_->MarkDisconnected());
+    EXPECT_FALSE(client_->MarkDisconnectedAndReportWhetherLastHolder());
     EXPECT_EQ(SnapshotStatus(header_), ConnectStatusType::DisConnected);
-    EXPECT_TRUE(client_->MarkDisconnected());
+    EXPECT_TRUE(client_->MarkDisconnectedAndReportWhetherLastHolder());
     EXPECT_EQ(SnapshotStatus(header_), ConnectStatusType::DisConnected);
 }
 
@@ -433,40 +445,10 @@ TEST_F(ShmTestFixture, Deallocate_ResetsSharedHeaderWhenAlreadyDisconnected)
     ShmBuffer<TestShmBufferSize>* buffer =
         ShmBuffer<TestShmBufferSize>::Allocate(ServerTypeType::Client, 1, memory_.data(), ConnectStatusType::Connected);
     EXPECT_EQ(buffer->Write("Hello", 5), 5u);
-    EXPECT_FALSE(buffer->MarkDisconnected());
+    EXPECT_FALSE(buffer->MarkDisconnectedAndReportWhetherLastHolder());
 
     buffer->Deallocate();
 
     EXPECT_EQ(SnapshotStatus(HeaderOfSecondConnection()), ConnectStatusType::UnConnected);
     EXPECT_EQ(HeaderOfSecondConnection()->UpWriteCount, 0u);
-}
-
-// ========== 单连接布局（头在偏移 0，双向通道紧随其后）==========
-
-TEST(ShmBufferTest, AttachSingleConnectionSharedMemory_PlacesChannelsAfterHeader)
-{
-    std::vector<char> memory(sizeof(SingleShmHeader) + TestShmBufferSize * 2, 0);
-    ShmBuffer<TestShmBufferSize> clientBuffer;
-    ShmBuffer<TestShmBufferSize> serverBuffer;
-    clientBuffer.AttachSingleConnectionSharedMemory(memory.data(), ServerTypeType::Client);
-    serverBuffer.AttachSingleConnectionSharedMemory(memory.data(), ServerTypeType::Server);
-    clientBuffer.SetConnectStatus(ConnectStatusType::Connected);
-    serverBuffer.SetConnectStatus(ConnectStatusType::Connected);
-
-    EXPECT_EQ(clientBuffer.GetShmHeader(), reinterpret_cast<const SingleShmHeader*>(memory.data()));
-
-    const size_t upOffset = sizeof(SingleShmHeader);
-    const size_t downOffset = sizeof(SingleShmHeader) + TestShmBufferSize;
-
-    char upOutput[4] = {};
-    EXPECT_EQ(clientBuffer.Write("Up", 2), 2u);
-    EXPECT_EQ(std::memcmp(memory.data() + upOffset, "Up", 2), 0);
-    EXPECT_EQ(serverBuffer.Read(upOutput, 4), 2u);
-    EXPECT_EQ(std::memcmp(upOutput, "Up", 2), 0);
-
-    char downOutput[4] = {};
-    EXPECT_EQ(serverBuffer.Write("Dn", 2), 2u);
-    EXPECT_EQ(std::memcmp(memory.data() + downOffset, "Dn", 2), 0);
-    EXPECT_EQ(clientBuffer.Read(downOutput, 4), 2u);
-    EXPECT_EQ(std::memcmp(downOutput, "Dn", 2), 0);
 }

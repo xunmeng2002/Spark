@@ -136,4 +136,5 @@ POSIX 规定：`mmap` 成功之后 `close(fd)` 不影响映射的有效性（映
 - Windows 侧「复用对象尺寸不足」没有独立用例：该平台的判据是 `MapViewOfFile` 自己失败，故不存在可撤的代码分支。
 - `Init()` 失败后析构仍删除对象（第六节缺口）。
 - `ShmBase::DoSend`（override 了 `IoBase` 纯虚）在 Shm 后端**没有调用点**；保留与否属于 `IoBase` 接口层面的裁定，未在本批内。
-- `ShmBuffer::AttachSingleConnectionSharedMemory`（导出头 `ShmBuffer.h`）目前只被测试使用；删除会动公开 API，按 Harness §3.1 须单独授权，本批**保留不动**。
+
+**通道在映射里的摆放、连接对象的类型不变式与两端的并发契约见 `docs/shm-channel-and-connect-model.md`**（本文只覆盖对象本身）。

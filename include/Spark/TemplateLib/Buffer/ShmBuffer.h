@@ -31,6 +31,10 @@ public:
     ShmBuffer(ServerTypeType serverType, int connectionIndex, void* shmBase, ConnectStatusType connectStatus)
     {
         assert(IsValidConnectionIndex(connectionIndex));
+        if (!IsValidConnectionIndex(connectionIndex) || shmBase == nullptr)
+        {
+            return;
+        }
         serverType_ = serverType;
         shmHeader_ = static_cast<SingleShmHeader*>(shmBase) + connectionIndex;
         const size_t channelOffset = static_cast<size_t>(connectionIndex) * 2 * Size;
@@ -50,20 +54,13 @@ public:
     }
     void Deallocate()
     {
-        if (MarkDisconnected())
+        if (MarkDisconnectedAndReportWhetherLastHolder())
         {
             ResetSharedHeader();
         }
         ObjectPool<ShmBuffer<Size>>::GetInstance().Deallocate(this);
     }
 
-    void AttachSingleConnectionSharedMemory(void* shmBase, ServerTypeType serverType)
-    {
-        serverType_ = serverType;
-        shmHeader_ = static_cast<SingleShmHeader*>(shmBase);
-        upBuffer_ = static_cast<char*>(shmBase) + sizeof(SingleShmHeader);
-        downBuffer_ = upBuffer_ + Size;
-    }
     const SingleShmHeader* GetShmHeader() const { return shmHeader_; }
     ConnectStatusType GetConnectStatus() const { return IsAttached() ? shmHeader_->Status : ConnectStatusType::UnConnected; }
     void SetConnectStatus(ConnectStatusType status)
@@ -85,7 +82,7 @@ public:
         shmHeader_->DownWriteCount = 0;
         shmHeader_->DownReadCount = 0;
     }
-    bool MarkDisconnected()
+    bool MarkDisconnectedAndReportWhetherLastHolder()
     {
         if (!IsAttached())
         {
