@@ -135,8 +135,9 @@ POSIX 规定：`mmap` 成功之后 `close(fd)` 不影响映射的有效性（映
 - 「两端连接数不一致」：客户端那次 `ftruncate` 会截短服务端对象（第四节末），无用例、无防护。
 - Windows 侧「复用对象尺寸不足」没有独立用例：该平台的判据是 `MapViewOfFile` 自己失败，故不存在可撤的代码分支。
 - `Init()` 失败后析构仍删除对象（第六节缺口）。
-- ~~`ShmBase::DoSend`（override 了 `IoBase` 纯虚）在 Shm 后端**没有调用点**~~ **已处置（2026-09-27）**：
-  该 override 删除，`IoBase::DoSend` 由纯虚降为带空实现的虚函数。Shm 的同步写穿与 Tcp 的异步排队之别，
+- ~~`ShmBase::DoSend`（override 了 `IoBase` 纯虚）在 Shm 后端**没有调用点**~~ **已处置（2026-09-28）**：
+  该 override 保留为**空实现**（2026-09-27 曾删除，并把 `IoBase::DoSend` 降为非纯虚；用户 2026-09-28 判该降级
+  损伤了 `IoBase` 接口，遂反转、恢复纯虚）。Shm 的同步写穿与 Tcp 的异步排队之别，
   见 `docs/shm-channel-and-connect-model.md` 第三节。
 
 **通道在映射里的摆放、连接对象的类型不变式与两端的并发契约见 `docs/shm-channel-and-connect-model.md`**（本文只覆盖对象本身）。

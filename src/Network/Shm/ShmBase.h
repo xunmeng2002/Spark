@@ -25,6 +25,7 @@ public:
     virtual void HandleIoEvent() override;
 
 protected:
+    virtual void DoSend(Connect* connect) override;
     virtual void DoRecv(Connect* connect) override;
     virtual void AddConnect(Connect* connect) override;
 

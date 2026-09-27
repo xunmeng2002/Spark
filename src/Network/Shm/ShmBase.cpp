@@ -196,6 +196,7 @@ void ShmBase::HandleIoEvent()
     CheckData();
     HandleData();
 }
+void ShmBase::DoSend(Connect* connect) {}
 void ShmBase::DoRecv(Connect* connect)
 {
     auto shmConnect = static_cast<ShmConnect<ShmBufferSize>*>(connect);
