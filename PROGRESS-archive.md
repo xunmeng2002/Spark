@@ -4,6 +4,10 @@
 
 ## ✅ 原已完成
 
+### D.47
+
+- **2026-09-26 · `ObjectPool` 并发崩溃定性 + B 方案落地（线程本地空闲链 + 冷路径整批搬运）**：①**定性为既有缺陷，根因是 `Allocate` 的 Treiber pop 的 ABA**——「读 `Next`→CAS」非原子对，另一线程在同窗口内 pop 走同一节点、placement-new 覆写其首 8 字节（节点 `Next` 与 `T` 负载共用同一片内存）再推回，CAS 遂以**陈旧 `Next`** 成功、把活对象的**负载**发布成新链头；物证是 SIGSEGV 恒为 `si_code=1`、故障地址（`0x1`–`0x1779`）恰为另一线程写下的负载标签。②**同负载同检测器前后对照**（8 线程 × 2000 轮 × 每轮持 12 个，冷池起步）：旧实现（HEAD 原文、仅换命名空间）**23/400** 进程失败、样本全部先报 `DOUBLE OWNERSHIP` 再崩，新实现 **0/1000**；窗口论另见受控实验（插 `yield()` 的副本 17/25 vs 原版 0–2/60）。**`Release`/`-O2` 干净是时序侥幸，不是安全。**③**B 方案**（用户授权）：每线程只在自己私有的空闲链上 pop/push（热路径退化为普通指针操作），共享链改为**只在 `mutex_` 内读写的普通单链表**、取还各按一块整批搬运，ABA 由构造消除；公开 API 与调用点零改动。④**顺带修一处既有错位访问（超出 B 草图，已在代码后说明）**：`RspInfoField`（`sizeof 260`、`alignof 4` → `260 % 8 = 4`）使奇数槽位上的节点一直落在 8 字节对齐之外（x86 不炸、属 UB）；现按 `alignof(FreeNode)` 取整槽位步长（`ObjectPoolDetail::SlotByteCountFor`）并补过对齐断言，原 `sizeof(T) % 8 == 0` 断言撤销。⑤**验证**：四档 0 warning；单测 **MSVC 447/447、WSL GCC 446/446**（各 +4）；新并发用例（登记「此刻被持有地址」、重复登记即同一节点被发出两次）WSL Debug 100 次、`MultiThreadAllocate` 200 次、整套 60 次 0 失败；`clang-format`/`initcheck`（乱序 0）/`s4scan --gate`（6 条未增）/`step_e2e`（真 STEP 帧往返、服务端走 IOCP）通过。⑥**覆盖诚实说明**：整批搬运只在并发用例里被压到（`MultiThreadAllocate` 每线程只持 1 个）；线程退出时本地链残留节点**不回收**（上界约每退出线程一块），回收须 TLS 析构调 `GetInstance()`、撞静态析构顺序，本批接受并说明。
+
 ### D.46
 
 - **2026-09-24 · 按用户裁定删除 `SingleShm`（220 行）+ 补 Shm 单测 4 条（`Init` 门禁 ×3、未 Attach 惰性 ×1）**：①**删除**（用户裁定「本就是为了测试写的」）：`SingleShm.h`/`.cpp` 220 行，连带 `IoFactory.cpp:12` 的死 `#include`、`tools/README.md:33` 的示例路径、`ShmBufferTest.cpp:427` 分节注释。**代价**：批 C 刚为它做的 5 处映射尺寸消 DRY 随之归零，留痕备查而非抹去。删前已核该文件未导出、全仓无 `new SingleShm`，公开面零变化（导出符号实测见归档 `Q.33`）。②**补 4 条单测**：新增 `test/unittest/Network/ShmInitTest.cpp`，经 `IoFactory::CreateIo` + `IoBase*` 钉 `Init()` 门禁——连接数段 `abc`（`from_chars` 拒收）与 `0`（触 `< 1` 门禁）各返 `false`，`1`（最小合法值＝门禁边界）返 `true` 作正对照，使「返 false」不至于在 shm 整体不可用时**假绿**；`ShmBufferTest.UnAttachedBufferRejectsAllChannelAccess` 钉未 Attach 实例的惰性（`Write`/`Read`/两个 `GetXxxBufferSize` 返 0、`MarkDisconnected` 返 `false`、两个 setter 不生效）。③**有一条已获授权但未使用**：测试走工厂而非 include `src/Network`——实测放开 include 后 MSVC **编得过、链不过**（该类族在 `Networkd.lib` 中命中 0），Linux 却因默认全导出能过、会造成档间分裂（数字见 `Q.33`）；授权保持未使用。④验证：四档 0 warning，单测 **MSVC 两档 443/443、WSL GCC 两档 442/442**（各 +4 即本批四条）；`s4scan` 候选仍 6 条、`initcheck` 乱序 0、`clang-format` 三个改动文件通过；Shm 冒烟 **5/5**、`step_e2e` 通过。⑤**顺带关闭**：`CsvParser` 属第三方库（用户裁定「别动了」），`cursor_ = const_cast<char*>(csvText_)` 保持原样、该 const 剥离问题就此关闭——**该裁定只覆盖 `CsvParser.*`**，`CsvRecord.*` 那批偏差（见 ❓ 区）不在其内。⑥`.gitignore` 加一行 `/SparkShmUnitTest*`：新用例按运行取唯一名、异常退出会在仓库根残留（与既有 `/TestShm` 同因）。
@@ -681,6 +685,10 @@
     方向是"此前静默跳过的字段开始被赋值"，属**行为变更**（修漏），已确认对现有全部消费方零输出。
 
 ## ❓ 原待讨论 / 待决策
+
+### Q.43
+
+- **IOCP 连接建立路径的余下缺口（2026-09-27 探查登记；同日拆分：最要紧的「判据写反」已关闭，原文见归档 `Q.42`）**：②`TcpIocpServer::PrepareAcceptSocket` 的 `AssociateDevice` 失败出口直接返 `INVALID_SOCKET`、**不 `closesocket`**，调用方见 `INVALID_SOCKET` 也无关闭动作——每次该失败漏一个 socket；**同族的 `TcpIocpClient::PrepareConnectSocket` 四条失败出口全部 `closesocket`**，故这是单侧孤立缺口（改法一行）。**待决**：是否补关。③`TcpUtility::GetAddrinfo` 每次调用不释放上一个 `addrinfo`（`addressInfo_`/`clientLocalAddressInfo_` 直接覆写），属既有、本批未动。④`TcpIocpClient::Init()` 无条件 `return true`、吞掉 `PostConnect` 的结果；**判断是疑为有意**（首连失败应交 `TryAutoReconnect` 重试，而非让 `Init` 失败），故未改；**待决**：是否把这层意思成文为契约。⑤探查另见：客户端未启 IO 线程即被析构时，在途 connect 的 socket 不被回收（探针里 5 个不可达地址各 +1 句柄）——该场景与生产的收尾路径（`Stop`/`DisConnectAll`）不同，未深究。**待决**：是否立项。
 
 ### Q.42
 
