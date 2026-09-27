@@ -7,6 +7,7 @@
 #include <format>
 #include <memory>
 #include <string>
+#include <thread>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -50,7 +51,8 @@ std::unique_ptr<IoBase> CreateShmClient(const std::string& address)
     return std::unique_ptr<IoBase>(IoFactory::CreateIo(ServerTypeType::Client, address.c_str()));
 }
 
-bool WriteShmMappingMagic(const std::string& shmObjectName, unsigned magic)
+template <typename Visitor>
+bool VisitShmMapping(const std::string& shmObjectName, size_t viewSize, Visitor&& visitor)
 {
 #ifdef _WIN32
     HANDLE fileMapping = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, shmObjectName.c_str());
@@ -58,14 +60,13 @@ bool WriteShmMappingMagic(const std::string& shmObjectName, unsigned magic)
     {
         return false;
     }
-    void* mappingView = MapViewOfFile(fileMapping, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(Spark::SingleShmHeader));
+    void* mappingView = MapViewOfFile(fileMapping, FILE_MAP_ALL_ACCESS, 0, 0, viewSize);
     if (mappingView == nullptr)
     {
         CloseHandle(fileMapping);
         return false;
     }
-    Spark::SingleShmHeader* shmHeader = static_cast<Spark::SingleShmHeader*>(mappingView);
-    Spark::SingleShmHeader::StoreMappedField(shmHeader->MappingMagic, magic);
+    visitor(static_cast<Spark::SingleShmHeader*>(mappingView));
     UnmapViewOfFile(mappingView);
     CloseHandle(fileMapping);
     return true;
@@ -75,17 +76,60 @@ bool WriteShmMappingMagic(const std::string& shmObjectName, unsigned magic)
     {
         return false;
     }
-    void* mappingView = mmap(nullptr, sizeof(Spark::SingleShmHeader), PROT_READ | PROT_WRITE, MAP_SHARED, fileDescriptor, 0);
+    void* mappingView = mmap(nullptr, viewSize, PROT_READ | PROT_WRITE, MAP_SHARED, fileDescriptor, 0);
     close(fileDescriptor);
     if (mappingView == MAP_FAILED)
     {
         return false;
     }
-    Spark::SingleShmHeader* shmHeader = static_cast<Spark::SingleShmHeader*>(mappingView);
-    Spark::SingleShmHeader::StoreMappedField(shmHeader->MappingMagic, magic);
-    munmap(mappingView, sizeof(Spark::SingleShmHeader));
+    visitor(static_cast<Spark::SingleShmHeader*>(mappingView));
+    munmap(mappingView, viewSize);
     return true;
 #endif
+}
+
+bool WriteShmMappingMagic(const std::string& shmObjectName, unsigned magic)
+{
+    return VisitShmMapping(shmObjectName, sizeof(Spark::SingleShmHeader),
+                           [magic](Spark::SingleShmHeader* shmHeader) { Spark::SingleShmHeader::StoreMappedField(shmHeader->MappingMagic, magic); });
+}
+
+bool WriteShmHeaderStatus(const std::string& shmObjectName, unsigned connectionIndex, ConnectStatusType status)
+{
+    return VisitShmMapping(shmObjectName, sizeof(Spark::SingleShmHeader) * (connectionIndex + 1),
+                           [connectionIndex, status](Spark::SingleShmHeader* shmHeader)
+                           { Spark::SingleShmHeader::StoreStatus(shmHeader + connectionIndex, status); });
+}
+
+ConnectStatusType ReadShmHeaderStatus(const std::string& shmObjectName, unsigned connectionIndex)
+{
+    ConnectStatusType status = ConnectStatusType::UnConnected;
+    VisitShmMapping(shmObjectName, sizeof(Spark::SingleShmHeader) * (connectionIndex + 1),
+                    [connectionIndex, &status](Spark::SingleShmHeader* shmHeader)
+                    { status = Spark::SingleShmHeader::LoadStatus(shmHeader + connectionIndex); });
+    return status;
+}
+
+class ConnectEventProbe : public IoSubscriber
+{
+public:
+    void OnConnect(SessionIdType, const char*, int) override { ++ConnectCount; }
+    void OnDisConnect(SessionIdType, const char*, int) override { ++DisConnectCount; }
+    void OnRecv(SessionIdType, const char*, size_t) override {}
+
+    int ConnectCount = 0;
+    int DisConnectCount = 0;
+};
+
+template <typename StopCondition>
+void DriveIoEventsUntil(IoBase& io, StopCondition&& stopCondition, std::chrono::milliseconds limit)
+{
+    const auto deadline = std::chrono::steady_clock::now() + limit;
+    while (!stopCondition() && std::chrono::steady_clock::now() < deadline)
+    {
+        io.HandleIoEvent();
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
 }
 }
 
@@ -188,4 +232,65 @@ TEST(ShmInitTest, Init_RejectsUnstampedShmObjectForAClient)
     const auto client = CreateShmClient(shmAddress);
     ASSERT_NE(client, nullptr);
     EXPECT_FALSE(client->Init());
+}
+
+// ============================================================
+// 服务端侧连接回收：一次不被对端确认的受理必须被收回
+// 对端由测试通过映射视图直接扮演（写控制头状态），服务端只经 HandleIoEvent 驱动
+// ============================================================
+
+constexpr unsigned ControlHeaderIndex = 0;
+constexpr unsigned FirstChannelIndex = 1;
+constexpr auto ReclaimDriveLimit = std::chrono::milliseconds(8000);
+
+TEST(ShmConnectLifecycleTest, ReclaimsConnectWhosePeerNeverAttached)
+{
+    const auto shmObjectName = MakeUniqueShmObjectName("SparkShmUnitTestReclaimRejected");
+    const auto server = CreateShmServer(ToShmAddress(shmObjectName, "3"));
+    ASSERT_NE(server, nullptr);
+    ASSERT_TRUE(server->Init());
+    ConnectEventProbe probe;
+    server->Subscribe(&probe);
+
+    ASSERT_TRUE(WriteShmHeaderStatus(shmObjectName, ControlHeaderIndex, ConnectStatusType::Connecting));
+    server->HandleIoEvent();
+    EXPECT_EQ(probe.ConnectCount, 1);
+    EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::Accepted);
+
+    ASSERT_TRUE(WriteShmHeaderStatus(shmObjectName, ControlHeaderIndex, ConnectStatusType::UnConnected));
+    server->HandleIoEvent();
+    EXPECT_EQ(probe.DisConnectCount, 0);
+    EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::Accepted);
+
+    DriveIoEventsUntil(*server, [&probe] { return probe.DisConnectCount > 0; }, ReclaimDriveLimit);
+    EXPECT_EQ(probe.DisConnectCount, 1);
+    EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::UnConnected);
+
+    ASSERT_TRUE(WriteShmHeaderStatus(shmObjectName, ControlHeaderIndex, ConnectStatusType::Connecting));
+    server->HandleIoEvent();
+    EXPECT_EQ(probe.ConnectCount, 2);
+    EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::Accepted);
+}
+
+TEST(ShmConnectLifecycleTest, ReclaimsConnectWhosePeerNeverConfirmedAndResetsTheControlHeader)
+{
+    const auto shmObjectName = MakeUniqueShmObjectName("SparkShmUnitTestReclaimSilent");
+    const auto server = CreateShmServer(ToShmAddress(shmObjectName, "3"));
+    ASSERT_NE(server, nullptr);
+    ASSERT_TRUE(server->Init());
+    ConnectEventProbe probe;
+    server->Subscribe(&probe);
+
+    ASSERT_TRUE(WriteShmHeaderStatus(shmObjectName, ControlHeaderIndex, ConnectStatusType::Connecting));
+    server->HandleIoEvent();
+    EXPECT_EQ(probe.ConnectCount, 1);
+    EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, ControlHeaderIndex), ConnectStatusType::Accepted);
+
+    DriveIoEventsUntil(
+        *server, [&probe, &shmObjectName]
+        { return probe.DisConnectCount > 0 && ReadShmHeaderStatus(shmObjectName, ControlHeaderIndex) == ConnectStatusType::UnConnected; },
+        ReclaimDriveLimit);
+    EXPECT_EQ(probe.DisConnectCount, 1);
+    EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, ControlHeaderIndex), ConnectStatusType::UnConnected);
+    EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::UnConnected);
 }

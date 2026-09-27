@@ -157,6 +157,10 @@ POSIX 规定：`mmap` 成功之后 `close(fd)` 不影响映射的有效性（映
 
 用例的地址都带时间戳（`MakeUniqueShmName` / `MakeUniqueShmObjectName`），同一进程内先后运行不会互相干扰；清理依赖析构顺序（先声明的后析构：第二个对象先 `unlink`，第一个对象的后析构收尾）。
 
+同文件另有一组 `ShmConnectLifecycleTest`（`ReclaimsConnectWhosePeerNeverAttached` /
+`ReclaimsConnectWhosePeerNeverConfirmedAndResetsTheControlHeader`）：钉的是**服务端侧连接回收**，属连接生命周期而非对象生命周期，
+但复用本文的映射视图手段（测试直接改控制头状态来扮演对端）。逐条输入输出见 `docs/shm-channel-and-connect-model.md` 第五节。
+
 ## 九、已知未覆盖
 
 - `ShmBase::Send` 的「通道写满」分支（写返 0 → 等 1 ms 重试 / 对端断连则丢弃）：冒烟每轮 10000 次往返也难填满 1 MiB 通道，正确性依赖 `ShmBuffer::Write` 的返 0 语义（由 `ShmBufferTest` 钉住）。
@@ -164,7 +168,8 @@ POSIX 规定：`mmap` 成功之后 `close(fd)` 不影响映射的有效性（映
   客户端不再 `ftruncate`，改为与「服务端复用既有对象」同一支的 `fstat` 校验（见第四节末），
   客户端侧已不存在改变对象尺寸的操作。
   同一成因下更凶的一支——**越界连接号**（服务端写进控制头的槽位号超出客户端本端连接数，
-  会让通道偏移落出客户端的映射）——已于 2026-09-28 在客户端侧挡下，见 `docs/shm-channel-and-connect-model.md` 第一、六节。
+  会让通道偏移落出客户端的映射）——已于 2026-09-28 在客户端侧挡下，服务端侧的槽位与 `connectCount_` 泄漏也在同日
+  由新的回收路径收口，见 `docs/shm-channel-and-connect-model.md` 第一、四、六节。
 - **首轮创建—打戳之间的窄窗**（2026-09-28）：服务端 `Init()` 是「先 `memset` 整段映射、再打戳」，
   这中间 `MappingMagic` 为 0。客户端若恰好在这一瞬间走到复用校验，会把刚建好的对象判成外来布局而拒绝（重试即可恢复）。
   窗口长度随连接数（映射长度）增长，单进程冒烟与四档单测均未复现；要彻底消除须把「打戳」挪到 `memset` 之外或改用

@@ -18,8 +18,10 @@
 - **数据通道**：第 i 号连接占 `2 * ShmBufferSize`，偏移为 `i * 2 * ShmBufferSize`；上行在前（Client 写、Server 读）、下行紧随其后
   （`ShmBuffer::upBuffer_` / `downBuffer_`）。通道偏移只按连接号算，**不含头数组的大小**。
 - 头数组与通道相加恰好占满映射，于是 **0 号连接的槽位（前 2 MiB）不用作通道**——它容纳整个头数组
-  （`maxConnectSize` 个头远小于 2 MiB）。这就是 `IsValidConnectionIndex(connectionIndex >= 1)` 的由来：
-  传 0 会让通道压在头数组上，传负数会被 `static_cast<size_t>` 变成一个巨大的偏移。
+  （`maxConnectSize` 个头远小于 2 MiB）。这就是 `IsValidConnectionIndex` 下界的由来：
+  传 0 会让通道压在头数组上，传负数会被 `static_cast<size_t>` 变成一个巨大的偏移；
+  上界 `i < connectionCount` 由同一个谓词给出——`i == 连接数` 时该槽位的头与通道都已越出映射
+  （头数组只到 `connectionCount - 1` 号）。
 - **头数组装得下是编译期不变式**：头数组占映射前 `maxConnectSize_ * sizeof(SingleShmHeader)` 字节，
   必须落在 0 号槽位的 `2 * ShmBufferSize` 之内，否则会压在 1 号连接的通道上。`ShmBase.h` 的 `static_assert`
   按**最大**允许连接数 `MaxSharedMemoryConnectSize` 校验（对任何运行期连接数都更强），故调小 `ShmBufferSize`
@@ -27,23 +29,29 @@
   运行期判据**永远不可达** —— 这正是它做成编译期断言而不是 `IsConnectSizeAllowed()` 里一条分支的原因。
 - **两侧的连接号必须一致**：服务端在 `ShmServer::Accept` 挑第一个空闲槽位 i 并把它写进控制头的 `DownWriteCount`，
   客户端在 `ShmClient::CheckConnectResult` 从同一字段取回 i，各自用它构造 `ShmBuffer`。
-  故控制头的 `DownWriteCount` 在协商期被复用为**槽位号**（不是计数器），`ShmServer::Accept` 的 5 秒超时复位也读它。
+  故控制头的 `DownWriteCount` 在协商期被复用为**槽位号**（不是计数器）；读它构造 `ShmBuffer` 的只有客户端
+  （服务端本就知道自己挑的是哪个槽位），`ShmServer::Accept` 的 5 秒超时复位**不再读它**——槽位自 2026-09-28 起
+  由回收路径统一清理（第四节）。
 - **槽位号必须先于 `Accepted` 落盘**：服务端写槽位号与写 `Accepted` 是两次独立发布，顺序固定为
   「先 `StoreMappedField(DownWriteCount, i)`、后 `StoreStatus(Accepted)`」。客户端以 acquire 语义读到 `Accepted` 时，
   才因此保证槽位号已经随同一条 release 序列对它可见（内存序模型见第四节）。
   反过来写会让客户端读到「`Accepted` 已到、槽位号还是上一次协商的残留」，取到错误甚至越界的 i。
-- **客户端取号处是信任边界，必须校验上界**：客户端手里的 i 由**对端**写入，而 `ShmBuffer` 不知道映射容量，
-  上界只能在调用方校验。故 `ShmClient::CheckConnectResult` 取回 i 后先过
-  `ShmBuffer<Size>::IsConnectionIndexWithinMapping(i, maxConnectSize_)`（要求 `1 <= i < maxConnectSize_`）；
-  不满足即按协商失败处置 —— 记 Warning（`Reject Connect Index:%u Out Of Range`）、控制头复位成 `UnConnected`、
-  走既有的 1 秒重试，**不构造 `ShmConnect`**。挡下的是三类越界后果：通道偏移落出映射
-  （`upBuffer_` / `downBuffer_` 直指映射之外，构造期 `SetConnectStatus` 与首帧读写即踩）、
+- **连接号的两侧守卫**（2026-09-28）：`ShmBuffer` 的构造函数接收映射容量 `connectionCount`，
+  在指针算术之前用 `IsValidConnectionIndex(i, connectionCount)`（要求 `1 <= i < connectionCount`）同时守住上下界，
+  故守卫与指针算术同处一地（见下一段的构造期防护）。客户端手里的 i 由**对端**写入
+  （`ShmClient::CheckConnectResult` 从控制头取回），那一处**另留一道显式检查**：取回 i 后先过
+  `ShmBuffer<Size>::IsConnectionIndexWithinMapping(i, maxConnectSize_)`，不满足即按协商失败处置 ——
+  记 Warning（`Reject Connect Index:%u Out Of Range`）、控制头复位成 `UnConnected`、走既有的 1 秒重试，
+  **不构造 `ShmConnect`**。这道检查不是冗余：构造函数那条路只把非法连接号变成「未 Attach」的哑对象，
+  而对端写下的越界号是**可诊断的协商失败**，该拒绝、该重试、该留痕。挡下的是三类越界后果：
+  通道偏移落出映射（`upBuffer_` / `downBuffer_` 直指映射之外，构造期 `SetConnectStatus` 与首帧读写即踩）、
   `ShmClient::CheckData` 的 `sems_[i]` 越出信号量数组、以及构造期的 `SetConnectStatus` 把 `Status`
-  写到头数组之外（别的槽位头或通道上）。判据本身是 `ShmBuffer` 上的 `constexpr` 静态谓词，由单元用例钉住（第五节）。
-- **构造期防护**：连接号非法或基址为空时**保持「未 Attach」**（`shmHeader_` 为空），
-  此后 `Write` / `Read` / `GetWriteBufferSize` / `GetReadBufferSize` 惰性返回 0，`SetConnectStatus` / `ResetSharedHeader` 不生效，
-  共享内存一个字节都不动。Debug 档另有 `assert(IsValidConnectionIndex(...))` 当场拦下。
-  注意这条只守**下界**（`>= 1`，且 `Release` 档没有断言兜底），上界由上一段的调用方校验负责。
+  写到头数组之外（别的槽位头或通道上）。判据本身是 `ShmBuffer` 上的 `constexpr` 静态谓词，两侧共用、由单元用例钉住（第五节）。
+- **构造期防护**：连接号越界（上界下界同判）或基址为空时**保持「未 Attach」**（`shmHeader_` 为空），
+  此后 `Write` / `Read` / `GetWriteBufferSize` / `GetReadBufferSize` 惰性返回 0，
+  `SetConnectStatus` / `ResetSharedHeader` / `RevokeUnconfirmedAccept` 一律不生效，
+  共享内存一个字节都不动。Debug 档另有 `assert(IsValidConnectionIndex(...))` 当场拦下；
+  Release 档没有断言，但守卫与指针算术写在同一个表达式流里，不存在「绕过守卫直接算偏移」的路径。
 
 ## 二、连接对象的类型不变式
 
@@ -111,7 +119,18 @@
 - 槽位回收路径：`RemoveConnect` → `Connect::Deallocate` → `ShmConnect<Size>::~ShmConnect` →
   `ShmBuffer::MarkDisconnectedAndResetChannelWhenLastHolder()`（上面的仲裁，最后一任持有者顺手 `ResetSharedHeader()`
   把该槽位头清零成 `UnConnected`）→ `ObjectPool<ShmBuffer<Size>>::Deallocate(shmBuffer_)`。
-  服务端协商超时那条路径不在其上，它直接对超时槽位调 `SingleShmHeader::ResetChannelHeader`（不经过 `ShmConnect`）。
+- **服务端协商超时也走同一条路径**（2026-09-28 起）：`ShmServer::CheckConnect` 每轮对每个 `ShmConnect` 调
+  `TryReclaimConnect`——槽位头已是 `DisConnected` 即交给既有的延迟删除
+  （`disConnectSessionIds_` → `DoDisConnect` → `RemoveConnect`，`connectCount_` 随之减一）；
+  仍是 `Accepted` 且距 `ShmConnect::CreateTimePoint` 已过 `HandshakeTimeoutSeconds`（5 秒）时，
+  先调 `ShmBuffer::RevokeUnconfirmedAccept()`（在槽位头上做 `Accepted → DisConnected` 的 CAS），成功才入延迟删除。
+  `ShmConnect` 析构里的仲裁因此看到「已是 `DisConnected`」→ 返 true → `ResetSharedHeader()`，
+  槽位头清零、槽位对下次协商可复用，`connectCount_` 与连接对象一并收回。
+  **控制头那侧同点收尾**：`ShmServer::Accept` 的 5 秒超时分支只复位**控制头**（不再碰槽位头），
+  两侧计时起点是同一时刻——`CreateTimePoint` 先于 `lastWriteTimePoint_` 取，故回收的计时**不晚于**控制头超时。
+- **`RevokeUnconfirmedAccept` 只撤 `Accepted`**：以 `compare_exchange_strong` 置换，已确认（`Connected`）的连接
+  不会被回收路径撤掉——对端只要确认过，回收路径就与它无关；重复调用只有第一次返回 true。
+  也因此它**不负责**清槽位头：置位后由 `ShmConnect` 析构走上一段的仲裁，回收路径与正常断连共用同一段收尾。
 - **内存序：`std::atomic_ref` 取代 `volatile` + 手写屏障**（2026-09-28 改动，**取代**归档 `Q.23` 的裁定；原裁定原文与
   登记背景仍在归档里，此处不重写它，只声明其结论已被本次改动覆盖）。`SingleShmHeader` 的全部字段访问统一走
   `LoadStatus` / `StoreStatus` / `LoadMappedField` / `StoreMappedField` 四个静态入口，读一律 `acquire`、写一律 `release`：
@@ -128,12 +147,17 @@
 
 `test/unittest/TemplateLib/ShmBufferTest.cpp`（四档构建均跑）。
 
-- `ConnectionIndexZeroTripsAssert`（仅 Debug 且启用 death test）
-  - 输入：连接号 0。
-  - 输出：断言命中（`IsValidConnectionIndex`）。
+- `OutOfRangeConnectionIndexTripsAssert`（仅 Debug 且启用 death test）
+  - 输入：连接号 0，以及恰在容量上的连接号 2（容量 2）。
+  - 输出：两次都断言命中（`IsValidConnectionIndex`）——上下界各钉一次。
 - `InvalidConnectionIndexLeavesBufferDetached`（仅 Release，`NDEBUG`）
-  - 输入：连接号 0 与 -1。
-  - 输出：`GetShmHeader() == nullptr`、`Write` 返 0、`GetWriteBufferSize()` 为 0，且共享内存首字节的状态仍为 `UnConnected`。
+  - 输入：连接号 0、-1，以及恰在容量上的 2（容量 2）。
+  - 输出：三者均 `GetShmHeader() == nullptr`、`Write` 返 0、`GetWriteBufferSize()` 为 0，
+    且共享内存首字节的状态仍为 `UnConnected`（构造期一个字节都没写）。
+- `UnAttachedBufferRejectsAllChannelAccess`
+  - 输入：默认构造（未 Attach）的实例，逐个调用 `Write` / `Read` / 两个 `GetXxxBufferSize` /
+    `MarkDisconnectedAndReportWhetherLastHolder` / `RevokeUnconfirmedAccept` / `SetConnectStatus` / `ResetSharedHeader`。
+  - 输出：读写与容量查询返 0，两个状态谓词返 `false`，状态写入不生效，`GetShmHeader()` 仍为空。
 - `NullSharedMemoryBaseLeavesBufferDetached`（仅 Release，`NDEBUG`）
   - 输入：基址 `nullptr`、连接号 1。
   - 输出：同上「未 Attach」。
@@ -150,6 +174,13 @@
 - `MarkDisconnectedAndResetChannelWhenLastHolder_ResetsHeaderWhenAlreadyDisconnected`
   - 输入：先写入 5 字节、再手动置位断连，随后调用一次。
   - 输出：该槽位头状态为 `UnConnected`、`UpWriteCount` 回到 0。
+- `RevokeUnconfirmedAccept_ReclaimsTheChannelWhenThePeerNeverConfirmed`
+  - 输入：连接号 1、状态 `Accepted`（模拟「服务端已受理、对端从未确认」），调用两次。
+  - 输出：第一次 `true` 且该槽位头状态变为 `DisConnected`；第二次 `false`（CAS 只在第一次成功），
+    槽位头**仍停在 `DisConnected`**（清头是析构那侧的事，见第四节）。
+- `RevokeUnconfirmedAccept_LeavesAConfirmedChannelAlone`
+  - 输入：连接号 1、状态 `Connected`（模拟回收路径碰到一条已确认的连接）。
+  - 输出：返 `false`，槽位头状态仍是 `Connected`。
 
 此外**没有 `TEST` 名字的两条编译期断言**（同文件、四档构建均跑，写在文件顶部）：
 
@@ -161,19 +192,42 @@
 `docs/shm-shared-object-lifecycle.md` 第八节（`Init_RejectsReusedShmObjectWithForeignMappingMagic`、
 `Init_AcceptsStampedShmObjectForAClient`、`Init_RejectsUnstampedShmObjectForAClient`）。
 
+第四节的回收路径由同文件的 `ShmConnectLifecycleTest` 两条用例钉住。对端由测试**经映射视图直接扮演**
+（写控制头状态），服务端只用 `HandleIoEvent()` 逐轮驱动——`HandleIoEvent` 里的 `Sem::Lock()` 是 100 ms 限时等待，
+故整条路径可在单进程内复现：
+
+- `ReclaimsConnectWhosePeerNeverAttached`
+  - 输入：控制头写 `Connecting` → 跑一轮（受理成功）；再把控制头改回 `UnConnected`（模拟客户端拒绝那个槽位号）
+    → 再跑一轮；随后每 50 ms 驱动一轮，直到回收或 8 秒截止。
+  - 输出：第一轮 `OnConnect` 一次、1 号槽位头为 `Accepted`；第二轮**不回收**（`OnDisConnect` 仍 0、槽位头仍 `Accepted`
+    ——控制头已不是 `Accepted`/`Rejected`，超时分支不介入）；约 5 秒后 `OnDisConnect` 一次、1 号槽位头回到 `UnConnected`；
+    再发一次 `Connecting` 时**仍落在 1 号槽位**（`OnConnect` 累计 2）——槽位确实回了池。
+    最后一条断言是「旧代码下必失败」的判据：旧代码的槽位永远停在 `Accepted`，第二次协商会挑走 2 号。
+- `ReclaimsConnectWhosePeerNeverConfirmedAndResetsTheControlHeader`
+  - 输入：控制头写 `Connecting` → 跑一轮（受理成功）后**不再动控制头**（模拟客户端写完槽位号、确认前死亡），
+    随后驱动到「回收已发生**且**控制头已复位」或 8 秒截止。
+  - 输出：`OnDisConnect` 一次、控制头回到 `UnConnected`（`Accept` 的超时分支复位它）、1 号槽位头回到 `UnConnected`
+    （回收路径清零）。两条路径的计时起点同刻，谁先到期都收敛到同一结果。
+- **这两条用例各含一次约 5 秒的真实等待**，四档单测因此各多约 10 秒。`HandshakeTimeoutSeconds` 是编译期常量，
+  用例没有注入点；要换假时钟得给服务端开一个缝，按 Harness「最小改动优先」不做。
+
 ## 六、已知未覆盖
 
-- **「两端连接数不一致」只挡住了后果的一半**（2026-09-28）：
+- **「两端连接数不一致」两侧都已收口**（2026-09-28）：
   - **客户端侧已挡**：越界连接号在 `CheckConnectResult` 被拒（第一节），不再有越界指针/越界 `sems_` 下标/越界槽位 `Status` 改写。
-  - **服务端侧仍不校验**，且客户端拒绝时服务端**已**为那个槽位 `AddConnect` 过（`connectCount_` 已加一）。
-    服务端的 5 秒超时只把控制头复位、把这个槽位的头清成 `UnConnected` —— 槽位对下一次协商**可复用**，
-    但服务端会为同一槽位再 `Allocate` 一个 `ShmConnect`，于是**每经历一次不完整协商就多占一份 `connectCount_`**，
-    累积到 `maxConnectSize_ - 1` 后服务端开始拒绝一切连接。该泄漏无用例、未修（要修需给服务端加槽位回收）。
+  - **服务端侧的槽位与 `connectCount_` 泄漏已修**（2026-09-28 第二批）：控制头出现 `Accepted` 后若对端
+    既不来确认、控制头也停在 `Accepted`（客户端拒绝那个连接号的典型形态），新的回收路径按
+    `ShmConnect::CreateTimePoint` 计满 5 秒即撤回并回收（第四节）。此前一次这样的协商会永久占掉一个槽位
+    与一份 `connectCount_`，累积 `maxConnectSize_ - 1` 次后服务端开始拒绝一切连接——这正是本条先前记的漏洞。
   - **映射面那另一半已消除**：客户端 `Init()` 不再 `ftruncate`（改为 `fstat` 校验既有对象的大小），
     见 `docs/shm-shared-object-lifecycle.md` 第四节。
-- **服务端协商超时的槽位复位是「只清头、不回收连接对象」**（2026-09-28）：超时分支现在改用
-  `SingleShmHeader::ResetChannelHeader(commonShmHeader_ + timedOutIndex)`（原先是对该头整体 `memset`），
-  语义等价且原子序正确，但 `connectCount_` 与那个槽位上的 `ShmConnect` 仍留在 `connects_` 里 —— 即上一条泄漏本身未修。
+- **对端晚于 5 秒确认时会留下一条「孤儿槽位」**（2026-09-28，未修、无用例）：客户端的确认是一次
+  **盲写**（`ShmBuffer` 构造函数里的 `SetConnectStatus(Connected)`，不是 CAS），而回收路径里的一次 CAS 并不能
+  覆盖它。若客户端在服务端撤回之后才走到构造这一步，槽位头会停在 `Connected`（服务端那一侧已无连接对象），
+  于是它既不会被服务端复用、也不会被回收路径再次看到；反向的落序（撤回的清头落在盲写之后）则让客户端
+  自认已连上、而通道因头是 `UnConnected` 静默吞掉每一次 `Write`（返 0）。两者都要「对端卡住 5 秒以上」才出现，
+  四档单测与冒烟均未复现。**干净的修法是客户端把确认也改成 CAS**（`Accepted → Connected` 失败即视为被撤回、
+  走既有的 1 秒重试），属接口两侧的时序改动，留待裁定。
 - **首轮创建—打戳之间存在窄窗**（2026-09-28）：服务端 `Init()` 先 `memset` 整个映射（此刻 `MappingMagic` 为 0）、
   再打戳。若客户端恰好在这一瞬间走到复用校验，会读到未打戳的头并把对象判为「外来布局」而拒绝；重试即可恢复。
   窗口长度是服务端 `memset` 整段映射的耗时（连接数越大越长），单进程冒烟与四档单测均未复现。
@@ -183,7 +237,7 @@
   但**用例仍未写**：被钉住的只是判据本身（`ShmBufferTest`），`ShmClient::CheckConnectResult` 里那处调用没有对应用例。
 - **`Sem UnLock Failed.` 是既有抖动**：`Sem` 的 Windows 计数上限是 1（`CreateSemaphoreA(..., 1, 1, ...)`），
   客户端的 `Send` 每写一段就 `UnLock` 一次、服务端每轮 IO 周期 `Lock` 一次，两者失衡时会多释放一次并记 Error。
-  2026-09-28 的 11 轮 Shm 冒烟里出现 1 次（第 4 轮，回显照常跑完 10000 次），不在本次改动的路径上，未修。
+  2026-09-28 的 7 轮 Shm 冒烟里出现 1 次（第 1 轮，回显照常跑完 10000 次），不在本次改动的路径上，未修。
 - **Release 档没有类型兜底**：`ShmBase::AddConnect` 的类型断言在 `NDEBUG` 下不存在，跨模块的错误注册只在 Debug 会被抓到。
 - **零号槽位的 2 MiB 是浪费而非错误**：连接数 1 时映射 2 MiB、头数组只占其前几十字节，其余空闲；
   这是「通道偏移不接头数组」这一取法的固有代价，未做紧凑化。

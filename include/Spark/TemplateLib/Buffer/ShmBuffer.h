@@ -67,10 +67,10 @@ public:
     static_assert(Size <= (std::numeric_limits<unsigned>::max)(), "Size must fit the 32-bit shared memory counters");
 
     ShmBuffer() = default;
-    ShmBuffer(ServerTypeType serverType, int connectionIndex, void* shmBase, ConnectStatusType connectStatus)
+    ShmBuffer(ServerTypeType serverType, int connectionIndex, void* shmBase, ConnectStatusType connectStatus, unsigned connectionCount)
     {
-        assert(IsValidConnectionIndex(connectionIndex));
-        if (!IsValidConnectionIndex(connectionIndex) || shmBase == nullptr)
+        assert(IsValidConnectionIndex(connectionIndex, connectionCount));
+        if (!IsValidConnectionIndex(connectionIndex, connectionCount) || shmBase == nullptr)
         {
             return;
         }
@@ -133,6 +133,16 @@ public:
             ResetSharedHeader();
         }
     }
+    bool RevokeUnconfirmedAccept()
+    {
+        if (!IsAttached())
+        {
+            return false;
+        }
+        ConnectStatusType expectedStatus = ConnectStatusType::Accepted;
+        return SingleShmHeader::StatusReference(shmHeader_)
+            .compare_exchange_strong(expectedStatus, ConnectStatusType::DisConnected, std::memory_order_acq_rel, std::memory_order_acquire);
+    }
 
     size_t Write(const char* source, size_t len)
     {
@@ -177,7 +187,10 @@ public:
     }
 
 private:
-    static constexpr bool IsValidConnectionIndex(int connectionIndex) { return connectionIndex >= 1; }
+    static constexpr bool IsValidConnectionIndex(int connectionIndex, unsigned connectionCount)
+    {
+        return IsConnectionIndexWithinMapping(static_cast<unsigned>(connectionIndex), connectionCount);
+    }
     bool IsAttached() const { return shmHeader_ != nullptr; }
 
     size_t GetUpWriteBufferSize() const

@@ -5,6 +5,7 @@
 #include <Spark/TemplateLib/Buffer/ShmBuffer.h>
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 
+#include <chrono>
 #include <cstddef>
 
 namespace Spark::Network
@@ -16,10 +17,10 @@ class ShmConnect : public Connect
 {
 public:
     ShmConnect(SessionIdType sessionId, const char* remoteAddress, int remotePort, ServerTypeType serverType, void* shmAddr,
-               ConnectStatusType connectStatus)
-        : Connect(sessionId, remoteAddress, remotePort, connectStatus)
+               ConnectStatusType connectStatus, unsigned connectionCount)
+        : Connect(sessionId, remoteAddress, remotePort, connectStatus), CreateTimePoint(std::chrono::system_clock::now())
     {
-        shmBuffer_ = ObjectPool<ShmBuffer<Size>>::GetInstance().Allocate(serverType, remotePort, shmAddr, connectStatus);
+        shmBuffer_ = ObjectPool<ShmBuffer<Size>>::GetInstance().Allocate(serverType, remotePort, shmAddr, connectStatus, connectionCount);
     }
     virtual ~ShmConnect()
     {
@@ -29,12 +30,15 @@ public:
     }
 
     static ShmConnect* Allocate(SessionIdType sessionId, const char* remoteAddress, int remotePort, ServerTypeType serverType, void* shmAddr,
-                                ConnectStatusType connectStatus)
+                                ConnectStatusType connectStatus, unsigned connectionCount)
     {
-        return ObjectPool<ShmConnect<Size>>::GetInstance().Allocate(sessionId, remoteAddress, remotePort, serverType, shmAddr, connectStatus);
+        return ObjectPool<ShmConnect<Size>>::GetInstance().Allocate(sessionId, remoteAddress, remotePort, serverType, shmAddr, connectStatus,
+                                                                    connectionCount);
     }
     virtual void Deallocate() override { ObjectPool<ShmConnect<Size>>::GetInstance().Deallocate(this); }
     ShmBuffer<Size>* GetBuffer() { return shmBuffer_; }
+
+    std::chrono::system_clock::time_point CreateTimePoint;
 
 private:
     ShmBuffer<Size>* shmBuffer_;

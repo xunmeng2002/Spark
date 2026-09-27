@@ -29,8 +29,8 @@ void ShmServer::Accept()
                     auto shmHeader = commonShmHeader_ + i;
                     if (SingleShmHeader::LoadStatus(shmHeader) == ConnectStatusType::UnConnected)
                     {
-                        ShmConnect<ShmBufferSize>* shmConnect = ShmConnect<ShmBufferSize>::Allocate(GetSessionId(), address_.c_str(), i, serverType_,
-                                                                                                    shmAddr_, ConnectStatusType::Accepted);
+                        ShmConnect<ShmBufferSize>* shmConnect = ShmConnect<ShmBufferSize>::Allocate(
+                            GetSessionId(), address_.c_str(), i, serverType_, shmAddr_, ConnectStatusType::Accepted, maxConnectSize_);
                         AddConnect(shmConnect);
 
                         SingleShmHeader::StoreMappedField(commonShmHeader_->DownWriteCount, i);
@@ -54,7 +54,7 @@ void ShmServer::Accept()
     {
         auto currTimePoint = chrono::system_clock::now();
         auto t = chrono::duration_cast<chrono::seconds>(currTimePoint - lastWriteTimePoint_);
-        if (t.count() >= 5)
+        if (t.count() >= HandshakeTimeoutSeconds)
         {
             if (semConnect_->Lock())
             {
@@ -62,11 +62,6 @@ void ShmServer::Accept()
                 if (timedOutStatus == ConnectStatusType::Accepted || timedOutStatus == ConnectStatusType::Rejected)
                 {
                     printf("Reset Connect From Server,  Status:%d\n", static_cast<int>(timedOutStatus));
-                    if (timedOutStatus == ConnectStatusType::Accepted)
-                    {
-                        const unsigned timedOutIndex = SingleShmHeader::LoadMappedField(commonShmHeader_->DownWriteCount);
-                        SingleShmHeader::ResetChannelHeader(commonShmHeader_ + timedOutIndex);
-                    }
                     SingleShmHeader::StoreStatus(commonShmHeader_, ConnectStatusType::UnConnected);
                 }
                 semConnect_->UnLock();
@@ -87,15 +82,34 @@ void ShmServer::Accept()
 }
 void ShmServer::CheckConnect()
 {
+    const auto currentTimePoint = chrono::system_clock::now();
     for (auto& it : connects_)
     {
         auto shmConnect = static_cast<ShmConnect<ShmBufferSize>*>(it.second);
-        if (shmConnect->GetBuffer()->GetConnectStatus() == ConnectStatusType::DisConnected)
+        if (TryReclaimConnect(*shmConnect, currentTimePoint))
         {
             lock_guard<mutex> guard(disConnectSessionIdsMutex_);
             disConnectSessionIds_.push_back(shmConnect->SessionId);
         }
     }
+}
+
+bool ShmServer::TryReclaimConnect(ShmConnect<ShmBufferSize>& shmConnect, const chrono::system_clock::time_point& currentTimePoint)
+{
+    const ConnectStatusType connectStatus = shmConnect.GetBuffer()->GetConnectStatus();
+    if (connectStatus == ConnectStatusType::DisConnected)
+    {
+        return true;
+    }
+    if (connectStatus != ConnectStatusType::Accepted)
+    {
+        return false;
+    }
+    if (chrono::duration_cast<chrono::seconds>(currentTimePoint - shmConnect.CreateTimePoint).count() < HandshakeTimeoutSeconds)
+    {
+        return false;
+    }
+    return shmConnect.GetBuffer()->RevokeUnconfirmedAccept();
 }
 void ShmServer::CheckData()
 {

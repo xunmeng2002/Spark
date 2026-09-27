@@ -15,6 +15,14 @@ using namespace Spark;
 // ============================================================
 
 static constexpr unsigned TestShmBufferSize = 256;
+static constexpr unsigned TestShmConnectCount = 2;
+static constexpr int OutOfRangeConnectionIndex = static_cast<int>(TestShmConnectCount);
+
+// 模拟映射内存：index=1 的通道头与上下行缓冲都要落在这块内存里
+std::vector<char> MakeZeroedShmMapping()
+{
+    return std::vector<char>(sizeof(SingleShmHeader) + TestShmBufferSize * 4, 0);
+}
 
 static_assert(std::is_same_v<decltype(std::declval<const ShmBuffer<TestShmBufferSize>&>().GetShmHeader()), const SingleShmHeader*>,
               "GetShmHeader must hand out a read-only view of the shared header");
@@ -50,11 +58,11 @@ struct ShmTestFixture : public ::testing::Test
         //   [sizeof(SingleShmHeader) .. 2*Size) — 填充
         //   [2*Size .. 3*Size)              — UpBuffer
         //   [3*Size .. 4*Size)              — DownBuffer
-        memory_.resize(sizeof(SingleShmHeader) + TestShmBufferSize * 4, 0);
+        memory_ = MakeZeroedShmMapping();
 
         // 使用 index=1 构造 — ShmBuffer 自行定位 header、UpBuffer、DownBuffer
-        client_.reset(new ShmBuffer<TestShmBufferSize>(ServerTypeType::Client, 1, memory_.data(), ConnectStatusType::Connected));
-        server_.reset(new ShmBuffer<TestShmBufferSize>(ServerTypeType::Server, 1, memory_.data(), ConnectStatusType::Connected));
+        client_.reset(new ShmBuffer<TestShmBufferSize>(ServerTypeType::Client, 1, memory_.data(), ConnectStatusType::Connected, TestShmConnectCount));
+        server_.reset(new ShmBuffer<TestShmBufferSize>(ServerTypeType::Server, 1, memory_.data(), ConnectStatusType::Connected, TestShmConnectCount));
 
         header_ = client_->GetShmHeader();
     }
@@ -77,8 +85,8 @@ struct ShmTestFixture : public ::testing::Test
 
 TEST(ShmBufferTest, StatusConnected)
 {
-    std::vector<char> memory(sizeof(SingleShmHeader) + TestShmBufferSize * 4, 0);
-    ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Server, 1, memory.data(), ConnectStatusType::Connected);
+    auto memory = MakeZeroedShmMapping();
+    ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Server, 1, memory.data(), ConnectStatusType::Connected, TestShmConnectCount);
     EXPECT_EQ(buffer.GetConnectStatus(), ConnectStatusType::Connected);
 }
 
@@ -100,6 +108,7 @@ TEST(ShmBufferTest, UnAttachedBufferRejectsAllChannelAccess)
     EXPECT_EQ(buffer.GetWriteBufferSize(), 0u);
     EXPECT_EQ(buffer.GetReadBufferSize(), 0u);
     EXPECT_FALSE(buffer.MarkDisconnectedAndReportWhetherLastHolder());
+    EXPECT_FALSE(buffer.RevokeUnconfirmedAccept());
     buffer.SetConnectStatus(ConnectStatusType::Connected);
     buffer.ResetSharedHeader();
     EXPECT_EQ(buffer.GetShmHeader(), nullptr);
@@ -107,13 +116,20 @@ TEST(ShmBufferTest, UnAttachedBufferRejectsAllChannelAccess)
 }
 
 #if defined(GTEST_HAS_DEATH_TEST) && !defined(NDEBUG)
-TEST(ShmBufferTest, ConnectionIndexZeroTripsAssert)
+TEST(ShmBufferTest, OutOfRangeConnectionIndexTripsAssert)
 {
-    // index=0 时 UpBuffer 会落在 header 区上，Debug 构建下必须由断言当场拦下
-    std::vector<char> memory(sizeof(SingleShmHeader) + TestShmBufferSize * 4, 0);
+    // index=0 时 UpBuffer 会落在 header 区上，index 到达容量时 header 已越出映射，Debug 构建下必须由断言当场拦下
+    auto memory = MakeZeroedShmMapping();
     ASSERT_DEATH(
         {
-            ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Client, 0, memory.data(), ConnectStatusType::Connected);
+            ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Client, 0, memory.data(), ConnectStatusType::Connected, TestShmConnectCount);
+            (void)buffer;
+        },
+        "IsValidConnectionIndex");
+    ASSERT_DEATH(
+        {
+            ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Client, OutOfRangeConnectionIndex, memory.data(), ConnectStatusType::Connected,
+                                                TestShmConnectCount);
             (void)buffer;
         },
         "IsValidConnectionIndex");
@@ -124,9 +140,11 @@ TEST(ShmBufferTest, ConnectionIndexZeroTripsAssert)
 // 断言关闭后非法构造不再被拦下，改为「保持未 Attach」：此后通道访问与状态写入一律惰性返回，共享内存一个字节都不动
 TEST(ShmBufferTest, InvalidConnectionIndexLeavesBufferDetached)
 {
-    std::vector<char> memory(sizeof(SingleShmHeader) + TestShmBufferSize * 4, 0);
-    ShmBuffer<TestShmBufferSize> zeroIndexed(ServerTypeType::Client, 0, memory.data(), ConnectStatusType::Connected);
-    ShmBuffer<TestShmBufferSize> negativeIndexed(ServerTypeType::Client, -1, memory.data(), ConnectStatusType::Connected);
+    auto memory = MakeZeroedShmMapping();
+    ShmBuffer<TestShmBufferSize> zeroIndexed(ServerTypeType::Client, 0, memory.data(), ConnectStatusType::Connected, TestShmConnectCount);
+    ShmBuffer<TestShmBufferSize> negativeIndexed(ServerTypeType::Client, -1, memory.data(), ConnectStatusType::Connected, TestShmConnectCount);
+    ShmBuffer<TestShmBufferSize> beyondCapacityIndexed(ServerTypeType::Client, OutOfRangeConnectionIndex, memory.data(), ConnectStatusType::Connected,
+                                                       TestShmConnectCount);
 
     EXPECT_EQ(zeroIndexed.GetShmHeader(), nullptr);
     EXPECT_EQ(zeroIndexed.GetConnectStatus(), ConnectStatusType::UnConnected);
@@ -135,11 +153,14 @@ TEST(ShmBufferTest, InvalidConnectionIndexLeavesBufferDetached)
     EXPECT_EQ(reinterpret_cast<const SingleShmHeader*>(memory.data())->Status, ConnectStatusType::UnConnected);
     EXPECT_EQ(negativeIndexed.GetShmHeader(), nullptr);
     EXPECT_EQ(negativeIndexed.GetWriteBufferSize(), 0u);
+    EXPECT_EQ(beyondCapacityIndexed.GetShmHeader(), nullptr);
+    EXPECT_EQ(beyondCapacityIndexed.GetConnectStatus(), ConnectStatusType::UnConnected);
+    EXPECT_EQ(beyondCapacityIndexed.GetReadBufferSize(), 0u);
 }
 
 TEST(ShmBufferTest, NullSharedMemoryBaseLeavesBufferDetached)
 {
-    ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Server, 1, nullptr, ConnectStatusType::Connected);
+    ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Server, 1, nullptr, ConnectStatusType::Connected, TestShmConnectCount);
 
     EXPECT_EQ(buffer.GetShmHeader(), nullptr);
     EXPECT_EQ(buffer.GetConnectStatus(), ConnectStatusType::UnConnected);
@@ -458,7 +479,7 @@ TEST_F(ShmTestFixture, ResetSharedHeader_ClearsCountersAndStatus)
 
 TEST_F(ShmTestFixture, MarkDisconnectedAndResetChannelWhenLastHolder_MarksDisconnectedWhenStillConnected)
 {
-    ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Client, 1, memory_.data(), ConnectStatusType::Connected);
+    ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Client, 1, memory_.data(), ConnectStatusType::Connected, TestShmConnectCount);
 
     buffer.MarkDisconnectedAndResetChannelWhenLastHolder();
 
@@ -467,7 +488,7 @@ TEST_F(ShmTestFixture, MarkDisconnectedAndResetChannelWhenLastHolder_MarksDiscon
 
 TEST_F(ShmTestFixture, MarkDisconnectedAndResetChannelWhenLastHolder_ResetsHeaderWhenAlreadyDisconnected)
 {
-    ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Client, 1, memory_.data(), ConnectStatusType::Connected);
+    ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Client, 1, memory_.data(), ConnectStatusType::Connected, TestShmConnectCount);
     EXPECT_EQ(buffer.Write("Hello", 5), 5u);
     EXPECT_FALSE(buffer.MarkDisconnectedAndReportWhetherLastHolder());
 
@@ -475,4 +496,25 @@ TEST_F(ShmTestFixture, MarkDisconnectedAndResetChannelWhenLastHolder_ResetsHeade
 
     EXPECT_EQ(HeaderOfSecondConnection()->Status, ConnectStatusType::UnConnected);
     EXPECT_EQ(HeaderOfSecondConnection()->UpWriteCount, 0u);
+}
+
+// ========== 撤回未被对端确认的受理 ==========
+
+TEST_F(ShmTestFixture, RevokeUnconfirmedAccept_ReclaimsTheChannelWhenThePeerNeverConfirmed)
+{
+    client_.reset();
+    server_.reset();
+    ShmBuffer<TestShmBufferSize> unconfirmedPeer(ServerTypeType::Server, 1, memory_.data(), ConnectStatusType::Accepted, TestShmConnectCount);
+
+    EXPECT_TRUE(unconfirmedPeer.RevokeUnconfirmedAccept());
+    EXPECT_EQ(HeaderOfSecondConnection()->Status, ConnectStatusType::DisConnected);
+    EXPECT_FALSE(unconfirmedPeer.RevokeUnconfirmedAccept());
+    EXPECT_EQ(HeaderOfSecondConnection()->Status, ConnectStatusType::DisConnected);
+}
+
+TEST_F(ShmTestFixture, RevokeUnconfirmedAccept_LeavesAConfirmedChannelAlone)
+{
+    EXPECT_FALSE(client_->RevokeUnconfirmedAccept());
+
+    EXPECT_EQ(header_->Status, ConnectStatusType::Connected);
 }

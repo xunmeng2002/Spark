@@ -117,7 +117,7 @@ void ShmClient::CheckConnectResult()
             if (ShmBuffer<ShmBufferSize>::IsConnectionIndexWithinMapping(index, maxConnectSize_))
             {
                 shmConnect_ = ShmConnect<ShmBufferSize>::Allocate(GetSessionId(), address_.c_str(), static_cast<int>(index), serverType_, shmAddr_,
-                                                                  ConnectStatusType::Connected);
+                                                                  ConnectStatusType::Connected, maxConnectSize_);
                 AddConnect(shmConnect_);
                 connected_ = true;
             }
