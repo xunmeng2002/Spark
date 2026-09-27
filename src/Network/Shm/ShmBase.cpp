@@ -196,26 +196,6 @@ void ShmBase::HandleIoEvent()
     CheckData();
     HandleData();
 }
-void ShmBase::DoSend(Connect* connect)
-{
-    auto shmConnect = static_cast<ShmConnect<ShmBufferSize>*>(connect);
-    auto buffer = connect->GetNextBuffer();
-    while (buffer != nullptr)
-    {
-        size_t len = shmConnect->GetBuffer()->Write(buffer->GetData(), buffer->GetLength());
-        buffer->Shift(len);
-        if (buffer->GetLength() == 0)
-        {
-            buffer->Deallocate();
-            buffer = connect->GetNextBuffer();
-        }
-        else
-        {
-            connect->PushFront(buffer);
-            break;
-        }
-    }
-}
 void ShmBase::DoRecv(Connect* connect)
 {
     auto shmConnect = static_cast<ShmConnect<ShmBufferSize>*>(connect);

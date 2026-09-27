@@ -1,7 +1,7 @@
 # Shm 后端的通道布局、连接对象类型与并发契约
 
-本文记录共享内存后端（`src/Network/Shm/`、`include/Spark/TemplateLib/Buffer/ShmBuffer.h`）里三条无法从类型或命名读出的约定：
-**通道在映射里的摆放、`IoBase::connects_` 里存的是什么类型、以及两端并发读写共享头的边界**。
+本文记录共享内存后端（`src/Network/Shm/`、`include/Spark/TemplateLib/Buffer/ShmBuffer.h`）里四条无法从类型或命名读出的约定：
+**通道在映射里的摆放、`IoBase::connects_` 里存的是什么类型、`Send` 在两个后端族下的不同完成语义、以及两端并发读写共享头的边界**。
 本仓不写注释（Harness §4：命名即文档），故成文于此。与 `docs/shm-shared-object-lifecycle.md` 互补：
 后者讲**对象**（命名、映射长度、残留复用、创建与销毁），本文讲**对象内部的布局与两侧的约定**。
 
@@ -27,15 +27,46 @@
 - `IoBase::connects_` 是 `std::map<SessionIdType, Connect*>`，**连接对象的类型在容器里被擦除**；
   shm 后端往里放的只有 `ShmConnect<ShmBufferSize>*`，注册点只有两处：`ShmServer::Accept` 与 `ShmClient::CheckConnectResult`
   （各自 `ShmConnect<ShmBufferSize>::Allocate(...)` 之后 `AddConnect`）。
-- 因此 **6 处下行转换用 `static_cast`**：`ShmBase::Send` / `DoSend` / `DoRecv`，以及 `ShmServer::CheckConnect` / `CheckData` / `HandleData`。
+- 因此 **5 处下行转换用 `static_cast`**：`ShmBase::Send` / `DoRecv`，以及 `ShmServer::CheckConnect` / `CheckData` / `HandleData`。
   这条前提由**注册点的唯一性**保证，不由类型系统保证。
 - 类型断言只在**注册处做一次**（`ShmBase::AddConnect`，Debug 档 `dynamic_cast` 校验），**不在每轮 IO 周期做**：
-  每周期一次虚调用，且 6 个调用点多数不判空，改 `dynamic_cast` 还得为它们补 `nullptr` 分支。
+  每周期一次虚调用，且 5 个调用点多数不判空，改 `dynamic_cast` 还得为它们补 `nullptr` 分支。
   `NDEBUG` 下该断言整个消失，Release 零开销。
 - `Connect::GetNextBuffer` / `PushFront`（发送队列）只有 TCP 后端在用；shm 的 `Send` 直接写通道、从不入队，
-  故 `ShmBase::DoSend` 在 shm 侧**没有调用点**，它存在的唯一理由是 `IoBase::DoSend` 是纯虚（见主台账 `Q.46` 与 `PROGRESS.md` 待决项）。
+  故 shm 后端没有「续发」这件事，也不再覆盖 `IoBase::DoSend`（见第三节）。
 
-## 三、并发契约
+## 三、`Send` 的完成语义：Shm 同步写穿，Tcp 异步排队
+
+`IoBase::Send` 与 `IoBase::DoSend` 是两件事：`Send` 是应用侧的投递入口，每个后端族各自实现；
+`DoSend` 是「把上一次没发完的缓冲续发出去」这个**可选钩子**——它在 `IoBase` 里带一个空实现，
+只有真会「发不完」的后端才需要覆盖。两个后端族给同一个 `Send` 的是**同名不同完成语义**：
+
+| 事项 | Tcp 族 | Shm 族 |
+| ---- | ---- | ---- |
+| `Send` 做什么 | `PushBack` + `socketNotify_->Notify()`，**立即返回** | 在调用方线程里写通道，写不完每 1 ms 重试 |
+| 谁做搬运 | IO 线程，稍后由 `DoSend` 排空 | 调用方线程，此刻 |
+| 覆盖 `DoSend` | 是（`TcpBase`） | 否（2026-09-27 已删除，见下） |
+| 对端不消费时 | 发送队列无上界增长（吃 `LinearBuffer` 池） | 调用方线程一直等，**只有对端 `DisConnected` 才丢弃** |
+| 缓冲上界 | 无（池多大就能堆多少） | 固定每方向 1 MiB（`ShmBufferSize`） |
+
+三条后果，调用方须按后端区分假设：
+
+- **`Send` 在 Shm 上会阻塞**：对端活着但不读时，`ShmBase::Send` 的 1 ms 重试循环没有截止时间，
+  会一直转（对端断连时才丢弃并记 Warning）。照 Tcp 语义假定「`Send` 立即返回」的调用方会在 Shm 上挂住。
+- **Shm 的背压是硬的**：1 MiB 通道写满即挡住调用方，不会像 Tcp 那样把内存堆上去——这正是共享内存窗口的意义。
+- **「通道写满」这条分支至今没有用例**：1 MiB 通道在冒烟的 10000 次往返里都难填满，
+  正确性依赖 `ShmBuffer::Write` 的返 0 语义（由 `ShmBufferTest` 钉住）。
+
+**为什么不给 Shm 也做队列**（用户 2026-09-27 裁定：维持现状，把差异写进文档）：那要给 Shm 造一个它现在没有的原语
+——「唤醒本地 IO 线程」（Tcp 侧是 `socketNotify_`）；不造它、只靠 IO 循环轮询排空，就是给**每条消息**加上一个轮询周期的延迟。
+更关键的是背压会从「固定 1 MiB 窗口」变成「无上界排队」，等于拿掉共享内存窗口最核心的性质。故保留同步直写。
+
+**`ShmBase::DoSend` 已删除**（用户 2026-09-27 同日裁定：留着反倒容易误解）：它是一份与 `TcpBase::DoSend` 同构、
+却在 Shm 侧永远不会被调用的续发实现。删除的前提是 `IoBase::DoSend` 由纯虚降为**带空实现的虚函数**
+（否则 `ShmBase` 仍是抽象类、无法实例化）；该改动不动 vtable 槽位本身的数目与顺序，
+槽的指向由 `_purecall` 变为一个空函数体，**ABI 不变**。
+
+## 四、并发契约
 
 - **每个计数器单写单读**：`UpWriteCount` 由 Client 写、`UpReadCount` 由 Server 写、`DownWriteCount` 由 Server 写、
   `DownReadCount` 由 Client 写（对应上文「上行 Client 写、下行 Server 写」的通道分工）。
@@ -48,7 +79,7 @@
   只用来阻止编译器把值缓存在寄存器里；**同步机制不靠它**，可见性依赖「单写单读 + 硬件缓存一致性」这一实践约定。
   一旦出现多写、或状态与数据被拆到不同字段，须按 Harness §6 重新评估（届时换 `std::atomic` 与内存序）。
 
-## 四、相关测试与输入输出
+## 五、相关测试与输入输出
 
 `test/unittest/TemplateLib/ShmBufferTest.cpp`（四档构建均跑）。
 
@@ -68,7 +99,7 @@
   - 输入：缓冲区先写入 5 字节、再手动置位断连，随后 `Deallocate()`。
   - 输出：该槽位头状态为 `UnConnected`、`UpWriteCount` 回到 0。
 
-## 五、已知未覆盖
+## 六、已知未覆盖
 
 - **「连接号两侧不一致」无用例也无防护**：编号由控制头单点传递，未做二次校验；若服务端复用了槽位而客户端仍持旧号，
   两端会操作不同的通道（第一节的「两侧必须一致」是约定而非校验）。

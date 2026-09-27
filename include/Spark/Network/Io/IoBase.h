@@ -46,7 +46,7 @@ public:
 
 protected:
     virtual void DoDisConnect();
-    virtual void DoSend(Connect* connect) = 0;
+    virtual void DoSend(Connect* connect) {}
     virtual void DoRecv(Connect* connect) = 0;
 
     virtual void AddConnect(Connect* connect);
