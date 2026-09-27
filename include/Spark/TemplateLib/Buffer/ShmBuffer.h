@@ -48,6 +48,11 @@ public:
     ShmBuffer(ShmBuffer&&) = delete;
     ShmBuffer& operator=(ShmBuffer&&) = delete;
 
+    static constexpr bool IsConnectionIndexWithinMapping(unsigned connectionIndex, unsigned connectionCount)
+    {
+        return connectionIndex >= 1 && connectionIndex < connectionCount;
+    }
+
     static ShmBuffer* Allocate(ServerTypeType serverType, int connectionIndex, void* shmBase, ConnectStatusType connectStatus)
     {
         return ObjectPool<ShmBuffer<Size>>::GetInstance().Allocate(serverType, connectionIndex, shmBase, connectStatus);

@@ -7,6 +7,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include <cstddef>
 #include <limits>
 #include <vector>
 #include <mutex>
@@ -49,6 +50,10 @@ protected:
 
 private:
     static constexpr unsigned MaxSharedMemoryConnectSize = (std::numeric_limits<unsigned>::max)() / (ShmBufferSize * 2);
+    static constexpr size_t ConnectionZeroRegionSize = static_cast<size_t>(ShmBufferSize) * 2;
+
+    static_assert(MaxSharedMemoryConnectSize * sizeof(SingleShmHeader) <= ConnectionZeroRegionSize,
+                  "SingleShmHeader array must fit in the region reserved for connection zero");
 
     bool IsConnectSizeAllowed() const;
     bool WindowsInit();

@@ -106,11 +106,19 @@ void ShmClient::CheckConnectResult()
         hasSendConnect_ = false;
         if (commonShmHeader_->Status == ConnectStatusType::Accepted)
         {
-            auto index = commonShmHeader_->DownWriteCount;
-            shmConnect_ =
-                ShmConnect<ShmBufferSize>::Allocate(GetSessionId(), address_.c_str(), index, serverType_, shmAddr_, ConnectStatusType::Connected);
-            AddConnect(shmConnect_);
-            connected_ = true;
+            const auto index = commonShmHeader_->DownWriteCount;
+            if (ShmBuffer<ShmBufferSize>::IsConnectionIndexWithinMapping(index, maxConnectSize_))
+            {
+                shmConnect_ = ShmConnect<ShmBufferSize>::Allocate(GetSessionId(), address_.c_str(), static_cast<int>(index), serverType_, shmAddr_,
+                                                                  ConnectStatusType::Connected);
+                AddConnect(shmConnect_);
+                connected_ = true;
+            }
+            else
+            {
+                WriteLog(LogLevel::Warning, "Reject Connect Index:%u Out Of Range, ConnectSize:%u, Address:%s", index, maxConnectSize_,
+                         address_.c_str());
+            }
             commonShmHeader_->Status = ConnectStatusType::UnConnected;
         }
         else if (commonShmHeader_->Status == ConnectStatusType::Rejected)

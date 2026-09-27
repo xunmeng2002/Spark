@@ -2,6 +2,7 @@
 #include <Spark/TemplateLib/Buffer/ShmBuffer.h>
 
 #include <cstring>
+#include <limits>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -133,6 +134,18 @@ TEST(ShmBufferTest, NullSharedMemoryBaseLeavesBufferDetached)
     EXPECT_EQ(buffer.GetReadBufferSize(), 0u);
 }
 #endif
+
+TEST(ShmBufferTest, ConnectionIndexWithinMappingRequiresBothBounds)
+{
+    using Buffer = ShmBuffer<TestShmBufferSize>;
+
+    EXPECT_TRUE(Buffer::IsConnectionIndexWithinMapping(1, 4));
+    EXPECT_TRUE(Buffer::IsConnectionIndexWithinMapping(3, 4));
+    EXPECT_FALSE(Buffer::IsConnectionIndexWithinMapping(0, 4));
+    EXPECT_FALSE(Buffer::IsConnectionIndexWithinMapping(4, 4));
+    EXPECT_FALSE(Buffer::IsConnectionIndexWithinMapping((std::numeric_limits<unsigned>::max)(), 4));
+    EXPECT_FALSE(Buffer::IsConnectionIndexWithinMapping(1, 1));
+}
 
 // ========== Client 写（UpWrite）/ 读（DownRead）==========
 

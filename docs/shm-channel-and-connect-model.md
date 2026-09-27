@@ -15,12 +15,26 @@
 - 头数组与通道相加恰好占满映射，于是 **0 号连接的槽位（前 2 MiB）不用作通道**——它容纳整个头数组
   （`maxConnectSize` 个头远小于 2 MiB）。这就是 `IsValidConnectionIndex(connectionIndex >= 1)` 的由来：
   传 0 会让通道压在头数组上，传负数会被 `static_cast<size_t>` 变成一个巨大的偏移。
+- **头数组装得下是编译期不变式**：头数组占映射前 `maxConnectSize_ * sizeof(SingleShmHeader)` 字节，
+  必须落在 0 号槽位的 `2 * ShmBufferSize` 之内，否则会压在 1 号连接的通道上。`ShmBase.h` 的 `static_assert`
+  按**最大**允许连接数 `MaxSharedMemoryConnectSize` 校验（对任何运行期连接数都更强），故调小 `ShmBufferSize`
+  （例如 16 KiB）会让四档构建当场失败。现状是 `2047 * 20 = 40940` 字节 对 `2 MiB`（约 52 倍余量），
+  运行期判据**永远不可达** —— 这正是它做成编译期断言而不是 `IsConnectSizeAllowed()` 里一条分支的原因。
 - **两侧的连接号必须一致**：服务端在 `ShmServer::Accept` 挑第一个空闲槽位 i 并把它写进控制头的 `DownWriteCount`，
   客户端在 `ShmClient::CheckConnectResult` 从同一字段取回 i，各自用它构造 `ShmBuffer`。
   故控制头的 `DownWriteCount` 在协商期被复用为**槽位号**（不是计数器），`ShmServer::Accept` 的 5 秒超时复位也读它。
+- **客户端取号处是信任边界，必须校验上界**：客户端手里的 i 由**对端**写入，而 `ShmBuffer` 不知道映射容量，
+  上界只能在调用方校验。故 `ShmClient::CheckConnectResult` 取回 i 后先过
+  `ShmBuffer<Size>::IsConnectionIndexWithinMapping(i, maxConnectSize_)`（要求 `1 <= i < maxConnectSize_`）；
+  不满足即按协商失败处置 —— 记 Warning（`Reject Connect Index:%u Out Of Range`）、控制头复位成 `UnConnected`、
+  走既有的 1 秒重试，**不构造 `ShmConnect`**。挡下的是三类越界后果：通道偏移落出映射
+  （`upBuffer_` / `downBuffer_` 直指映射之外，构造期 `SetConnectStatus` 与首帧读写即踩）、
+  `ShmClient::CheckData` 的 `sems_[i]` 越出信号量数组、以及构造期的 `SetConnectStatus` 把 `Status`
+  写到头数组之外（别的槽位头或通道上）。判据本身是 `ShmBuffer` 上的 `constexpr` 静态谓词，由单元用例钉住（第五节）。
 - **构造期防护**：连接号非法或基址为空时**保持「未 Attach」**（`shmHeader_` 为空），
   此后 `Write` / `Read` / `GetWriteBufferSize` / `GetReadBufferSize` 惰性返回 0，`SetConnectStatus` / `ResetSharedHeader` 不生效，
   共享内存一个字节都不动。Debug 档另有 `assert(IsValidConnectionIndex(...))` 当场拦下。
+  注意这条只守**下界**（`>= 1`，且 `Release` 档没有断言兜底），上界由上一段的调用方校验负责。
 
 ## 二、连接对象的类型不变式
 
@@ -94,6 +108,10 @@
 - `NullSharedMemoryBaseLeavesBufferDetached`（仅 Release，`NDEBUG`）
   - 输入：基址 `nullptr`、连接号 1。
   - 输出：同上「未 Attach」。
+- `ConnectionIndexWithinMappingRequiresBothBounds`（四档构建均跑）
+  - 输入：`(1, 4)`、`(3, 4)`、`(0, 4)`、`(4, 4)`、`(0xFFFFFFFF, 4)`、`(1, 1)`。
+  - 输出：前两例 `true`（`1 <= index < 4`）；后四例 `false`（0 号留给头数组、`index == 连接数` 即越界、
+    对端写下的 `0xFFFFFFFF` 同样被拒、连接数 1 时不存在可用的数据连接号）。
 - `MarkDisconnectedAndReportWhetherLastHolder_ReportsLastOwner`
   - 输入：同一份 header 上先后两次调用。
   - 输出：第一次 `false`（由本次置位）、第二次 `true`（已是最后持有者）。
@@ -103,8 +121,19 @@
 
 ## 六、已知未覆盖
 
-- **「连接号两侧不一致」无用例也无防护**：编号由控制头单点传递，未做二次校验；若服务端复用了槽位而客户端仍持旧号，
-  两端会操作不同的通道（第一节的「两侧必须一致」是约定而非校验）。
+- **「两端连接数不一致」只挡住了后果的一半**（2026-09-28）：
+  - **客户端侧已挡**：越界连接号在 `CheckConnectResult` 被拒（第一节），不再有越界指针/越界 `sems_` 下标/越界槽位 `Status` 改写。
+  - **服务端侧仍不校验**，且客户端拒绝时服务端**已**为那个槽位 `AddConnect` 过（`connectCount_` 已加一）。
+    服务端的 5 秒超时只把控制头复位、把这个槽位的头 `memset` 成 `UnConnected` —— 槽位对下一次协商**可复用**，
+    但服务端会为同一槽位再 `Allocate` 一个 `ShmConnect`，于是**每经历一次不完整协商就多占一份 `connectCount_`**，
+    累积到 `maxConnectSize_ - 1` 后服务端开始拒绝一切连接。该泄漏无用例、未修（要修需给服务端加槽位回收）。
+  - **另一半在映射面**：客户端 `Init()` 的 `ftruncate` 会截短服务端对象（`docs/shm-shared-object-lifecycle.md` 第四节末）。
+- **拒绝分支的调用点没有用例**：触发它需要「服务端连接数 > 客户端连接数」的两端搭配，
+  而客户端只持一条连接（`shmConnect_`）且单进程用例里造这个局面会先踩到上面那条 `ftruncate`；
+  被钉住的只是判据本身（`ShmBufferTest`），`ShmClient` 里的那处调用没有对应用例。
+- **`Sem UnLock Failed.` 是既有抖动**：`Sem` 的 Windows 计数上限是 1（`CreateSemaphoreA(..., 1, 1, ...)`），
+  客户端的 `Send` 每写一段就 `UnLock` 一次、服务端每轮 IO 周期 `Lock` 一次，两者失衡时会多释放一次并记 Error。
+  2026-09-28 的 11 轮 Shm 冒烟里出现 1 次（第 4 轮，回显照常跑完 10000 次），不在本次改动的路径上，未修。
 - **Release 档没有类型兜底**：`ShmBase::AddConnect` 的类型断言在 `NDEBUG` 下不存在，跨模块的错误注册只在 Debug 会被抓到。
 - **零号槽位的 2 MiB 是浪费而非错误**：连接数 1 时映射 2 MiB、头数组只占其前几十字节，其余空闲；
   这是「通道偏移不接头数组」这一取法的固有代价，未做紧凑化。
