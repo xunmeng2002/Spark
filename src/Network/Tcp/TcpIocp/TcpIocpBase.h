@@ -29,9 +29,6 @@ protected:
     virtual bool PostSend(MyOverlapped* overlapped);
     virtual bool PostRecv(MyOverlapped* overlapped);
     void ReleaseUnsubmittedIoRequest(TcpIocpConnect* tcpIocpConnect, MyOverlapped* overlapped);
-    // 建立类请求（AcceptEx/ConnectEx）在完成包取回之前不得归还：内核收尾该 IRP 时会写回这块
-    // OVERLAPPED 的内存，若池已把它发了出去，等于写坏别人的对象。故提交成功后登记、完成时注销，
-    // 析构时把仍登记着的取消并取回。登记表只为析构路径与取消路径服务，不在收发热路径上。
     void RegisterInFlightConnectRequest(MyOverlapped* overlapped);
     void UnregisterInFlightConnectRequest(MyOverlapped* overlapped);
     void ReleaseAllInFlightConnectRequests();

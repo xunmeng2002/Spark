@@ -14,8 +14,6 @@ namespace Spark::Network
 {
 namespace
 {
-// 取消是异步的：内核收尾该 IRP 并投递完成包之前，这块 OVERLAPPED 的内存都还可能被写回。
-// 故析构路径限时轮询把这个包取回来；限时内取不回就宁可把这对象漏着，也不归还一块还可能被写的内存。
 constexpr DWORD kCancelledRequestReapTimeoutMs = 1000;
 constexpr DWORD kCancelledRequestReapPollMs = 10;
 }
@@ -27,8 +25,6 @@ TcpIocpBase::TcpIocpBase(ServerTypeType serverType, const char* addressName, int
 }
 TcpIocpBase::~TcpIocpBase()
 {
-    // 顺序不可颠倒：取包要用 ioCompletePort_，而「退出」那条 0/0/NULL 完成包会先被取到、把本函数
-    // 自己的包挤掉；故先收在途的建立类请求，再发退出信号，最后才销毁端口
     ReleaseAllInFlightConnectRequests();
     ioCompletePort_->PostStatus(0, 0, NULL);
     delete ioCompletePort_;
@@ -119,9 +115,6 @@ void TcpIocpBase::HandleTcpEvent()
         {
             WriteLog(LogLevel::Info, "GetStatus Failed For CancelIoEx. errorId:%d, SessionId:%lld, CompetionKey:%d.", errorId,
                      overlapped->Connect->SessionId, competionKey);
-            // 建立类请求被取消后不会再有完成包，只能就地整对归还；登记表里那一条也要撤掉，
-            // 否则对象析构时会拿着已归还的 OVERLAPPED 再取消一次。其余事件（收发与断开）的连接仍在
-            // connects_ 里，其归还由断开路径负责，这里只还这个请求本身。
             if (overlapped->EventId == IocpEvent::EventAccept || overlapped->EventId == IocpEvent::EventConnect)
             {
                 UnregisterInFlightConnectRequest(overlapped);
@@ -220,9 +213,6 @@ bool TcpIocpBase::PostDisConnect(MyOverlapped* overlapped)
     auto lastError = WSAGetLastError();
     if (!ret && lastError != ERROR_IO_PENDING)
     {
-        // 一条连接上挂着两个收包请求，对端异常断开时两个完成包都会走到这里：先到的那个已把
-        // DisconnectEx 发出去（尚在挂起），后到的再调只会拿到 WSAENOTCONN。会话收尾归先到的那次，
-        // 这里只还本请求的 overlapped 就走——否则会拿一个已归还给池的 connect 再 Deallocate 一次
         if (lastError == WSAENOTCONN)
         {
             WriteLog(LogLevel::Warning, "DisConnectEx Skipped, Socket Already Disconnecting. SessionId:%lld, Socket:%lld",
@@ -317,8 +307,6 @@ MyOverlapped* TcpIocpBase::TakeOneInFlightConnectRequest()
 }
 bool TcpIocpBase::ReapCancelledConnectRequest(MyOverlapped* overlapped, chrono::steady_clock::time_point reapDeadline)
 {
-    // 取到的若不是这一条（取消前它就已完成、或别的残留包），直接丢弃：本函数只在析构路径上跑，
-    // 此时 IO 线程已按框架约定停好，没有其他人再等这些包
     while (chrono::steady_clock::now() < reapDeadline)
     {
         DWORD transBytes = 0;
@@ -343,8 +331,6 @@ void TcpIocpBase::ReleaseAllInFlightConnectRequests()
             return;
         }
         auto tcpIocpConnect = static_cast<TcpIocpConnect*>(overlapped->Connect);
-        // 取消必须用发起时那个句柄：AcceptEx 的 IRP 挂在监听 socket 上、ConnectEx 的挂在连接 socket 上，
-        // 用错句柄只会得到 ERROR_NOT_FOUND，请求照旧在途，完成包永远等不来
         SOCKET requestSocket = overlapped->EventId == IocpEvent::EventAccept ? socket_ : tcpIocpConnect->SocketId;
         CancelIoEx((HANDLE)requestSocket, overlapped);
         if (ReapCancelledConnectRequest(overlapped, reapDeadline))
