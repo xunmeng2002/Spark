@@ -61,11 +61,13 @@ bool TcpIocpServer::PostAccept()
         ReleaseUnsubmittedIoRequest(tcpIocpConnect, overlapped);
         return false;
     }
+    RegisterInFlightConnectRequest(overlapped);
     return true;
 }
 void TcpIocpServer::OnAcceptComplete(MyOverlapped* overlapped)
 {
     auto tcpIocpConnect = static_cast<TcpIocpConnect*>(overlapped->Connect);
+    UnregisterInFlightConnectRequest(overlapped);
     SOCKADDR_IN* remoteAddr = NULL;
     SOCKADDR_IN* localAddr = NULL;
     int remoteLen = sizeof(SOCKADDR_IN), localLen = sizeof(SOCKADDR_IN);
@@ -98,6 +100,7 @@ SOCKET TcpIocpServer::PrepareAcceptSocket()
     if (!ioCompletePort_->AssociateDevice((HANDLE)socketId, socketId))
     {
         WriteLog(LogLevel::Warning, "Associate CompletionPort Failed, Socket:%lld", socketId);
+        closesocket(socketId);
         return INVALID_SOCKET;
     }
     return socketId;

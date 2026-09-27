@@ -21,6 +21,11 @@ SocketNotify::~SocketNotify()
     {
         closesocket(sockets_[1]);
     }
+    if (addressInfo_ != nullptr)
+    {
+        freeaddrinfo(addressInfo_);
+        addressInfo_ = nullptr;
+    }
 }
 bool SocketNotify::Init()
 {

@@ -15,6 +15,14 @@ TcpIocpClient::TcpIocpClient(const char* addressName, int milliSeconds, int back
     : TcpIocpBase(ServerTypeType::Client, addressName, milliSeconds, backlog), clientLocalAddressInfo_(nullptr)
 {
 }
+TcpIocpClient::~TcpIocpClient()
+{
+    if (clientLocalAddressInfo_ != nullptr)
+    {
+        freeaddrinfo(clientLocalAddressInfo_);
+        clientLocalAddressInfo_ = nullptr;
+    }
+}
 bool TcpIocpClient::Init()
 {
     if (!TcpIocpBase::Init())
@@ -36,6 +44,11 @@ bool TcpIocpClient::Init()
 }
 bool TcpIocpClient::ConnectToServer(const char* ip, unsigned short port)
 {
+    if (addressInfo_ != nullptr)
+    {
+        freeaddrinfo(addressInfo_);
+        addressInfo_ = nullptr;
+    }
     address_ = ip;
     port_ = std::to_string(port);
     auto ret = TcpUtility::GetAddrinfo(address_.c_str(), port_.c_str(), addressInfo_);
@@ -71,10 +84,12 @@ bool TcpIocpClient::PostConnect()
         ReleaseUnsubmittedIoRequest(tcpIocpConnect, overlapped);
         return false;
     }
+    RegisterInFlightConnectRequest(overlapped);
     return true;
 }
 void TcpIocpClient::OnConnectComplete(MyOverlapped* overlapped)
 {
+    UnregisterInFlightConnectRequest(overlapped);
     PostRecv(overlapped);
     auto overlapped2 = MyOverlapped::Allocate();
     overlapped2->SetBuffer(LinearBuffer<BufferSize>::Allocate());

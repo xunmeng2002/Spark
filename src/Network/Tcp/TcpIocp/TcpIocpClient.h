@@ -8,6 +8,7 @@ class TcpIocpClient : public TcpIocpBase
 {
 public:
     TcpIocpClient(const char* addressName, int milliSeconds, int backlog = 5);
+    ~TcpIocpClient();
 
     virtual bool Init() override;
     virtual bool ConnectToServer(const char* ip, unsigned short port) override;

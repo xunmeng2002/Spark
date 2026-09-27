@@ -32,6 +32,11 @@ TcpBase::~TcpBase()
         closesocket(socket_);
         socket_ = INVALID_SOCKET;
     }
+    if (addressInfo_ != nullptr)
+    {
+        freeaddrinfo(addressInfo_);
+        addressInfo_ = nullptr;
+    }
 }
 
 bool TcpBase::Init()
