@@ -4,6 +4,10 @@
 
 ## ✅ 原已完成
 
+### D.49
+
+- **2026-09-26 · s4scan 门禁由红转绿：类内 `static_assert` 归位 `public` 段 + 新测试初始化列表收单行（提交 `c7418fd`）**：①**发现过程**：收包契约批收尾按 CI 口径复跑 `s4scan.py --gate --exempt-struct-default-access`，退出码 1、未豁免 **8 条**——**上一批记的「门禁通过」是错的**（只看了扫描摘要末尾、没读退出码），且这 8 条**先于该批存在**（`LinearBuffer` 自 `07ec001`、`SpscRingBuffer` 自 `939016d`、`ShmBuffer` 自 `46efe0e`）→ **门禁自 2026-09-22 起一直是红的**。②其中六条（三个头文件）根因同一：类内 `static_assert` 写在 `public:` 之前、落在 `class` 的隐式私有区，触发 `NO_FIRST_LABEL`（依赖默认访问）与 `ACCESS_ORDER`（`public:` 出现在更低优先级段之后）；改法是把断言移到 `public:` 之后——零语义变化（`static_assert` 在类体内位置等价），且与 `ObjectPool.h` 的既有写法一致。③另两条在我上一批新增的 `TcpIocpTest.cpp`：`ORDER` 说析构函数排在某「普通成员函数」之后，**实为工具误报**——被指认的第 122 行是构造函数初始化列表的**续行**（`disConnectCount_(0), unexpectedFrameCount_(0)`），`classify()` 按「含圆括号即函数」当成成员声明。④**误报以同文件三类探针钉死**：折行的圆括号续行→判成普通成员函数；折行的花括号续行→判成数据成员；**只有初始化列表整段写在构造函数那一行才不被误判**。故该测试改为「初始化列表收单行 + 三个计数器与 `sessionId_` 改类内初始化式 `{0}`」——本仓**首例**类内初始化式，因长初始化列表必折行、折行必被该判据误判，二者不可兼得。⑤**验证**：`s4scan --gate` 退出码 0（余下 34 条全是既定的 `struct` 豁免）、`initcheck --gate` 乱序 0（初始化列表数 31→29，即两处收单行的直接证据）；四档重编各 0 warning、MSVC **456/456**、WSL GCC **454/454**。⑥**未决**：工具侧判据缺陷本身未改，已并入 ❓ 区那条 `s4scan` 条目。
+
 ### D.48
 
 - **2026-09-26 · 收包契约改借出视图 + `IoModel` 命令行开关 + `ObjectPool` 所有权检测器 + IOCP 首次自动化覆盖（提交 `b4b26a8`）**：①**契约（批 1）**：`IoSubscriber::OnRecv` 形参由 `(SessionIdType, LinearBuffer<BufferSize>*)` 改为 `(SessionIdType, const char* data, size_t length)`——收包缓冲归 IO 层、仅在本次回调期间有效，订阅者不得归还或留存，`data` 不保证 NUL 结尾（`TcpBase::DoRecv` 原先补的 `data[len] = '\0'` 随之删除）。旧签名把「归还」写成可写动作，而四后端分成两派（`TcpBase`/`ShmBase` 每次 recv 现领、`TcpIocpBase` 交每连接常驻缓冲），`Protocol::OnRecv` 跟了多数派 → 在 IOCP 上把常驻缓冲还进了池（归档 `Q.35`）；改签名后归还动作在类型上不可写，`Protocol::OnRecv` 与 `PackageReader::Append` 随之内改为只读视图（后者形参加 `const`，**导出符号名随之改变**）。②**`IoModel` 开关（批 2）**：此前全仓唯一赋值处是 `TestUtility.cpp:15` 的 `Select`，IOCP/Epoll 分支**从未被任何测试或冒烟选中**；新增 `TryParseIoModel`/`ApplyIoModelFromCommandLine`（名字取自 `GetIoModelString`、与日志同源），`TestServer`/`TestClient` 读第二个命令行参数，`step_e2e.py` 增 `--io-model` 并断言日志里的 `IoModel` 串（**只证明参数抵达工厂、不证明工厂选中哪个后端类**）；单测 +8 条，并把 4 条既有用例的 RAII 守卫抽成 `GlobalValueGuard<T>` 消 DRY。③**IOCP 从未工作过，本批才暴露**：四个文件把 `new` 出来的池对象交给池归还（`ReqInsertOrderPackage`/`ReqInsertOrderField` 共 4 处）→ 空闲链自环、堆损坏，表现为**连接后约 5 ms 段错误、崩溃点每次运行都换**；定位靠新写的 Debug-only 检测器（`ObjectPool` 维护「已发放指针」集合，归还时校验并报类型与指针），首次发送即点名 `ReqInsertOrderPackage`。④**同批揪出双连接**：`TcpIocpClient::Init()` 走 `PostConnect` 而非 `TcpBase::ConnectToServer`、从不置 `autoConnectPending_` → `TryAutoReconnect` 在首轮 IO 循环再连一次（两端各 2 条 `Protocol::OnConnect`）；补该标志（3 行，与 `TcpBase::Init` 同构）后两端各 1 条。⑤**验证**：四档 0 warning，单测 MSVC **456/456**、WSL GCC **454/454**；`initcheck --gate` 乱序 0、`s4scan --gate` 通过；`step_e2e.py` **Select 与 Iocp 两档均通过**（Iocp 首次通过）；新增 `TcpIocpTest`（Windows-only 真实回环：服务器逐帧回显 200 条互不相同的委托单，断言两端各 1 条连接、往返零断连、逐帧字段与顺序完好），**并做过敏感性验证**——临时撤回那 3 行，该用例立刻变红（2 条连接 / 服务端 400 条 / 客户端 256 条），恢复后转绿；Release 下原始订阅者冒烟（Tcp 与 Shm）各 0 ERROR、回显持续。⑥**覆盖诚实说明与超出计划部分**：IOCP 的自动化覆盖**只有这一条用例**（CI 只跑 `initcheck`/`s4scan` 与 GCC 编译，**不跑单测、不跑 e2e**）；原始 `IoBase` 订阅者路径在 **Debug 下会被检测器拦下**——那是**独立的既有缺陷**（跨模块池实例不共享，见归档 `Q.39`）。修 IOCP 崩溃与双连接**都不在「批 1 + 批 2」字面范围内**，是「让 IOCP 真跑起来」才暴露的既有缺陷（分别落在内存回收路径与连接建立路径），按 Harness §3.2 在此留痕供复核。
@@ -690,6 +694,10 @@
 
 ## ❓ 原待讨论 / 待决策
 
+### Q.48
+
+- **`ShmBuffer` 批 A 的登记项与审查遗留（2026-09-24 登记；已落地的 ①–⑤⑦⑧中-3⑨ 见归档 `Q.37`，未决项留此）**：⑥6 处下行转换改 `static_cast` 后，「map 里只存 `ShmConnect<ShmBufferSize>*`」**仍无断言**；若日后换 `dynamic_cast`，需先评估每轮 IO 循环的检查代价与 6 个调用点（多数不判空）的 `nullptr` 分支。⑧审查遗留余三条：中-4 `MarkDisconnected` 名实不贴（返 `true` = 调用前已 `DisConnected` = 自己是最后持有者）；低-3 `index >= 1` 只有 `assert`、Release 无防护；低-5 `Q.23` 的「单写单读」前提与本批新增公开 mutator 的关系（`Status` 两端都会写、计数器会被最后一个析构者清零——设计如此，表述需对齐）。
+
 ### Q.47
 
 - **Shm 后端两处健壮性缺口（2026-09-24 实测登记，待决）**：①**同名对象残留会让 `Init` 永久失败**：Server 侧用独占创建（Windows `CreateFileA(…, CREATE_NEW, …)` / Linux `shm_open(O_CREAT\|O_EXCL)`）且**无「已存在则改为打开」的回退**；已删除的 `SingleShm::Init` 里**有**这条回退（`CREATE_NEW` 失败即 `OpenFileMappingA`），`ShmBase` 没有。冒烟侧的操作规则与实测数字见本区「Shm 冒烟必须先清残留进程与 `TestShm`」条。**待决**：是否给 `ShmBase` 补回退（行为变更，宜与下条同批裁定）。
@@ -707,6 +715,8 @@
 - **`ShmBuffer::AttachSingleConnectionSharedMemory` 失去唯一真实调用者（2026-09-24 `SingleShm` 删除的连带代价，待决）**：该公开方法（`ShmBuffer.h:60`，位于**已安装**头 `include/Spark/TemplateLib/Buffer/ShmBuffer.h`）此前唯一的生产调用点是 `SingleShm::Init`；删除后只剩 `ShmBufferTest.cpp` 的布局钉桩在用它，即**测试成了它唯一的存续理由**。**待决**：①**（我的建议）保留**——它是公开头里的已发布 API，删它按 Harness §3.1 须单独授权，且「由测试钉住的公开方法」并不自相矛盾（它钉的是单连接布局：头在偏移 0、双向通道紧随其后）；②若一并删除，须连同该布局钉桩与 `SingleShmHeader` 的单连接用法一起清，属公开 API 收缩。删除决策的完整论证（三选一、导出实测、无构造点复核）见归档 `Q.33`。
 
 **关闭（2026-09-27，本批裁定）**：**保留不动**。用户 2026-09-27 授权本批范围时未授权删除公开 API（Harness §3.1），故不删；「测试成了唯一调用者」不构成收缩理由，理由见归档 `Q.33`。
+
+**追记（2026-09-27，同日裁定反转）**：用户当日晚些时候明确授权删除（「AttachSingleConnectionSharedMemory 没用了就删了」），Harness §3.1 的单独授权由此具备，删除已随提交 `d486f12` 落地——同批删掉 `ShmBufferTest.cpp` 的单连接布局用例（它最后的调用者），`ShmBuffer.h` 与 `docs/shm-shared-object-lifecycle.md` §九 同步更新。上面那段「保留不动」是**当时**的结论，按归档「只移动不删改」的规矩保留原文，反转记于此。
 
 ### Q.44
 
