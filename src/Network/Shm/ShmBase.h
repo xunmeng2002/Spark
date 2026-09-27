@@ -7,9 +7,9 @@
 #include <string>
 #include <map>
 #include <list>
+#include <limits>
 #include <vector>
 #include <mutex>
-#include <chrono>
 
 namespace Spark::Network
 {
@@ -41,14 +41,15 @@ protected:
     Sem* semConnect_;
     std::vector<Sem*> sems_;
 
-    std::chrono::steady_clock::time_point lastSendTime_;
-
 #ifdef _WIN32
     void* file_;
     void* fileMap_;
 #endif // _WIN32
 
 private:
+    static constexpr unsigned MaxSharedMemoryConnectSize = (std::numeric_limits<unsigned>::max)() / (ShmBufferSize * 2);
+
+    bool IsConnectSizeAllowed() const;
     bool WindowsInit();
     bool LinuxInit();
     unsigned GetSharedMemoryMappingSize() const;

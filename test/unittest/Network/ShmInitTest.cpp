@@ -10,12 +10,15 @@ using namespace Spark::Network;
 
 namespace
 {
-// shm 名在 Server 侧按「独占创建」打开（Windows CREATE_NEW / Linux O_CREAT|O_EXCL），
-// 上一次运行若异常退出留下同名对象，后续每次 Init 都会被这层残留挡下——故按运行取唯一后缀。
-std::string MakeUniqueShmAddress(const char* namePrefix, const char* connectSizeText)
+std::string MakeUniqueShmName(const char* namePrefix)
 {
     const auto ticks = std::chrono::steady_clock::now().time_since_epoch().count();
-    return std::format("shm://{}{}:{}", namePrefix, ticks, connectSizeText);
+    return std::format("shm://{}{}", namePrefix, ticks);
+}
+
+std::string MakeUniqueShmAddress(const char* namePrefix, const char* connectSizeText)
+{
+    return MakeUniqueShmName(namePrefix) + ":" + connectSizeText;
 }
 
 std::unique_ptr<IoBase> CreateShmServer(const std::string& address)
@@ -51,4 +54,36 @@ TEST(ShmInitTest, Init_AcceptsSmallestPositiveConnectSize)
 
     ASSERT_NE(io, nullptr);
     EXPECT_TRUE(io->Init());
+}
+
+TEST(ShmInitTest, Init_RejectsConnectSizeWhoseMappingWouldWrap)
+{
+    const auto io = CreateShmServer(MakeUniqueShmAddress("SparkShmUnitTestWrap", "2049"));
+
+    ASSERT_NE(io, nullptr);
+    EXPECT_FALSE(io->Init());
+}
+
+TEST(ShmInitTest, Init_ReusesShmObjectLeftByAPreviousRun)
+{
+    const auto shmAddress = MakeUniqueShmAddress("SparkShmUnitTestReuse", "1");
+    const auto leftoverOwner = CreateShmServer(shmAddress);
+    ASSERT_NE(leftoverOwner, nullptr);
+    ASSERT_TRUE(leftoverOwner->Init());
+
+    const auto secondOwner = CreateShmServer(shmAddress);
+    ASSERT_NE(secondOwner, nullptr);
+    EXPECT_TRUE(secondOwner->Init());
+}
+
+TEST(ShmInitTest, Init_RejectsReusedShmObjectSmallerThanNeeded)
+{
+    const auto shmName = MakeUniqueShmName("SparkShmUnitTestReuseSmall");
+    const auto smallerOwner = CreateShmServer(shmName + ":1");
+    ASSERT_NE(smallerOwner, nullptr);
+    ASSERT_TRUE(smallerOwner->Init());
+
+    const auto largerOwner = CreateShmServer(shmName + ":2");
+    ASSERT_NE(largerOwner, nullptr);
+    EXPECT_FALSE(largerOwner->Init());
 }

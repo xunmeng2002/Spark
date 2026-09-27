@@ -7,6 +7,7 @@
 #endif
 #ifdef __linux__
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
 #endif
@@ -16,6 +17,17 @@
 
 using namespace std;
 using namespace Spark::Core;
+
+namespace
+{
+#ifdef _WIN32
+HANDLE OpenShmFile(const string& shmName, unsigned long createDisposition)
+{
+    return CreateFileA(shmName.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, createDisposition,
+                       FILE_ATTRIBUTE_NORMAL, NULL);
+}
+#endif
+}
 
 namespace Spark::Network
 {
@@ -66,7 +78,7 @@ ShmBase::~ShmBase()
 #ifdef __linux__
     if (munmap(shmAddr_, GetSharedMemoryMappingSize()) < 0)
     {
-        perror("shm_unlink");
+        perror("munmap");
         WriteLog(LogLevel::Warning, "munmap Failed. ErrNo:%d", errno);
     }
     if (serverType_ == ServerTypeType::Server)
@@ -83,11 +95,25 @@ unsigned ShmBase::GetSharedMemoryMappingSize() const
 {
     return ShmBufferSize * maxConnectSize_ * 2;
 }
-bool ShmBase::Init()
+bool ShmBase::IsConnectSizeAllowed() const
 {
     if (maxConnectSize_ < 1)
     {
         WriteLog(LogLevel::Warning, "Invalid Shm ConnectSize:%u, Address:%s", maxConnectSize_, shmName_.c_str());
+        return false;
+    }
+    if (maxConnectSize_ > MaxSharedMemoryConnectSize)
+    {
+        WriteLog(LogLevel::Warning, "Shm ConnectSize:%u Exceeds Mapping Limit:%u, Address:%s", maxConnectSize_, MaxSharedMemoryConnectSize,
+                 shmName_.c_str());
+        return false;
+    }
+    return true;
+}
+bool ShmBase::Init()
+{
+    if (!IsConnectSizeAllowed())
+    {
         return false;
     }
     if (!semConnect_->Init())
@@ -206,12 +232,22 @@ bool ShmBase::WindowsInit()
 #ifdef _WIN32
     if (serverType_ == ServerTypeType::Server)
     {
-        file_ = CreateFileA(shmName_.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_NEW,
-                            FILE_ATTRIBUTE_NORMAL, NULL);
+        file_ = OpenShmFile(shmName_, CREATE_NEW);
         if (file_ == INVALID_HANDLE_VALUE)
         {
-            WriteLog(LogLevel::Warning, "CreateFileA Failed. ErrNo:%d", GetLastError());
-            return false;
+            const unsigned long createError = GetLastError();
+            if (createError != ERROR_FILE_EXISTS)
+            {
+                WriteLog(LogLevel::Warning, "CreateFileA Failed. ErrNo:%lu, Address:%s", createError, shmName_.c_str());
+                return false;
+            }
+            WriteLog(LogLevel::Warning, "Shm Object Exists, Reuse It. Address:%s", shmName_.c_str());
+            file_ = OpenShmFile(shmName_, OPEN_EXISTING);
+            if (file_ == INVALID_HANDLE_VALUE)
+            {
+                WriteLog(LogLevel::Warning, "OpenShmFile Failed. ErrNo:%lu, Address:%s", GetLastError(), shmName_.c_str());
+                return false;
+            }
         }
         fileMap_ = CreateFileMappingA(file_, NULL, PAGE_READWRITE, 0, GetSharedMemoryMappingSize(), shmName_.c_str());
     }
@@ -236,31 +272,52 @@ bool ShmBase::WindowsInit()
 bool ShmBase::LinuxInit()
 {
 #ifdef __linux__
-    int fd;
-    if (serverType_ == ServerTypeType::Server)
+    const bool creatingShmObject = serverType_ == ServerTypeType::Server;
+    const int openFlags = creatingShmObject ? (O_CREAT | O_EXCL | O_RDWR) : O_RDWR;
+    int fd = shm_open(shmName_.c_str(), openFlags, 0666);
+    bool reusingShmObject = false;
+    if (fd < 0 && creatingShmObject && errno == EEXIST)
     {
-        fd = shm_open(shmName_.c_str(), O_CREAT | O_EXCL | O_RDWR, 0666);
-    }
-    else
-    {
+        WriteLog(LogLevel::Warning, "Shm Object Exists, Reuse It. Address:%s", shmName_.c_str());
         fd = shm_open(shmName_.c_str(), O_RDWR, 0666);
+        reusingShmObject = fd >= 0;
     }
     if (fd < 0)
     {
         WriteLog(LogLevel::Warning, "shm_open Failed. ErrNo:%d", errno);
         return false;
     }
-    if (ftruncate(fd, GetSharedMemoryMappingSize()) == -1)
+    if (reusingShmObject)
     {
+        struct stat shmObjectStat;
+        if (fstat(fd, &shmObjectStat) == -1)
+        {
+            close(fd);
+            WriteLog(LogLevel::Warning, "fstat Failed. ErrNo:%d", errno);
+            return false;
+        }
+        if (static_cast<unsigned long>(shmObjectStat.st_size) < GetSharedMemoryMappingSize())
+        {
+            close(fd);
+            WriteLog(LogLevel::Warning, "Shm Object Exists Smaller Than Needed. ObjectSize:%lld, NeededSize:%u, Address:%s",
+                     static_cast<long long>(shmObjectStat.st_size), GetSharedMemoryMappingSize(), shmName_.c_str());
+            return false;
+        }
+    }
+    else if (ftruncate(fd, GetSharedMemoryMappingSize()) == -1)
+    {
+        close(fd);
         WriteLog(LogLevel::Warning, "ftruncate Failed. ErrNo:%d", errno);
         return false;
     }
     shmAddr_ = static_cast<char*>(mmap(nullptr, GetSharedMemoryMappingSize(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
     if (shmAddr_ == MAP_FAILED)
     {
+        close(fd);
         WriteLog(LogLevel::Warning, "mmap Failed. ErrNo:%d", errno);
         return false;
     }
+    close(fd);
 #endif
     return true;
 }
