@@ -33,7 +33,7 @@ HANDLE OpenShmFile(const string& shmName, unsigned long createDisposition)
 namespace Spark::Network
 {
 ShmBase::ShmBase(ServerTypeType serverType, const char* shmName, int milliSeconds)
-    : IoBase(serverType, shmName, milliSeconds), commonShmHeader_(nullptr), shmAddr_(nullptr)
+    : IoBase(serverType, shmName, milliSeconds), commonShmHeader_(nullptr), shmAddr_(nullptr), reusedExistingShmObject_(false)
 {
 #ifdef _WIN32
     file_ = nullptr;
@@ -111,6 +111,18 @@ bool ShmBase::IsConnectSizeAllowed() const
     }
     return true;
 }
+bool ShmBase::IsReusedMappingLayoutCompatible() const
+{
+    if (SingleShmHeader::IsMappingLayoutCompatible(commonShmHeader_))
+    {
+        return true;
+    }
+    WriteLog(LogLevel::Warning,
+             "Shm Object Mapping Layout Mismatch. Magic:%u, LayoutVersion:%u, ExpectedMagic:%u, ExpectedLayoutVersion:%u, Address:%s",
+             SingleShmHeader::LoadMappedField(commonShmHeader_->MappingMagic),
+             SingleShmHeader::LoadMappedField(commonShmHeader_->MappingLayoutVersion), ShmMappingMagic, ShmMappingLayoutVersion, shmName_.c_str());
+    return false;
+}
 bool ShmBase::Init()
 {
     if (!IsConnectSizeAllowed())
@@ -133,14 +145,18 @@ bool ShmBase::Init()
         return false;
 #endif
     commonShmHeader_ = static_cast<SingleShmHeader*>(shmAddr_);
+    if (reusedExistingShmObject_ && !IsReusedMappingLayoutCompatible())
+    {
+        return false;
+    }
     if (serverType_ == ServerTypeType::Server)
     {
         memset(shmAddr_, 0, GetSharedMemoryMappingSize());
-        commonShmHeader_->Status = ConnectStatusType::UnConnected;
+        SingleShmHeader::StoreMappingStamp(commonShmHeader_);
+        SingleShmHeader::StoreStatus(commonShmHeader_, ConnectStatusType::UnConnected);
         for (auto i = 1u; i < maxConnectSize_; ++i)
         {
-            auto shmHeader = commonShmHeader_ + i;
-            shmHeader->Status = ConnectStatusType::UnConnected;
+            SingleShmHeader::StoreStatus(commonShmHeader_ + i, ConnectStatusType::UnConnected);
         }
     }
     WriteLog(LogLevel::Info, "Create Or Open Shm Successed.");
@@ -235,11 +251,13 @@ bool ShmBase::WindowsInit()
                 WriteLog(LogLevel::Warning, "OpenShmFile Failed. ErrNo:%lu, Address:%s", GetLastError(), shmName_.c_str());
                 return false;
             }
+            reusedExistingShmObject_ = true;
         }
         fileMap_ = CreateFileMappingA(file_, NULL, PAGE_READWRITE, 0, GetSharedMemoryMappingSize(), shmName_.c_str());
     }
     else
     {
+        reusedExistingShmObject_ = true;
         fileMap_ = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, shmName_.c_str());
     }
     if (fileMap_ == NULL)
@@ -262,19 +280,19 @@ bool ShmBase::LinuxInit()
     const bool creatingShmObject = serverType_ == ServerTypeType::Server;
     const int openFlags = creatingShmObject ? (O_CREAT | O_EXCL | O_RDWR) : O_RDWR;
     int fd = shm_open(shmName_.c_str(), openFlags, 0666);
-    bool reusingShmObject = false;
+    reusedExistingShmObject_ = !creatingShmObject;
     if (fd < 0 && creatingShmObject && errno == EEXIST)
     {
         WriteLog(LogLevel::Warning, "Shm Object Exists, Reuse It. Address:%s", shmName_.c_str());
         fd = shm_open(shmName_.c_str(), O_RDWR, 0666);
-        reusingShmObject = fd >= 0;
+        reusedExistingShmObject_ = fd >= 0;
     }
     if (fd < 0)
     {
         WriteLog(LogLevel::Warning, "shm_open Failed. ErrNo:%d", errno);
         return false;
     }
-    if (reusingShmObject)
+    if (reusedExistingShmObject_)
     {
         struct stat shmObjectStat;
         if (fstat(fd, &shmObjectStat) == -1)

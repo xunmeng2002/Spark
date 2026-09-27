@@ -10,7 +10,7 @@ ShmServer::ShmServer(const char* shmName, int milliSeconds) : ShmBase(ServerType
 ShmServer::~ShmServer() {}
 void ShmServer::Accept()
 {
-    switch (commonShmHeader_->Status)
+    switch (SingleShmHeader::LoadStatus(commonShmHeader_))
     {
     case ConnectStatusType::UnConnected:
         break;
@@ -20,21 +20,21 @@ void ShmServer::Accept()
         {
             if (connectCount_ >= maxConnectSize_ - 1)
             {
-                commonShmHeader_->Status = ConnectStatusType::Rejected;
+                SingleShmHeader::StoreStatus(commonShmHeader_, ConnectStatusType::Rejected);
             }
             else
             {
                 for (auto i = 1U; i < maxConnectSize_; ++i)
                 {
                     auto shmHeader = commonShmHeader_ + i;
-                    if (shmHeader->Status == ConnectStatusType::UnConnected)
+                    if (SingleShmHeader::LoadStatus(shmHeader) == ConnectStatusType::UnConnected)
                     {
                         ShmConnect<ShmBufferSize>* shmConnect = ShmConnect<ShmBufferSize>::Allocate(GetSessionId(), address_.c_str(), i, serverType_,
                                                                                                     shmAddr_, ConnectStatusType::Accepted);
                         AddConnect(shmConnect);
 
-                        commonShmHeader_->Status = ConnectStatusType::Accepted;
-                        commonShmHeader_->DownWriteCount = i;
+                        SingleShmHeader::StoreMappedField(commonShmHeader_->DownWriteCount, i);
+                        SingleShmHeader::StoreStatus(commonShmHeader_, ConnectStatusType::Accepted);
                         ++connectCount_;
                         break;
                     }
@@ -58,16 +58,16 @@ void ShmServer::Accept()
         {
             if (semConnect_->Lock())
             {
-                if (commonShmHeader_->Status == ConnectStatusType::Accepted || commonShmHeader_->Status == ConnectStatusType::Rejected)
+                const ConnectStatusType timedOutStatus = SingleShmHeader::LoadStatus(commonShmHeader_);
+                if (timedOutStatus == ConnectStatusType::Accepted || timedOutStatus == ConnectStatusType::Rejected)
                 {
-                    printf("Reset Connect From Server,  Status:%d\n", static_cast<int>(commonShmHeader_->Status));
-                    if (commonShmHeader_->Status == ConnectStatusType::Accepted)
+                    printf("Reset Connect From Server,  Status:%d\n", static_cast<int>(timedOutStatus));
+                    if (timedOutStatus == ConnectStatusType::Accepted)
                     {
-                        auto index = commonShmHeader_->DownWriteCount;
-                        auto shmHeader = commonShmHeader_ + index;
-                        memset(shmHeader, 0, sizeof(SingleShmHeader));
+                        const unsigned timedOutIndex = SingleShmHeader::LoadMappedField(commonShmHeader_->DownWriteCount);
+                        SingleShmHeader::ResetChannelHeader(commonShmHeader_ + timedOutIndex);
                     }
-                    commonShmHeader_->Status = ConnectStatusType::UnConnected;
+                    SingleShmHeader::StoreStatus(commonShmHeader_, ConnectStatusType::UnConnected);
                 }
                 semConnect_->UnLock();
             }

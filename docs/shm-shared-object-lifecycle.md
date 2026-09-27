@@ -53,6 +53,19 @@
 - Linux：`EEXIST` → `shm_open(O_RDWR, 0666)`，同一条日志。
 - **只有服务端有这条回退**，客户端本来就是「打开既有」，没有可回退的东西。
 
+**复用前还要确认「这段内存是谁按哪套布局写的」**（2026-09-28 新增）。尺寸对得上不等于布局对得上：改过
+`SingleShmHeader` 字段顺序/长度的旧进程，或另一端跑的是别的版本，留下的对象尺寸可能恰好合规，于是被静默复用、
+把同一段内存解释成两种布局。故 0 号控制头的前两个字段成为**映射自描述**：
+
+- `MappingMagic = 0x53504B4D`（`"SPKM"`）、`MappingLayoutVersion = 1`（`ShmBuffer.h` 的 `constexpr`）。
+- 服务端在 `Init()` 里 `memset` 整段映射之后**打戳**（`SingleShmHeader::StoreMappingStamp`），随后才置 `UnConnected`。
+- **凡走复用路径的一侧都要校验**：`ShmBase::reusedExistingShmObject_` 标出「这份映射不是本进程创建的」，
+  为真时 `Init()` 调 `IsReusedMappingLayoutCompatible()`，不符即记 Warning（`Shm Object Mapping Layout Mismatch.`，
+  打印实读的 Magic/版本与期望值）并返回 `false`。客户端恒为真；服务端只在「创建失败因已存在 → 改打开」那一支为真，
+  自己新建时**不校验**（那一刻戳是自己刚写的，校验只会白跑）。
+- 因此**改布局必须同时递增 `ShmMappingLayoutVersion`**，否则旧对象会通过校验、被按新布局读。
+  字段总长由 `ShmBufferTest` 的 `static_assert(sizeof(SingleShmHeader) == 7 * sizeof(unsigned))` 钉住（`ShmBuffer.h`）。
+
 ## 四、复用的两平台语义不同，故校验方式不同
 
 复用是**接受别人留下的对象**，而长度必须正好是本节公式值，故复用前必须确认尺寸。两个平台能用的手段不一样：
@@ -68,8 +81,10 @@
 （4 MiB 视图落在 2 MiB 对象上，服务端 `Init()` 的清零先踩到）；换成「复用也 `ftruncate`」这种看似更顺手的写法，该用例**变红但不再崩**
 （对象被悄悄撑大、`Init()` 返回了 `true`）。两种撤法都试过，前者崩、后者红。
 
-另注：**客户端也会走到那条 `ftruncate`**（与改动前逐字相同）。它以 `O_RDWR` 打开、长度与期望相同，故是空操作；
-但若两端给出**不同的连接数**，客户端的这次 `ftruncate` 会把服务端对象截短 —— 这是既有的、未加防护的隐患（见第九节）。
+另注：**客户端已不再走那条 `ftruncate`**（2026-09-28 改动）。改动前 `LinuxInit()` 用「`serverType_ == Server`」判断该 `ftruncate`
+还是该 `fstat`，客户端因此落进 `ftruncate` 分支：长度相同时它是空操作，但若两端给出**不同的连接数**，它会把服务端对象截短。
+改动后判据换成 `reusedExistingShmObject_` —— 客户端与「服务端复用既有对象」两支同走 `fstat`，只有真正新建对象的一支才 `ftruncate`。
+于是第四节末那条隐患连同它的成因一起消失：**客户端现在不做任何改变对象尺寸的操作**。
 
 ## 五、fd 在 `mmap` 之后即关闭
 
@@ -126,15 +141,34 @@ POSIX 规定：`mmap` 成功之后 `close(fd)` 不影响映射的有效性（映
 - `Init_RejectsReusedShmObjectSmallerThanNeeded`
   - 输入：同一名字，先 `:1`（2 MiB）后 `:2`（4 MiB）。
   - 输出：第一个 `true`、第二个 `false`（复用对象偏小）。
+- `Init_RejectsReusedShmObjectWithForeignMappingMagic`（映射自描述）
+  - 输入：服务端建好对象后，用 `WriteShmMappingMagic` 直接把 0 号头的 `MappingMagic` 改成 `0xDEADBEEF`，再让第二个服务端复用。
+  - 输出：第二个 `false`（`Shm Object Mapping Layout Mismatch.`）；**撤掉那道校验则它变红**（见下）。
+- `Init_AcceptsStampedShmObjectForAClient`（正向对照）
+  - 输入：服务端建好并打戳，再让客户端打开同一对象。
+  - 输出：`true`。证明校验不会把正常对象误判成外来布局。
+- `Init_RejectsUnstampedShmObjectForAClient`（映射自描述）
+  - 输入：服务端建好对象后把 `MappingMagic` 清零（模拟「未打戳的残留」），再让客户端打开。
+  - 输出：`false`。
 
-用例的地址都带时间戳（`MakeUniqueShmName`），同一进程内先后运行不会互相干扰；清理依赖析构顺序（先声明的后析构：第二个对象先 `unlink`，第一个对象的后析构收尾）。
+**判据灵敏度**：把 `Init()` 里那道复用校验短路成恒真（`if (false && ...)`），
+`Init_RejectsReusedShmObjectWithForeignMappingMagic` 与 `Init_RejectsUnstampedShmObjectForAClient`
+**恰好两条变红**、其余全绿；还原后四档全绿。故这两条用例是那道校验的判据，不是陪跑。
+
+用例的地址都带时间戳（`MakeUniqueShmName` / `MakeUniqueShmObjectName`），同一进程内先后运行不会互相干扰；清理依赖析构顺序（先声明的后析构：第二个对象先 `unlink`，第一个对象的后析构收尾）。
 
 ## 九、已知未覆盖
 
 - `ShmBase::Send` 的「通道写满」分支（写返 0 → 等 1 ms 重试 / 对端断连则丢弃）：冒烟每轮 10000 次往返也难填满 1 MiB 通道，正确性依赖 `ShmBuffer::Write` 的返 0 语义（由 `ShmBufferTest` 钉住）。
-- 「两端连接数不一致」：客户端那次 `ftruncate` 会截短服务端对象（第四节末），无用例、无防护。
+- ~~「两端连接数不一致」：客户端那次 `ftruncate` 会截短服务端对象（第四节末）~~ **已消除（2026-09-28）**：
+  客户端不再 `ftruncate`，改为与「服务端复用既有对象」同一支的 `fstat` 校验（见第四节末），
+  客户端侧已不存在改变对象尺寸的操作。
   同一成因下更凶的一支——**越界连接号**（服务端写进控制头的槽位号超出客户端本端连接数，
   会让通道偏移落出客户端的映射）——已于 2026-09-28 在客户端侧挡下，见 `docs/shm-channel-and-connect-model.md` 第一、六节。
+- **首轮创建—打戳之间的窄窗**（2026-09-28）：服务端 `Init()` 是「先 `memset` 整段映射、再打戳」，
+  这中间 `MappingMagic` 为 0。客户端若恰好在这一瞬间走到复用校验，会把刚建好的对象判成外来布局而拒绝（重试即可恢复）。
+  窗口长度随连接数（映射长度）增长，单进程冒烟与四档单测均未复现；要彻底消除须把「打戳」挪到 `memset` 之外或改用
+  「未打戳视为新建中、短暂重试」的判据，未做。
 - Windows 侧「复用对象尺寸不足」没有独立用例：该平台的判据是 `MapViewOfFile` 自己失败，故不存在可撤的代码分支。
 - `Init()` 失败后析构仍删除对象（第六节缺口）。
 - ~~`ShmBase::DoSend`（override 了 `IoBase` 纯虚）在 Shm 后端**没有调用点**~~ **已处置（2026-09-28）**：

@@ -56,8 +56,11 @@ private:
                   "SingleShmHeader array must fit in the region reserved for connection zero");
 
     bool IsConnectSizeAllowed() const;
+    bool IsReusedMappingLayoutCompatible() const;
     bool WindowsInit();
     bool LinuxInit();
     unsigned GetSharedMemoryMappingSize() const;
+
+    bool reusedExistingShmObject_;
 };
 }

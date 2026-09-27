@@ -19,11 +19,12 @@ public:
                ConnectStatusType connectStatus)
         : Connect(sessionId, remoteAddress, remotePort, connectStatus)
     {
-        shmBuffer_ = ShmBuffer<Size>::Allocate(serverType, remotePort, shmAddr, connectStatus);
+        shmBuffer_ = ObjectPool<ShmBuffer<Size>>::GetInstance().Allocate(serverType, remotePort, shmAddr, connectStatus);
     }
     virtual ~ShmConnect()
     {
-        shmBuffer_->Deallocate();
+        shmBuffer_->MarkDisconnectedAndResetChannelWhenLastHolder();
+        ObjectPool<ShmBuffer<Size>>::GetInstance().Deallocate(shmBuffer_);
         shmBuffer_ = nullptr;
     }
 

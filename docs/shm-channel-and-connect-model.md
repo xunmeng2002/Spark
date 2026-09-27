@@ -10,6 +10,11 @@
 - 映射长度是 `ShmBufferSize * maxConnectSize_ * 2`（推导见 `docs/shm-shared-object-lifecycle.md` 第二节）。
 - **头数组紧挨映射起点**：`SingleShmHeader` 共 `maxConnectSize_` 个。0 号是**控制头**（`ShmBase::commonShmHeader_`），
   承载连接协商状态；1..`maxConnectSize_ - 1` 号是各连接的**通道头**（`ShmBuffer::shmHeader_` 指向其中自己那一个）。
+- **头结构的字段顺序是跨进程 ABI，被 `ShmMappingLayoutVersion` 钉住**：7 个 4 字节字段、共 28 字节，顺序为
+  `Status`、`MappingMagic`、`MappingLayoutVersion`、`UpWriteCount`、`UpReadCount`、`DownWriteCount`、`DownReadCount`。
+  前三个由 0 号控制头承载映射自描述（见 `docs/shm-shared-object-lifecycle.md` 第三节），后四个是每槽位各自的读写计数器。
+  `ShmBufferTest` 用 `static_assert(sizeof(SingleShmHeader) == 7 * sizeof(unsigned))` 钉住总长；
+  **改字段顺序或插入字段必须同时递增 `ShmMappingLayoutVersion`**，否则新旧进程会把同一段内存解释成两种布局。
 - **数据通道**：第 i 号连接占 `2 * ShmBufferSize`，偏移为 `i * 2 * ShmBufferSize`；上行在前（Client 写、Server 读）、下行紧随其后
   （`ShmBuffer::upBuffer_` / `downBuffer_`）。通道偏移只按连接号算，**不含头数组的大小**。
 - 头数组与通道相加恰好占满映射，于是 **0 号连接的槽位（前 2 MiB）不用作通道**——它容纳整个头数组
@@ -18,11 +23,15 @@
 - **头数组装得下是编译期不变式**：头数组占映射前 `maxConnectSize_ * sizeof(SingleShmHeader)` 字节，
   必须落在 0 号槽位的 `2 * ShmBufferSize` 之内，否则会压在 1 号连接的通道上。`ShmBase.h` 的 `static_assert`
   按**最大**允许连接数 `MaxSharedMemoryConnectSize` 校验（对任何运行期连接数都更强），故调小 `ShmBufferSize`
-  （例如 16 KiB）会让四档构建当场失败。现状是 `2047 * 20 = 40940` 字节 对 `2 MiB`（约 52 倍余量），
+  （例如 16 KiB）会让四档构建当场失败。现状是 `2047 * 28 = 57316` 字节 对 `2 MiB`（约 37 倍余量），
   运行期判据**永远不可达** —— 这正是它做成编译期断言而不是 `IsConnectSizeAllowed()` 里一条分支的原因。
 - **两侧的连接号必须一致**：服务端在 `ShmServer::Accept` 挑第一个空闲槽位 i 并把它写进控制头的 `DownWriteCount`，
   客户端在 `ShmClient::CheckConnectResult` 从同一字段取回 i，各自用它构造 `ShmBuffer`。
   故控制头的 `DownWriteCount` 在协商期被复用为**槽位号**（不是计数器），`ShmServer::Accept` 的 5 秒超时复位也读它。
+- **槽位号必须先于 `Accepted` 落盘**：服务端写槽位号与写 `Accepted` 是两次独立发布，顺序固定为
+  「先 `StoreMappedField(DownWriteCount, i)`、后 `StoreStatus(Accepted)`」。客户端以 acquire 语义读到 `Accepted` 时，
+  才因此保证槽位号已经随同一条 release 序列对它可见（内存序模型见第四节）。
+  反过来写会让客户端读到「`Accepted` 已到、槽位号还是上一次协商的残留」，取到错误甚至越界的 i。
 - **客户端取号处是信任边界，必须校验上界**：客户端手里的 i 由**对端**写入，而 `ShmBuffer` 不知道映射容量，
   上界只能在调用方校验。故 `ShmClient::CheckConnectResult` 取回 i 后先过
   `ShmBuffer<Size>::IsConnectionIndexWithinMapping(i, maxConnectSize_)`（要求 `1 <= i < maxConnectSize_`）；
@@ -48,6 +57,13 @@
   `NDEBUG` 下该断言整个消失，Release 零开销。
 - `Connect::GetNextBuffer` / `PushFront`（发送队列）只有 TCP 后端在用；shm 的 `Send` 直接写通道、从不入队，
   故 shm 后端没有「续发」这件事，`ShmBase::DoSend` 因此是一个空的 override（见第三节）。
+- **`ShmBuffer` 的池往返由 `ShmConnect` 独占**（2026-09-28）：`ShmBuffer` 是装在**已安装头文件**里的模板，
+  它的 `Allocate` / `Deallocate` 一旦公开，任何翻译单元都能借还 —— 而 `ObjectPool<T>::GetInstance()` 是
+  头文件内联的函数局部静态量，**每个模块各有一份池实例**（与 `ShmBuffer` 批 A 立的 `D.50` 同一条陷阱）。
+  故 `ShmBuffer` 现在既没有 `Allocate` 也没有 `Deallocate`：构造靠构造函数、释放走
+  `ShmConnect<Size>::~ShmConnect` 里的 `ObjectPool<ShmBuffer<Size>>::GetInstance().Deallocate(shmBuffer_)`。
+  借还两侧都在 `src/Network/Shm/ShmConnect.h`，与池实例同源。单元用例用一个 concept 断言
+  「`ShmBuffer` 不满足池往返的形状」（第五节）。
 
 ## 三、`Send` 的完成语义：Shm 同步写穿，Tcp 异步排队
 
@@ -89,11 +105,24 @@
 - **`Status` 是唯一的双写字段**：两端各自 `SetConnectStatus`，也各自走断连仲裁。过渡顺序是
   「先释放者置位 `DisConnected`、后释放者清零」：`MarkDisconnectedAndReportWhetherLastHolder()` 返回 true 表示
   「调用前已是 `DisConnected`」= 对端先释放、本进程这份 `ShmBuffer` 是最后持有者，**只有此时才 `ResetSharedHeader()`**。
-  该仲裁不靠锁，靠 `Status` 的这一次读—改语义。
-- 槽位回收路径：`RemoveConnect` → `Connect::Deallocate` → `ShmBuffer::Deallocate`（上面的仲裁）→ 该槽位头被置为 `DisConnected`。
-- **`volatile` 的用途与边界**（用户 2026-09-26 的裁定，原文与后续风险登记见归档 `Q.23`）：跨进程共享内存上的 `volatile`
-  只用来阻止编译器把值缓存在寄存器里；**同步机制不靠它**，可见性依赖「单写单读 + 硬件缓存一致性」这一实践约定。
-  一旦出现多写、或状态与数据被拆到不同字段，须按 Harness §6 重新评估（届时换 `std::atomic` 与内存序）。
+  该仲裁不靠锁，靠 `Status` 上的**一次 CAS 循环**：`compare_exchange_weak(expected, DisConnected, acq_rel, acquire)`
+  在 `expected != DisConnected` 时反复重试，成功即「本次置位」（返 false），失败时 `expected` 已被刷新为
+  `DisConnected`、循环退出即「对端先置位」（返 true）。`StatusReference` 交出 `std::atomic_ref` 供这一步使用。
+- 槽位回收路径：`RemoveConnect` → `Connect::Deallocate` → `ShmConnect<Size>::~ShmConnect` →
+  `ShmBuffer::MarkDisconnectedAndResetChannelWhenLastHolder()`（上面的仲裁，最后一任持有者顺手 `ResetSharedHeader()`
+  把该槽位头清零成 `UnConnected`）→ `ObjectPool<ShmBuffer<Size>>::Deallocate(shmBuffer_)`。
+  服务端协商超时那条路径不在其上，它直接对超时槽位调 `SingleShmHeader::ResetChannelHeader`（不经过 `ShmConnect`）。
+- **内存序：`std::atomic_ref` 取代 `volatile` + 手写屏障**（2026-09-28 改动，**取代**归档 `Q.23` 的裁定；原裁定原文与
+  登记背景仍在归档里，此处不重写它，只声明其结论已被本次改动覆盖）。`SingleShmHeader` 的全部字段访问统一走
+  `LoadStatus` / `StoreStatus` / `LoadMappedField` / `StoreMappedField` 四个静态入口，读一律 `acquire`、写一律 `release`：
+  - 通道搬运的发布顺序因此有了**语言级**保证：`WriteIntoChannel` / `ReadFromChannel` 先以 acquire 读入两个计数器、
+    搬运完数据、再以 release 写回新计数。对端以 acquire 读计数时，必然看到与之配套的那段数据（`memcpy` 不会越过 release）。
+  - `Status` 是唯一的双写字段，写点全部走 CAS 或 release store；读点全部 acquire。
+  - 计数器的读入从「同一个操作里读两次」收敛成「读一次、复用到返回值与断言」，顺带消掉了两次读之间可能被对端插进来的窗口。
+  - `std::atomic_ref<T>::is_always_lock_free` 对 `ConnectStatusType`（`int32_t`）与 `unsigned` 都是编译期断言：
+    若某平台上共享内存里的 4 字节访问不是无锁的，四档构建当场失败。这是**故意的**——共享内存里塞一把锁没有意义。
+  - `volatile` 已从 `ShmBuffer.h` 与相关调用点全部移除；Harness §6 / `rules/cpp-style.md` §6 都禁止用 `volatile` 做同步，
+    此前是依赖归档 `Q.23` 的实践约定豁免，现在不再需要豁免。
 
 ## 五、相关测试与输入输出
 
@@ -115,22 +144,43 @@
 - `MarkDisconnectedAndReportWhetherLastHolder_ReportsLastOwner`
   - 输入：同一份 header 上先后两次调用。
   - 输出：第一次 `false`（由本次置位）、第二次 `true`（已是最后持有者）。
-- `Deallocate_ResetsSharedHeaderWhenAlreadyDisconnected`
-  - 输入：缓冲区先写入 5 字节、再手动置位断连，随后 `Deallocate()`。
+- `MarkDisconnectedAndResetChannelWhenLastHolder_MarksDisconnectedWhenStillConnected`
+  - 输入：栈上直接构造 `ShmBuffer`（连接号 1、状态 `Connected`），调用一次。
+  - 输出：该槽位头状态为 `DisConnected`；因调用前是 `Connected`（非最后一任），计数器**不动**。
+- `MarkDisconnectedAndResetChannelWhenLastHolder_ResetsHeaderWhenAlreadyDisconnected`
+  - 输入：先写入 5 字节、再手动置位断连，随后调用一次。
   - 输出：该槽位头状态为 `UnConnected`、`UpWriteCount` 回到 0。
+
+此外**没有 `TEST` 名字的两条编译期断言**（同文件、四档构建均跑，写在文件顶部）：
+
+- 池边界：`HasObjectPoolRoundTrip` concept 分别代入 `ShmBuffer<TestShmBufferSize>` 与一个自带 `Allocate` / `Deallocate`
+  的探针类型；前者代入须为 `false`（池往返不出现在已安装头文件里），后者须为 `true`（证明判据不是恒假）。
+- 头结构长度：`sizeof(SingleShmHeader) == 7 * sizeof(unsigned)`（第一节的 28 字节 ABI 钉）。
+
+`test/unittest/Network/ShmInitTest.cpp`（四档构建均跑）：映射自描述的三条用例见
+`docs/shm-shared-object-lifecycle.md` 第八节（`Init_RejectsReusedShmObjectWithForeignMappingMagic`、
+`Init_AcceptsStampedShmObjectForAClient`、`Init_RejectsUnstampedShmObjectForAClient`）。
 
 ## 六、已知未覆盖
 
 - **「两端连接数不一致」只挡住了后果的一半**（2026-09-28）：
   - **客户端侧已挡**：越界连接号在 `CheckConnectResult` 被拒（第一节），不再有越界指针/越界 `sems_` 下标/越界槽位 `Status` 改写。
   - **服务端侧仍不校验**，且客户端拒绝时服务端**已**为那个槽位 `AddConnect` 过（`connectCount_` 已加一）。
-    服务端的 5 秒超时只把控制头复位、把这个槽位的头 `memset` 成 `UnConnected` —— 槽位对下一次协商**可复用**，
+    服务端的 5 秒超时只把控制头复位、把这个槽位的头清成 `UnConnected` —— 槽位对下一次协商**可复用**，
     但服务端会为同一槽位再 `Allocate` 一个 `ShmConnect`，于是**每经历一次不完整协商就多占一份 `connectCount_`**，
     累积到 `maxConnectSize_ - 1` 后服务端开始拒绝一切连接。该泄漏无用例、未修（要修需给服务端加槽位回收）。
-  - **另一半在映射面**：客户端 `Init()` 的 `ftruncate` 会截短服务端对象（`docs/shm-shared-object-lifecycle.md` 第四节末）。
-- **拒绝分支的调用点没有用例**：触发它需要「服务端连接数 > 客户端连接数」的两端搭配，
-  而客户端只持一条连接（`shmConnect_`）且单进程用例里造这个局面会先踩到上面那条 `ftruncate`；
-  被钉住的只是判据本身（`ShmBufferTest`），`ShmClient` 里的那处调用没有对应用例。
+  - **映射面那另一半已消除**：客户端 `Init()` 不再 `ftruncate`（改为 `fstat` 校验既有对象的大小），
+    见 `docs/shm-shared-object-lifecycle.md` 第四节。
+- **服务端协商超时的槽位复位是「只清头、不回收连接对象」**（2026-09-28）：超时分支现在改用
+  `SingleShmHeader::ResetChannelHeader(commonShmHeader_ + timedOutIndex)`（原先是对该头整体 `memset`），
+  语义等价且原子序正确，但 `connectCount_` 与那个槽位上的 `ShmConnect` 仍留在 `connects_` 里 —— 即上一条泄漏本身未修。
+- **首轮创建—打戳之间存在窄窗**（2026-09-28）：服务端 `Init()` 先 `memset` 整个映射（此刻 `MappingMagic` 为 0）、
+  再打戳。若客户端恰好在这一瞬间走到复用校验，会读到未打戳的头并把对象判为「外来布局」而拒绝；重试即可恢复。
+  窗口长度是服务端 `memset` 整段映射的耗时（连接数越大越长），单进程冒烟与四档单测均未复现。
+- **拒绝分支的调用点没有用例**：触发它需要「服务端连接数 > 客户端连接数」的两端搭配。
+  **原先造不出这个局面**（客户端 `Init()` 的 `ftruncate` 会把服务端对象截短，见上一批的归档记录）；
+  客户端改为 `fstat` 校验后这条障碍已消除，局面理论上可在单进程内构造（同一对象、两个 `IoBase` 实例、连接数不同），
+  但**用例仍未写**：被钉住的只是判据本身（`ShmBufferTest`），`ShmClient::CheckConnectResult` 里那处调用没有对应用例。
 - **`Sem UnLock Failed.` 是既有抖动**：`Sem` 的 Windows 计数上限是 1（`CreateSemaphoreA(..., 1, 1, ...)`），
   客户端的 `Send` 每写一段就 `UnLock` 一次、服务端每轮 IO 周期 `Lock` 一次，两者失衡时会多释放一次并记 Error。
   2026-09-28 的 11 轮 Shm 冒烟里出现 1 次（第 4 轮，回显照常跑完 10000 次），不在本次改动的路径上，未修。

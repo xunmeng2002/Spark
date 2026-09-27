@@ -19,12 +19,25 @@ static constexpr unsigned TestShmBufferSize = 256;
 static_assert(std::is_same_v<decltype(std::declval<const ShmBuffer<TestShmBufferSize>&>().GetShmHeader()), const SingleShmHeader*>,
               "GetShmHeader must hand out a read-only view of the shared header");
 
-// volatile 的 scoped enum 不能直接送进 gtest 断言：gtest 打印它时会退到 RawBytesPrinter，
-// 而后者对 volatile 做 reinterpret_cast 会编译失败。断言前先快照成非 volatile 值。
-static ConnectStatusType SnapshotStatus(const SingleShmHeader* header)
+static_assert(sizeof(SingleShmHeader) == 7 * sizeof(unsigned), "SingleShmHeader layout is pinned by ShmMappingLayoutVersion");
+
+template <typename BufferType>
+concept HasObjectPoolRoundTrip = requires(BufferType* buffer) {
+    buffer->Deallocate();
+    BufferType::Allocate(ServerTypeType::Client, 1, static_cast<void*>(buffer), ConnectStatusType::Connected);
+};
+
+static_assert(!HasObjectPoolRoundTrip<ShmBuffer<TestShmBufferSize>>,
+              "ShmBuffer must not hand out the ObjectPool round trip from the installed header");
+
+class ObjectPoolRoundTripProbe
 {
-    return header->Status;
-}
+public:
+    void Deallocate() {}
+    static ObjectPoolRoundTripProbe* Allocate(ServerTypeType, int, void*, ConnectStatusType) { return nullptr; }
+};
+
+static_assert(HasObjectPoolRoundTrip<ObjectPoolRoundTripProbe>, "the round-trip probe must satisfy the concept");
 
 // 为 ShmBuffer 分配足够大的模拟内存并初始化 header
 // 使用 index=1 避免 index=0 时 header 与 up_buffer 重叠
@@ -119,7 +132,7 @@ TEST(ShmBufferTest, InvalidConnectionIndexLeavesBufferDetached)
     EXPECT_EQ(zeroIndexed.GetConnectStatus(), ConnectStatusType::UnConnected);
     EXPECT_EQ(zeroIndexed.Write("data", 4), 0u);
     EXPECT_EQ(zeroIndexed.GetWriteBufferSize(), 0u);
-    EXPECT_EQ(SnapshotStatus(reinterpret_cast<const SingleShmHeader*>(memory.data())), ConnectStatusType::UnConnected);
+    EXPECT_EQ(reinterpret_cast<const SingleShmHeader*>(memory.data())->Status, ConnectStatusType::UnConnected);
     EXPECT_EQ(negativeIndexed.GetShmHeader(), nullptr);
     EXPECT_EQ(negativeIndexed.GetWriteBufferSize(), 0u);
 }
@@ -420,9 +433,9 @@ TEST_F(ShmTestFixture, MultiCycle)
 TEST_F(ShmTestFixture, MarkDisconnectedAndReportWhetherLastHolder_ReportsLastOwner)
 {
     EXPECT_FALSE(client_->MarkDisconnectedAndReportWhetherLastHolder());
-    EXPECT_EQ(SnapshotStatus(header_), ConnectStatusType::DisConnected);
+    EXPECT_EQ(header_->Status, ConnectStatusType::DisConnected);
     EXPECT_TRUE(client_->MarkDisconnectedAndReportWhetherLastHolder());
-    EXPECT_EQ(SnapshotStatus(header_), ConnectStatusType::DisConnected);
+    EXPECT_EQ(header_->Status, ConnectStatusType::DisConnected);
 }
 
 TEST_F(ShmTestFixture, ResetSharedHeader_ClearsCountersAndStatus)
@@ -434,34 +447,32 @@ TEST_F(ShmTestFixture, ResetSharedHeader_ClearsCountersAndStatus)
 
     client_->ResetSharedHeader();
 
-    EXPECT_EQ(SnapshotStatus(header_), ConnectStatusType::UnConnected);
+    EXPECT_EQ(header_->Status, ConnectStatusType::UnConnected);
     EXPECT_EQ(header_->UpWriteCount, 0u);
     EXPECT_EQ(header_->UpReadCount, 0u);
     EXPECT_EQ(header_->DownWriteCount, 0u);
     EXPECT_EQ(header_->DownReadCount, 0u);
 }
 
-// ========== 对象池往返 ==========
+// ========== 退让共享通道 ==========
 
-TEST_F(ShmTestFixture, Deallocate_MarksDisconnectedWhenStillConnected)
+TEST_F(ShmTestFixture, MarkDisconnectedAndResetChannelWhenLastHolder_MarksDisconnectedWhenStillConnected)
 {
-    ShmBuffer<TestShmBufferSize>* buffer =
-        ShmBuffer<TestShmBufferSize>::Allocate(ServerTypeType::Client, 1, memory_.data(), ConnectStatusType::Connected);
+    ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Client, 1, memory_.data(), ConnectStatusType::Connected);
 
-    buffer->Deallocate();
+    buffer.MarkDisconnectedAndResetChannelWhenLastHolder();
 
-    EXPECT_EQ(SnapshotStatus(HeaderOfSecondConnection()), ConnectStatusType::DisConnected);
+    EXPECT_EQ(HeaderOfSecondConnection()->Status, ConnectStatusType::DisConnected);
 }
 
-TEST_F(ShmTestFixture, Deallocate_ResetsSharedHeaderWhenAlreadyDisconnected)
+TEST_F(ShmTestFixture, MarkDisconnectedAndResetChannelWhenLastHolder_ResetsHeaderWhenAlreadyDisconnected)
 {
-    ShmBuffer<TestShmBufferSize>* buffer =
-        ShmBuffer<TestShmBufferSize>::Allocate(ServerTypeType::Client, 1, memory_.data(), ConnectStatusType::Connected);
-    EXPECT_EQ(buffer->Write("Hello", 5), 5u);
-    EXPECT_FALSE(buffer->MarkDisconnectedAndReportWhetherLastHolder());
+    ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Client, 1, memory_.data(), ConnectStatusType::Connected);
+    EXPECT_EQ(buffer.Write("Hello", 5), 5u);
+    EXPECT_FALSE(buffer.MarkDisconnectedAndReportWhetherLastHolder());
 
-    buffer->Deallocate();
+    buffer.MarkDisconnectedAndResetChannelWhenLastHolder();
 
-    EXPECT_EQ(SnapshotStatus(HeaderOfSecondConnection()), ConnectStatusType::UnConnected);
+    EXPECT_EQ(HeaderOfSecondConnection()->Status, ConnectStatusType::UnConnected);
     EXPECT_EQ(HeaderOfSecondConnection()->UpWriteCount, 0u);
 }
