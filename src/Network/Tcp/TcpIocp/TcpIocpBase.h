@@ -25,6 +25,7 @@ protected:
     virtual bool PostDisConnect(MyOverlapped* overlapped);
     virtual bool PostSend(MyOverlapped* overlapped);
     virtual bool PostRecv(MyOverlapped* overlapped);
+    void ReleaseUnsubmittedIoRequest(TcpIocpConnect* tcpIocpConnect, MyOverlapped* overlapped);
 
     virtual void OnAcceptComplete(MyOverlapped* overlapped) {}
     virtual void OnConnectComplete(MyOverlapped* overlapped) {}

@@ -54,10 +54,11 @@ bool TcpIocpServer::PostAccept()
     auto ret = SocketApi::GetInstance().AcceptEx(socket_, tcpIocpConnect->SocketId, overlapped->WsaBuffer.buf, 0, (sizeof(SOCKADDR_IN) + 16),
                                                  (sizeof(SOCKADDR_IN) + 16), &transBytes, overlapped);
     auto lastError = WSAGetLastError();
-    if (ret != 0 && lastError != ERROR_IO_PENDING)
+    if (!ret && lastError != ERROR_IO_PENDING)
     {
         WriteLog(LogLevel::Error, "Call AcceptEx Failed. SessionId:%lld, Socket:%lld, Errno:%d", tcpIocpConnect->SessionId, tcpIocpConnect->SocketId,
                  lastError);
+        ReleaseUnsubmittedIoRequest(tcpIocpConnect, overlapped);
         return false;
     }
     return true;

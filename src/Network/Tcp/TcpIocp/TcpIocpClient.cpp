@@ -12,7 +12,7 @@ using namespace Spark::Core;
 namespace Spark::Network
 {
 TcpIocpClient::TcpIocpClient(const char* addressName, int milliSeconds, int backlog)
-    : TcpIocpBase(ServerTypeType::Client, addressName, milliSeconds, backlog)
+    : TcpIocpBase(ServerTypeType::Client, addressName, milliSeconds, backlog), clientLocalAddressInfo_(nullptr)
 {
 }
 bool TcpIocpClient::Init()
@@ -68,6 +68,7 @@ bool TcpIocpClient::PostConnect()
     if (!ret && WSAGetLastError() != ERROR_IO_PENDING)
     {
         WriteErrorLog(WSAGetLastError(), "Call ConnectEx Failed.");
+        ReleaseUnsubmittedIoRequest(tcpIocpConnect, overlapped);
         return false;
     }
     return true;

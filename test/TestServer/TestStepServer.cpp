@@ -30,14 +30,15 @@ void StepServer::OnProtocolDisConnect(SessionIdType sessionId, const char* ip, i
 
     connected_ = false;
 }
-void StepServer::OnMessage(Package* stepPackage)
+void StepServer::OnMessage(Package* ownedPackage)
 {
     if ((++recvCount_) % 1000 == 0)
     {
-        WriteLog(LogLevel::Info, "OnMessage SessionId:[%lld], %s", stepPackage->SessionId, stepPackage->GetDebugString());
+        WriteLog(LogLevel::Info, "OnMessage SessionId:[%lld], %s", ownedPackage->SessionId, ownedPackage->GetDebugString());
     }
 
-    Send(stepPackage);
+    Send(ownedPackage);
+    ownedPackage->Deallocate();
 }
 
 void TestStepServer()

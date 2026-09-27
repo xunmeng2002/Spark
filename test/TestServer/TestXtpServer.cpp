@@ -31,15 +31,16 @@ void XtpServer::OnProtocolDisConnect(SessionIdType sessionId, const char* ip, in
 
     connected_ = false;
 }
-void XtpServer::OnMessage(Package* xtpPackage)
+void XtpServer::OnMessage(Package* ownedPackage)
 {
     ++recvCount_;
     //if ((recvCount_) % 1000 == 0)
     {
-        WriteLog(LogLevel::Info, "OnMessage SessionId:[%lld], %s", xtpPackage->SessionId, xtpPackage->GetDebugString());
+        WriteLog(LogLevel::Info, "OnMessage SessionId:[%lld], %s", ownedPackage->SessionId, ownedPackage->GetDebugString());
     }
 
-    Send(xtpPackage);
+    Send(ownedPackage);
+    ownedPackage->Deallocate();
 }
 
 void TestXtpServer()

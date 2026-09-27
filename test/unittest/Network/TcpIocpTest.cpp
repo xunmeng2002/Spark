@@ -4,14 +4,20 @@
 
 #include "PackageFactory.h"
 #include "Packages.h"
+#include <Spark/Core/Logger/Logger.h>
 #include <Spark/Core/Utility/Utility.h>
+#include <Spark/Network/Io/IoBase.h>
+#include <Spark/Network/Io/IoFactory.h>
 #include <Spark/Network/Io/IoThread.h>
 #include <Spark/Network/Protocol/Protocol.h>
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 
+#include <Windows.h>
+
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <utility>
@@ -30,6 +36,9 @@ namespace
 // 缓冲被提前归还或跨线程覆写时，现象是字段串、条数缺，不会抛异常。
 constexpr char kIocpLoopbackAddress[] = "tcp://127.0.0.1:20011";
 constexpr int kRoundTripFrameCount = 200;
+constexpr char kRejectedConnectAddress[] = "tcp://127.0.0.1:0";
+constexpr int kRejectedConnectAttemptCount = 20;
+constexpr long kAllowedHandleGrowth = 2;
 constexpr int kFirstOrderIndex = 1;
 constexpr int kPriceBase = 100;
 constexpr char kAccountId[] = "Xunmeng001";
@@ -133,10 +142,10 @@ public:
         ++disConnectCount_;
     }
     // 逐帧原样回显：客户端据此收到自己发出的每一帧，从而证明缓冲在往返途中未被覆写
-    virtual void OnMessage(Package* package) override
+    virtual void OnMessage(Package* ownedPackage) override
     {
         EchoedOrder order;
-        if (TryExtractEchoedOrder(package, order))
+        if (TryExtractEchoedOrder(ownedPackage, order))
         {
             receivedOrders_.Record(std::move(order));
         }
@@ -144,8 +153,8 @@ public:
         {
             ++unexpectedFrameCount_;
         }
-        Send(package);
-        package->Deallocate();
+        Send(ownedPackage);
+        ownedPackage->Deallocate();
     }
 
     int ConnectCount() const { return connectCount_.load(); }
@@ -185,10 +194,10 @@ public:
     {
         ++disConnectCount_;
     }
-    virtual void OnMessage(Package* package) override
+    virtual void OnMessage(Package* ownedPackage) override
     {
         EchoedOrder order;
-        if (TryExtractEchoedOrder(package, order))
+        if (TryExtractEchoedOrder(ownedPackage, order))
         {
             receivedOrders_.Record(std::move(order));
         }
@@ -196,7 +205,7 @@ public:
         {
             ++unexpectedFrameCount_;
         }
-        package->Deallocate();
+        ownedPackage->Deallocate();
     }
 
     int ConnectCount() const { return connectCount_.load(); }
@@ -272,6 +281,32 @@ private:
     IoThread serverThread_;
     IoThread clientThread_;
 };
+
+int g_connectRejectionCount = 0;
+
+void CountConnectRejection(LogLevel level, const char*, int, const char*, const char*, ...)
+{
+    if (level >= LogLevel::Error)
+    {
+        ++g_connectRejectionCount;
+    }
+}
+
+unsigned long GetCurrentProcessHandleCount()
+{
+    DWORD handleCount = 0;
+    GetProcessHandleCount(GetCurrentProcess(), &handleCount);
+    return static_cast<unsigned long>(handleCount);
+}
+
+// 目的端口 0 会让 ConnectEx 当场拒绝（返回 false 且 error 非 ERROR_IO_PENDING）。
+// 建/毁各一次，走的是 IoFactory → IoBase::Init 这条公开入口，与生产调用同路。
+void RunOneRejectedConnectAttempt()
+{
+    std::unique_ptr<IoBase> io(IoFactory::CreateIo(ServerTypeType::Client, kRejectedConnectAddress, IoModelType::Iocp, 0));
+    io->Init();
+    io.reset();
+}
 }
 
 // ============================================================
@@ -312,6 +347,38 @@ TEST(TcpIocpTest, LoopbackRoundTripKeepsEveryFrameIntactOnASingleConnection)
 
     ExpectAllOrdersIntact(server.ReceivedOrders());
     ExpectAllOrdersIntact(client.ReceivedOrders());
+}
+
+// ============================================================
+// IOCP 连接被同步拒绝时的资源归还
+// 目的端口 0 触发 ConnectEx 当场失败，此前领的 socket / TcpIocpConnect / MyOverlapped 必须同场归还
+// 断言：连试 kRejectedConnectAttemptCount 次，进程句柄数不随次数增长
+// ============================================================
+
+TEST(TcpIocpTest, RepeatedlyRejectedConnectAttemptsKeepProcessHandleCountFlat)
+{
+    // 这条路走不到任何完成包，漏下的 socket 只能靠进程句柄数看见；日志侧则必须先装兜底日志器：
+    // Logger 未 Init 时 GetWriteLogFunc() 为空，WriteErrorLog 整条被跳过，否则无从判断分支是否真进了
+    WriteLogFunc savedWriteLogFunc = Logger::GetWriteLogFunc();
+    Logger::SetExternLogger(CountConnectRejection);
+
+    RunOneRejectedConnectAttempt();
+    g_connectRejectionCount = 0;
+    const unsigned long handleCountBefore = GetCurrentProcessHandleCount();
+    for (int attempt = 0; attempt < kRejectedConnectAttemptCount; ++attempt)
+    {
+        RunOneRejectedConnectAttempt();
+    }
+    const unsigned long handleCountAfter = GetCurrentProcessHandleCount();
+    const long handleGrowth = static_cast<long>(handleCountAfter) - static_cast<long>(handleCountBefore);
+    const int connectRejectionCount = g_connectRejectionCount;
+
+    Logger::SetExternLogger(savedWriteLogFunc);
+
+    EXPECT_EQ(connectRejectionCount, kRejectedConnectAttemptCount)
+        << kRejectedConnectAttemptCount << " 次尝试只记到 " << connectRejectionCount << " 次同步拒绝：失败模式变了，本用例量的已不是同一条路径";
+    EXPECT_LE(handleGrowth, kAllowedHandleGrowth) << kRejectedConnectAttemptCount << " 次被拒的连接尝试让句柄从 " << handleCountBefore << " 涨到 "
+                                                  << handleCountAfter;
 }
 
 #endif // _WIN32

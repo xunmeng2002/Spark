@@ -256,6 +256,12 @@ bool TcpIocpBase::PostRecv(MyOverlapped* overlapped)
     return true;
 }
 
+void TcpIocpBase::ReleaseUnsubmittedIoRequest(TcpIocpConnect* tcpIocpConnect, MyOverlapped* overlapped)
+{
+    overlapped->Deallocate();
+    tcpIocpConnect->Deallocate();
+}
+
 void TcpIocpBase::OnDisConnectComplete(MyOverlapped* overlapped)
 {
     WriteLog(LogLevel::Info, "OnDisConnectComplete SessionId:%lld, Socket:%lld", overlapped->Connect->SessionId, overlapped->Connect->SocketId);

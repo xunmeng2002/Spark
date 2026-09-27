@@ -10,7 +10,7 @@ public:
 
     virtual void OnProtocolConnect(SessionIdType sessionId, const char* ip, int port) override;
     virtual void OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port) override;
-    virtual void OnMessage(Package* package) override;
+    virtual void OnMessage(Package* ownedPackage) override;
 
     bool connected_;
     SessionIdType sessionId_;

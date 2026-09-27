@@ -38,12 +38,12 @@ void XtpClient::OnProtocolDisConnect(SessionIdType sessionId, const char* ip, in
     connected_ = false;
     recvCount_ = 0;
 }
-void XtpClient::OnMessage(Package* package)
+void XtpClient::OnMessage(Package* ownedPackage)
 {
     ++recvCount_;
     //if (recvCount_ % 10000 == 0)
     {
-        WriteLog(LogLevel::Info, "OnMessage: %s", package->GetDebugString());
+        WriteLog(LogLevel::Info, "OnMessage: %s", ownedPackage->GetDebugString());
     }
     if (recvCount_ < 10)
     {
@@ -51,10 +51,11 @@ void XtpClient::OnMessage(Package* package)
     }
     else
     {
-        WriteLog(LogLevel::Info, "OnMessage: %s", package->GetDebugString());
+        WriteLog(LogLevel::Info, "OnMessage: %s", ownedPackage->GetDebugString());
         WriteLog(LogLevel::Info, "Total Cost: %lld ms", TimeUtility::GetDuration<chrono::milliseconds>(startTime_));
         ioThread_->Stop();
     }
+    ownedPackage->Deallocate();
 }
 
 void XtpClient::SendReqInsertOrder(int index)
