@@ -10,11 +10,20 @@
 - 映射长度是 `ShmBufferSize * maxConnectSize_ * 2`（推导见 `docs/shm-shared-object-lifecycle.md` 第二节）。
 - **头数组紧挨映射起点**：`SingleShmHeader` 共 `maxConnectSize_` 个。0 号是**控制头**（`ShmBase::commonShmHeader_`），
   承载连接协商状态；1..`maxConnectSize_ - 1` 号是各连接的**通道头**（`ShmBuffer::shmHeader_` 指向其中自己那一个）。
-- **头结构的字段顺序是跨进程 ABI，被 `ShmMappingLayoutVersion` 钉住**：7 个 4 字节字段、共 28 字节，顺序为
+- **头结构的字段顺序是跨进程 ABI，被 `ShmMappingLayoutVersion` 钉住**：`Status`（4 字节）之后是 4 字节对齐填充，
+  再跟 6 个 `size_t` 字段（64 位平台各 8 字节），合计 **56 字节**，顺序为
   `Status`、`MappingMagic`、`MappingLayoutVersion`、`UpWriteCount`、`UpReadCount`、`DownWriteCount`、`DownReadCount`。
   前三个由 0 号控制头承载映射自描述（见 `docs/shm-shared-object-lifecycle.md` 第三节），后四个是每槽位各自的读写计数器。
-  `ShmBufferTest` 用 `static_assert(sizeof(SingleShmHeader) == 7 * sizeof(unsigned))` 钉住总长；
+  2026-09-28 之前这 6 个字段是 `unsigned`（4 字节），故当时的头是 7 × 4 = 28 字节；加宽是本次改动的一部分，
+  `ShmMappingLayoutVersion` 随之由 1 升到 2。
+  `ShmBuffer.h` 与 `ShmBufferTest` 都用 `static_assert(sizeof(SingleShmHeader) == 8 + 6 * sizeof(size_t))` 钉住总长，
+  另有一条 `alignof(SingleShmHeader) == alignof(size_t)`：`size_t` 计数器必须自然对齐，`std::atomic_ref` 才成立。
   **改字段顺序或插入字段必须同时递增 `ShmMappingLayoutVersion`**，否则新旧进程会把同一段内存解释成两种布局。
+- **头布局现在随平台的 `size_t` 宽度变化**（2026-09-28 起）：LP64 下 56 字节、ILP32 下 32 字节。
+  复用校验只比对 `MappingMagic` 与 `MappingLayoutVersion`，**认不出两端宽度不同**——同版本号、不同宽度的两个进程会互认。
+  实际部署恒定 LP64：映射长度本身就有 `1 MiB × 2047 × 2 ≈ 4 GiB`，32 位进程的地址空间装不下，`mmap` / `MapViewOfFile`
+  这一关先失败。故这是**记录在案的理论隐患**而非当下缺陷；若将来真要支持 32 位混跑，得把宽度（或每字段宽度表）
+  编进 stamp，光靠版本号挡不住。
 - **数据通道**：第 i 号连接占 `2 * ShmBufferSize`，偏移为 `i * 2 * ShmBufferSize`；上行在前（Client 写、Server 读）、下行紧随其后
   （`ShmBuffer::upBuffer_` / `downBuffer_`）。通道偏移只按连接号算，**不含头数组的大小**。
 - 头数组与通道相加恰好占满映射，于是 **0 号连接的槽位（前 2 MiB）不用作通道**——它容纳整个头数组
@@ -25,7 +34,8 @@
 - **头数组装得下是编译期不变式**：头数组占映射前 `maxConnectSize_ * sizeof(SingleShmHeader)` 字节，
   必须落在 0 号槽位的 `2 * ShmBufferSize` 之内，否则会压在 1 号连接的通道上。`ShmBase.h` 的 `static_assert`
   按**最大**允许连接数 `MaxSharedMemoryConnectSize` 校验（对任何运行期连接数都更强），故调小 `ShmBufferSize`
-  （例如 16 KiB）会让四档构建当场失败。现状是 `2047 * 28 = 57316` 字节 对 `2 MiB`（约 37 倍余量），
+  （例如 16 KiB）会让四档构建当场失败。现状是 `2047 * 56 = 114632` 字节 对 `2 MiB`（约 18 倍余量；
+  28 字节头年代是 57316 字节、约 37 倍，2026-09-28 加宽到 56 字节后余量减半，仍很宽裕），
   运行期判据**永远不可达** —— 这正是它做成编译期断言而不是 `IsConnectSizeAllowed()` 里一条分支的原因。
 - **两侧的连接号必须一致**：服务端在 `ShmServer::Accept` 挑第一个空闲槽位 i 并把它写进控制头的 `DownWriteCount`，
   客户端在 `ShmClient::CheckConnectResult` 从同一字段取回 i，各自用它构造 `ShmBuffer`。
@@ -41,7 +51,8 @@
   故守卫与指针算术同处一地（见下一段的构造期防护）。客户端手里的 i 由**对端**写入
   （`ShmClient::CheckConnectResult` 从控制头取回），那一处**另留一道显式检查**：取回 i 后先过
   `ShmBuffer<Size>::IsConnectionIndexWithinMapping(i, maxConnectSize_)`，不满足即按协商失败处置 ——
-  记 Warning（`Reject Connect Index:%u Out Of Range`）、控制头复位成 `UnConnected`、走既有的 1 秒重试，
+  记 Warning（`Reject Connect Index:%zu Out Of Range`；槽位号自 2026-09-28 起是 `size_t`，格式符随之）、
+  控制头复位成 `UnConnected`、走既有的 1 秒重试，
   **不构造 `ShmConnect`**。这道检查不是冗余：构造函数那条路只把非法连接号变成「未 Attach」的哑对象，
   而对端写下的越界号是**可诊断的协商失败**，该拒绝、该重试、该留痕。挡下的是三类越界后果：
   通道偏移落出映射（`upBuffer_` / `downBuffer_` 直指映射之外，构造期 `SetConnectStatus` 与首帧读写即踩）、
@@ -86,7 +97,7 @@
 | 谁做搬运 | IO 线程，稍后由 `DoSend` 排空 | 调用方线程，此刻 |
 | 覆盖 `DoSend` | 是（`TcpBase`，排空发送队列） | 是（`ShmBase`，**空实现**——Shm 从不入队） |
 | 对端不消费时 | 发送队列无上界增长（吃 `LinearBuffer` 池） | 调用方线程一直等，**只有对端 `DisConnected` 才丢弃** |
-| 缓冲上界 | 无（池多大就能堆多少） | 固定每方向 1 MiB（`ShmBufferSize`） |
+| 缓冲上界 | 无（池多大就能堆多少） | 固定每方向 1 MiB（`ShmBufferSize`，自 2026-09-28 起全部可用） |
 
 三条后果，调用方须按后端区分假设：
 
@@ -137,11 +148,26 @@
   - 通道搬运的发布顺序因此有了**语言级**保证：`WriteIntoChannel` / `ReadFromChannel` 先以 acquire 读入两个计数器、
     搬运完数据、再以 release 写回新计数。对端以 acquire 读计数时，必然看到与之配套的那段数据（`memcpy` 不会越过 release）。
   - `Status` 是唯一的双写字段，写点全部走 CAS 或 release store；读点全部 acquire。
-  - 计数器的读入从「同一个操作里读两次」收敛成「读一次、复用到返回值与断言」，顺带消掉了两次读之间可能被对端插进来的窗口。
-  - `std::atomic_ref<T>::is_always_lock_free` 对 `ConnectStatusType`（`int32_t`）与 `unsigned` 都是编译期断言：
-    若某平台上共享内存里的 4 字节访问不是无锁的，四档构建当场失败。这是**故意的**——共享内存里塞一把锁没有意义。
+  - 计数器的读入从「同一个操作里读两次」收敛成「读一次、复用到容量计算与写回值」，顺带消掉了两次读之间可能被对端插进来的窗口。
+  - `std::atomic_ref<T>::is_always_lock_free` 对 `ConnectStatusType`（`int32_t`）与 `size_t`（LP64 下 8 字节）都是编译期断言：
+    若某平台上共享内存里的这两档宽度访问不是无锁的，四档构建当场失败。这是**故意的**——共享内存里塞一把锁没有意义。
+    配套的 `static_assert(alignof(SingleShmHeader) == alignof(size_t))` 保证 8 字节计数器自然对齐，无锁访问的前提才成立。
   - `volatile` 已从 `ShmBuffer.h` 与相关调用点全部移除；Harness §6 / `rules/cpp-style.md` §6 都禁止用 `volatile` 做同步，
     此前是依赖归档 `Q.23` 的实践约定豁免，现在不再需要豁免。
+- **四个计数器是单调累计索引，取模只发生在寻址那一刻**（2026-09-28 改动，方案取自 `SpscRingBuffer` 的 Mask 写法）：
+  - `UpWriteCount` / `UpReadCount` / `DownWriteCount` / `DownReadCount` **只增不减**，不再被夹在 `[0, Size]` 内。
+    可读字节 = `writeIndex - readIndex`；可写字节 = `Size - (writeIndex - readIndex)`；通道内位置 = `index & Mask`
+    （`Mask = Size - 1`）。故 `Size` 必须是 2 的幂，由 `ShmBuffer` 的构造期 `static_assert` 钉住。
+  - 无符号差值在回绕点上仍然正确：`Size` 是 2 的幂、真实未读字节数恒小于 `Size`，故 `size_t` 走完一整圈（2⁶⁴）时
+    `writeIndex - readIndex` 与 `Size - (writeIndex - readIndex)` 都仍等于真实值；计数器本身不需要取模或归一化。
+  - 单写单读的分工（本节第 1 条）未变，故差值没有撕裂窗口：每个计数器只有一端写、另一端只读。
+  - **容量语义随之改变**：通道可用字节从 `Size - 1` 变成 `Size`。旧方案靠「写计数不得等于读计数」区分满/空，白留一个
+    字节（1 MiB 通道实际只有 `1 MiB - 1` 可用）；Mask 方案用「差值」区分，1 MiB 全部可用。
+    `GetWriteBufferSize()` 在空通道上现在返回 `Size`（旧为 `Size - 1`），`ShmBufferTest` 的容量断言已按新语义改写。
+  - **代价：丢了一道 Debug 期的腐蚀哨兵**。旧实现末尾有 `assert(writeCount <= Size)`，读写计数一旦被外部污染（或对端按
+    错误布局解释同一段内存）就在 Debug 下当场命中；单调方案下 `size_t` 计数取任何值都「合法」，没有可断言的界。
+    替代品是复制助手里的 `assert(length <= Size)`，它只保证**单次搬运**不超过一个通道，**对计数本身的腐蚀不再有任何检查**。
+    这是本方案唯一的净损失，已记入 `PROGRESS.md` 待议。
 
 ## 五、相关测试与输入输出
 
@@ -186,7 +212,8 @@
 
 - 池边界：`HasObjectPoolRoundTrip` concept 分别代入 `ShmBuffer<TestShmBufferSize>` 与一个自带 `Allocate` / `Deallocate`
   的探针类型；前者代入须为 `false`（池往返不出现在已安装头文件里），后者须为 `true`（证明判据不是恒假）。
-- 头结构长度：`sizeof(SingleShmHeader) == 7 * sizeof(unsigned)`（第一节的 28 字节 ABI 钉）。
+- 头结构长度与对齐：`sizeof(SingleShmHeader) == 8 + 6 * sizeof(size_t)` 与 `alignof(SingleShmHeader) == alignof(size_t)`
+  （第一节的 56 字节 ABI 钉；28 字节头的年代这里是 `7 * sizeof(unsigned)`）。
 
 `test/unittest/Network/ShmInitTest.cpp`（四档构建均跑）：映射自描述的三条用例见
 `docs/shm-shared-object-lifecycle.md` 第八节（`Init_RejectsReusedShmObjectWithForeignMappingMagic`、

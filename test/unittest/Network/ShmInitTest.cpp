@@ -88,10 +88,16 @@ bool VisitShmMapping(const std::string& shmObjectName, size_t viewSize, Visitor&
 #endif
 }
 
-bool WriteShmMappingMagic(const std::string& shmObjectName, unsigned magic)
+bool WriteShmMappingMagic(const std::string& shmObjectName, size_t magic)
 {
     return VisitShmMapping(shmObjectName, sizeof(Spark::SingleShmHeader),
                            [magic](Spark::SingleShmHeader* shmHeader) { Spark::SingleShmHeader::StoreMappedField(shmHeader->MappingMagic, magic); });
+}
+
+bool WriteShmMappingLayoutVersion(const std::string& shmObjectName, size_t layoutVersion)
+{
+    return VisitShmMapping(shmObjectName, sizeof(Spark::SingleShmHeader), [layoutVersion](Spark::SingleShmHeader* shmHeader)
+                           { Spark::SingleShmHeader::StoreMappedField(shmHeader->MappingLayoutVersion, layoutVersion); });
 }
 
 bool WriteShmHeaderStatus(const std::string& shmObjectName, unsigned connectionIndex, ConnectStatusType status)
@@ -202,6 +208,20 @@ TEST(ShmInitTest, Init_RejectsReusedShmObjectWithForeignMappingMagic)
     ASSERT_NE(leftoverOwner, nullptr);
     ASSERT_TRUE(leftoverOwner->Init());
     ASSERT_TRUE(WriteShmMappingMagic(shmObjectName, 0xDEADBEEF));
+
+    const auto secondOwner = CreateShmServer(shmAddress);
+    ASSERT_NE(secondOwner, nullptr);
+    EXPECT_FALSE(secondOwner->Init());
+}
+
+TEST(ShmInitTest, Init_RejectsReusedShmObjectWithForeignMappingLayoutVersion)
+{
+    const auto shmObjectName = MakeUniqueShmObjectName("SparkShmUnitTestForeignLayoutVersion");
+    const auto shmAddress = ToShmAddress(shmObjectName, "1");
+    const auto leftoverOwner = CreateShmServer(shmAddress);
+    ASSERT_NE(leftoverOwner, nullptr);
+    ASSERT_TRUE(leftoverOwner->Init());
+    ASSERT_TRUE(WriteShmMappingLayoutVersion(shmObjectName, Spark::ShmMappingLayoutVersion + 1));
 
     const auto secondOwner = CreateShmServer(shmAddress);
     ASSERT_NE(secondOwner, nullptr);

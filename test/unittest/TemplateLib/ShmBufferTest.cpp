@@ -27,7 +27,7 @@ std::vector<char> MakeZeroedShmMapping()
 static_assert(std::is_same_v<decltype(std::declval<const ShmBuffer<TestShmBufferSize>&>().GetShmHeader()), const SingleShmHeader*>,
               "GetShmHeader must hand out a read-only view of the shared header");
 
-static_assert(sizeof(SingleShmHeader) == 7 * sizeof(unsigned), "SingleShmHeader layout is pinned by ShmMappingLayoutVersion");
+static_assert(sizeof(SingleShmHeader) == 8 + 6 * sizeof(size_t), "SingleShmHeader layout is pinned by ShmMappingLayoutVersion");
 
 template <typename BufferType>
 concept HasObjectPoolRoundTrip = requires(BufferType* buffer) {
@@ -258,14 +258,10 @@ TEST_F(ShmTestFixture, ReadWhenDisconnected_ReturnsZero)
 
 TEST_F(ShmTestFixture, GetWriteBufferSize_Client)
 {
-    // Client WriteBufferSize = GetUpWriteBufferSize
-    // 初始: Size - 0 - 1 = TestShmBufferSize - 1
-    EXPECT_EQ(client_->GetWriteBufferSize(), TestShmBufferSize - 1);
+    EXPECT_EQ(client_->GetWriteBufferSize(), TestShmBufferSize);
 
     client_->Write("Hello", 5);
-    // UpWriteCount = 5, UpReadCount = 0
-    // GetUpWriteBufferSize: Read > Write? no, so Size - (5 - 0) - 1 = Size - 6
-    EXPECT_EQ(client_->GetWriteBufferSize(), TestShmBufferSize - 6);
+    EXPECT_EQ(client_->GetWriteBufferSize(), TestShmBufferSize - 5);
 }
 
 TEST_F(ShmTestFixture, GetReadBufferSize_Client)
@@ -279,10 +275,10 @@ TEST_F(ShmTestFixture, GetReadBufferSize_Client)
 
 TEST_F(ShmTestFixture, GetWriteBufferSize_Server)
 {
-    EXPECT_EQ(server_->GetWriteBufferSize(), TestShmBufferSize - 1);
+    EXPECT_EQ(server_->GetWriteBufferSize(), TestShmBufferSize);
 
     server_->Write("Hello", 5);
-    EXPECT_EQ(server_->GetWriteBufferSize(), TestShmBufferSize - 6);
+    EXPECT_EQ(server_->GetWriteBufferSize(), TestShmBufferSize - 5);
 }
 
 TEST_F(ShmTestFixture, GetReadBufferSize_Server)
@@ -297,23 +293,23 @@ TEST_F(ShmTestFixture, GetReadBufferSize_Server)
 
 TEST_F(ShmTestFixture, WriteWhenFull_ReturnsZero)
 {
-    std::string filling(TestShmBufferSize - 1, 'A');
-    EXPECT_EQ(client_->Write(filling.data(), TestShmBufferSize - 1), TestShmBufferSize - 1);
+    std::string filling(TestShmBufferSize, 'A');
+    EXPECT_EQ(client_->Write(filling.data(), TestShmBufferSize), TestShmBufferSize);
     EXPECT_EQ(client_->GetWriteBufferSize(), 0u);
 
     EXPECT_EQ(client_->Write("X", 1), 0u);
-    EXPECT_EQ(header_->UpWriteCount, TestShmBufferSize - 1);
+    EXPECT_EQ(header_->UpWriteCount, TestShmBufferSize);
 }
 
 TEST_F(ShmTestFixture, Write_TruncatesToFreeSpace)
 {
     std::string filling(TestShmBufferSize - 10, 'A');
     client_->Write(filling.data(), TestShmBufferSize - 10);
-    EXPECT_EQ(client_->GetWriteBufferSize(), 9u);
+    EXPECT_EQ(client_->GetWriteBufferSize(), 10u);
 
     std::string overflow(20, 'B');
-    EXPECT_EQ(client_->Write(overflow.data(), 20), 9u);
-    EXPECT_EQ(header_->UpWriteCount, TestShmBufferSize - 1);
+    EXPECT_EQ(client_->Write(overflow.data(), 20), 10u);
+    EXPECT_EQ(header_->UpWriteCount, TestShmBufferSize);
 }
 
 TEST_F(ShmTestFixture, Read_TruncatesToAvailable)
@@ -348,14 +344,12 @@ TEST_F(ShmTestFixture, Write_WrapsAround)
     EXPECT_EQ(header_->UpReadCount, 100u);
 
     // Step 3: 写 105 字节 — 尾部 6 字节 (250→256) + 头部 99 字节 (0→99) 绕回
-    //   GetUpWriteBufferSize() = 256 - (250-100) - 1 = 105
     std::string second(105, 'B');
     size_t written = client_->Write(second.data(), 105);
     EXPECT_EQ(written, 105u);
-    EXPECT_EQ(header_->UpWriteCount, 99u); // 105 - 6 = 99 (绕回值)
+    EXPECT_EQ(header_->UpWriteCount, 355u);
 
-    // 此刻 UpWriteCount(99) < UpReadCount(100)，走 CountWritableBytes 的绕回分支：100 - 99 - 1 = 0
-    EXPECT_EQ(client_->GetWriteBufferSize(), 0u);
+    EXPECT_EQ(client_->GetWriteBufferSize(), 1u);
 
     // Step 4: Server 读取全部数据
     //   内存布局: [0..99)=B, [100..250)=A, [250..256)=B
@@ -383,8 +377,8 @@ TEST_F(ShmTestFixture, DownChannel_WrapsAround)
 
     std::string second(105, 'B');
     EXPECT_EQ(server_->Write(second.data(), 105), 105u);
-    EXPECT_EQ(header_->DownWriteCount, 99u);
-    EXPECT_EQ(server_->GetWriteBufferSize(), 0u);
+    EXPECT_EQ(header_->DownWriteCount, 355u);
+    EXPECT_EQ(server_->GetWriteBufferSize(), 1u);
 
     char output[TestShmBufferSize] = {};
     EXPECT_EQ(client_->Read(output, TestShmBufferSize), 255u);
@@ -395,11 +389,10 @@ TEST_F(ShmTestFixture, DownChannel_WrapsAround)
         EXPECT_EQ(output[i], 'B');
 }
 
-// ========== 计数器达到通道容量 Size ==========
+// ========== 计数器越过通道容量 Size ==========
 
-TEST_F(ShmTestFixture, CountersReachChannelSizeExactly)
+TEST_F(ShmTestFixture, CountersGrowPastChannelSizeAndPositionWrapsByMask)
 {
-    // 写指针恰好停在 Size 上：writeIndex 不取模，而是让 writeCount 直接等于 Size
     std::string head(TestShmBufferSize - 6, 'A');
     EXPECT_EQ(client_->Write(head.data(), TestShmBufferSize - 6), TestShmBufferSize - 6);
     EXPECT_EQ(header_->UpWriteCount, TestShmBufferSize - 6);
@@ -408,24 +401,23 @@ TEST_F(ShmTestFixture, CountersReachChannelSizeExactly)
     EXPECT_EQ(server_->Read(drained, TestShmBufferSize - 6), TestShmBufferSize - 6);
     EXPECT_EQ(header_->UpReadCount, TestShmBufferSize - 6);
 
-    // 尾部正好剩 6 字节，本次写入不绕回，writeCount 落在 Size 上
     EXPECT_EQ(client_->Write("BBBBBB", 6), 6u);
     EXPECT_EQ(header_->UpWriteCount, TestShmBufferSize);
     EXPECT_EQ(server_->GetReadBufferSize(), 6u);
-    EXPECT_EQ(client_->GetWriteBufferSize(), TestShmBufferSize - 7);
+    EXPECT_EQ(client_->GetWriteBufferSize(), TestShmBufferSize - 6);
 
     char tail[8] = {};
     EXPECT_EQ(server_->Read(tail, 6), 6u);
     EXPECT_EQ(header_->UpReadCount, TestShmBufferSize);
 
-    // writeIndex == Size 时头部拷贝长度为 0，写入必须整段落进绕回分支
     EXPECT_EQ(client_->Write("C", 1), 1u);
-    EXPECT_EQ(header_->UpWriteCount, 1u);
+    EXPECT_EQ(header_->UpWriteCount, TestShmBufferSize + 1);
+    EXPECT_EQ(client_->GetWriteBufferSize(), TestShmBufferSize - 1);
 
     char wrapped[4] = {};
     EXPECT_EQ(server_->Read(wrapped, 1), 1u);
     EXPECT_EQ(wrapped[0], 'C');
-    EXPECT_EQ(header_->UpReadCount, 1u);
+    EXPECT_EQ(header_->UpReadCount, TestShmBufferSize + 1);
 }
 
 // ========== 多次 Write / Read 周期 ==========

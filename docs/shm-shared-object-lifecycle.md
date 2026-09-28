@@ -57,14 +57,18 @@
 `SingleShmHeader` 字段顺序/长度的旧进程，或另一端跑的是别的版本，留下的对象尺寸可能恰好合规，于是被静默复用、
 把同一段内存解释成两种布局。故 0 号控制头的前两个字段成为**映射自描述**：
 
-- `MappingMagic = 0x53504B4D`（`"SPKM"`）、`MappingLayoutVersion = 1`（`ShmBuffer.h` 的 `constexpr`）。
+- `MappingMagic = 0x53504B4D`（`"SPKM"`）、`MappingLayoutVersion = 2`（`ShmBuffer.h` 的 `constexpr`）。
+  版本由 1 升到 2 是 2026-09-28 的改动：`SingleShmHeader` 的头字段从 7 个 `unsigned`（28 字节）加宽成
+  「4 字节 `Status` + 4 字节填充 + 6 个 `size_t`」（64 位平台 56 字节）。布局确实变了，版本必须跟着走，
+  否则旧构建留下的对象会通过校验、被按新布局读（字段表见 `docs/shm-channel-and-connect-model.md` 第一节）。
 - 服务端在 `Init()` 里 `memset` 整段映射之后**打戳**（`SingleShmHeader::StoreMappingStamp`），随后才置 `UnConnected`。
 - **凡走复用路径的一侧都要校验**：`ShmBase::reusedExistingShmObject_` 标出「这份映射不是本进程创建的」，
   为真时 `Init()` 调 `IsReusedMappingLayoutCompatible()`，不符即记 Warning（`Shm Object Mapping Layout Mismatch.`，
   打印实读的 Magic/版本与期望值）并返回 `false`。客户端恒为真；服务端只在「创建失败因已存在 → 改打开」那一支为真，
   自己新建时**不校验**（那一刻戳是自己刚写的，校验只会白跑）。
 - 因此**改布局必须同时递增 `ShmMappingLayoutVersion`**，否则旧对象会通过校验、被按新布局读。
-  字段总长由 `ShmBufferTest` 的 `static_assert(sizeof(SingleShmHeader) == 7 * sizeof(unsigned))` 钉住（`ShmBuffer.h`）。
+  字段总长由 `ShmBuffer.h` 与 `ShmBufferTest` 的 `static_assert(sizeof(SingleShmHeader) == 8 + 6 * sizeof(size_t))` 钉住，
+  另有一条 `alignof(SingleShmHeader) == alignof(size_t)` 钉住对齐——`size_t` 计数器必须自然对齐，`std::atomic_ref` 才成立。
 
 ## 四、复用的两平台语义不同，故校验方式不同
 
@@ -144,6 +148,11 @@ POSIX 规定：`mmap` 成功之后 `close(fd)` 不影响映射的有效性（映
 - `Init_RejectsReusedShmObjectWithForeignMappingMagic`（映射自描述）
   - 输入：服务端建好对象后，用 `WriteShmMappingMagic` 直接把 0 号头的 `MappingMagic` 改成 `0xDEADBEEF`，再让第二个服务端复用。
   - 输出：第二个 `false`（`Shm Object Mapping Layout Mismatch.`）；**撤掉那道校验则它变红**（见下）。
+- `Init_RejectsReusedShmObjectWithForeignMappingLayoutVersion`（映射自描述，2026-09-28 新增）
+  - 输入：服务端建好对象后，用 `WriteShmMappingLayoutVersion` 把 0 号头的 `MappingLayoutVersion` 改成
+    `ShmMappingLayoutVersion + 1`（**Magic 保持正确，只有版本不符**），再让第二个服务端复用。
+  - 输出：第二个 `false`。上一条钉 `MappingMagic`、这一条钉 `MappingLayoutVersion`，各自覆盖自描述的一半：
+    光有 Magic 对不足以放行，版本不符同样要拒——这正是头字段加宽（版本 1→2）后必须挡住的场景。
 - `Init_AcceptsStampedShmObjectForAClient`（正向对照）
   - 输入：服务端建好并打戳，再让客户端打开同一对象。
   - 输出：`true`。证明校验不会把正常对象误判成外来布局。
@@ -154,6 +163,8 @@ POSIX 规定：`mmap` 成功之后 `close(fd)` 不影响映射的有效性（映
 **判据灵敏度**：把 `Init()` 里那道复用校验短路成恒真（`if (false && ...)`），
 `Init_RejectsReusedShmObjectWithForeignMappingMagic` 与 `Init_RejectsUnstampedShmObjectForAClient`
 **恰好两条变红**、其余全绿；还原后四档全绿。故这两条用例是那道校验的判据，不是陪跑。
+（该测量取自加入 `Init_RejectsReusedShmObjectWithForeignMappingLayoutVersion` 之前，当时只有这两条走那道校验。
+新用例走的是**同一条**校验，故预期同步变红，但**未复测**——复测需要临时短路掉一道布局校验，属高风险改动，未擅自做。）
 
 用例的地址都带时间戳（`MakeUniqueShmName` / `MakeUniqueShmObjectName`），同一进程内先后运行不会互相干扰；清理依赖析构顺序（先声明的后析构：第二个对象先 `unlink`，第一个对象的后析构收尾）。
 

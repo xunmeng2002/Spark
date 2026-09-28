@@ -6,12 +6,11 @@
 #include <cassert>
 #include <cstddef>
 #include <cstring>
-#include <limits>
 
 namespace Spark
 {
-constexpr unsigned ShmMappingMagic = 0x53504B4D;
-constexpr unsigned ShmMappingLayoutVersion = 1;
+constexpr size_t ShmMappingMagic = 0x53504B4D;
+constexpr size_t ShmMappingLayoutVersion = 2;
 
 struct SingleShmHeader
 {
@@ -24,11 +23,8 @@ struct SingleShmHeader
         std::atomic_ref<ConnectStatusType>(header->Status).store(status, std::memory_order_release);
     }
     static std::atomic_ref<ConnectStatusType> StatusReference(SingleShmHeader* header) { return std::atomic_ref<ConnectStatusType>(header->Status); }
-    static unsigned LoadMappedField(unsigned& mappedField) { return std::atomic_ref<unsigned>(mappedField).load(std::memory_order_acquire); }
-    static void StoreMappedField(unsigned& mappedField, unsigned value)
-    {
-        std::atomic_ref<unsigned>(mappedField).store(value, std::memory_order_release);
-    }
+    static size_t LoadMappedField(size_t& mappedField) { return std::atomic_ref<size_t>(mappedField).load(std::memory_order_acquire); }
+    static void StoreMappedField(size_t& mappedField, size_t value) { std::atomic_ref<size_t>(mappedField).store(value, std::memory_order_release); }
     static bool IsMappingLayoutCompatible(SingleShmHeader* header)
     {
         return LoadMappedField(header->MappingMagic) == ShmMappingMagic && LoadMappedField(header->MappingLayoutVersion) == ShmMappingLayoutVersion;
@@ -48,23 +44,26 @@ struct SingleShmHeader
     }
 
     ConnectStatusType Status;
-    unsigned MappingMagic;
-    unsigned MappingLayoutVersion;
-    unsigned UpWriteCount;
-    unsigned UpReadCount;
-    unsigned DownWriteCount;
-    unsigned DownReadCount;
+    size_t MappingMagic;
+    size_t MappingLayoutVersion;
+    size_t UpWriteCount;
+    size_t UpReadCount;
+    size_t DownWriteCount;
+    size_t DownReadCount;
 };
 
 static_assert(std::atomic_ref<ConnectStatusType>::is_always_lock_free, "The shared connection status must be lock-free across processes");
-static_assert(std::atomic_ref<unsigned>::is_always_lock_free, "The shared counters must be lock-free across processes");
+static_assert(std::atomic_ref<size_t>::is_always_lock_free, "The shared counters must be lock-free across processes");
+static_assert(sizeof(SingleShmHeader) == 8 + 6 * sizeof(size_t),
+              "The shared header is a cross-process ABI record: a 4-byte status, 4 bytes of padding, then six 8-byte fields");
+static_assert(alignof(SingleShmHeader) == alignof(size_t), "The 8-byte counters must stay naturally aligned for atomic_ref");
 
 template <size_t Size>
 class ShmBuffer
 {
 public:
     static_assert(Size > 0, "Size must be greater than 0");
-    static_assert(Size <= (std::numeric_limits<unsigned>::max)(), "Size must fit the 32-bit shared memory counters");
+    static_assert((Size & (Size - 1)) == 0, "Size must be a power of two, because the channel position wraps by a bit mask");
 
     ShmBuffer() = default;
     ShmBuffer(ServerTypeType serverType, int connectionIndex, void* shmBase, ConnectStatusType connectStatus, unsigned connectionCount)
@@ -87,7 +86,7 @@ public:
     ShmBuffer(ShmBuffer&&) = delete;
     ShmBuffer& operator=(ShmBuffer&&) = delete;
 
-    static constexpr bool IsConnectionIndexWithinMapping(unsigned connectionIndex, unsigned connectionCount)
+    static constexpr bool IsConnectionIndexWithinMapping(size_t connectionIndex, size_t connectionCount)
     {
         return connectionIndex >= 1 && connectionIndex < connectionCount;
     }
@@ -187,9 +186,11 @@ public:
     }
 
 private:
+    static constexpr size_t Mask = Size - 1;
+
     static constexpr bool IsValidConnectionIndex(int connectionIndex, unsigned connectionCount)
     {
-        return IsConnectionIndexWithinMapping(static_cast<unsigned>(connectionIndex), connectionCount);
+        return IsConnectionIndexWithinMapping(static_cast<size_t>(connectionIndex), connectionCount);
     }
     bool IsAttached() const { return shmHeader_ != nullptr; }
 
@@ -214,14 +215,8 @@ private:
                                   SingleShmHeader::LoadMappedField(shmHeader_->DownReadCount));
     }
 
-    static size_t CountWritableBytes(unsigned writeCount, unsigned readCount)
-    {
-        return readCount > writeCount ? readCount - writeCount - 1 : Size - (writeCount - readCount) - 1;
-    }
-    static size_t CountReadableBytes(unsigned writeCount, unsigned readCount)
-    {
-        return writeCount >= readCount ? writeCount - readCount : Size - (readCount - writeCount);
-    }
+    static size_t CountWritableBytes(size_t writeIndex, size_t readIndex) { return Size - (writeIndex - readIndex); }
+    static size_t CountReadableBytes(size_t writeIndex, size_t readIndex) { return writeIndex - readIndex; }
 
     size_t UpWrite(const char* source, size_t len)
     {
@@ -240,47 +235,53 @@ private:
         return ReadFromChannel(downBuffer_, shmHeader_->DownWriteCount, shmHeader_->DownReadCount, destination, len);
     }
 
-    size_t WriteIntoChannel(char* channelBuffer, unsigned& writeCount, unsigned& readCount, const char* source, size_t len)
+    size_t WriteIntoChannel(char* channelBuffer, size_t& writeCount, size_t& readCount, const char* source, size_t len)
     {
         if (SingleShmHeader::LoadStatus(shmHeader_) != ConnectStatusType::Connected)
             return 0;
-        const unsigned writeIndex = SingleShmHeader::LoadMappedField(writeCount);
-        const unsigned readIndex = SingleShmHeader::LoadMappedField(readCount);
-        const size_t writableBytes = CountWritableBytes(writeIndex, readIndex);
-        const size_t copiedLength = (std::min)(len, writableBytes);
+        const size_t writeIndex = SingleShmHeader::LoadMappedField(writeCount);
+        const size_t readIndex = SingleShmHeader::LoadMappedField(readCount);
+        const size_t copiedLength = (std::min)(len, CountWritableBytes(writeIndex, readIndex));
         if (copiedLength == 0)
             return 0;
-        assert(writeIndex <= Size);
-        const size_t headLength = (std::min)(copiedLength, Size - writeIndex);
-        std::memcpy(channelBuffer + writeIndex, source, headLength);
-        if (headLength < copiedLength)
-        {
-            std::memcpy(channelBuffer, source + headLength, copiedLength - headLength);
-        }
-        SingleShmHeader::StoreMappedField(writeCount,
-                                          static_cast<unsigned>(headLength < copiedLength ? copiedLength - headLength : writeIndex + copiedLength));
+        CopyIntoChannel(channelBuffer, writeIndex, source, copiedLength);
+        SingleShmHeader::StoreMappedField(writeCount, writeIndex + copiedLength);
         return copiedLength;
     }
-    size_t ReadFromChannel(char* channelBuffer, unsigned& writeCount, unsigned& readCount, char* destination, size_t len)
+    size_t ReadFromChannel(char* channelBuffer, size_t& writeCount, size_t& readCount, char* destination, size_t len)
     {
         if (SingleShmHeader::LoadStatus(shmHeader_) != ConnectStatusType::Connected)
             return 0;
-        const unsigned writeIndex = SingleShmHeader::LoadMappedField(writeCount);
-        const unsigned readIndex = SingleShmHeader::LoadMappedField(readCount);
-        const size_t readableBytes = CountReadableBytes(writeIndex, readIndex);
-        const size_t copiedLength = (std::min)(len, readableBytes);
+        const size_t writeIndex = SingleShmHeader::LoadMappedField(writeCount);
+        const size_t readIndex = SingleShmHeader::LoadMappedField(readCount);
+        const size_t copiedLength = (std::min)(len, CountReadableBytes(writeIndex, readIndex));
         if (copiedLength == 0)
             return 0;
-        assert(readIndex <= Size);
-        const size_t headLength = (std::min)(copiedLength, Size - readIndex);
-        std::memcpy(destination, channelBuffer + readIndex, headLength);
-        if (headLength < copiedLength)
-        {
-            std::memcpy(destination + headLength, channelBuffer, copiedLength - headLength);
-        }
-        SingleShmHeader::StoreMappedField(readCount,
-                                          static_cast<unsigned>(headLength < copiedLength ? copiedLength - headLength : readIndex + copiedLength));
+        CopyOutOfChannel(channelBuffer, readIndex, destination, copiedLength);
+        SingleShmHeader::StoreMappedField(readCount, readIndex + copiedLength);
         return copiedLength;
+    }
+    static void CopyIntoChannel(char* channelBuffer, size_t writeIndex, const char* source, size_t length)
+    {
+        assert(length <= Size);
+        const size_t writePosition = writeIndex & Mask;
+        const size_t headLength = (std::min)(length, Size - writePosition);
+        std::memcpy(channelBuffer + writePosition, source, headLength);
+        if (headLength < length)
+        {
+            std::memcpy(channelBuffer, source + headLength, length - headLength);
+        }
+    }
+    static void CopyOutOfChannel(char* channelBuffer, size_t readIndex, char* destination, size_t length)
+    {
+        assert(length <= Size);
+        const size_t readPosition = readIndex & Mask;
+        const size_t headLength = (std::min)(length, Size - readPosition);
+        std::memcpy(destination, channelBuffer + readPosition, headLength);
+        if (headLength < length)
+        {
+            std::memcpy(destination + headLength, channelBuffer, length - headLength);
+        }
     }
 
     SingleShmHeader* shmHeader_ = nullptr;

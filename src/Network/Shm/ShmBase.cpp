@@ -118,7 +118,7 @@ bool ShmBase::IsReusedMappingLayoutCompatible() const
         return true;
     }
     WriteLog(LogLevel::Warning,
-             "Shm Object Mapping Layout Mismatch. Magic:%u, LayoutVersion:%u, ExpectedMagic:%u, ExpectedLayoutVersion:%u, Address:%s",
+             "Shm Object Mapping Layout Mismatch. Magic:%zu, LayoutVersion:%zu, ExpectedMagic:%zu, ExpectedLayoutVersion:%zu, Address:%s",
              SingleShmHeader::LoadMappedField(commonShmHeader_->MappingMagic),
              SingleShmHeader::LoadMappedField(commonShmHeader_->MappingLayoutVersion), ShmMappingMagic, ShmMappingLayoutVersion, shmName_.c_str());
     return false;

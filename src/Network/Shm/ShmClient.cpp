@@ -123,7 +123,7 @@ void ShmClient::CheckConnectResult()
             }
             else
             {
-                WriteLog(LogLevel::Warning, "Reject Connect Index:%u Out Of Range, ConnectSize:%u, Address:%s", index, maxConnectSize_,
+                WriteLog(LogLevel::Warning, "Reject Connect Index:%zu Out Of Range, ConnectSize:%u, Address:%s", index, maxConnectSize_,
                          address_.c_str());
             }
             SingleShmHeader::StoreStatus(commonShmHeader_, ConnectStatusType::UnConnected);
