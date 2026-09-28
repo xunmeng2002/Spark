@@ -540,3 +540,28 @@ TEST_F(ShmTestFixture, RevokeUnconfirmedAccept_LeavesAConfirmedChannelAlone)
 
     EXPECT_EQ(header_->Status, ConnectStatusType::Connected);
 }
+
+TEST(ShmBufferTest, ConfirmAcceptedConnectionPublishesConnectedOnlyFromAccepted)
+{
+    SingleShmHeader channelHeader{};
+    SingleShmHeader::StoreStatus(&channelHeader, ConnectStatusType::Accepted);
+
+    EXPECT_TRUE(SingleShmHeader::ConfirmAcceptedConnection(&channelHeader));
+    EXPECT_EQ(SingleShmHeader::LoadStatus(&channelHeader), ConnectStatusType::Connected);
+
+    EXPECT_FALSE(SingleShmHeader::ConfirmAcceptedConnection(&channelHeader));
+    EXPECT_EQ(SingleShmHeader::LoadStatus(&channelHeader), ConnectStatusType::Connected);
+}
+
+TEST(ShmBufferTest, ConfirmAcceptedConnectionLeavesARevokedChannelUntouched)
+{
+    SingleShmHeader channelHeader{};
+    SingleShmHeader::StoreStatus(&channelHeader, ConnectStatusType::DisConnected);
+
+    EXPECT_FALSE(SingleShmHeader::ConfirmAcceptedConnection(&channelHeader));
+    EXPECT_EQ(SingleShmHeader::LoadStatus(&channelHeader), ConnectStatusType::DisConnected);
+
+    SingleShmHeader::StoreStatus(&channelHeader, ConnectStatusType::UnConnected);
+    EXPECT_FALSE(SingleShmHeader::ConfirmAcceptedConnection(&channelHeader));
+    EXPECT_EQ(SingleShmHeader::LoadStatus(&channelHeader), ConnectStatusType::UnConnected);
+}

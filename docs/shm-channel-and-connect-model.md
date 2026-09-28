@@ -160,6 +160,19 @@
 - **`RevokeUnconfirmedAccept` 只撤 `Accepted`**：以 `compare_exchange_strong` 置换，已确认（`Connected`）的连接
   不会被回收路径撤掉——对端只要确认过，回收路径就与它无关；重复调用只有第一次返回 true。
   也因此它**不负责**清槽位头：置位后由 `ShmConnect` 析构走上一段的仲裁，回收路径与正常断连共用同一段收尾。
+- **客户端确认受理也是一次 CAS，与回收路径争同一个状态字**（2026-09-28 修）：入口是
+  `SingleShmHeader::ConfirmAcceptedConnection`，在槽位头上做 `Accepted → Connected` 的 `compare_exchange_strong`
+  （成功序 `acq_rel`、失败序 `acquire`）；`ShmClient::CheckConnectResult` **先确认成功、再构造 `ShmConnect`**，
+  失败即记一条 Warning 并走既有的 1 秒重试。此前这一步是 `ShmBuffer` 构造函数里的 `SetConnectStatus(Connected)`
+  ——一次**盲写**，与上一条的撤回 CAS 相撞时后写者胜：客户端晚于服务端撤回的 5 秒才走到构造，槽位头就停在
+  `Connected`，而服务端那侧已无连接对象，该槽位既不会被复用、也不会被回收路径再次看到（详见第六节「孤儿槽位」）；
+  反序则客户端自认已连上、通道却因头是 `UnConnected` 静默吞掉每一次 `Write`（返 0）。
+  改成 CAS 后两侧争的是同一个字，胜负唯一：撤回在前则客户端 CAS 必失败，客户端在前则撤回 CAS 必失败
+  （回收路径不入延迟删除，与上一条「只撤 `Accepted`」同一机制）。
+  `ShmBuffer` 的构造函数签名与其中那笔 `SetConnectStatus` 未动——它的发布已确定发生在 CAS 成功之后，
+  同值 release store 不会让一个已被撤回的槽位复活；「必须先确认再构造」这一条因此是**次序要求**，
+  不能把 CAS 挪到构造之后。残留窗口：CAS 成功后到 `AddConnect` 返回之间若抛异常（池分配 `std::bad_alloc`、
+  连接表插入），仍会留下一个停在 `Connected` 的槽位，与修前同形，但已不在正常时序里，且需异常注入才可复现。
 - **内存序：`std::atomic_ref` 取代 `volatile` + 手写屏障**（2026-09-28 改动，**取代**归档 `Q.23` 的裁定；原裁定原文与
   登记背景仍在归档里，此处不重写它，只声明其结论已被本次改动覆盖）。`SingleShmHeader` 的全部字段访问统一走
   `LoadStatus` / `StoreStatus` / `LoadMappedField` / `StoreMappedField` 四个静态入口，读一律 `acquire`、写一律 `release`：
@@ -275,6 +288,16 @@
 - `RevokeUnconfirmedAccept_LeavesAConfirmedChannelAlone`
   - 输入：连接号 1、状态 `Connected`（模拟回收路径碰到一条已确认的连接）。
   - 输出：返 `false`，槽位头状态仍是 `Connected`。
+- `ConfirmAcceptedConnectionPublishesConnectedOnlyFromAccepted`（2026-09-28 新增）
+  - 输入：栈上零初始化的 `SingleShmHeader`，状态置为 `Accepted`，连调两次。
+  - 输出：第一次 `true` 且状态为 `Connected`；第二次 `false`，状态**仍停在 `Connected`**（CAS 只在第一次成功）。
+- `ConfirmAcceptedConnectionLeavesARevokedChannelUntouched`（2026-09-28 新增）
+  - 输入：状态置为 `DisConnected` 后调用一次；再置为 `UnConnected` 后调用一次。
+  - 输出：两次都返 `false`，状态各自保持原值——撤回（`DisConnected`）与清头（`UnConnected`）都不会被这一笔写复活。
+  - 与上一条的分工：上一条钉正向发布（`Accepted → Connected` 且只成功一次），本条钉失败侧**不改写槽位头**，
+    即第四节「两侧争同一个字、失败的那侧原地不动」这半句。
+  - 两条都是纯状态机用例（栈上自造头、无 fixture、无共享内存）：`ShmClient::CheckConnectResult` 那处调用点
+    仍没有用例，见第六节末条。
 
 此外**没有 `TEST` 名字的两条编译期断言**（同文件、四档构建均跑，写在文件顶部）：
 
@@ -316,13 +339,14 @@
     与一份 `connectCount_`，累积 `maxConnectSize_ - 1` 次后服务端开始拒绝一切连接——这正是本条先前记的漏洞。
   - **映射面那另一半已消除**：客户端 `Init()` 不再 `ftruncate`（改为 `fstat` 校验既有对象的大小），
     见 `docs/shm-shared-object-lifecycle.md` 第四节。
-- **对端晚于 5 秒确认时会留下一条「孤儿槽位」**（2026-09-28，未修、无用例）：客户端的确认是一次
-  **盲写**（`ShmBuffer` 构造函数里的 `SetConnectStatus(Connected)`，不是 CAS），而回收路径里的一次 CAS 并不能
-  覆盖它。若客户端在服务端撤回之后才走到构造这一步，槽位头会停在 `Connected`（服务端那一侧已无连接对象），
-  于是它既不会被服务端复用、也不会被回收路径再次看到；反向的落序（撤回的清头落在盲写之后）则让客户端
-  自认已连上、而通道因头是 `UnConnected` 静默吞掉每一次 `Write`（返 0）。两者都要「对端卡住 5 秒以上」才出现，
-  四档单测与冒烟均未复现。**干净的修法是客户端把确认也改成 CAS**（`Accepted → Connected` 失败即视为被撤回、
-  走既有的 1 秒重试），属接口两侧的时序改动，留待裁定。
+- **「孤儿槽位」已修**（2026-09-28）：原缺陷的特征是客户端的确认与服务端的撤回**各自写**同一个状态字而可能
+  后写者胜——客户端可以晚于 5 秒把槽位头写成 `Connected`，而服务端那侧已无连接对象，于是该槽位既不被复用、
+  又不被回收路径看到（服务端侧永久少一个槽位）；反序则让客户端自认已连上而通道静默吞掉每次 `Write`（返 0）。
+  修法是让客户端也走 CAS（`Accepted → Connected`，失败即重试），两侧由同一次仲裁定胜负，见第四节。
+  残留：CAS 成功后到 `AddConnect` 返回之间若抛异常（池分配 `std::bad_alloc`、连接表插入），仍会留下同形的槽位；
+  该窗口需异常注入才可复现，**无用例**。
+  **调用点仍无用例**：被钉住的只有状态机本身（`ShmBufferTest` 两条，见第五节），
+  `ShmClient::CheckConnectResult` 里那处调用没有对应用例——与下面「拒绝分支的调用点没有用例」同一情形。
 - **首轮创建—打戳之间存在窄窗**（2026-09-28）：服务端 `Init()` 先 `memset` 整个映射（此刻 `MappingMagic` 为 0）、
   再打戳。若客户端恰好在这一瞬间走到复用校验，会读到未打戳的头并把对象判为「外来布局」而拒绝；重试即可恢复。
   窗口长度是服务端 `memset` 整段映射的耗时（连接数越大越长），单进程冒烟与四档单测均未复现。

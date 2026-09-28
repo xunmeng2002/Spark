@@ -22,6 +22,12 @@ struct SingleShmHeader
         std::atomic_ref<ConnectStatusType>(header->Status).store(status, std::memory_order_release);
     }
     static std::atomic_ref<ConnectStatusType> StatusReference(SingleShmHeader* header) { return std::atomic_ref<ConnectStatusType>(header->Status); }
+    static bool ConfirmAcceptedConnection(SingleShmHeader* channelHeader)
+    {
+        ConnectStatusType expectedStatus = ConnectStatusType::Accepted;
+        return StatusReference(channelHeader)
+            .compare_exchange_strong(expectedStatus, ConnectStatusType::Connected, std::memory_order_acq_rel, std::memory_order_acquire);
+    }
     static size_t LoadMappedField(size_t& mappedField) { return std::atomic_ref<size_t>(mappedField).load(std::memory_order_acquire); }
     static void StoreMappedField(size_t& mappedField, size_t value) { std::atomic_ref<size_t>(mappedField).store(value, std::memory_order_release); }
     static bool IsMappingLayoutCompatible(SingleShmHeader* header)

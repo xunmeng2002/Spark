@@ -116,10 +116,17 @@ void ShmClient::CheckConnectResult()
             const auto index = SingleShmHeader::LoadMappedField(commonShmHeader_->DownWriteCount);
             if (ShmBuffer<ShmBufferSize>::IsConnectionIndexWithinMapping(index, maxConnectSize_))
             {
-                shmConnect_ = ShmConnect<ShmBufferSize>::Allocate(GetSessionId(), address_.c_str(), static_cast<int>(index), serverType_, shmAddr_,
-                                                                  ConnectStatusType::Connected, maxConnectSize_);
-                AddConnect(shmConnect_);
-                connected_ = true;
+                if (SingleShmHeader::ConfirmAcceptedConnection(commonShmHeader_ + index))
+                {
+                    shmConnect_ = ShmConnect<ShmBufferSize>::Allocate(GetSessionId(), address_.c_str(), static_cast<int>(index), serverType_,
+                                                                      shmAddr_, ConnectStatusType::Connected, maxConnectSize_);
+                    AddConnect(shmConnect_);
+                    connected_ = true;
+                }
+                else
+                {
+                    WriteLog(LogLevel::Warning, "Confirm Connect Revoked. Index:%zu, Address:%s", index, address_.c_str());
+                }
             }
             else
             {
