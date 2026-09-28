@@ -184,9 +184,11 @@
     把 `Connected` 置成 `DisConnected`（走的是 `MarkDisconnectedAndReportWhetherLastHolder` 里那次 CAS，
     因该调用前是 `Connected` 而返 false，故**不清头**，同样把钥匙交回服务端）。
   - 失败只记一条 `Confirm Connect Setup Failed.` 的错误日志，`connected_` 保持 false，随后由既有的 1 秒重试再来一轮。
-  - 残留（无用例、需异常注入）：`ObjectPool::Allocate` 是「先弹空闲块、后放置构造且无异常回滚」
-    （`ObjectPool.h:51-58`），故上面第一条路里抛出的那一刻，那个池块已泄漏出空闲链——槽位这一侧由本笔兜住，
-    池块那一侧没有；`AddConnect` 在连接表插入**之后**、订阅者回调里抛时，清理会补发一次 `OnDisConnect`
+  - **池块那一侧也已补齐**（2026-09-29 修）：`ObjectPool::Allocate` 原先「先弹空闲块、后放置构造且无异常回滚」
+    （`ObjectPool.h:51-58`），故上面第一条路里抛出的那一刻，那个池块会泄漏出空闲链，槽位那笔撤回只兜住槽位一侧。
+    现构造包在 `try` 里，抛出时把节点推回线程本地空闲链再原样重抛，「弹出没成功就当作没弹过」——
+    细节见 `docs/object-pool-allocation-and-return.md` 第二、三节。至此这条路上**槽位与池块两侧都不再漏**。
+  - 残留（无用例、需异常注入）：`AddConnect` 在连接表插入**之后**、订阅者回调里抛时，清理会补发一次 `OnDisConnect`
     （回调不抛异常是全仓既有假设，`IoBase` 的另外两处回调同样未加保护）。
 - **三处状态迁移收敛成同一个具名机制**（2026-09-28）：槽位头上的条件置换原先在三处各写一遍
   `compare_exchange_strong`（`RevokeUnconfirmedAccept`、`ConfirmAcceptedConnection`、本批新增的撤回），
@@ -259,6 +261,9 @@
     `std::optional<RingView<Size>>` 成员**——零分配，且构造路径与现状逐指令相同；堆指针不占优，
     且另有一条与性能无关的反对理由：`ObjectPool::Allocate` 先弹空闲块、后放置构造且**无异常回滚**
     （`ObjectPool.h:51-58`），构造函数里一旦 `new` 抛 `std::bad_alloc`，该块即泄漏出空闲链。
+    （**2026-09-29 追记**：这条附加理由的前提已不成立——`ObjectPool::Allocate` 现已补上异常回滚，
+    构造抛出时把节点推回空闲链，见 `docs/object-pool-allocation-and-return.md`；上面那 +19～24 条
+    与「视图有效性单点」两条理由不受影响，故结论不变，仅此一条不再作为反对依据。）
     尺寸：视图 24 字节，两个指针成员 +16、两个 `optional` 成员 +64；`ShmBuffer` 是进程内的池对象，
     三者都不动映射布局与 ABI。最后一条限定：调用点**跨 TU** 时内联是否仍成立未测。
 
@@ -394,8 +399,8 @@
   见第四节。**调用点已有用例**：`ShmClientConfirmTest` 两条（见第五节）走的是真实的双端协商，
   正向与「撤回后不确认并重试」两侧都钉住了，后者经实测在旧代码下必失败。
   残留只剩异常注入那一路——`Allocate` / `AddConnect` 抛出的那一刻，槽位这一侧已由本笔兜住，
-  但 `ObjectPool::Allocate` 那个已弹出空闲链、放置构造又失败的池块仍会泄漏（第四节末），
-  以及清理时会补发一次 `OnDisConnect`；两条都需要给这两处开注入缝才可复现，**无用例**。
+  池块那一侧也已由 2026-09-29 的 `ObjectPool::Allocate` 异常回滚补齐（第四节末），
+  尚余清理时会补发一次 `OnDisConnect`；这一条需要给 `AddConnect` 开注入缝才可复现，**无用例**。
 - **首轮创建—打戳之间存在窄窗**（2026-09-28）：服务端 `Init()` 先 `memset` 整个映射（此刻 `MappingMagic` 为 0）、
   再打戳。若客户端恰好在这一瞬间走到复用校验，会读到未打戳的头并把对象判为「外来布局」而拒绝；重试即可恢复。
   窗口长度是服务端 `memset` 整段映射的耗时（连接数越大越长），单进程冒烟与四档单测均未复现。

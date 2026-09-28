@@ -48,12 +48,20 @@ public:
             RefillThreadLocalFreeList();
         }
 
-        FreeNode* node = threadLocalCache_.FreeListHead;
+        FreeNode* const node = threadLocalCache_.FreeListHead;
         threadLocalCache_.FreeListHead = node->Next;
         --threadLocalCache_.FreeNodeCount;
 
         T* obj = reinterpret_cast<T*>(node);
-        new (obj) T(std::forward<Args>(args)...);
+        try
+        {
+            new (obj) T(std::forward<Args>(args)...);
+        }
+        catch (...)
+        {
+            ReturnNodeToThreadLocalFreeList(node);
+            throw;
+        }
 #ifndef NDEBUG
         RegisterAllocatedItem(obj);
 #endif
@@ -64,7 +72,15 @@ public:
     std::shared_ptr<T> AllocateShared(Args&&... args)
     {
         T* obj = Allocate(std::forward<Args>(args)...);
-        return std::shared_ptr<T>(obj, [](T* ptr) { ObjectPool<T>::GetInstance().Deallocate(ptr); });
+        try
+        {
+            return std::shared_ptr<T>(obj, [](T* ptr) { ObjectPool<T>::GetInstance().Deallocate(ptr); });
+        }
+        catch (...)
+        {
+            Deallocate(obj);
+            throw;
+        }
     }
 
     void Deallocate(T* item)
@@ -76,15 +92,7 @@ public:
         AssertAndUnregisterOwnedItem(item);
 #endif
         item->~T();
-        FreeNode* node = reinterpret_cast<FreeNode*>(item);
-        node->Next = threadLocalCache_.FreeListHead;
-        threadLocalCache_.FreeListHead = node;
-        ++threadLocalCache_.FreeNodeCount;
-
-        if (threadLocalCache_.FreeNodeCount > blockUnitNum_)
-        {
-            ReturnExcessThreadLocalNodesToSharedList();
-        }
+        ReturnNodeToThreadLocalFreeList(reinterpret_cast<FreeNode*>(item));
     }
 
 private:
@@ -208,6 +216,18 @@ private:
         batchTail->Next = nullptr;
         threadLocalCache_.FreeListHead = batchHead;
         threadLocalCache_.FreeNodeCount = batchCount;
+    }
+
+    void ReturnNodeToThreadLocalFreeList(FreeNode* node)
+    {
+        node->Next = threadLocalCache_.FreeListHead;
+        threadLocalCache_.FreeListHead = node;
+        ++threadLocalCache_.FreeNodeCount;
+
+        if (threadLocalCache_.FreeNodeCount > blockUnitNum_)
+        {
+            ReturnExcessThreadLocalNodesToSharedList();
+        }
     }
 
     // 本地链积压超过一块时调用：整批交回共享链，使线程本地缓存的占用有上界

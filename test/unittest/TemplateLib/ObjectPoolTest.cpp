@@ -69,6 +69,57 @@ TEST(ObjectPoolTest, Allocate_WithArgs)
     ObjectPool<PoolPoint>::GetInstance().Deallocate(obj);
 }
 
+TEST(ObjectPoolTest, Allocate_ReturnsTheSlotToTheFreeListWhenConstructionThrows)
+{
+    struct ThrowingType
+    {
+        explicit ThrowingType(bool shouldRefuseConstruction)
+        {
+            if (shouldRefuseConstruction)
+            {
+                throw std::runtime_error("construction refused by test");
+            }
+        }
+
+        long long value = 0;
+    };
+
+    ObjectPool<ThrowingType>& pool = ObjectPool<ThrowingType>::GetInstance();
+    pool.SetBlockUnitNum(4);
+
+    std::vector<ThrowingType*> slots;
+    for (int i = 0; i < 4; ++i)
+    {
+        slots.push_back(pool.Allocate(false));
+    }
+    for (ThrowingType* slot : slots)
+    {
+        pool.Deallocate(slot);
+    }
+    std::sort(slots.begin(), slots.end());
+
+    for (int i = 0; i < 3; ++i)
+    {
+        EXPECT_THROW(pool.Allocate(true), std::runtime_error);
+    }
+
+    std::vector<ThrowingType*> recycledSlots;
+    for (int i = 0; i < 4; ++i)
+    {
+        ThrowingType* slot = pool.Allocate(false);
+        ASSERT_NE(slot, nullptr);
+        recycledSlots.push_back(slot);
+    }
+    std::sort(recycledSlots.begin(), recycledSlots.end());
+
+    EXPECT_EQ(recycledSlots, slots);
+
+    for (ThrowingType* slot : recycledSlots)
+    {
+        pool.Deallocate(slot);
+    }
+}
+
 // ---------- Allocate / Deallocate 循环 ----------
 
 TEST(ObjectPoolTest, AllocateAndDeallocate_Recycles)

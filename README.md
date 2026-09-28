@@ -358,7 +358,7 @@ int main(int argc, const char* argv[])
 | | `EncodeTest` | GBK/UTF-8/Unicode 互转 |
 | **TemplateLib** | `LinearBufferTest` | 定长缓冲区读写、紧凑与空间重用 |
 | | `LockFreeQueueTest` | 无锁队列入队出队 |
-| | `ObjectPoolTest` | 对象池分配、复用 |
+| | `ObjectPoolTest` | 对象池分配、复用、构造抛出的回退、跨线程与整批搬运 |
 | | `ShmBufferTest` | 共享内存缓冲 |
 | | `SpscRingBufferTest` | 环形缓冲区读写、绕回与边界 |
 | | `ThreadSafeListTest` | 线程安全增删遍历 |
