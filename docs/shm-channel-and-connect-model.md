@@ -175,7 +175,7 @@
 - **四个计数器是单调累计索引，取模只发生在寻址那一刻**（2026-09-28 改动，方案取自 `SpscRingBuffer` 的 Mask 写法）：
   - `UpWriteCount` / `UpReadCount` / `DownWriteCount` / `DownReadCount` **只增不减**，不再被夹在 `[0, Size]` 内。
     可读字节 = `writeIndex - readIndex`；可写字节 = `Size - (writeIndex - readIndex)`；通道内位置 = `index & Mask`
-    （`Mask = Size - 1`）。故 `Size` 必须是 2 的幂，由 `ShmBuffer` 的构造期 `static_assert` 钉住。
+    （`Mask = Size - 1`）。故 `Size` 必须是 2 的幂，由 `static_assert` 钉住。
   - 无符号差值在回绕点上仍然正确：`Size` 是 2 的幂、真实未读字节数恒小于 `Size`，故 `size_t` 走完一整圈（2⁶⁴）时
     `writeIndex - readIndex` 与 `Size - (writeIndex - readIndex)` 都仍等于真实值；计数器本身不需要取模或归一化。
   - 单写单读的分工（本节第 1 条）未变，故差值没有撕裂窗口：每个计数器只有一端写、另一端只读。
@@ -186,6 +186,24 @@
     错误布局解释同一段内存）就在 Debug 下当场命中；单调方案下 `size_t` 计数取任何值都「合法」，没有可断言的界。
     替代品是复制助手里的 `assert(length <= Size)`，它只保证**单次搬运**不超过一个通道，**对计数本身的腐蚀不再有任何检查**。
     这是本方案唯一的净损失，已记入 `PROGRESS.md` 待议。
+- **这套算术只存在于一处：`RingView<Size>`（2026-09-28 抽取）**。上面那条 Mask 方案原本在两处各写一遍——`SpscRingBuffer`
+  自己一份、`ShmBuffer` 一份（后者的 `CountReadableBytes` / `CountWritableBytes` / `CopyIntoChannel` / `CopyOutOfChannel` / `Mask`
+  与前者逐行同构），违反 Harness §5。故把「存储 + 一对单调索引 + 掩码算术」抽成 `include/Spark/TemplateLib/Buffer/RingView.h`：
+  - `RingView<Size>` 是**视图**，不拥有任何存储：构造只接三个外部量——`char* storage`、`size_t& writeIndex`、`size_t& readIndex`
+    （引用成员，故对象名 `View` 名副其实）。索引读写一律走 `std::atomic_ref<size_t>`，读 `acquire`、写 `release`
+    （`is_always_lock_free` 由类内 `static_assert` 钉住）。它**不提供任何重置入口**：清零一律由持有者自己决定，
+    因为「清四个计数器」在 `ShmBuffer` 里是带发布顺序要求的动作（见上一条 `ResetChannelHeader` 的次序约束），
+    环本身无权替调用方决定用哪种内存序。
+  - `SpscRingBuffer<Size>` 保留原有的值语义（自己持有 `alignas(64)` 的存储与一对索引）与全部公开签名，内部改为持一个
+    自引用的 `RingView` 并逐方法委托；`ResetWhenIdle()` 仍在它自己这里做（relaxed 双清，前提是调用方保证静止）。
+    代价与收益如实记：索引成员由 `std::atomic<size_t>` 变为 `size_t`（对外不可见，尺寸/对齐不变），**本端索引的读取
+    由 `relaxed` 升为 `acquire`**——这是「统一走一套内存序」的直接后果，在 x86-64（本项目四档的目标）与原来编译成同一条
+    `mov`，仅在弱序架构上多一次屏障；`SpscRingBuffer` 既无生产调用者（除聚合头 `TemplateLib.h` 外只有自己的用例），
+    这一升格也无调用点受影响。
+  - `ShmBuffer<Size>` 的两个方向各对应一个视图，且**不缓存视图对象**：`UpRing()` / `DownRing()` 每次按需构造
+    （三个字长的句柄，内联后无痕），因此「未 Attach」时不必存在一个悬空视图，类布局与 `sizeof` 一个字都没变。
+    四个搬运入口（`UpWrite` / `UpRead` / `DownWrite` / `DownRead`）现在是「先过一次状态闸门、再交给视图」的一行调用，
+    `Status == Connected` 这个闸门由此收敛为唯一一个具名谓词 `IsChannelConnected()`（原先它写在两个搬运助手内部、各一份）。
 
 ## 五、相关测试与输入输出
 

@@ -1,11 +1,10 @@
 #pragma once
+#include <Spark/TemplateLib/Buffer/RingView.h>
 #include <Spark/Types.h>
 
-#include <algorithm>
 #include <atomic>
 #include <cassert>
 #include <cstddef>
-#include <cstring>
 
 namespace Spark
 {
@@ -186,103 +185,25 @@ public:
     }
 
 private:
-    static constexpr size_t Mask = Size - 1;
-
     static constexpr bool IsValidConnectionIndex(int connectionIndex, unsigned connectionCount)
     {
         return IsConnectionIndexWithinMapping(static_cast<size_t>(connectionIndex), connectionCount);
     }
     bool IsAttached() const { return shmHeader_ != nullptr; }
+    bool IsChannelConnected() const { return SingleShmHeader::LoadStatus(shmHeader_) == ConnectStatusType::Connected; }
 
-    size_t GetUpWriteBufferSize() const
-    {
-        return CountWritableBytes(SingleShmHeader::LoadMappedField(shmHeader_->UpWriteCount),
-                                  SingleShmHeader::LoadMappedField(shmHeader_->UpReadCount));
-    }
-    size_t GetUpReadBufferSize() const
-    {
-        return CountReadableBytes(SingleShmHeader::LoadMappedField(shmHeader_->UpWriteCount),
-                                  SingleShmHeader::LoadMappedField(shmHeader_->UpReadCount));
-    }
-    size_t GetDownWriteBufferSize() const
-    {
-        return CountWritableBytes(SingleShmHeader::LoadMappedField(shmHeader_->DownWriteCount),
-                                  SingleShmHeader::LoadMappedField(shmHeader_->DownReadCount));
-    }
-    size_t GetDownReadBufferSize() const
-    {
-        return CountReadableBytes(SingleShmHeader::LoadMappedField(shmHeader_->DownWriteCount),
-                                  SingleShmHeader::LoadMappedField(shmHeader_->DownReadCount));
-    }
+    RingView<Size> UpRing() const { return RingView<Size>(upBuffer_, shmHeader_->UpWriteCount, shmHeader_->UpReadCount); }
+    RingView<Size> DownRing() const { return RingView<Size>(downBuffer_, shmHeader_->DownWriteCount, shmHeader_->DownReadCount); }
 
-    static size_t CountWritableBytes(size_t writeIndex, size_t readIndex) { return Size - (writeIndex - readIndex); }
-    static size_t CountReadableBytes(size_t writeIndex, size_t readIndex) { return writeIndex - readIndex; }
+    size_t GetUpWriteBufferSize() const { return UpRing().GetWriteBufferSize(); }
+    size_t GetUpReadBufferSize() const { return UpRing().GetReadBufferSize(); }
+    size_t GetDownWriteBufferSize() const { return DownRing().GetWriteBufferSize(); }
+    size_t GetDownReadBufferSize() const { return DownRing().GetReadBufferSize(); }
 
-    size_t UpWrite(const char* source, size_t len)
-    {
-        return WriteIntoChannel(upBuffer_, shmHeader_->UpWriteCount, shmHeader_->UpReadCount, source, len);
-    }
-    size_t UpRead(char* destination, size_t len)
-    {
-        return ReadFromChannel(upBuffer_, shmHeader_->UpWriteCount, shmHeader_->UpReadCount, destination, len);
-    }
-    size_t DownWrite(const char* source, size_t len)
-    {
-        return WriteIntoChannel(downBuffer_, shmHeader_->DownWriteCount, shmHeader_->DownReadCount, source, len);
-    }
-    size_t DownRead(char* destination, size_t len)
-    {
-        return ReadFromChannel(downBuffer_, shmHeader_->DownWriteCount, shmHeader_->DownReadCount, destination, len);
-    }
-
-    size_t WriteIntoChannel(char* channelBuffer, size_t& writeCount, size_t& readCount, const char* source, size_t len)
-    {
-        if (SingleShmHeader::LoadStatus(shmHeader_) != ConnectStatusType::Connected)
-            return 0;
-        const size_t writeIndex = SingleShmHeader::LoadMappedField(writeCount);
-        const size_t readIndex = SingleShmHeader::LoadMappedField(readCount);
-        const size_t copiedLength = (std::min)(len, CountWritableBytes(writeIndex, readIndex));
-        if (copiedLength == 0)
-            return 0;
-        CopyIntoChannel(channelBuffer, writeIndex, source, copiedLength);
-        SingleShmHeader::StoreMappedField(writeCount, writeIndex + copiedLength);
-        return copiedLength;
-    }
-    size_t ReadFromChannel(char* channelBuffer, size_t& writeCount, size_t& readCount, char* destination, size_t len)
-    {
-        if (SingleShmHeader::LoadStatus(shmHeader_) != ConnectStatusType::Connected)
-            return 0;
-        const size_t writeIndex = SingleShmHeader::LoadMappedField(writeCount);
-        const size_t readIndex = SingleShmHeader::LoadMappedField(readCount);
-        const size_t copiedLength = (std::min)(len, CountReadableBytes(writeIndex, readIndex));
-        if (copiedLength == 0)
-            return 0;
-        CopyOutOfChannel(channelBuffer, readIndex, destination, copiedLength);
-        SingleShmHeader::StoreMappedField(readCount, readIndex + copiedLength);
-        return copiedLength;
-    }
-    static void CopyIntoChannel(char* channelBuffer, size_t writeIndex, const char* source, size_t length)
-    {
-        assert(length <= Size);
-        const size_t writePosition = writeIndex & Mask;
-        const size_t headLength = (std::min)(length, Size - writePosition);
-        std::memcpy(channelBuffer + writePosition, source, headLength);
-        if (headLength < length)
-        {
-            std::memcpy(channelBuffer, source + headLength, length - headLength);
-        }
-    }
-    static void CopyOutOfChannel(char* channelBuffer, size_t readIndex, char* destination, size_t length)
-    {
-        assert(length <= Size);
-        const size_t readPosition = readIndex & Mask;
-        const size_t headLength = (std::min)(length, Size - readPosition);
-        std::memcpy(destination, channelBuffer + readPosition, headLength);
-        if (headLength < length)
-        {
-            std::memcpy(destination + headLength, channelBuffer, length - headLength);
-        }
-    }
+    size_t UpWrite(const char* source, size_t len) { return IsChannelConnected() ? UpRing().Write(source, len) : 0; }
+    size_t UpRead(char* destination, size_t len) { return IsChannelConnected() ? UpRing().Read(destination, len) : 0; }
+    size_t DownWrite(const char* source, size_t len) { return IsChannelConnected() ? DownRing().Write(source, len) : 0; }
+    size_t DownRead(char* destination, size_t len) { return IsChannelConnected() ? DownRing().Read(destination, len) : 0; }
 
     SingleShmHeader* shmHeader_ = nullptr;
     ServerTypeType serverType_ = ServerTypeType::Client;
