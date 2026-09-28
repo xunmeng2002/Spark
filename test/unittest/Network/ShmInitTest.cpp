@@ -314,3 +314,62 @@ TEST(ShmConnectLifecycleTest, ReclaimsConnectWhosePeerNeverConfirmedAndResetsThe
     EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, ControlHeaderIndex), ConnectStatusType::UnConnected);
     EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::UnConnected);
 }
+
+TEST(ShmClientConfirmTest, ConfirmsAcceptAndPublishesConnected)
+{
+    const auto shmObjectName = MakeUniqueShmObjectName("SparkShmUnitTestClientConfirm");
+    const auto shmAddress = ToShmAddress(shmObjectName, "3");
+    const auto server = CreateShmServer(shmAddress);
+    ASSERT_NE(server, nullptr);
+    ASSERT_TRUE(server->Init());
+
+    const auto client = CreateShmClient(shmAddress);
+    ASSERT_NE(client, nullptr);
+    ASSERT_TRUE(client->Init());
+    ConnectEventProbe clientProbe;
+    client->Subscribe(&clientProbe);
+
+    client->HandleIoEvent();
+    EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, ControlHeaderIndex), ConnectStatusType::Connecting);
+
+    server->HandleIoEvent();
+    EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::Accepted);
+
+    client->HandleIoEvent();
+    EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::Connected);
+    EXPECT_EQ(clientProbe.ConnectCount, 1);
+    EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, ControlHeaderIndex), ConnectStatusType::UnConnected);
+}
+
+TEST(ShmClientConfirmTest, LeavesRevokedAcceptUnconfirmedAndRetries)
+{
+    const auto shmObjectName = MakeUniqueShmObjectName("SparkShmUnitTestClientConfirmRevoked");
+    const auto shmAddress = ToShmAddress(shmObjectName, "3");
+    const auto server = CreateShmServer(shmAddress);
+    ASSERT_NE(server, nullptr);
+    ASSERT_TRUE(server->Init());
+    ConnectEventProbe serverProbe;
+    server->Subscribe(&serverProbe);
+
+    const auto client = CreateShmClient(shmAddress);
+    ASSERT_NE(client, nullptr);
+    ASSERT_TRUE(client->Init());
+    ConnectEventProbe clientProbe;
+    client->Subscribe(&clientProbe);
+
+    client->HandleIoEvent();
+    server->HandleIoEvent();
+    ASSERT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::Accepted);
+    ASSERT_TRUE(WriteShmHeaderStatus(shmObjectName, FirstChannelIndex, ConnectStatusType::DisConnected));
+
+    client->HandleIoEvent();
+    EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::DisConnected);
+    EXPECT_EQ(clientProbe.ConnectCount, 0);
+
+    client->HandleIoEvent();
+    EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, ControlHeaderIndex), ConnectStatusType::Connecting);
+
+    DriveIoEventsUntil(*server, [&serverProbe] { return serverProbe.DisConnectCount > 0; }, ReclaimDriveLimit);
+    EXPECT_EQ(serverProbe.DisConnectCount, 1);
+    EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::UnConnected);
+}

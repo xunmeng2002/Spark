@@ -22,11 +22,17 @@ struct SingleShmHeader
         std::atomic_ref<ConnectStatusType>(header->Status).store(status, std::memory_order_release);
     }
     static std::atomic_ref<ConnectStatusType> StatusReference(SingleShmHeader* header) { return std::atomic_ref<ConnectStatusType>(header->Status); }
+    static bool ChangeStatusIfEqualTo(SingleShmHeader* header, ConnectStatusType expectedStatus, ConnectStatusType targetStatus)
+    {
+        return StatusReference(header).compare_exchange_strong(expectedStatus, targetStatus, std::memory_order_acq_rel, std::memory_order_acquire);
+    }
     static bool ConfirmAcceptedConnection(SingleShmHeader* channelHeader)
     {
-        ConnectStatusType expectedStatus = ConnectStatusType::Accepted;
-        return StatusReference(channelHeader)
-            .compare_exchange_strong(expectedStatus, ConnectStatusType::Connected, std::memory_order_acq_rel, std::memory_order_acquire);
+        return ChangeStatusIfEqualTo(channelHeader, ConnectStatusType::Accepted, ConnectStatusType::Connected);
+    }
+    static bool RevokeConfirmedConnection(SingleShmHeader* channelHeader)
+    {
+        return ChangeStatusIfEqualTo(channelHeader, ConnectStatusType::Connected, ConnectStatusType::DisConnected);
     }
     static size_t LoadMappedField(size_t& mappedField) { return std::atomic_ref<size_t>(mappedField).load(std::memory_order_acquire); }
     static void StoreMappedField(size_t& mappedField, size_t value) { std::atomic_ref<size_t>(mappedField).store(value, std::memory_order_release); }
@@ -143,9 +149,7 @@ public:
         {
             return false;
         }
-        ConnectStatusType expectedStatus = ConnectStatusType::Accepted;
-        return SingleShmHeader::StatusReference(shmHeader_)
-            .compare_exchange_strong(expectedStatus, ConnectStatusType::DisConnected, std::memory_order_acq_rel, std::memory_order_acquire);
+        return SingleShmHeader::ChangeStatusIfEqualTo(shmHeader_, ConnectStatusType::Accepted, ConnectStatusType::DisConnected);
     }
 
     size_t Write(const char* source, size_t len)

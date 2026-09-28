@@ -1,5 +1,7 @@
 #include "Shm/ShmClient.h"
 #include <Spark/Core/Logger/Logger.h>
+
+#include <exception>
 #include <string.h>
 
 using namespace std;
@@ -118,10 +120,7 @@ void ShmClient::CheckConnectResult()
             {
                 if (SingleShmHeader::ConfirmAcceptedConnection(commonShmHeader_ + index))
                 {
-                    shmConnect_ = ShmConnect<ShmBufferSize>::Allocate(GetSessionId(), address_.c_str(), static_cast<int>(index), serverType_,
-                                                                      shmAddr_, ConnectStatusType::Connected, maxConnectSize_);
-                    AddConnect(shmConnect_);
-                    connected_ = true;
+                    connected_ = EstablishConfirmedConnection(index);
                 }
                 else
                 {
@@ -155,6 +154,32 @@ void ShmClient::CheckConnectResult()
         WriteLog(LogLevel::Info, "Sem Lock Failed. Sleep 10ms\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+}
+bool ShmClient::EstablishConfirmedConnection(size_t connectionIndex)
+{
+    ShmConnect<ShmBufferSize>* confirmedConnection = nullptr;
+    try
+    {
+        confirmedConnection = ShmConnect<ShmBufferSize>::Allocate(GetSessionId(), address_.c_str(), static_cast<int>(connectionIndex), serverType_,
+                                                                  shmAddr_, ConnectStatusType::Connected, maxConnectSize_);
+        AddConnect(confirmedConnection);
+    }
+    catch (const std::exception& connectionSetupFailure)
+    {
+        if (confirmedConnection != nullptr)
+        {
+            RemoveConnect(confirmedConnection);
+        }
+        else
+        {
+            SingleShmHeader::RevokeConfirmedConnection(commonShmHeader_ + connectionIndex);
+        }
+        WriteLog(LogLevel::Error, "Confirm Connect Setup Failed. Index:%zu, Address:%s, Reason:%s", connectionIndex, address_.c_str(),
+                 connectionSetupFailure.what());
+        return false;
+    }
+    shmConnect_ = confirmedConnection;
+    return true;
 }
 void ShmClient::RemoveConnect(Connect* connect)
 {

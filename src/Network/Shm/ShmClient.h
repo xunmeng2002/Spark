@@ -19,6 +19,7 @@ protected:
 
     void SendConnect();
     void CheckConnectResult();
+    bool EstablishConfirmedConnection(size_t connectionIndex);
     virtual void RemoveConnect(Connect* connect) override;
 
     bool connected_;

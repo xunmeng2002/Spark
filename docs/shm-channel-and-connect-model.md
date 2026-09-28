@@ -171,8 +171,31 @@
   （回收路径不入延迟删除，与上一条「只撤 `Accepted`」同一机制）。
   `ShmBuffer` 的构造函数签名与其中那笔 `SetConnectStatus` 未动——它的发布已确定发生在 CAS 成功之后，
   同值 release store 不会让一个已被撤回的槽位复活；「必须先确认再构造」这一条因此是**次序要求**，
-  不能把 CAS 挪到构造之后。残留窗口：CAS 成功后到 `AddConnect` 返回之间若抛异常（池分配 `std::bad_alloc`、
-  连接表插入），仍会留下一个停在 `Connected` 的槽位，与修前同形，但已不在正常时序里，且需异常注入才可复现。
+  不能把 CAS 挪到构造之后。
+- **确认之后的两笔收尾失败都要把这一笔确认撤回**（2026-09-28 修）：`ShmClient::EstablishConfirmedConnection` 把
+  「分配 + 登记」包成一个整体，任一步抛异常都不让槽位停在 `Connected`：
+  - 构造未成（`ShmConnect<Size>::Allocate` 抛，池或放置构造分配失败）→ 调
+    `SingleShmHeader::RevokeConfirmedConnection`，把槽位从 `Connected` 置回 `DisConnected`。**置成 `DisConnected` 而不是
+    `UnConnected`**：这把钥匙交回服务端——`TryReclaimConnect` 见到 `DisConnected` 即当轮入延迟删除，
+    由它那侧的 `~ShmConnect` 走「已是 `DisConnected`」→ 清头，与正常断连、回收路径共用同一段收尾；
+    `UnConnected` 则会让服务端认为「对端还在、只是还没连上」，槽位与 `connectCount_` 一起卡死。
+  - 登记未成（`AddConnect` 抛，连接表插入或订阅者回调）→ 调 `RemoveConnect` 而不是上面那笔 CAS：
+    连接表可能已插入该对象，必须一并抹掉，否则留下一个悬垂指针；这一步的 `~ShmConnect` 自己就会
+    把 `Connected` 置成 `DisConnected`（走的是 `MarkDisconnectedAndReportWhetherLastHolder` 里那次 CAS，
+    因该调用前是 `Connected` 而返 false，故**不清头**，同样把钥匙交回服务端）。
+  - 失败只记一条 `Confirm Connect Setup Failed.` 的错误日志，`connected_` 保持 false，随后由既有的 1 秒重试再来一轮。
+  - 残留（无用例、需异常注入）：`ObjectPool::Allocate` 是「先弹空闲块、后放置构造且无异常回滚」
+    （`ObjectPool.h:51-58`），故上面第一条路里抛出的那一刻，那个池块已泄漏出空闲链——槽位这一侧由本笔兜住，
+    池块那一侧没有；`AddConnect` 在连接表插入**之后**、订阅者回调里抛时，清理会补发一次 `OnDisConnect`
+    （回调不抛异常是全仓既有假设，`IoBase` 的另外两处回调同样未加保护）。
+- **三处状态迁移收敛成同一个具名机制**（2026-09-28）：槽位头上的条件置换原先在三处各写一遍
+  `compare_exchange_strong`（`RevokeUnconfirmedAccept`、`ConfirmAcceptedConnection`、本批新增的撤回），
+  现统一走 `SingleShmHeader::ChangeStatusIfEqualTo(header, expectedStatus, targetStatus)`（成功序 `acq_rel`、
+  失败序 `acquire`，与原先逐字一致），三个具名入口各自只表达「谁在什么状态下能做什么」：
+  `ConfirmAcceptedConnection`（`Accepted → Connected`）、`RevokeConfirmedConnection`（`Connected → DisConnected`）、
+  `RevokeUnconfirmedAccept`（`Accepted → DisConnected`）。**`MarkDisconnectedAndReportWhetherLastHolder` 未并入**：
+  它是「反复重试直到发现已是 `DisConnected`」的弱 CAS 循环，返回值表达的是「置位者是本次还是对端」，
+  与上面三者「够不够条件置位」是两回事，形状不同，强行合并会把两种语义压进一个函数名。
 - **内存序：`std::atomic_ref` 取代 `volatile` + 手写屏障**（2026-09-28 改动，**取代**归档 `Q.23` 的裁定；原裁定原文与
   登记背景仍在归档里，此处不重写它，只声明其结论已被本次改动覆盖）。`SingleShmHeader` 的全部字段访问统一走
   `LoadStatus` / `StoreStatus` / `LoadMappedField` / `StoreMappedField` 四个静态入口，读一律 `acquire`、写一律 `release`：
@@ -296,8 +319,12 @@
   - 输出：两次都返 `false`，状态各自保持原值——撤回（`DisConnected`）与清头（`UnConnected`）都不会被这一笔写复活。
   - 与上一条的分工：上一条钉正向发布（`Accepted → Connected` 且只成功一次），本条钉失败侧**不改写槽位头**，
     即第四节「两侧争同一个字、失败的那侧原地不动」这半句。
-  - 两条都是纯状态机用例（栈上自造头、无 fixture、无共享内存）：`ShmClient::CheckConnectResult` 那处调用点
-    仍没有用例，见第六节末条。
+  - 两条都是纯状态机用例（栈上自造头、无 fixture、无共享内存）。
+- `RevokeConfirmedConnectionOnlyTakesAConfirmedChannel`（2026-09-28 新增）
+  - 输入：状态 `Connected` 调一次；再调一次；再置 `UnConnected` 与 `Accepted` 各调一次。
+  - 输出：第一次 `true` 且状态变 `DisConnected`；第二次 `false` 且仍停在 `DisConnected`；
+    后两次都 `false` 且状态各自保持原值——**`Accepted` 不被这一笔抢走**（撤回只针对本端已发布的确认，
+    不能顺手撤掉另一轮刚被受理的槽位）。
 
 此外**没有 `TEST` 名字的两条编译期断言**（同文件、四档构建均跑，写在文件顶部）：
 
@@ -329,6 +356,26 @@
 - **这两条用例各含一次约 5 秒的真实等待**，四档单测因此各多约 10 秒。`HandshakeTimeoutSeconds` 是编译期常量，
   用例没有注入点；要换假时钟得给服务端开一个缝，按 Harness「最小改动优先」不做。
 
+客户端侧的确认（第四节的两笔 CAS 与那两笔收尾失败的回撤）由同文件的 `ShmClientConfirmTest` 两条钉住。
+这次**两端都是真的**：服务端与本端各是一个 `IoBase` 实例，各自只经 `HandleIoEvent()` 逐轮驱动，
+对端状态不再由测试改写（与上面两条的分工正在于此——那两条钉服务端侧的回收，对端必须是假的）；
+测试只在一处仍扮演对端，即「撤回已被受理的那一笔」这一步：
+
+- `ConfirmsAcceptAndPublishesConnected`
+  - 输入：建服务端与客户端两份视图（连接数 3）→ 客户端跑一轮（写控制头 `Connecting`）→ 服务端跑一轮（受理）
+    → 客户端再跑一轮（确认）。
+  - 输出：逐轮断言控制头 `Connecting`、1 号槽位头 `Accepted`、随后 1 号槽位头 **`Connected`**；
+    客户端订阅者收到 1 次 `OnConnect`（连接对象确实构造并登记了）；控制头被客户端复位为 `UnConnected`。
+- `LeavesRevokedAcceptUnconfirmedAndRetries`
+  - 输入：同上受理成功之后，把 1 号槽位头改写成 `DisConnected`（扮演「服务端已按 5 秒超时撤回」这一步）
+    → 客户端跑一轮（确认应当失败）→ 客户端再跑一轮（应当重新发起协商）→ 随后驱动服务端到回收或 8 秒截止。
+  - 输出：失败轮之后 1 号槽位头**仍是 `DisConnected`**（没有被写成 `Connected`）、客户端 `OnConnect` 为 0；
+    下一轮控制头回到 `Connecting`（说明 `hasSendConnect_` 已复位、走的是既有重试）；服务端随后 `OnDisConnect` 一次、
+    1 号槽位头回到 `UnConnected`——**槽位确实回了池**，这正是那次撤回的意义。
+  - **旧代码下必失败**（已实测复核）：把确认换回盲写重跑本条，第一条断言得到 `Connected`、`OnConnect` 得到 1、
+    控制头停在 `UnConnected`、服务端 `OnDisConnect` 始终为 0、槽位头停在 `Connected`——即「孤儿槽位」本身。
+- **两条用例的等待**：失败轮的 1 秒重试是客户端既有逻辑，四档单测因此各多约 1 秒（不是新引入的等待）。
+
 ## 六、已知未覆盖
 
 - **「两端连接数不一致」两侧都已收口**（2026-09-28）：
@@ -343,17 +390,20 @@
   后写者胜——客户端可以晚于 5 秒把槽位头写成 `Connected`，而服务端那侧已无连接对象，于是该槽位既不被复用、
   又不被回收路径看到（服务端侧永久少一个槽位）；反序则让客户端自认已连上而通道静默吞掉每次 `Write`（返 0）。
   修法是让客户端也走 CAS（`Accepted → Connected`，失败即重试），两侧由同一次仲裁定胜负，见第四节。
-  残留：CAS 成功后到 `AddConnect` 返回之间若抛异常（池分配 `std::bad_alloc`、连接表插入），仍会留下同形的槽位；
-  该窗口需异常注入才可复现，**无用例**。
-  **调用点仍无用例**：被钉住的只有状态机本身（`ShmBufferTest` 两条，见第五节），
-  `ShmClient::CheckConnectResult` 里那处调用没有对应用例——与下面「拒绝分支的调用点没有用例」同一情形。
+  **两笔收尾失败也已兜住**（同日）：分配或登记抛异常时把这一笔确认撤回（槽位回到 `DisConnected`，钥匙交回服务端），
+  见第四节。**调用点已有用例**：`ShmClientConfirmTest` 两条（见第五节）走的是真实的双端协商，
+  正向与「撤回后不确认并重试」两侧都钉住了，后者经实测在旧代码下必失败。
+  残留只剩异常注入那一路——`Allocate` / `AddConnect` 抛出的那一刻，槽位这一侧已由本笔兜住，
+  但 `ObjectPool::Allocate` 那个已弹出空闲链、放置构造又失败的池块仍会泄漏（第四节末），
+  以及清理时会补发一次 `OnDisConnect`；两条都需要给这两处开注入缝才可复现，**无用例**。
 - **首轮创建—打戳之间存在窄窗**（2026-09-28）：服务端 `Init()` 先 `memset` 整个映射（此刻 `MappingMagic` 为 0）、
   再打戳。若客户端恰好在这一瞬间走到复用校验，会读到未打戳的头并把对象判为「外来布局」而拒绝；重试即可恢复。
   窗口长度是服务端 `memset` 整段映射的耗时（连接数越大越长），单进程冒烟与四档单测均未复现。
 - **拒绝分支的调用点没有用例**：触发它需要「服务端连接数 > 客户端连接数」的两端搭配。
   **原先造不出这个局面**（客户端 `Init()` 的 `ftruncate` 会把服务端对象截短，见上一批的归档记录）；
   客户端改为 `fstat` 校验后这条障碍已消除，局面理论上可在单进程内构造（同一对象、两个 `IoBase` 实例、连接数不同），
-  但**用例仍未写**：被钉住的只是判据本身（`ShmBufferTest`），`ShmClient::CheckConnectResult` 里那处调用没有对应用例。
+  但**用例仍未写**：被钉住的只是判据本身（`ShmBufferTest`）。`ShmClientConfirmTest` 已经把「同一对象、两个 `IoBase`
+  实例」这套搭法跑通了，缺的只是让两端连接数不同这一步。
 - **`Sem UnLock Failed.` 是既有抖动**：`Sem` 的 Windows 计数上限是 1（`CreateSemaphoreA(..., 1, 1, ...)`），
   客户端的 `Send` 每写一段就 `UnLock` 一次、服务端每轮 IO 周期 `Lock` 一次，两者失衡时会多释放一次并记 Error。
   2026-09-28 的 7 轮 Shm 冒烟里出现 1 次（第 1 轮，回显照常跑完 10000 次），不在本次改动的路径上，未修。
