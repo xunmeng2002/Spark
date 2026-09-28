@@ -490,6 +490,36 @@ TEST_F(ShmTestFixture, MarkDisconnectedAndResetChannelWhenLastHolder_ResetsHeade
     EXPECT_EQ(HeaderOfSecondConnection()->UpWriteCount, 0u);
 }
 
+TEST_F(ShmTestFixture, MarkDisconnectedAndResetChannelWhenLastHolder_LeavesTheNextEpochAnEmptyChannel)
+{
+    ASSERT_EQ(client_->Write("Hello", 5), 5u);
+    char upDestination[8] = {};
+    ASSERT_EQ(server_->Read(upDestination, 5), 5u);
+    ASSERT_EQ(server_->Write("World", 5), 5u);
+    char downDestination[8] = {};
+    ASSERT_EQ(client_->Read(downDestination, 5), 5u);
+    ASSERT_EQ(header_->UpWriteCount, 5u);
+    ASSERT_EQ(header_->UpReadCount, 5u);
+    ASSERT_EQ(header_->DownWriteCount, 5u);
+    ASSERT_EQ(header_->DownReadCount, 5u);
+
+    EXPECT_FALSE(client_->MarkDisconnectedAndReportWhetherLastHolder());
+    client_->MarkDisconnectedAndResetChannelWhenLastHolder();
+
+    EXPECT_EQ(header_->Status, ConnectStatusType::UnConnected);
+    EXPECT_EQ(header_->UpWriteCount, 0u);
+    EXPECT_EQ(header_->UpReadCount, 0u);
+    EXPECT_EQ(header_->DownWriteCount, 0u);
+    EXPECT_EQ(header_->DownReadCount, 0u);
+
+    ShmBuffer<TestShmBufferSize> nextEpochClient(ServerTypeType::Client, 1, memory_.data(), ConnectStatusType::Connected, TestShmConnectCount);
+    ShmBuffer<TestShmBufferSize> nextEpochServer(ServerTypeType::Server, 1, memory_.data(), ConnectStatusType::Connected, TestShmConnectCount);
+    EXPECT_EQ(nextEpochClient.GetReadBufferSize(), 0u);
+    EXPECT_EQ(nextEpochClient.GetWriteBufferSize(), TestShmBufferSize);
+    EXPECT_EQ(nextEpochServer.GetReadBufferSize(), 0u);
+    EXPECT_EQ(nextEpochServer.GetWriteBufferSize(), TestShmBufferSize);
+}
+
 // ========== 撤回未被对端确认的受理 ==========
 
 TEST_F(ShmTestFixture, RevokeUnconfirmedAccept_ReclaimsTheChannelWhenThePeerNeverConfirmed)

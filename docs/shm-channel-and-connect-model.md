@@ -46,6 +46,7 @@
   「先 `StoreMappedField(DownWriteCount, i)`、后 `StoreStatus(Accepted)`」。客户端以 acquire 语义读到 `Accepted` 时，
   才因此保证槽位号已经随同一条 release 序列对它可见（内存序模型见第四节）。
   反过来写会让客户端读到「`Accepted` 已到、槽位号还是上一次协商的残留」，取到错误甚至越界的 i。
+  同型的次序约束还有第四节「清零必须先于 `UnConnected` 发布」（槽位复用那一侧）。
 - **连接号的两侧守卫**（2026-09-28）：`ShmBuffer` 的构造函数接收映射容量 `connectionCount`，
   在指针算术之前用 `IsValidConnectionIndex(i, connectionCount)`（要求 `1 <= i < connectionCount`）同时守住上下界，
   故守卫与指针算术同处一地（见下一段的构造期防护）。客户端手里的 i 由**对端**写入
@@ -130,6 +131,23 @@
 - 槽位回收路径：`RemoveConnect` → `Connect::Deallocate` → `ShmConnect<Size>::~ShmConnect` →
   `ShmBuffer::MarkDisconnectedAndResetChannelWhenLastHolder()`（上面的仲裁，最后一任持有者顺手 `ResetSharedHeader()`
   把该槽位头清零成 `UnConnected`）→ `ObjectPool<ShmBuffer<Size>>::Deallocate(shmBuffer_)`。
+- **清零必须先于 `UnConnected` 发布**（2026-09-28 修）：`ResetChannelHeader` 里四次计数器写入与
+  `StoreStatus(UnConnected)` 是五次独立发布，顺序固定为「先清四个计数器，最后发布 `UnConnected`」——
+  与第一节「槽位号必须先于 `Accepted` 落盘」是同一条道理，只是换到槽位复用这一侧。
+  服务端挑空闲槽位时以 acquire 读到 `UnConnected`，与清头那次 release 同步，故**接下这一槽位的新一轮协商
+  必然看到清零后的计数器**；反过来写（先发布 `UnConnected`、后清）只保证状态可见，四个计数器的零值落在发布之后，
+  新一任持有者可能读到上一纪元残留的计数。此时差值算术会给出错误答案：若 `UpWriteCount` 仍是旧值 5000
+  而 `UpReadCount` 已读到 0，可读字节算作 `0 - 5000` 回绕成约 2⁶⁴，`(std::min)(len, 可读字节)` 便等于 `len`，
+  于是把上一纪元的通道旧字节当成数据交给上层（**静默错数据，不崩溃**）。
+  该次序缺陷**早于 2026-09-28 的计数器加宽**（旧方案同样会把旧纪元字节交上去），单调方案只是让差值恒被
+  `(std::min)(len, 可读字节)` 截到 `len`，故一次可能多交出的量从「旧纪元的计数差」变成「调用方要多少给多少」
+  ——同一缺陷，后果略重。两处细节：
+  其一，清零的这几笔写发生在状态仍是 `DisConnected` 的窗口里，而 `WriteIntoChannel` / `ReadFromChannel`
+  都以 `Status == Connected` 为闸门，故**通道使用者**读不到半清的计数——受影响的只有「槽位复用」这一条路，
+  正是上面那条 release/acquire 覆盖的范围；其二，同一线程内「先清、后连」的次序由程序顺序本身保证
+  （服务端 IO 线程清头后随即受理新连接），本次修的是**跨进程**那条路径（客户端作为最后持有者清头）。
+  四次计数器存储各自的 release 语义并非必需——它们被最后一笔状态存储的 release 一并覆盖——
+  保留只是让全部共享字段走同一组访问入口。
 - **服务端协商超时也走同一条路径**（2026-09-28 起）：`ShmServer::CheckConnect` 每轮对每个 `ShmConnect` 调
   `TryReclaimConnect`——槽位头已是 `DisConnected` 即交给既有的延迟删除
   （`disConnectSessionIds_` → `DoDisConnect` → `RemoveConnect`，`connectCount_` 随之减一）；
@@ -200,6 +218,17 @@
 - `MarkDisconnectedAndResetChannelWhenLastHolder_ResetsHeaderWhenAlreadyDisconnected`
   - 输入：先写入 5 字节、再手动置位断连，随后调用一次。
   - 输出：该槽位头状态为 `UnConnected`、`UpWriteCount` 回到 0。
+- `MarkDisconnectedAndResetChannelWhenLastHolder_LeavesTheNextEpochAnEmptyChannel`（2026-09-28 新增）
+  - 输入：上行写 5 字节且被服务端读走、下行写 5 字节且被客户端读走（四个计数器此刻**都非零**），
+    再手动置位断连、随后调用一次（走到「最后一任持有者清头」这条路）。
+  - 输出：槽位头状态为 `UnConnected`，四个计数器**全部**回到 0；另以新构造的 Client 与 Server 两份视图
+    挂同一槽位，两侧的可写字节都是满额 `Size`、可读字节都是 0——上一纪元的字节对新纪元不可见。
+  - 与上一条的分工：上一条只写不读，`UpReadCount` / `DownReadCount` 在清头前本就是 0，
+    那两个断言是空转；本条先把四个计数器都推成非零，才谈得上「清干净」。
+  - **本条判据不覆盖第四节新修的存储次序**：单进程、单线程下「清计数器」与「发布 `UnConnected`」的先后
+    **不可观测**（两笔存储在本线程内按程序顺序生效，x86 的 TSO 更是如此），故用例钉的是清头后的**终态契约**；
+    次序的正确性由 release/acquire 配对（语言级内存模型）保证，不由用例保证。要让它可判别须引入
+    跨线程或跨进程的观测点，而本仓单测无多线程先例、x86 上此类用例的判别力近 0，按 Harness「最小改动优先」不做。
 - `RevokeUnconfirmedAccept_ReclaimsTheChannelWhenThePeerNeverConfirmed`
   - 输入：连接号 1、状态 `Accepted`（模拟「服务端已受理、对端从未确认」），调用两次。
   - 输出：第一次 `true` 且该槽位头状态变为 `DisConnected`；第二次 `false`（CAS 只在第一次成功），

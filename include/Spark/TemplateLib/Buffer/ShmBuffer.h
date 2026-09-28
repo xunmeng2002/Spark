@@ -36,11 +36,11 @@ struct SingleShmHeader
     }
     static void ResetChannelHeader(SingleShmHeader* header)
     {
-        StoreStatus(header, ConnectStatusType::UnConnected);
         StoreMappedField(header->UpWriteCount, 0);
         StoreMappedField(header->UpReadCount, 0);
         StoreMappedField(header->DownWriteCount, 0);
         StoreMappedField(header->DownReadCount, 0);
+        StoreStatus(header, ConnectStatusType::UnConnected);
     }
 
     ConnectStatusType Status;
