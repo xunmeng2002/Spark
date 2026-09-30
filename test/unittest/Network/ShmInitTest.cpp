@@ -52,6 +52,13 @@ std::unique_ptr<IoBase> CreateShmClient(const std::string& address)
     return std::unique_ptr<IoBase>(IoFactory::CreateIo(ServerTypeType::Client, address.c_str()));
 }
 
+#ifndef _WIN32
+std::string BuildPosixShmObjectName(const std::string& shmObjectName)
+{
+    return "/" + shmObjectName;
+}
+#endif
+
 template <typename Visitor>
 bool VisitShmMapping(const std::string& shmObjectName, size_t viewSize, Visitor&& visitor)
 {
@@ -72,7 +79,7 @@ bool VisitShmMapping(const std::string& shmObjectName, size_t viewSize, Visitor&
     CloseHandle(fileMapping);
     return true;
 #else
-    const int fileDescriptor = shm_open(shmObjectName.c_str(), O_RDWR, 0666);
+    const int fileDescriptor = shm_open(BuildPosixShmObjectName(shmObjectName).c_str(), O_RDWR, 0666);
     if (fileDescriptor < 0)
     {
         return false;

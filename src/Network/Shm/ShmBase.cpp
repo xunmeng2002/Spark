@@ -40,7 +40,11 @@ ShmBase::ShmBase(ServerTypeType serverType, const char* shmName, int milliSecond
     fileMap_ = nullptr;
 #endif // _WIN32
 
+#ifdef __linux__
+    shmName_ = "/" + address_;
+#else
     shmName_ = address_;
+#endif
     if (!StepUtility::ParseInteger(port_, maxConnectSize_))
     {
         maxConnectSize_ = 0;

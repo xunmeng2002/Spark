@@ -9,10 +9,15 @@
 地址串在 `IoFactory::CreateIo` 里按 scheme 分派（`strncmp(address, "shm", 3)` 后跳过 `"shm://"`），再经 `IoBase::IoBase` 调 `ParseAddress` 在**第一个 `:`** 处切分：
 前者进 `address_`、后者进 `port_`。`ShmBase` 构造函数随即：
 
-- `shmName_ = address_` —— 共享内存对象名与信号量名的**共同前缀**。
+- `shmName_ = address_`（Linux 侧再加一个前导 `/`）—— 共享内存对象名与信号量名的**共同前缀**。
+  `shm_open` 与 `sem_open` 都要求名字以 `/` 开头（glibc 宽容、其他实现不），而 Windows 侧的名字是
+  `CreateFileA` / `CreateFileMappingA` 认的**文件路径**，前导 `/` 在那里不合法，故两侧同址不同名：
+  `shm://TestShm:4` 在 Windows 是 `TestShm`、在 Linux 是 `/TestShm`。前缀在 `ShmBase` 构造函数的
+  派生点加一次，信号量名（`+ "SemConnect"` / `+ "Sem" + i`）随之继承，`shm_unlink` 与 `sem_unlink`
+  用的也是同一个 `shmName_`，不会出现「开一个名字、关另一个名字」。
 - 用 `StepUtility::ParseInteger(port_, maxConnectSize_)` 解析连接数，解析失败置 0；`Init()` 的第一道门禁 `IsConnectSizeAllowed()` 与它配合，把 0 拒掉。
 
-于是 `shm://TestShm:4` → `shmName_ = "TestShm"`、连接数 4、映射长度 4 × 1 MiB × 2。
+于是 `shm://TestShm:4` → `shmName_ = "TestShm"`（Linux 侧为 `"/TestShm"`）、连接数 4、映射长度 4 × 1 MiB × 2。
 **对象名不含连接数**：同一名字下改连接数不会换对象，只会撞上下面第三节的复用检查。
 
 信号量名在同一前缀上派生：连接建立计数用 `shmName_ + "SemConnect"`，第 i 号通道用 `shmName_ + "Sem" + to_string(i)`。
