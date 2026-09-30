@@ -46,12 +46,21 @@ public:
             throw std::runtime_error("Probe OnDisConnect Failure.");
         }
     }
-    void OnRecv(SessionIdType, const char*, size_t) override {}
+    void OnRecv(SessionIdType, const char*, size_t) override
+    {
+        ++RecvCount;
+        if (ThrowOnRecv)
+        {
+            throw std::runtime_error("Probe OnRecv Failure.");
+        }
+    }
 
     bool ThrowOnConnect = false;
     bool ThrowOnDisConnect = false;
+    bool ThrowOnRecv = false;
     int ConnectCount = 0;
     int DisConnectCount = 0;
+    int RecvCount = 0;
 };
 
 class ProbeIo : public IoBase
@@ -65,6 +74,7 @@ public:
     void RegisterConnect(Connect* connect) { AddConnect(connect); }
     void UnregisterConnect(Connect* connect) { RemoveConnect(connect); }
     bool HasRegisteredConnect(SessionIdType sessionId) { return GetConnect(sessionId) != nullptr; }
+    void DeliverRecv(Connect* connect, const char* data, size_t length) { NotifySubscriberRecvSafely(connect, data, length); }
 
 protected:
     void DoSend(Connect*) override {}
@@ -102,6 +112,22 @@ TEST(IoSubscriberNotificationTest, AnOnDisConnectFailureDoesNotSkipTheTeardown)
     EXPECT_EQ(subscriber.DisConnectCount, 1);
     EXPECT_FALSE(io.HasRegisteredConnect(ProbeSessionId));
     EXPECT_EQ(connect.DeallocateCount, 1);
+}
+
+TEST(IoSubscriberNotificationTest, AnOnRecvFailureIsContainedAndDoesNotSkipWhatFollows)
+{
+    ProbeIo io;
+    SubscriberNotificationProbe subscriber;
+    subscriber.ThrowOnRecv = true;
+    io.Subscribe(&subscriber);
+    ProbeConnect connect;
+
+    bool deliveredRecvReturnedToItsCaller = false;
+    io.DeliverRecv(&connect, "Spark", 5);
+    deliveredRecvReturnedToItsCaller = true;
+
+    EXPECT_EQ(subscriber.RecvCount, 1);
+    EXPECT_TRUE(deliveredRecvReturnedToItsCaller);
 }
 
 TEST(IoSubscriberNotificationTest, AnUnregisteredConnectionIsReturnedWithoutADisConnectNotification)

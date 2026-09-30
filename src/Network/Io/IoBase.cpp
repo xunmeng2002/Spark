@@ -12,21 +12,20 @@ namespace Spark::Network
 {
 namespace
 {
-using SubscriberNotification = void (IoSubscriber::*)(SessionIdType, const char*, int);
-
-void NotifySubscriberSafely(const char* notificationName, IoSubscriber* ioSubscriber, const Connect* connect, SubscriberNotification notification)
+template <typename InvokeSubscriberNotification>
+void NotifySubscriberSafely(const char* notificationName, SessionIdType sessionId, InvokeSubscriberNotification&& invokeSubscriberNotification)
 {
     try
     {
-        (ioSubscriber->*notification)(connect->SessionId, connect->RemoteAddress, connect->RemotePort);
+        invokeSubscriberNotification();
     }
     catch (const std::exception& notificationFailure)
     {
-        WriteLog(LogLevel::Error, "Subscriber %s Threw. SessionId:%lld, Reason:%s", notificationName, connect->SessionId, notificationFailure.what());
+        WriteLog(LogLevel::Error, "Subscriber %s Threw. SessionId:%lld, Reason:%s", notificationName, sessionId, notificationFailure.what());
     }
     catch (...)
     {
-        WriteLog(LogLevel::Error, "Subscriber %s Threw An Unknown Exception. SessionId:%lld", notificationName, connect->SessionId);
+        WriteLog(LogLevel::Error, "Subscriber %s Threw An Unknown Exception. SessionId:%lld", notificationName, sessionId);
     }
 }
 }
@@ -100,7 +99,8 @@ void IoBase::AddConnect(Connect* connect)
     }
     if (ioSubscriber_ != nullptr)
     {
-        NotifySubscriberSafely("OnConnect", ioSubscriber_, connect, &IoSubscriber::OnConnect);
+        NotifySubscriberSafely("OnConnect", connect->SessionId,
+                               [&] { ioSubscriber_->OnConnect(connect->SessionId, connect->RemoteAddress, connect->RemotePort); });
     }
 }
 void IoBase::RemoveConnect(Connect* connect)
@@ -114,7 +114,8 @@ void IoBase::RemoveConnect(Connect* connect)
     }
     if (wasRegistered && ioSubscriber_ != nullptr)
     {
-        NotifySubscriberSafely("OnDisConnect", ioSubscriber_, connect, &IoSubscriber::OnDisConnect);
+        NotifySubscriberSafely("OnDisConnect", connect->SessionId,
+                               [&] { ioSubscriber_->OnDisConnect(connect->SessionId, connect->RemoteAddress, connect->RemotePort); });
     }
     std::lock_guard<std::mutex> guard(connectsMutex_);
     connects_.erase(connect->SessionId);
@@ -130,6 +131,10 @@ Connect* IoBase::GetConnect(SessionIdType sessionId)
         return nullptr;
     }
     return it->second;
+}
+void IoBase::NotifySubscriberRecvSafely(const Connect* connect, const char* data, size_t length)
+{
+    NotifySubscriberSafely("OnRecv", connect->SessionId, [&] { ioSubscriber_->OnRecv(connect->SessionId, data, length); });
 }
 
 SessionIdType IoBase::GetSessionId()

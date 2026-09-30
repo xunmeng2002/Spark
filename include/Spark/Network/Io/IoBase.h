@@ -53,6 +53,8 @@ protected:
     virtual void RemoveConnect(Connect* connect);
     virtual Connect* GetConnect(SessionIdType sessionId);
 
+    void NotifySubscriberRecvSafely(const Connect* connect, const char* data, size_t length);
+
     SessionIdType GetSessionId();
 
     ServerTypeType serverType_;

@@ -6,6 +6,7 @@
 #include <chrono>
 #include <format>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <thread>
 
@@ -138,6 +139,33 @@ template <typename StopCondition>
     }
     return stopCondition();
 }
+
+class ThrowingRecvProbe : public IoSubscriber
+{
+public:
+    void OnConnect(SessionIdType sessionId, const char*, int) override
+    {
+        ++ConnectCount;
+        PeerSessionId = sessionId;
+    }
+    void OnDisConnect(SessionIdType, const char*, int) override { ++DisConnectCount; }
+    void OnRecv(SessionIdType, const char*, size_t length) override
+    {
+        ++RecvCount;
+        LastRecvLength = length;
+        if (RecvCount <= ThrowingRecvCount)
+        {
+            throw std::runtime_error("Probe OnRecv Failure.");
+        }
+    }
+
+    int ThrowingRecvCount = 0;
+    int ConnectCount = 0;
+    int DisConnectCount = 0;
+    int RecvCount = 0;
+    size_t LastRecvLength = 0;
+    SessionIdType PeerSessionId = 0;
+};
 
 constexpr const char* DriveBudgetExhaustedMessage = "驱动预算耗尽：到点停条件仍不成立，与断言的状态不符不是一回事";
 }
@@ -378,4 +406,48 @@ TEST(ShmClientConfirmTest, LeavesRevokedAcceptUnconfirmedAndRetries)
         << DriveBudgetExhaustedMessage;
     EXPECT_EQ(serverProbe.DisConnectCount, 1);
     EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::UnConnected);
+}
+
+// ============================================================
+// 订阅者收包回调的兜底：回调抛出不得穿出 IO 层，也不得吃掉这一轮之后的数据
+// 收包缓冲由 IO 层持有、仅在本次回调期间有效，故服务端无论回调成败都必须把它还给池
+// ============================================================
+
+constexpr int ThrowingRecvPayloadCount = 100;
+constexpr size_t ThrowingRecvPayloadLength = 5;
+
+TEST(ShmSubscriberRecvFailureTest, AThrowingOnRecvNeitherEscapesTheIoLoopNorStopsLaterPayloads)
+{
+    const auto shmObjectName = MakeUniqueShmObjectName("SparkShmUnitTestThrowingRecv");
+    const auto shmAddress = ToShmAddress(shmObjectName, "3");
+    const auto server = CreateShmServer(shmAddress);
+    ASSERT_NE(server, nullptr);
+    ASSERT_TRUE(server->Init());
+    ThrowingRecvProbe serverProbe;
+    serverProbe.ThrowingRecvCount = 1;
+    server->Subscribe(&serverProbe);
+
+    const auto client = CreateShmClient(shmAddress);
+    ASSERT_NE(client, nullptr);
+    ASSERT_TRUE(client->Init());
+    ThrowingRecvProbe clientProbe;
+    client->Subscribe(&clientProbe);
+
+    client->HandleIoEvent();
+    server->HandleIoEvent();
+    client->HandleIoEvent();
+    ASSERT_EQ(clientProbe.ConnectCount, 1);
+
+    for (int index = 0; index < ThrowingRecvPayloadCount; ++index)
+    {
+        Spark::LinearBuffer<BufferSize>* buffer = client->AllocateSendBuffer();
+        ASSERT_NE(buffer, nullptr);
+        ASSERT_EQ(buffer->Append("Spark", ThrowingRecvPayloadLength), ThrowingRecvPayloadLength);
+        client->Send(clientProbe.PeerSessionId, buffer);
+        server->HandleIoEvent();
+    }
+
+    EXPECT_EQ(serverProbe.RecvCount, ThrowingRecvPayloadCount);
+    EXPECT_EQ(serverProbe.LastRecvLength, ThrowingRecvPayloadLength);
+    EXPECT_EQ(serverProbe.DisConnectCount, 0);
 }

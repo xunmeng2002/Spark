@@ -221,7 +221,7 @@ void ShmBase::DoRecv(Connect* connect)
     auto data = buffer->GetWritePos();
     auto len = shmConnect->GetBuffer()->Read(data, BufferSize);
     if (ioSubscriber_ != nullptr)
-        ioSubscriber_->OnRecv(shmConnect->SessionId, data, len);
+        NotifySubscriberRecvSafely(shmConnect, data, len);
     buffer->Deallocate();
 }
 

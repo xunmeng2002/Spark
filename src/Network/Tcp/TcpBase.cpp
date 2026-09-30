@@ -191,7 +191,7 @@ void TcpBase::DoRecv(Connect* connect)
     else if (ioSubscriber_)
     {
         WriteLog(LogLevel::Ignore, "OnRecv: SessionId:%lld, Socket:%lld, RecvLen:%d", tcpConnect->SessionId, tcpConnect->SocketId, len);
-        ioSubscriber_->OnRecv(tcpConnect->SessionId, data, static_cast<size_t>(len));
+        NotifySubscriberRecvSafely(tcpConnect, data, static_cast<size_t>(len));
         buffer->Deallocate();
     }
     else
