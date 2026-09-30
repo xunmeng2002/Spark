@@ -73,7 +73,7 @@ Spark/
 ├── test/                       # 测试程序
 │   ├── unittest/               # GTest 单元测试（主要测试入口）
 │   │   ├── Core/               # Core 模块单元测试（9 文件）
-│   │   ├── Network/            # Network 模块单元测试（4 文件）
+│   │   ├── Network/            # Network 模块单元测试（8 文件）
 │   │   ├── Serialization/      # Serialization 模块单元测试（4 文件）
 │   │   ├── TemplateLib/        # TemplateLib 模块单元测试（6 文件）
 │   │   └── CMakeLists.txt      # 单元测试构建配置
@@ -335,7 +335,7 @@ int main(int argc, const char* argv[])
 
 ## 七、单元测试
 
-项目内置基于 **Google Test** 的完整单元测试套件，共 **23 个测试文件**，覆盖四个模块：
+项目内置基于 **Google Test** 的完整单元测试套件，共 **27 个测试文件**，覆盖四个模块：
 
 | 模块 | 测试文件 | 覆盖内容 |
 | --- | --- | --- |
@@ -352,6 +352,10 @@ int main(int argc, const char* argv[])
 | | `ProtocolUtilityTest` | CRC32C 校验和与字节模式查找 |
 | | `PackageReaderTest` | 缓冲管理：Append/PopFront/Reset |
 | | `PackageSerializationTest` | MakePackage ↔ ParsePackage 端到端往返、重同步与版本校验 |
+| | `SendBufferOwnershipTest` | 发送缓冲的跨模块所有权与归还 |
+| | `IoSubscriberNotificationTest` | 订阅者通知契约：配对与回调异常兜底 |
+| | `ShmInitTest` | Shm 后端 Init 门禁、连接回收与客户端确认 |
+| | `TcpIocpTest` | IOCP 回环收发、句柄计数不泄漏 |
 | **Serialization** | `Base64Test` | Base64 编解码 |
 | | `CsvParserTest` | CSV 解析行、列、引号转义 |
 | | `CsvRecordTest` | CSV 记录读写 |

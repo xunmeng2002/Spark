@@ -73,7 +73,7 @@ Spark/
 ├── test/                       # Test programs
 │   ├── unittest/               # GTest unit tests (primary test entry)
 │   │   ├── Core/               # Core module tests (9 files)
-│   │   ├── Network/            # Network module tests (4 files)
+│   │   ├── Network/            # Network module tests (8 files)
 │   │   ├── Serialization/      # Serialization module tests (4 files)
 │   │   ├── TemplateLib/        # TemplateLib module tests (6 files)
 │   │   └── CMakeLists.txt      # Unit test build configuration
@@ -336,7 +336,7 @@ int main(int argc, const char* argv[])
 
 ## 7. Unit Tests
 
-The project includes a comprehensive **Google Test**-based unit test suite with **23 test files** across four modules:
+The project includes a comprehensive **Google Test**-based unit test suite with **27 test files** across four modules:
 
 | Module | Test Files | Coverage |
 | --- | --- | --- |
@@ -353,13 +353,17 @@ The project includes a comprehensive **Google Test**-based unit test suite with 
 | | `ProtocolUtilityTest` | CRC32C calculation and byte pattern search |
 | | `PackageReaderTest` | Buffer management: Append/PopFront/Reset |
 | | `PackageSerializationTest` | End-to-end MakePackage ↔ ParsePackage round-trip, resync and version check |
+| | `SendBufferOwnershipTest` | Cross-module ownership and return of send buffers |
+| | `IoSubscriberNotificationTest` | Subscriber notification contract: pairing and callback exception containment |
+| | `ShmInitTest` | Shm backend Init gate, connect reclaim and client confirmation |
+| | `TcpIocpTest` | IOCP loopback round-trip, handle count stays flat |
 | **Serialization** | `Base64Test` | Base64 encoding/decoding |
 | | `CsvParserTest` | CSV row/column parsing, quote escaping |
 | | `CsvRecordTest` | CSV record reading/writing |
 | | `EncodeTest` | GBK/UTF-8/Unicode conversion |
 | **TemplateLib** | `LinearBufferTest` | Fixed-size buffer read/write, compaction and space reuse |
 | | `LockFreeQueueTest` | Lock-free queue push/pop |
-| | `ObjectPoolTest` | Object pool allocation and reuse |
+| | `ObjectPoolTest` | Object pool allocation, reuse, constructor-throw rollback, cross-thread and batch moves |
 | | `ShmBufferTest` | Shared memory buffer |
 | | `SpscRingBufferTest` | Ring buffer read/write and boundaries |
 | | `ThreadSafeListTest` | Thread-safe insert/delete/traverse |

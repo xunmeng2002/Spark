@@ -3,11 +3,34 @@
 #include <Spark/Core/Utility/TimeUtility.h>
 #include <Spark/Core/Logger/Logger.h>
 
+#include <exception>
+
 using namespace std;
 using namespace Spark::Core;
 
 namespace Spark::Network
 {
+namespace
+{
+using SubscriberNotification = void (IoSubscriber::*)(SessionIdType, const char*, int);
+
+void NotifySubscriberSafely(const char* notificationName, IoSubscriber* ioSubscriber, const Connect* connect, SubscriberNotification notification)
+{
+    try
+    {
+        (ioSubscriber->*notification)(connect->SessionId, connect->RemoteAddress, connect->RemotePort);
+    }
+    catch (const std::exception& notificationFailure)
+    {
+        WriteLog(LogLevel::Error, "Subscriber %s Threw. SessionId:%lld, Reason:%s", notificationName, connect->SessionId, notificationFailure.what());
+    }
+    catch (...)
+    {
+        WriteLog(LogLevel::Error, "Subscriber %s Threw An Unknown Exception. SessionId:%lld", notificationName, connect->SessionId);
+    }
+}
+}
+
 IoBase::IoBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
     : serverType_(serverType), addressName_(addressName), timeOut_(chrono::milliseconds(milliSeconds)), ioSubscriber_(nullptr), lastSessionIndex_(0LL)
 {
@@ -75,18 +98,23 @@ void IoBase::AddConnect(Connect* connect)
         std::lock_guard<std::mutex> guard(connectsMutex_);
         connects_.insert(std::make_pair(connect->SessionId, connect));
     }
-    if (ioSubscriber_)
+    if (ioSubscriber_ != nullptr)
     {
-        ioSubscriber_->OnConnect(connect->SessionId, connect->RemoteAddress, connect->RemotePort);
+        NotifySubscriberSafely("OnConnect", ioSubscriber_, connect, &IoSubscriber::OnConnect);
     }
 }
 void IoBase::RemoveConnect(Connect* connect)
 {
     WriteLog(LogLevel::Info, "RemoveConnect. SessionId:%lld,  RemoteAddress:%s, RemotePort:%d", connect->SessionId, connect->RemoteAddress,
              connect->RemotePort);
-    if (ioSubscriber_)
+    bool wasRegistered = false;
     {
-        ioSubscriber_->OnDisConnect(connect->SessionId, connect->RemoteAddress, connect->RemotePort);
+        std::lock_guard<std::mutex> guard(connectsMutex_);
+        wasRegistered = connects_.find(connect->SessionId) != connects_.end();
+    }
+    if (wasRegistered && ioSubscriber_ != nullptr)
+    {
+        NotifySubscriberSafely("OnDisConnect", ioSubscriber_, connect, &IoSubscriber::OnDisConnect);
     }
     std::lock_guard<std::mutex> guard(connectsMutex_);
     connects_.erase(connect->SessionId);

@@ -179,17 +179,23 @@
     `UnConnected`**：这把钥匙交回服务端——`TryReclaimConnect` 见到 `DisConnected` 即当轮入延迟删除，
     由它那侧的 `~ShmConnect` 走「已是 `DisConnected`」→ 清头，与正常断连、回收路径共用同一段收尾；
     `UnConnected` 则会让服务端认为「对端还在、只是还没连上」，槽位与 `connectCount_` 一起卡死。
-  - 登记未成（`AddConnect` 抛，连接表插入或订阅者回调）→ 调 `RemoveConnect` 而不是上面那笔 CAS：
+  - 登记未成（`AddConnect` 抛）→ 调 `RemoveConnect` 而不是上面那笔 CAS：
     连接表可能已插入该对象，必须一并抹掉，否则留下一个悬垂指针；这一步的 `~ShmConnect` 自己就会
     把 `Connected` 置成 `DisConnected`（走的是 `MarkDisconnectedAndReportWhetherLastHolder` 里那次 CAS，
     因该调用前是 `Connected` 而返 false，故**不清头**，同样把钥匙交回服务端）。
+    **`AddConnect` 如今只剩「插入失败」一种抛法**（2026-09-30：订阅者回调的异常由 `IoBase` 收住，不再穿出，
+    见 `docs/io-subscriber-notification-contract.md`）；插入失败即未登记，故这一步的拆除不补发 `OnDisConnect`。
   - 失败只记一条 `Confirm Connect Setup Failed.` 的错误日志，`connected_` 保持 false，随后由既有的 1 秒重试再来一轮。
   - **池块那一侧也已补齐**（2026-09-29 修）：`ObjectPool::Allocate` 原先「先弹空闲块、后放置构造且无异常回滚」
     （`ObjectPool.h:51-58`），故上面第一条路里抛出的那一刻，那个池块会泄漏出空闲链，槽位那笔撤回只兜住槽位一侧。
     现构造包在 `try` 里，抛出时把节点推回线程本地空闲链再原样重抛，「弹出没成功就当作没弹过」——
     细节见 `docs/object-pool-allocation-and-return.md` 第二、三节。至此这条路上**槽位与池块两侧都不再漏**。
-  - 残留（无用例、需异常注入）：`AddConnect` 在连接表插入**之后**、订阅者回调里抛时，清理会补发一次 `OnDisConnect`
-    （回调不抛异常是全仓既有假设，`IoBase` 的另外两处回调同样未加保护）。
+  - **「补发一次 `OnDisConnect`」的残留已关闭**（2026-09-30）：`IoBase` 在 `OnConnect` / `OnDisConnect` 两个通知点
+    兜底（收住订阅者回调的异常并记 `Error`），并把 `OnDisConnect` 的投递条件改成「该连接登记在册」。
+    于是回调抛异常不再让连接表摘除与对象归还被跳过，也不再产生无配对的 `OnDisConnect`；
+    「未登记即不通知」这一条同时消掉了 `TcpSelectClient::CheckConnect` 与 `TcpEpollBase` 的连接失败路径上
+    **一直可达**的同形误报（那两处拆的是一个从未 `AddConnect` 过的对象）。
+    契约与三条探针用例见 `docs/io-subscriber-notification-contract.md`。`OnRecv` 三处仍未兜底，另记。
 - **三处状态迁移收敛成同一个具名机制**（2026-09-28）：槽位头上的条件置换原先在三处各写一遍
   `compare_exchange_strong`（`RevokeUnconfirmedAccept`、`ConfirmAcceptedConnection`、本批新增的撤回），
   现统一走 `SingleShmHeader::ChangeStatusIfEqualTo(header, expectedStatus, targetStatus)`（成功序 `acq_rel`、
@@ -398,9 +404,11 @@
   **两笔收尾失败也已兜住**（同日）：分配或登记抛异常时把这一笔确认撤回（槽位回到 `DisConnected`，钥匙交回服务端），
   见第四节。**调用点已有用例**：`ShmClientConfirmTest` 两条（见第五节）走的是真实的双端协商，
   正向与「撤回后不确认并重试」两侧都钉住了，后者经实测在旧代码下必失败。
-  残留只剩异常注入那一路——`Allocate` / `AddConnect` 抛出的那一刻，槽位这一侧已由本笔兜住，
-  池块那一侧也已由 2026-09-29 的 `ObjectPool::Allocate` 异常回滚补齐（第四节末），
-  尚余清理时会补发一次 `OnDisConnect`；这一条需要给 `AddConnect` 开注入缝才可复现，**无用例**。
+  异常注入那一路：`Allocate` / `AddConnect` 抛出的那一刻，槽位这一侧已由上笔兜住，
+  池块那一侧也已由 2026-09-29 的 `ObjectPool::Allocate` 异常回滚补齐（第四节末）。
+  **最后那处「清理会补发一次 `OnDisConnect`」已于 2026-09-30 关闭**（通知点兜底 + 未登记不通知，第四节）；
+  `Allocate` / `AddConnect` 本身仍无注入缝，故这条调用点路径仍无直接用例，其判据改由
+  `IoSubscriberNotificationTest` 三条在 `IoBase` 层钉住（见 `docs/io-subscriber-notification-contract.md`）。
 - **首轮创建—打戳之间存在窄窗**（2026-09-28）：服务端 `Init()` 先 `memset` 整个映射（此刻 `MappingMagic` 为 0）、
   再打戳。若客户端恰好在这一瞬间走到复用校验，会读到未打戳的头并把对象判为「外来布局」而拒绝；重试即可恢复。
   窗口长度是服务端 `memset` 整段映射的耗时（连接数越大越长），单进程冒烟与四档单测均未复现。
