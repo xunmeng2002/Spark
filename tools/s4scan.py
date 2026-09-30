@@ -295,6 +295,29 @@ def indent_of(line):
     return len(line) - len(line.lstrip())
 
 
+ASSIGNMENT = re.compile(r'(?<!operator)(?<![=!<>+\-*/%&|^])=(?!=)')
+
+
+def is_paren_initialized_data_member(d):
+    """带括号初始化式的数据成员：首个 `(` 落在首个赋值号之后。
+
+    常量与静态成员函数的区别不在有没有括号——初始化式自己就带括号
+    （`= (std::numeric_limits<unsigned>::max)() / 2`），函数的默认实参也带括号
+    （`void F(int x = 5)`）——而在**次序**：数据成员的括号出现在 `=` 之后，函数的括号
+    出现在名字之后、任何 `=` 之前。故只比较两者的先后。
+
+    赋值号须排除三类，缺一类都会把运算符声明判成数据成员：`operator=` 的名字
+    （`Neg& operator=(const Neg&) = delete;` 的首个 `=`，用 `(?<!operator)`）、比较与
+    复合赋值运算符（`operator==` 的第二个 `=` 前是 `=`、后是 `(`，用前后字符类
+    `(?<![=!<>+\-*/%&|^])` 与 `(?!=)` 一并挡掉）。
+
+    已知残余：类型自身的模板实参里带括号（`std::array<int, (1 + 2)> v = {};`）仍会被
+    判成函数——修它需要先遮蔽模板实参，与本条（初始化式）不是同一件事，未一并做。
+    """
+    assignment = ASSIGNMENT.search(d)
+    return assignment is not None and assignment.start() < d.find('(')
+
+
 def classify(line):
     d = line.strip()
     if not d:
@@ -309,6 +332,8 @@ def classify(line):
         return ('static_assert', d)
     if re.match(r'^template\s*<', d) or d.startswith('friend ') and '(' not in d:
         return ('other', d)
+    if '(' in d and is_paren_initialized_data_member(d):
+        return ('data', d)
     if '(' in d:
         is_special = bool(re.search(r'(?<![A-Za-z0-9_])~\w+\s*\(', d))
         # 构造函数：前导标识符（可带 explicit/constexpr/inline）后紧跟 (

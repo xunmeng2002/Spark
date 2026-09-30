@@ -20,6 +20,7 @@
 | `neg.h` | `s4scan.py` 报 0 条（含 §4 单例例外的正确写法） |
 | `nofirst.h` | `s4scan.py` 报 2 条 NO_FIRST_LABEL（`class` 与 `struct` 各一） |
 | `wrappedsig.h` | `s4scan.py` 报 1 条 ORDER（仅 `WrappedBad`） |
+| `parenconst.h` | `s4scan.py` 报 1 条 ORDER（仅 `ParenConstBad`） |
 | `initpos.h` | `initcheck.py` 报 1 条 INIT_ORDER/A |
 | `initpos.cpp` | `initcheck.py` 报 1 条 INIT_ORDER/B（须与 `initpos.h` 同时传入） |
 | `initneg.h` | `initcheck.py` 报 0 条 |
@@ -92,6 +93,7 @@ python tools/s4scan.py    tools/selfcheck/pos.h                                 
 python tools/s4scan.py    tools/selfcheck/neg.h                                  # 0 条
 python tools/s4scan.py    tools/selfcheck/nofirst.h                              # 2 条
 python tools/s4scan.py    tools/selfcheck/wrappedsig.h                           # 1 条
+python tools/s4scan.py    tools/selfcheck/parenconst.h                           # 1 条
 python tools/initcheck.py tools/selfcheck/initpos.h tools/selfcheck/initpos.cpp  # 2 条
 python tools/initcheck.py tools/selfcheck/initneg.h                              # 0 条
 python tools/initcheck.py tools/selfcheck/initwrapped.cpp                        # 1 条
@@ -111,7 +113,8 @@ python tools/initcheck.py tools/selfcheck/initsentinel.cpp                      
 本目录已在 `s4scan.py` 的 `EXCLUDE` 中，**不会**进入无参数的全仓扫描——
 否则这些故意写坏的文件会混进真实结果里。显式给路径时照常扫描。
 
-改动 `EXCLUDE` 或文件位置后，请确认无参数运行的规模行仍是「176 个文件、24 条」。
+改动 `EXCLUDE` 或文件位置后，请确认无参数运行的规模行仍是「182 个文件、37 条」
+（37 条即 37 个 `struct` 缺首标签，`--gate --exempt-struct-default-access` 下全部豁免、报 0）。
 
 ## 防「好心地被修好」
 
