@@ -4,6 +4,10 @@
 
 ## ✅ 原已完成
 
+### D.70
+
+- **2026-09-30 · `Protocol::OnRecv` 取包循环的两处补齐：`OnMessage` 抛出不再打断这一批、无人接收的包归还池（提交 `26c2f48`；漏包那一半另成一笔 `424368a`）**：①**由起**：上一批（`72fb4f5`）把 IO 层的收包通知收进兜底后，异常不再穿出 `HandleIoEvent`，但**异常被收在哪一层决定了它还能影响什么**——`Protocol` 自身也是 `IoSubscriber`，`Protocol::OnRecv` 的取包 `while` 循环里向 `ProtocolSubscriber::OnMessage` 移交包的所有权，而 `OnMessage` 抛出会直接带走控制流：(i) 本轮已由 `ParsePackage` 取出的包从此无人持有；(ii) 同一段字节里其后的帧留在 reader 里，要等下一次流量才被解析——派发顺序不变，但时点从「本次」变成「下次有流量」。②**修法（三条，合起来一句「没交出去的要归还，交出去的不管」）**：(a) 取包循环里 `OnMessage` 的调用改经 `NotifySubscriberSafely` 兜底，异常记一条含 `what()` 的 `Error` 后循环继续取下一帧；(b) **抛出时 `Protocol` 不归还那一帧**——形参 `Package* ownedPackage` 是所有权移交，抛出时无法分辨订阅者是否已归还，替它归还就是把同一指针二次推入池的空闲链（`ObjectPool::Deallocate` 对已归还指针没有防护），故归 subscriber 自理；(c) `subscriber_ == nullptr` 时由 `Protocol` 归还——`UnSubscribe()` 把 `subscriber_` 置空而会话照旧连着（`OnConnect` 本身也以 `if (subscriber_)` 为前提），包从未交出去过、必须放回池；这一半先单独落地（`424368a`），本笔是它的超集、未改其行为。③**按 §5 只留一份实现**：这段 `try` / `catch` 与 `IoBase.cpp` 那三处调用点同源，抽成 `src/Network/Io/SubscriberNotification.h` 的 `NotifySubscriberSafely` 模板（名称与 `SessionIdType` 由调用方传入、回调以泛型可调用对象传入）；它是模块内部头文件（`src/Network` 为模块的 PRIVATE 包含目录，不改 CMake），`IoBase.cpp` 与 `Protocol.cpp` 各包含一次，三层通知（连接、收包、取包）由此共用同一个 `catch`，`IoBase.cpp` 原文件局部的匿名命名空间模板随之删除、行为一字未动。两个备选被否：放进 `IoBase.h` 或 `IoUtility.h` 会把 `Logger.h` 拉进公开头文件；改 `std::function` 非模板实现则在收包热路径上多一次堆分配。**未新增、未删除、未弃用任何公开 API 与导出符号**（新头文件是模块内部的），故未触 Harness §3。④**测试（输入 → 输出）**：`test/unittest/Network/ProtocolTest.cpp` 由 1 条增至 2 条，钉在 `Protocol` 一层——`ProtocolProbe` 装一个自造的 `IoBase` 当 `ioBase_`、把 `PackageReader` 插进受保护的 `sessionPackageReaders_`，故取包循环可在不挂共享内存、不依赖时序的情况下逐帧驱动；`PackageAccountingFactory` 发放记名的 `LedgeredPackage`，交出去几个、`Deallocate` 收回来几个两数一比即知。`AThrowingOnMessageNeitherEscapesTheRecvLoopNorStrandsTheRestOfTheBatch`：**输入**两帧一批、订阅者在第 1 帧的 `OnMessage` 里先归还再抛出；**输出** `OnRecv` 正常返回、两帧都派发（末帧序号为第 2 帧）、发放 2 / 归还 2、无断链。`APackageParsedWithoutASubscriberIsReturnedToTheFactory`：**输入**无订阅者、送入一帧；**输出**不投递、发放 1 / 归还 1、无断链。**A/B 已实测**：把 `Protocol.cpp` 里 `OnMessage` 那行改回直接调用重跑，第 1 条以「C++ exception … thrown in the test body」失败；加 `else` 分支之前，第 2 条以 `DisposedCount` 期望 1 实得 0 失败（那次静默泄漏是真实的）。第 1 条的「滞留」那一半**没有**断言（抛出已把控制流带走、断言读不到），故由一只临时探针单独量过：旧代码下把同一批两帧喂进去，异常照常穿出，`MessageCount` 停在 1 而 reader 里仍压着 **76 字节**（正是第 2 帧的长度：`StepHeadLen` 62 + `StepTailLen` 14），随后一次 `OnRecv(sessionId, frames, 0)` 才把它取出去（`MessageCount` 变 2、序号为第 2 帧）；探针量完即删、不留在仓库里。⑤**验证**：四档 0 warning；单测 MSVC Debug **485** / Release **486**、WSL GCC Debug **480** / Release **481**（基线 483/484/478/479，**各 +2**）；`initcheck --gate` 退出码 0、乱序 0 处 / 182 文件；`s4scan --gate --exempt-struct-default-access` 扫描 182 文件 / **486** 类·结构体、候选 **0** / `struct` 豁免 **36**（未增）；四个改动文件 `clang-format --style=file --dry-run --Werror` 零违规；Shm 冒烟 clean 与 keep 两轮通过（两端各 10000 次回显全部到达、客户端 exit 0、keep 轮 `Shm Object Exists, Reuse It.` 1；第 1 轮双方各 1 条 `Sem UnLock Failed.` ERROR，属既有已知无害条件——Windows 信号量计数上限 1，客户端每次写 `UnLock` 与服务端每轮 `Lock` 非一一对应——第 2 轮采样为 0）；`step_e2e.py` Select 与 Iocp 两档通过（Select 服务端 107 帧 / 客户端 10 帧，Iocp 120 / 12，字段全部吻合；Iocp 侧 1 条脚本自标「不计失败」的 `DisConnectEx Skipped` Warning）。⑥**成文**：`docs/io-subscriber-notification-contract.md` 新增「取包通知」一节（三条责任、76 字节滞留量的实测、`UnSubscribe()` 后分支可达）并以「没交出去的要归还、交出去的不管」收束；「实现落点」改写为新头文件与两个包含点；「未覆盖与未决」把原「`OnRecv` 未加兜底」式的缺口改写为诚实的「`OnMessage` 抛出时那一帧归 subscriber 自理，本契约不代偿」；「相关测试」补 `ProtocolTest.cpp` 段与两行输入输出表，连同 A/B 实测说明与「探针已删、不留在仓库里」。⑦**登记项**：❓ 区「`Protocol::OnRecv` 的取包循环仍非异常安全」**整条关闭**（原文搬入归档 `Q.54` 块并加 2026-09-30 已关闭追记；其「抛出后那个包算不算已消费」之问由本批回答：**算**，形参即所有权移交）；✅ 区按 §8.1 阈值触发滚动 `D.65`（原 `9ad60a4` 客户端确认收尾回滚条）；归档索引补 `D.65` 与 `Q.54` 两行；尺寸行随本笔改写。⑧**风险（重叠于内存管理路径，单列）**：本批改动落在包对象的所有权边界上——(a) `Protocol` 归还不归还那一帧的判据只有「有没有调用过 `OnMessage`」，一旦日后有人在 `NotifySubscriberSafely` 之外再包一层 `catch` 并顺手 `Deallocate`，就会重新引入二次入池，故这条契约写进文档而不留成注释；(b) 订阅者在自己的 `OnMessage` 里抛出且抛出前未 `Deallocate` 时那一帧仍会漏，本批**刻意不代偿**（代偿要求 `Protocol` 知道订阅者是否已归还，而那正是它无法知道的）；(c) 新头文件把 `Logger.h` 带进 `Protocol.cpp` 与 `IoBase.cpp` 两个 TU，只是编译期与产物体积上的开销，无并发与运行时影响。⑨**顺带（如实列出）**：`README.md` / `README.en.md` 第七章 Network 组的测试文件清单补上本批新增的 `ProtocolTest`、目录树计数 8 → 9（该清单是上一批 `fd2cfc8` 补齐的，本批新增文件后随之过期），单独成一笔 `b1ca123`；README 不被两个门禁扫描（`initcheck` / `s4scan` 只枚举 C++ 文件），故该笔未重跑门禁、构建与单测。
+
 ### D.69
 
 - **2026-09-30 · `OnRecv` 三处调用点补异常兜底：回调抛出不再吃掉后端自己的收尾（提交 `72fb4f5`）**：①**由起**：❓ 区承自上一批（`fd2cfc8`）的同源缺口——`OnConnect` / `OnDisConnect` 已收进 `NotifySubscriberSafely`，但收包通知不走 `IoBase`，`ShmBase::DoRecv`、`TcpBase::DoRecv`、`TcpIocpBase::OnRecvComplete` 三处各自直接调订阅者。逐处追下去，后果比「异常穿出 IO 循环」更具体：三处回调之后都跟着一段**只属于后端、却必须跑完**的收尾——前两处的 `buffer->Deallocate()`（缓冲块泄漏，与 `b2f9bc5` 修的是同一类），IOCP 那处的 `PostRecv(overlapped)`（该连接此后再收不到包）。②**修法（按 §5 只留一份实现）**：`IoBase.cpp` 里那个文件局部的 `NotifySubscriberSafely` 由「成员函数指针」改为「泛型可调用对象」，两个既有调用点改传 lambda；`IoBase.h` 的 `protected` 段新增一个非模板成员`NotifySubscriberRecvSafely(const Connect*, const char*, size_t)`，三个后端的收包点改调它。这样整条链路上 `catch` 只有一处实现，且不必把 `Logger.h` 拉进公开头文件、也不必让 `std::function` 在收包热路径上堆分配。③**不动什么**：`if (ioSubscriber_ != nullptr)` 的守卫与三处收尾语句一字未改——兜底只收异常、不改控制流，故收尾现在无论回调成败必然执行；未新增/删除/弃用任何公开 API 与导出符号（`NotifySubscriberRecvSafely` 是**新增**的受保护成员，未触 Harness §3.1）。④**测试（输入 → 输出）**：`IoSubscriberNotificationTest` 加 `AnOnRecvFailureIsContainedAndDoesNotSkipWhatFollows`（探针 `IoBase` 子类，`OnRecv` 抛 → 不传播、回调 1 次、`NotifySubscriberRecvSafely` 返回到其调用方）；`ShmInitTest` 加 `AThrowingOnRecvNeitherEscapesTheIoLoopNorStopsLaterPayloads`（真 Shm 后端：服务端订阅者只在首次收包抛，客户端连发 100 个 5 字节包、每发一个驱动一次服务端 → 服务端收到**恰好 100 次**、末次长度 5、全程 `OnDisConnect` 0 次）。**A/B 已实测**：撤掉 `ShmBase.cpp` 的单行改动重跑，该用例以「C++ exception … thrown in the test body」失败。⑤**验证**：四档 0 warning；单测 MSVC Debug **483** / Release **484**、WSL GCC Debug **478** / Release **479**（基线 481/482/476/477，**各 +2**）；`initcheck --gate` 退出码 0、乱序 0 处；`s4scan --gate --exempt-struct-default-access` 扫描 180 文件 / **479** 类·结构体（**+1**，即本批新增的测试内探针）、候选 **0** / `struct` 豁免 **36**（未增）；C++ 改动文件 `clang-format --style=file --dry-run --Werror` 零违规（`TcpIocpBase.cpp` 的 4 处违规经与 HEAD 逐行比对确认为既有、均不在本批改动行上）；Shm 冒烟 clean 与 keep 两轮通过（服务端 10013 / 10014 行、客户端 117 行、两端 ERROR 0、`Reject Connect Index` 0、`Connect Failed` 0、keep 轮复用既有对象 1）；`step_e2e.py` Select 与 Iocp 两档通过（**本批实测** Select 服务端 876 帧 / 客户端 87 帧、Iocp 999 / 101，字段全部吻合；Iocp 侧 1 条脚本自标「不计失败」的 `DisConnectEx Skipped` Warning。**Select 的帧数低于上批记录的 937 / 93**——该脚本按 40 秒时限跑，帧数随机器负载浮动，判据是「条数与字段全部吻合」而非某个固定数，故如实记下本次观测值）。⑥**成文**：`docs/io-subscriber-notification-contract.md` 由「只讲连接通知」扩为「三种通知」——新增「收包通知」一节（三处调用点各自的收尾与漏掉它的后果表、`ThreadBase` 链路上无 `catch` 故 IOCP 侧穿出即 `std::terminate`、收包缓冲由 IO 层持有故归还不能挂在回调成功上）、新增一条契约（收包通知不改变后端自身的收尾）、改写「实现落点」（模板 + `protected` 成员的取舍）、删去「`OnRecv` 未加兜底」那条未覆盖、补两处用例的输入输出，并如实注明「探针那一条不适用撤 `IoBase.cpp` 的 A/B（撤掉即无法编译）」。⑦**登记项**：❓ 区「`OnRecv` 三个调用点未加异常兜底」**整条关闭**（原文搬入归档 `Q.53` 块并加 2026-09-30 已关闭追记）；同处新增一条 ❓「`Protocol::OnRecv` 的取包循环仍非异常安全」（本批追该缺口时发现的下游一环，属 `Protocol` 一层，不在本批授权范围）；✅ 区按 §8.1 阈值触发滚动 `D.64`（原 `8d14406` 客户端确认改 CAS 条）；归档索引补 `D.64` 与 `Q.53` 两行；尺寸行随本笔改写。
@@ -777,6 +781,119 @@
     方向是"此前静默跳过的字段开始被赋值"，属**行为变更**（修漏），已确认对现有全部消费方零输出。
 
 ## ❓ 原待讨论 / 待决策
+
+### Q.75
+
+- **池对象跨模块归还会在 Debug 撞所有权断言（2026-09-30 实测发现，待决）**：`ObjectPool<T>::GetInstance()` 与它 Debug 期的登记表 `GetOwnedItemRegistry()` 都是**模板内的函数局部 static**，MSVC 不会跨模块唯一化——`Networkd.dll` 与 `UnitTests.exe` 各持一份。实测：`Protocol::Send`（在 DLL 内）分配的 `LinearBuffer<65536>` 若由测试侧 mock `IoBase::Send` 调 `Deallocate()`，Debug 下报 `ObjectPool<class Spark::LinearBuffer<65536>> Deallocate got an item that is not currently held` 并断言；同一次运行里把分配与归还都放回 DLL（`Protocol::Send` 自己的失败分支）则正常通过。**两模块都未定义 `NDEBUG`**（`out/build/x64-Debug/build.ninja` 里 `NDEBUG` 0 处），故不是编译开关不一致、而是登记表本身有两份。生产侧目前安全（各模块只归还自己分配的），但这是一条**没写下来的约束**——`ProtocolTest.cpp` 的 mock 至今不接缓冲，正是踩过这条。**待决**：①把「池对象必须回到分配它的模块」写进 `rules/cpp-style.md`；②或给池的单例与登记表加导出（`__declspec(dllexport)` / 显式实例化）让两模块共用一份——后者动的是池的链接模型与 ABI，属高风险改动（§3.2），宜单独一批并先报证据。
+
+**2026-09-30 压缩**：原文到此为止，主文件只留一行短版（`见归档 Q.75`），未决点未改。
+
+### Q.74
+
+- **手写代码里的窄化转换仍无溢出检查（2026-09-30 cast 清零批登记、同日收包侧半关闭；**发送侧仍待决**）**：本批把 94 + 4 处 C 风格 cast 改成具名 cast，但 `static_cast` 与 `(T)` **语义逐位相同**——写法具名化**不等于**加了检查，Harness §6「跨类型转换（如大数转小数）必须先进行溢出预判」在这 98 处上依旧未满足（那 98 处全是单 token 类型，无模板实参）。**收包侧已闭合（同日后续批，见 ✅ 区）**：`TcpIocpBase::OnRecvComplete` 补 `bytesTransferred <= 0` 判死，`LinearBuffer::SetLength` 由「钳位」改「拒绝并返 false」。**同处一条错记已订正**：本条原写的「`len > INT_MAX` 时会收窄成负数、被 `:360` 的 `static_cast<size_t>` 放大成天文数字」**不可达**——`MyOverlapped` 把 `WsaBuffer.len` 恒定为 `BufferSize`（64 KiB）或 `GetLength()`（`TcpIocpConnect.cpp:74,80,94`），故 `GetQueuedCompletionStatus` 的 `len ∈ [0, 65536]`，永不超 `INT_MAX`；`len == 0` 又早在 `:152` 被 `PostDisConnect` 拦走。**仍待决两项**：①**发送侧的对称缺口**——`OnSendComplete` 的 `if (static_cast<size_t>(bytesTransferred) < GetLength())` 对负值判 `false`，会被当成「发完了」而丢掉剩余字节（同样不可达，但判据方向与收包侧相反，未处理）；②**是否单开一批**给手写收窄点补显式的上界判据，或把「收窄点必须显式判界」写成 `rules/cpp-style.md` 的明面约定。**注**：台账旧引的 `TcpIocpBase.cpp:304` 已因多批改动漂到无关函数，引用行号须按本条重核。
+
+**2026-09-30 压缩**：原文到此为止，主文件只留一行短版（`见归档 Q.74`），未决点未改。
+
+### Q.73
+
+- **单调计数器失去 Debug 期的越界哨兵（2026-09-28 本批发现，待决）**：四个计数器改「只增不减」之后，任何 `size_t` 取值都是合法状态，旧实现末尾那条 `assert(writeCount <= Size)`（读写计数一旦被外部污染、或对端按错误布局解释同一段内存，Debug 档当场命中）随之删掉，替代品 `assert(length <= Size)` 只保证**单次搬运**不超过一个通道，**对计数本身的腐蚀不再有任何检查**。被腐蚀的计数不会立刻出错：可读/可写字节仍按差值算，只是差值可能大到越过 `Size`，从而让一次搬运的**起点**落在通道之外——而掩码寻址（`index & Mask`）恰好会把越界起点映射回通道内的某个位置，于是表现是**静默的错乱数据**而非当场崩溃。**待决**：是否补一道廉价的运行期判据（候选：`Write` / `Read` 入口断言 `readableBytes <= Size`，或把「差值不得大于 `Size`」做成 `CountReadableBytes` / `CountWritableBytes` 的前置断言；代价是热路径每次多一次比较），还是接受该损失、只依赖布局 stamp 挡住「对端按错误布局解释」。详见 `docs/shm-channel-and-connect-model.md` 第四节。
+  **2026-09-28 追记（槽位清零次序批）**：本条的候选判据（`可读字节 <= Size` 之类的廉价运行期断言）有了第一处**真实动机**——`ResetChannelHeader` 原先「先发布 `UnConnected`、后清四个计数器」，槽位复用时新一任持有者可能读到半清的计数（如 `UpWriteCount` 仍是旧值、`UpReadCount` 已是 0），差值即回绕成天文数字，正是本条描述的「静默错乱数据」形态；该次序缺陷已修（提交 `a5d6144`，见 ✅ 区该条），但**修的是那条路径，不是这条判据**——计数器被外部污染或对端按错误布局解释时依然无检查。故作追记，不作为本条关闭依据。
+  **2026-09-28 追记（`RingView` 抽取批）**：本批把 `ShmBuffer` 与 `SpscRingBuffer` 两侧逐行同构的环算术收敛成一份 `RingView<Size>`（提交 `5adae88`），故本条的候选判据（`可读/可写字节 <= Size` 一类的廉价运行期断言）落点由**两处**变为**一处**（`RingView::CountReadableBytes` / `CountWritableBytes`），补它的代价也从「两处热路径各加一次比较」降为「一处各加一次比较」。这**降低了补它的成本，但本条仍未决**——是否补仍待裁定。
+
+**2026-09-30 关闭（提交 `338db55`）**：在 `include/Spark/TemplateLib/Buffer/RingView.h` 的两个汇聚点补回 `assert`——`CountReadableBytes`（`assert(readableBytes <= Size)`）与 `CountWritableBytes`（`assert(inFlightBytes <= Size)`）；六条路径（`Read` / `Write` / `Peek` / `Skip` / `GetReadBufferSize` / `GetWriteBufferSize`）全部经由这两个私有函数取容量，Release 无成本。为什么必须断言而非靠 `Mask` 兜住：计数器一旦损坏，`index & Mask` 会把越界的起点**映回环内**，症状是数据静默错乱、不是崩溃——只有 Debug 期检查能把「错乱」改判为「立即中止」。本条的两条 2026-09-28 候选动机追记（`ResetChannelHeader` 的发布次序、`RingView` 抽取）随原文保存在此。
+
+### Q.72
+
+- **`Init()` 失败后析构仍删除共享内存对象（2026-09-27 本批发现，待决）**：`~ShmBase()` 里「删除对象」以 `serverType_ == Server` 为唯一判据（Windows `DeleteFileA`、Linux `shm_unlink`），不看本次 `Init()` 是否真的创建或复用了对象。若 `Init()` 因连接数超限、或 Linux 上因「复用对象偏小」而失败，该服务端对象**并不属于本进程**（`Init` 只读了 `fstat`、没有建立任何引用），析构却仍会把它 `shm_unlink` / `DeleteFileA` 掉——跨进程场景下会摘掉别人的对象。测试里表现为 `shm_unlink: No such file or directory` 之类噪音（本进程自己那一份已被前一个对象删过）。**待决**：是否给析构加「本进程确实创建/复用了对象」的判据（须先定成文契约：`Init` 失败后对象所有权归谁）。
+
+**2026-09-30 压缩**：原文到此为止，主文件只留一行短版（`见归档 Q.72`），未决点未改。
+
+### Q.71
+
+- **Shm 后端的 `Sem` 名称在 Linux 上不满足 POSIX（2026-09-24 实测登记，待决；2026-09-27 半关闭：残留复用回退已落地 `a87f611`，原文见归档 `Q.47`）**：①**同名对象残留会让 `Init` 永久失败**：Server 侧用独占创建（Windows `CreateFileA(…, CREATE_NEW, …)` / Linux `shm_open(O_CREAT\|O_EXCL)`）且**无「已存在则改为打开」的回退**；已删除的 `SingleShm::Init` 里**有**这条回退（`CREATE_NEW` 失败即 `OpenFileMappingA`），`ShmBase` 没有。冒烟侧的操作规则与实测数字见本区「Shm 冒烟必须先清残留进程与 `TestShm`」条。**待决**：是否给 `ShmBase` 补回退（行为变更，宜与下条同批裁定）。②**`Sem` 的名称在 Linux 上不满足 POSIX**：地址 `shm://Name:port` 经 `address + 6` 与 `ParseAddress` 剥出 `Name`，`Sem` 直接拿它`sem_open`，而 POSIX 要求名字以 `/` 开头；**本机 glibc 实测接受无前导 `/` 的名字**（ctypes 直调 `sem_open("SparkNoSlashProbe", O_CREAT\|O_EXCL, 0666, 1)` 返回有效句柄、`errno=0`），故 shm 路径在 WSL 档可用——但这是实现宽容、非标准保证，换 libc（musl/BSD/macOS）即失败。**同一命名依赖不止 `Sem`**（2026-09-27 核查补记）：`ShmBase::LinuxInit` 也拿同一个名字直调 `shm_open`（`ShmBase.cpp:242` 服务端 `O_CREAT|O_EXCL`、`:246` 客户端 `O_RDWR`），故日后补 `/` 须在名字派生处一次补齐、不能只改 `Sem`；同日 ctypes 直调复测两者（`shm_open` 返 `fd=4`、`sem_open` 返有效句柄，`errno` 均 0，探针用完即 unlink 并删除），且 WSL 档 `ShmInitTest.Init_AcceptsSmallestPositiveConnectSize` 走的正是 `shm_open` 这条。**待决**：是否补 `/`（须两处同批）。
+
+**2026-09-30 关闭（提交 `82ba3a3`）**：前导 `/` 只在**派生点**加一次——`ShmBase` 构造函数的 `src/Network/Shm/ShmBase.cpp:43-47` 现为 `#ifdef __linux__ shmName_ = "/" + address_; #else shmName_ = address_; #endif`，`shm_open`（:286/:291）、析构里的 `shm_unlink`（:91）与 `Sem` 名（`shmName_ + "SemConnect"`、`shmName_ + "Sem" + i`，:53/:56）全部继承它，故不可能各走一条路（`Sem` 无其他构造点）；`Sem` 自身只把名字转给 `sem_open`，不需要改。单测侧 `test/unittest/Network/ShmInitTest.cpp:55-60` 新增 `BuildPosixShmObjectName()`（仅非 Windows 编译）供直开映射视图使用。Windows 的 `#else` 分支一字未动（`CreateFileA` / `CreateFileMappingA` 把名字当文件名、`/` 非法），冒烟日志仍是 `Address:TestShm`；WSL GCC Debug 构建 exit 0、`UnitTests` 490 PASSED（含真正建共享内存对象的三个套件 10 + 2 + 2），0 FAILED。
+
+### Q.70
+
+- **本轮三批的覆盖缺口 / 死代码 / 既有格式违规（2026-09-24 登记；2026-09-27 半关闭：`lastSendTime_` 已删 `a87f611`、`ShmBase::DoSend` 已处置 `c65b48b`，原文见归档 `Q.46`）**：①**覆盖缺口**：`ShmBase::Send` 的「通道写满」分支（返 0 → 等 1ms 重试 / 对端断连则丢弃）**无覆盖**——冒烟每轮 10000 次往返也难填满 1 MiB 通道，正确性依赖 `ShmBuffer::Write` 的返 0 语义（已由 `ShmTestFixture.CountersReachChannelSizeExactly` 钉住）；该分支的语义与后果已于 2026-09-27 成文（`docs/shm-channel-and-connect-model.md` 第三节：对端活着但不读时 `Send` 无限期阻塞）。**覆盖深度诚实说明**：`Init()` 那四条用例钉的是**契约**（非法连接数 → `Init` 返 `false`；未 Attach → 各入口惰性），**不是门禁本身**——门禁若撤除，`abc`/`0` 两例在四档下**仍会返 `false`**（映射长度 0 会让 `CreateFileMappingA`/`mmap` 失败），差别只在「早拒、且不创建任何 OS 资源」，而该差别无法从公开 API 观测，故未强加平台相关的实现断言。②**Shm 侧死代码（已处置，2026-09-27）**：`ShmBase::DoSend` 经用户裁定删除——`IoBase::DoSend` 同批由纯虚降为带空实现的虚函数，两族 `Send` 的完成语义差异成文（提交 `c65b48b`）；原文见归档 `Q.46`。③**`TcpIocpBase.cpp` 的 4 处 clang-format 违规（既有）已清（2026-09-30，提交 `3e7a933`）**：随 cast 清零批一次 `clang-format -i` 处置；台账原引的 `:241`（同行两列位）/`:267`/`:301` **行号已漂**，实测为格式前的 263、264、356、390（全是超长 `WriteLog(…%zu…)` 参数行），格式后落在 263-264、356、391。
+
+**2026-09-30 压缩**：原文到此为止，主文件只留一行短版（`见归档 Q.70`），未决点未改。
+
+### Q.69
+
+- **导出 SDK 头快照停在 2026-09-17，已落后五个批次（2026-09-24 批 B 实测；刷新须用户手动执行，待决）**：`D:/Gitee/Libs/Spark/x64-windows/include/Spark/` 实测仍是 `Buffer.h`（批 3b 已改名 `LinearBuffer.h`）、`BuffSize`（批 3a 已改 `BufferSize`）、`template <unsigned SIZE>` 与形参 `data`（批 4 已改 `Size`/`source`）、`unsigned Write(const char*, unsigned)`（本批已改 `size_t`）——即归档 `Q.22`（2026-09-17 关闭）当时的 `16edbe6` 状态。故 `Q.22` 记的「SDK 内容与 HEAD 语义差为零」**自此不再成立**；四个构建档都不刷新它，刷新是**用户手动动作**（`Q.22` 内含 `install(DIRECTORY)` 的 NTFS 大小写陷阱，照它执行）。**影响面**：按快照构建的消费方看到的是五个批次前的 API 面；本批起 `ShmBuffer` 的 NTTP 由 `unsigned` 变 `size_t`，x64 上名字修饰随之改变，快照头与仓内头混用时是**两个不同的模板实例**（各自 `ObjectPool` 单例，静默、不报错）。**待决**：何时刷新；是否把该刷新接进流水线（`Q.22` 关闭时按手动处理）。仓外路径，按 §1 不擅自改动。
+
+**2026-09-30 压缩**：原文到此为止，主文件只留一行短版（`见归档 Q.69`），未决点未改。
+
+### Q.68
+
+- **Shm 冒烟必须先清残留进程与 `TestShm`（2026-09-24 实测教训）**：一轮冒烟里出现 3 条 `Sem UnLock Failed.`（`Sem.cpp:79`），而**同一个二进制**在干净起步下连跑 5 轮均为 0。根因是上一轮的 `TestServer.exe` **从未退出**、仍持有同名信号量句柄（Windows 命名信号量的计数随句柄存活），且它在 `ShmServer::CheckData` 里与新进程**争抢同一份 credit**。该失败本身**无害**（信号量只是唤醒提示：两侧都先看 `GetReadBufferSize()` 再决定是否 `Lock`），但它让「两端 0 ERROR」这条判据**失效**——冒烟脚本此后每轮先 `taskkill` 掉两端进程并删掉 gitignore 的 `TestShm`。另注：`Sem.cpp` 本批**一字未改**（不在任何一次提交的改动文件里），`ShmBase.cpp` 只改了 cast 写法（`79b8498`）、信号量调用点逐字未动——故障与这些改动无关。**2026-09-24 补充**：该残留还有**确定性**的一面——不删 `TestShm` 则 Server 侧 `CreateFileA(…, CREATE_NEW, …)` 因同名文件已存在而直接失败、`Init` 返 `false`，冒烟整轮不跑（实测不删则 5 轮只过 1 轮，每轮先删则 5/5），故「每轮先删」是**必要步骤**、不是保险。**2026-09-28 追记**：同日 11 轮 Shm 冒烟（脚本逐轮核验「起轮前 0 残留进程」）中出现 1 次同样的 1 条 `Sem UnLock Failed.`（第 4 轮，回显照常跑完 10000 次），故**残留进程不是唯一成因**——`Sem` 的 Windows 计数上限为 1，客户端 `Send` 每写一段 `UnLock` 一次、服务端每轮周期 `Lock` 一次，两者本就不是一一对应，偶发多释放一次即记 Error；判据仍按「两端 0 ERROR」，遇此条须人工判读。**2026-09-30 追记（跑法纪律）**：冒烟脚本与 `tools/step_e2e.py` **都占 `tcp://127.0.0.1:20001`**，故不要串在同一条命令里跑——同日把三条冒烟与 e2e 串在一行时，e2e 曾报一次字段不符（`Volume[1000]`、`Price[88.880000]`、`ClientOrderId[8..10]`），该次输出的头部被 `| tail` 截掉、**机制未坐实**；其后把 e2e 单独跑两次、以及「冒烟后紧接 e2e」的复现尝试，均 0 失败行（服务端 113 / 114 帧、客户端 11 帧、字段全吻合），故上条判据不受影响，只作跑法上的规避。
+
+**2026-09-30 关闭（未改任何代码，教训已成纪律）**：本条的结论已写入本文件备注区「Shm 冒烟与 `step_e2e.py` 不串跑」条——每轮先 `taskkill` 两端进程并删 `TestShm` 是**必要步骤**（残留会让服务端 `CreateFileA(…, CREATE_NEW, …)` 直接失败、`Init` 返 `false`，实测不删则 5 轮只过 1 轮）；判据仍是「两端 0 ERROR」，但 `Sem UnLock Failed.` 须人工判读（`Sem` 的 Windows 计数上限为 1，客户端每写一段 `UnLock` 一次、服务端每轮 `Lock` 一次本就不一一对应，2026-09-28 在「起轮前 0 残留进程」的 11 轮里仍出现 1 次，故残留进程不是唯一成因）。另：冒烟脚本与 `tools/step_e2e.py` 同占 `tcp://127.0.0.1:20001`，不得串在同一条命令里跑。
+
+### Q.67
+
+- **`Buffer` 批 4 之后的未决项（2026-09-22 第三次改写；批 1–批 4 均已落地，见 ✅ 区）**：①`Reset` 改名**已裁定不做，不再是待决项**（2026-09-22 用户两次确认：先是「Reset 没必要改名，有点啰嗦」，随后追加理由「这个 LinearBuffer 没说是线程安全的，应该由使用者自己负责」）——`WhenIdle` 后缀只在 `SpscRingBuffer` 上有真实前提（那里确有「两个索引须成对静止」的并发契约），而 `LinearBuffer` 从不声称线程安全、所有权由调用方持有，加后缀反而凭空暗示一个不存在的并发契约；**两侧命名不对称是有意的，勿为「对齐」再改**。我先前记的「须与 IOCP 那条一并定夺」随改名取消而消解——IOCP 那条本身曾是独立未决项，**2026-09-26 已修**（收包契约改借出视图，见 ✅ 区本批；归档 `Q.35`）。②`SetLength` 收到超大 `len` 时取「钳到末尾」（现状）还是「判为非法置 0」——两者都会让对端收到错帧，但钳位会**发出 64 KiB 的零字节**、置 0 则什么都不发；**证据链已完备**：全部 8 个调用点均无法合法超过当前段容量（`TcpBase.cpp:179` 有 `len <= 0` 守卫；IOCP 侧 `PostRecv` 前 `Reset()` 清零索引并把 `WsaBuffer.len` 置 `BufferSize`），故超大值只可能来自 bug（`ClientIoSubscriberImpl.cpp` 与 `ServerIoSubscriberImpl.cpp` 的 `sprintf` 无 `n < 0` 检查——**2026-09-26 两处均已改 `snprintf` 并按容量收敛，不再可能超段**；现存反例只剩 `TcpIocpBase.cpp:304` 的 `DWORD`→`int` 收窄只滤了 `len == 0`）；若改判非法，须用**严格 `>`**（`bytesTransferred == capacity == BufferSize` 是合法可达边界），并连带重写 `LinearBufferTest.cpp` 的死亡测试与 NDEBUG 用例。**该判定本身仍未决**（上列证据经本轮更新后，结论不变）。**原载另两项（审查 L2 的形参 `data`、L3 的非类型模板形参 `SIZE` 大小写，原文误记为「三个类」、实为四个类）与 3+2 条中文注释的去留，已由批 4 全部处置，见 ✅ 区 2026-09-22 批 4 与提交 `07ec001`。**
+
+**2026-09-30 关闭**：①`Reset` 不改名已由用户 2026-09-22 两次确认（两侧命名不对称是有意的）；③④（形参 `data`、非类型模板形参 `SIZE` 等）已随批 4 处置（`07ec001`）；最后一项 ②`SetLength` 收到超大 `len` 的判定**已于同日 `17afc40` 落地为「判非法」**——`include/Spark/TemplateLib/Buffer/LinearBuffer.h:36-47` 现为 `const size_t capacity = Size - readIndex_; if (len > capacity) { writeIndex_ = readIndex_; return false; }`，即严格 `>`（`bytesTransferred == capacity == BufferSize` 这个合法可达边界不受影响）且不发出任何字节，与条目要求的判据逐字一致；死亡测试与 NDEBUG 用例随该批重写。本条的独立未决项只剩「IOCP 那条」——已于 2026-09-26 修（归档 `Q.35`）。故整条关闭。
+
+### Q.66
+
+- **严格化的对端口径须与对端确认（2026-09-18 登记并**当场更正**，本批唯一的行为变更）**：写侧是 `{:04X}={:d}`（纯十进制、无正号），**自家写→自家读不受影响**。**更正**：本条初版称「对端发补位（`00123`）会被拒绝」——**该说法是错的**，`std::from_chars` 与 `strtol` 同族，**前导零照收**。实测口径已由 `StepUtilityTest` 两条新用例钉死：**接受** `0`/`123`/`00123`/`-1`/`-0` 与各宽度边界值；**拒绝** `+123`、` 123`、`123 `、`123abc`、`1.5`、`0x10`、空串、`-`、`--1`、越界（且**被拒绝时不改动出参**）。故真正的收窄只有「前导 `+` / 空白 / 尾随垃圾 / 越界」四类，且这四类在本批之前是**静默取值**、之后是**整包拒绝** + `… Out Of Range` 警告。**待决**：确认对端报文口径，再决定是否需要放宽（如先 trim 空白）。
+
+**2026-09-30 压缩**：原文到此为止，主文件只留一行短版（`见归档 Q.66`），未决点未改。
+
+### Q.65
+
+- **同类宽松解析剩三项未收紧（2026-09-18 实测登记；2026-09-30 半关闭，原文与逐条实测见归档 `Q.55`）**：`int32s`（244 处）与 `int64s`（50 处）早已收紧；`enums`（123 处）、`bools`（12 处）、`doubles`（187 处）三族由 2026-09-30 的收紧批落地——枚举只校验整数范围、布尔只认 0/1、双精度拒非有限值与格式错，失败记 `Warning` 并拒整包（提交 `b8960a1`，模板在 Templates 仓 `2fd7083`）。**仍待决**：①枚举**具名值域**未校验，`AccountType=9` 这类非具名值照收（不做上界的两条理由见 `docs/step-text-field-parsing.md` 第四节）；②写侧 `{:.6f}` **精度上限**（`1e-7` 写出即 `"0.000000"`）与写侧仍原样写出 `nan` / `inf`；③字符串分支 584 处 `memcpy` 静默截断、不记日志不返回 false，与整数族的严格口径不一致，动它须先定「截断算不算错」。
+
+**2026-09-30 压缩**：原文到此为止，主文件只留一行短版（`见归档 Q.65`），未决点未改。
+
+### Q.64
+
+- **CSV 4 文件里本批未处理的 §6/§7/§4 偏差（2026-09-16 复核新增；本批刻意未动，以保住闸门 1d 的「纯改名」证据）**：①**`CsvParser::Parse()` 重复分配不释放**——`CsvParser.cpp:13,24,34` 三处 `new char[TokenMaxLen + 1]`，而 `Parse()` 可被反复调用、每次都覆盖 `currentWord_` 却从不 `delete[]` 旧缓冲（**内存泄漏，HEAD 即存在**）；②`(char *)csvText_` 的 C 风格 cast 2 处（`CsvParser.cpp:21,30`）——`cursor_` 全程只读与自增，改成 `const char*` 后两处 cast 可直接删掉；③`(int)strlen(...)` 2 处（`CsvRecord.cpp:31,40`）与 `(int)csvFields_.size()` 1 处（`CsvRecord.h:63`）；④单参数构造 `CsvParser(const char *)` 缺 `explicit`（`CsvParser.h:20`）；⑤`GetErrorCode()` 缺 `const`（`CsvParser.h:25,39`）；⑥`*` 未贴类型（`char *GetFieldName` 与 `char* nameBuffer_` 在 `CsvRecord.h` 内并存）；⑦`CsvFieldMap` 这个类内 `typedef` 排在 `struct CsvFieldLess` 之后，违 §4「类型别名在最前」。**独立审查逐条复核后确认上述 7 项的行号与处数全部属实**，并**补出下列 11 项我漏掉的**（同一批登记，择批修；★ = 审查新增）：
+  - **安全（优先）**：★`AppendNameToken`/`AppendContentToken` 的 `memcpy` **无容量校验**——向固定 1 KB 的 `CsvRecordMaxHeadSize` 累加写，头行超限即越界，且 `AnalysisFieldName` 恒 `return true`，越界后**没有任何失败路径**（`CsvRecord.cpp:33,42`）；★`atoi`/`atoll`/`atof` 无溢出与格式校验，越界即 UB、格式错静默返 0（`CsvRecord.cpp:118,128,144`，违 Harness §6「跨类型转换须 `TryParse` 风格」）。
+  - **规范**：★`CsvRecord` 的 **8 个纯读取访问器全部缺 `const`**（§7，比我只记的 `GetErrorCode()` 面更大，加 `const` 对调用方**源兼容**，`CsvRecord.h:19-21,26-30,61,66,71`）；★形参 `s1`/`s2`（`CsvRecord.h:46`，`CsvFieldLess::operator()`）；★重复的 `private:` 访问标签（`CsvParser.h:26,29`；`CsvRecord.h:32,35`）；★`<stdlib.h>`/`<stdint.h>` 应为 `<cstdlib>`/`<cstdint>`（§7）；★`#include` 三组连排、组间缺空行（§2）；`tokenLen` 名不精确（是含 NUL 终止符的拷贝字节数；原名同样不准，**本批未使情况变差**）；循环下标 `i`——**Harness §4 的禁令原文限定为「公开接口的标识符」，故属可选优化而非违规，勿升级处理**。
+  - **信息（不建议作为规范批处理）**：⑰`virtual ~CsvParser()`/`virtual ~CsvRecord()` 在无虚函数、无派生的类上只徒增 vtable；⑱全文件依赖 `strchr`/`strlen`/`strcmp`/`char*` 而非 `std::string`/`string_view`（§7），属**架构级重写**，须单独立项。
+
+**2026-09-30 压缩**：原文到此为止，主文件只留一行短版（`见归档 Q.64`），未决点未改。
+
+### Q.63
+
+- **批 3 Spark 侧公开 API 改名的收尾（2026-09-15 提出；2026-09-17 授权已获，待排批执行）**：按 Harness §3 本须单独授权，**2026-09-17 用户裁定：API 改动没问题，项目尚未发布、仍在初期**，此后本仓公开 API 的改名不再逐项报批。**待执行项**：`namespace Spark` 112 处 / 112 文件、小写访问器与方法约 1,295 处（最大头是 `length` 1,192 处，需先甄别哪些是我方方法、哪些是标准库——`std::` 一族已滤掉，但跨库同名须人工确认）、C 风格 cast 134 处、`k` 前缀 221 处、`g_` 66 处。~~`enum CSV_PARSER_ERROR` + `CPE_*` → `enum class`~~（已于 2026-09-16 随 CSV 批落地，见归档 `D.25`）。**原条目③（裸 `new` 46 处 / 裸 `delete` 20 处 → 智能指针、`volatile` 6 处 / 2 文件 → `std::atomic`）已整项撤销**，不再是待办，裁定见归档 `Q.21`。**注**：本条原为「六仓 C++ 规范对齐：批 2–7 的授权」，2026-09-17 按用户指示**只保留 Spark 侧**，涉仓外的部分（批 2 Templates、批 6 QuantTrading、批 4 DbAdapters 前置等）已删除。**注意去向**：本条是**未决条目、从未归档**，被删的原文只存于本仓 git 历史 `b913108`；归档里的 `D.20`–`D.23` 是六仓批 1 / 批 2 前置 / 2a / 2b 的**已完成**记录，与这条不是一回事。
+
+**2026-09-30 压缩**：原文到此为止，主文件只留一行短版（`见归档 Q.63`），未决点未改。
+
+### Q.62
+
+- **`pump.py` / `pumpall.py` 的三处既有问题（2026-09-15 登记；2026-09-17 复核后补回本区）**：两个脚本就在本仓根目录（362 + 65 行）。①`os.system` + `%` 拼串 + 硬编码 `python`（违 `python-style.md` §7「禁 `os.system`」，也踩 Harness §6 注入防护口径）——改它会动到三仓的调用方式（`model` 是空格分隔的多文件，现在靠 cmd.exe 切分）；②「勿手改」头注释里嵌的是**调用时原样传入的模板路径**，手工直调会产出不同首行、制造假 `git diff`；③对产物不做内容体检，`os.replace` 成功即算成功（已用扩展名白名单堵住最坏的一类）。**注**：本条曾在 2026-09-17「删其他仓库相关内容」时被误判为跨仓工具链而删除，复核确认脚本落点在本仓后补回。
+
+**2026-09-30 压缩**：原文到此为止，主文件只留一行短版（`见归档 Q.62`），未决点未改。
+
+### Q.61
+
+- **`tools/s4scan.py` 把带括号初始化式的静态常量误判成成员函数（2026-09-26，待决）**：`classify()` 先按 `'(' in d` 判函数，而 `= sizeof(T) * 2` 这类初始化式必带括号，该常量遂被归入 §4 第 5 组；它排在构造函数之前（§4 要求常量属第 2 组、先于特殊成员）即报出**与事实相反**的 `ORDER`。本批以「命名空间级变量模板 + 类内只写类型名」绕过。**待决**：是否单开一批修 `classify()`（依 `=` 的有无即可区分常量与 `static constexpr` 成员函数），修后该绕过可还原为普通常量。②**同源误判（2026-09-26 收尾实测补）**：折行的构造函数初始化列表**续行**（`disConnectCount_(0)` 这类）同样被判成成员——圆括号续行判成普通成员函数、花括号续行判成数据成员，**只有整段写在构造函数那一行才不被误判**（同一文件三类探针见 ✅ 区 `c7418fd` 条）。当前规避法是「初始化列表不折行 + 长列表改类内初始化式」，即该判据在**事实上**给出一条源码约定。**待决**：是修 `classify()`（识别初始化列表段与类内初始化式），还是把这条约定写进 `rules/cpp-style.md` 明面化。
+
+**2026-09-30 关闭（提交 `861e05e`）**：`classify()` 新增 `is_paren_initialized_data_member()`——「首个 `(` 落在首个赋值号之后」即判 `data`，赋值号判据为 `(?<!operator)(?<![=!<>+\-*/%&|^])=(?!=)`（初版只排 `operator`，把 `operator==` 的第二个 `=` 也算成赋值，`neg.h` 由 0 变 1 条，故加宽）。语料 `tools/selfcheck/parenconst.h` 入库：`ParenConstOk`（同常量写在构造前）须 0 条、`ParenConstBad`（写在构造后）须 1 条 ORDER——缺任一半就丢掉一个方向的判别力；五份 `s4scan` 语料自证 10 / 0 / 2 / 1 / 1 全绿，闸门 `s4scan.py --gate --exempt-struct-default-access` 退出码 0。**残留**（已记在助手 docstring 里）：类型模板实参内的 `(` 仍可能把该行误判成函数。
+
+### Q.60
+
+- **`ObjectPool` B 方案的三处残留（2026-09-26，待决）**：①线程退出时本地链上的残留节点不回收（上界约「每退出线程一块」，默认 64 个，反复创建/销毁线程会累积）；②`SetBlockUnitNum` 不在 `mutex_` 内、③热路径读 `blockUnitNum_` 非原子（②③同源，现状仅测试与启动期调用）。**待决**：①是否立项回收（备选：线程退出登记表、`GetInstance()` 惰性清扫）；②③是否立「启动期可调、此后禁改」的成文契约。
+
+**2026-09-30 压缩**：原文到此为止，主文件只留一行短版（`见归档 Q.60`），未决点未改。
+
+### Q.59
+
+- **发送缓冲缺「领了不发」的归还出口（2026-09-26 本批留白，待决）**：`IoBase::AllocateSendBuffer()` 只给了领取端，归还的正规路径是 `Send`（含「会话不存在即丢弃」那条出口）；调用方一旦领了缓冲却决定不发，就没有 DLL 侧的释放入口，只能自己 `Deallocate()`——而那正是本批要消除的跨模块归还。现有四处调用点都必然发送，故本批未一并加 `DeallocateSendBuffer()`（避免引入无调用者的公开 API）。**待决**：是否补该出口。
+
+**2026-09-30 压缩**：原文到此为止，主文件只留一行短版（`见归档 Q.59`），未决点未改。
+
+### Q.58
+
+- **`IoBase::GetSessionId` 的会话号在同一毫秒内会回绕（2026-09-30 本批留白，待决）**：取号式子是 `毫秒 * 100 + (++序号) % 100`，同一毫秒只容得下 100 个号，第 101 次取号会与在册连接撞号；一次事件循环把 backlog 收完即批量接入，故批量建连（客户端农场、开盘瞬间重连潮）可达。本批已把撞号从「静默」改为「记 `Error` 并拒绝、不宣告、不代拆」（提交 `e79c231`，两处在 `IoBase::AddConnect` 与 `Protocol::OnConnect`，契约见 `docs/io-subscriber-notification-contract.md`「重复会话号」一节），但**取号本身没改**：被拒的连接仍在调用方手里，它若按号 `RemoveConnect` 收尾，抹掉的还是在册的那条，且该连接对象不会再被归还。**待决（三个备选）**：(a) 改进程内单调计数（号里不再带时间信息，日志失去「按号看时间」的可读性）；(b) 加宽序号位（如 `毫秒 * 1000000 + 序号`，须先定 64 位余量，号的面值也变）；(c) 让 `AddConnect` 把「是否受理」返回给调用方（导出虚函数签名变更，属 §3.1 强制确认点，且八个调用点都要接住拒绝分支）。另有一条与 (c) 无关的残留：`RemoveConnect` 的 `erase` 按号而非按指针身份，撞号时它抹的是在册的那条。
+
+**2026-09-30 压缩**：原文到此为止，主文件只留一行短版（`见归档 Q.58`），未决点未改。
 
 ### Q.57
 
