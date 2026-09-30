@@ -171,6 +171,10 @@ void Protocol::OnRecv(SessionIdType sessionId, const char* data, size_t length)
         {
             subscriber_->OnMessage(package);
         }
+        else
+        {
+            package->Deallocate();
+        }
     }
 }
 }
