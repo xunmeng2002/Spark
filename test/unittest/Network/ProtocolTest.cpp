@@ -45,6 +45,17 @@ private:
     PackageAccounting* accounting_;
 };
 
+class OversizedBodyPackage : public Package
+{
+public:
+    void Deallocate() override { delete this; }
+    int ToStepStream(char*, int) const override { return static_cast<int>(MaxFrameBodyLen) + 1; }
+    bool FromStepStream(char*, int, int) override { return true; }
+    int ToXtpStream(char*, int) const override { return 0; }
+    bool FromXtpStream(char*, int, int) override { return true; }
+    const char* GetDebugString() const override { return "OversizedBodyPackage"; }
+};
+
 class PackageAccountingFactory : public PackageFactoryBase
 {
 public:
@@ -64,11 +75,12 @@ class RecvProbeIo : public IoBase
 public:
     RecvProbeIo() : IoBase(ServerTypeType::Server, "tcp://127.0.0.1:10001", 1000) {}
 
-    void Send(SessionIdType, Spark::LinearBuffer<BufferSize>*) override {}
+    void Send(SessionIdType, Spark::LinearBuffer<BufferSize>*) override { ++SendCount; }
     void HandleIoEvent() override {}
     void DisConnect(SessionIdType) override { ++DisConnectCount; }
 
     int DisConnectCount = 0;
+    int SendCount = 0;
 
 protected:
     void DoSend(Connect*) override {}
@@ -184,6 +196,26 @@ TEST_F(ProtocolRecvTest, APackageParsedWithoutASubscriberIsReturnedToTheFactory)
     EXPECT_EQ(accounting_.CreatedCount, 1);
     EXPECT_EQ(accounting_.DisposedCount, 1);
     EXPECT_EQ(ioProbe_->DisConnectCount, 0);
+}
+
+TEST_F(ProtocolRecvTest, AFrameThatCannotBeBuiltReportsFailureAndIsNeverHandedToTheTransport)
+{
+    OversizedBodyPackage oversized;
+    oversized.SessionId = SessionId;
+
+    EXPECT_FALSE(protocol_->Send(&oversized));
+    EXPECT_EQ(ioProbe_->SendCount, 0);
+}
+
+TEST_F(ProtocolRecvTest, AFrameThatCanBeBuiltReportsSuccessAndIsHandedToTheTransportOnce)
+{
+    auto* package = NotifyComponentConnectStatusPackage::Allocate();
+    package->Prepare(SessionId, 0, FirstMsgSeqNum);
+
+    EXPECT_TRUE(protocol_->Send(package));
+    EXPECT_EQ(ioProbe_->SendCount, 1);
+
+    package->Deallocate();
 }
 
 TEST_F(ProtocolRecvTest, ARepeatedOnConnectForOneSessionKeepsTheFirstReaderAndReturnsTheSecondToThePool)

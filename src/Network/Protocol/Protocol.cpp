@@ -114,7 +114,7 @@ bool Protocol::Send(Package* package)
     {
         WriteLog(LogLevel::Warning, "MakePackage Failed, Frame Dropped. Len:%d, SessionId:%lld", len, package->SessionId);
         buffer->Deallocate();
-        return true;
+        return false;
     }
     ioBase_->Send(package->SessionId, buffer);
     return true;
