@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <utility>
 #include <charconv>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <format>
@@ -121,6 +122,46 @@ public:
         const char* last = first + text.size();
         auto result = std::from_chars(first, last, parsed, base);
         if (result.ec != std::errc() || result.ptr != last)
+        {
+            return false;
+        }
+        value = parsed;
+        return true;
+    }
+    template <typename T>
+    static bool ParseEnum(const std::string& text, T& value)
+    {
+        static_assert(std::is_enum<T>::value, "ParseEnum 只接受枚举");
+        using UnderlyingType = std::underlying_type_t<T>;
+        UnderlyingType parsed = 0;
+        if (!ParseInteger(text, parsed))
+        {
+            return false;
+        }
+        value = static_cast<T>(parsed);
+        return true;
+    }
+    static bool ParseBool(const std::string& text, BoolType& value)
+    {
+        Int32Type parsed = 0;
+        if (!ParseInteger(text, parsed) || (parsed != 0 && parsed != 1))
+        {
+            return false;
+        }
+        value = parsed == 1;
+        return true;
+    }
+    static bool ParseDouble(const std::string& text, DoubleType& value)
+    {
+        if (text.empty())
+        {
+            return false;
+        }
+        DoubleType parsed = 0.0;
+        const char* first = text.data();
+        const char* last = first + text.size();
+        const std::from_chars_result result = std::from_chars(first, last, parsed);
+        if (result.ec != std::errc() || result.ptr != last || !std::isfinite(parsed))
         {
             return false;
         }

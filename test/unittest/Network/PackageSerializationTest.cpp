@@ -811,3 +811,144 @@ TEST(PackageSerializationTest, StepRoundTrip_Int32OutOfRangeIsRejected)
     EXPECT_FALSE(reader.ParsePackage(parsedRaw));
     EXPECT_EQ(parsedRaw, nullptr);
 }
+
+namespace
+{
+// 一条 STEP 帧解析一遍。返回 false 时 parsed 必为 nullptr，与 reader 的失败约定一致
+bool ParseStepFrame(char* frameData, int totalLen, Package*& parsed)
+{
+    PackageFactory factory;
+    PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
+    if (static_cast<int>(reader.Append(frameData, totalLen)) != totalLen)
+    {
+        return false;
+    }
+    parsed = nullptr;
+    return reader.ParsePackage(parsed);
+}
+
+RspQryCapitalPackage* CreateSampleCapital(AccountTypeType accountType, MoneyType asset)
+{
+    auto* pkg = RspQryCapitalPackage::Allocate();
+    pkg->Prepare(SessionId, 0, 1002);
+
+    auto* field = ObjectPool<CapitalField>::GetInstance().Allocate();
+    std::memset(field, 0, sizeof(*field));
+    std::snprintf(field->TradingDay, sizeof(field->TradingDay), "20260930");
+    std::snprintf(field->AccountId, sizeof(field->AccountId), "Xunmeng001");
+    field->AccountType = accountType;
+    field->Asset = asset;
+
+    pkg->Capital = field;
+    return pkg;
+}
+
+struct NonFiniteAssetSample
+{
+    MoneyType AssetValue;
+    const char* WrittenText;
+};
+
+constexpr NonFiniteAssetSample NonFiniteAssetSamples[] = {
+    {std::numeric_limits<MoneyType>::quiet_NaN(), "nan"},
+    {std::numeric_limits<MoneyType>::infinity(), "inf"},
+    {-std::numeric_limits<MoneyType>::infinity(), "-inf"},
+};
+}
+
+TEST(PackageSerializationTest, StepRoundTrip_EnumFieldRejectsNonIntegerText)
+{
+    // 读侧由 static_cast<AccountTypeType>(atoi(...)) 换成 ParseEnum：整型文本照收，
+    // 非整型文本从"静默落成 0"改成整包拒绝。具名值域仍不校验，一并钉住
+    auto* pkg = CreateSampleCapital(AccountTypeType::Primary, 100.5);
+    char buff[MaxPackageSize] = {};
+    const int totalLen = pkg->MakePackage(ProtocolTypeType::Step, buff, MaxPackageSize);
+    EXPECT_GT(totalLen, 0);
+    pkg->Deallocate();
+
+    std::string frame(buff, totalLen);
+    EXPECT_NE(frame.find(std::format("{:04X}=0", Items::AccountType)), std::string::npos)
+        << "枚举写侧必须写成裸十进制整数，否则严格解析会拒绝自家输出";
+
+    Package* parsedRaw = nullptr;
+    ASSERT_TRUE(ParseStepFrame(buff, totalLen, parsedRaw)) << "对照帧都解析不了，下面的失败结论不作数";
+    EXPECT_EQ(static_cast<int>(static_cast<RspQryCapitalPackage*>(parsedRaw)->Capital->AccountType), static_cast<int>(AccountTypeType::Primary));
+    parsedRaw->Deallocate();
+
+    // 非整型文本：改前 atoi("x") 得 0，报文照常解析成功并把 Primary 原样留下
+    std::string nonIntegerFrame = frame;
+    ASSERT_TRUE(PatchStepItemValue(nonIntegerFrame, Items::AccountType, "0", "x"));
+    std::memcpy(buff, nonIntegerFrame.data(), nonIntegerFrame.size());
+    RefreshStepTail(buff, totalLen);
+    parsedRaw = nullptr;
+    EXPECT_FALSE(ParseStepFrame(buff, totalLen, parsedRaw));
+    EXPECT_EQ(parsedRaw, nullptr);
+
+    // 已知界限：9 落在整数范围内、却不属于 AccountTypeType 的具名值，仍被收下（跨模型取成员数未做）
+    std::string unnamedValueFrame = frame;
+    ASSERT_TRUE(PatchStepItemValue(unnamedValueFrame, Items::AccountType, "0", "9"));
+    std::memcpy(buff, unnamedValueFrame.data(), unnamedValueFrame.size());
+    RefreshStepTail(buff, totalLen);
+    parsedRaw = nullptr;
+    ASSERT_TRUE(ParseStepFrame(buff, totalLen, parsedRaw));
+    EXPECT_EQ(static_cast<int>(static_cast<RspQryCapitalPackage*>(parsedRaw)->Capital->AccountType), 9);
+    parsedRaw->Deallocate();
+}
+
+TEST(PackageSerializationTest, StepRoundTrip_NonFiniteDoubleFieldIsRejected)
+{
+    // 写侧 {:.6f} 对 nan/inf 原样输出（不报错也不替换），改前 atof 照单全收，
+    // 非有限值就此静默流进业务字段。改后读侧拒绝整包
+    auto* controlPkg = CreateSampleCapital(AccountTypeType::Primary, 100.5);
+    char controlBuff[MaxPackageSize] = {};
+    const int controlLen = controlPkg->MakePackage(ProtocolTypeType::Step, controlBuff, MaxPackageSize);
+    EXPECT_GT(controlLen, 0);
+    controlPkg->Deallocate();
+
+    Package* controlRaw = nullptr;
+    ASSERT_TRUE(ParseStepFrame(controlBuff, controlLen, controlRaw)) << "对照帧都解析不了，下面的失败结论不作数";
+    EXPECT_DOUBLE_EQ(static_cast<RspQryCapitalPackage*>(controlRaw)->Capital->Asset, 100.5);
+    controlRaw->Deallocate();
+
+    for (const NonFiniteAssetSample& sample : NonFiniteAssetSamples)
+    {
+        auto* pkg = CreateSampleCapital(AccountTypeType::Primary, sample.AssetValue);
+        char buff[MaxPackageSize] = {};
+        const int totalLen = pkg->MakePackage(ProtocolTypeType::Step, buff, MaxPackageSize);
+        EXPECT_GT(totalLen, 0);
+        pkg->Deallocate();
+
+        const std::string frame(buff, totalLen);
+        EXPECT_NE(frame.find(std::format("{:04X}={}", Items::Asset, sample.WrittenText)), std::string::npos)
+            << "写侧本就把 " << sample.WrittenText << " 原样写出，读侧必须拒绝";
+
+        Package* parsedRaw = nullptr;
+        EXPECT_FALSE(ParseStepFrame(buff, totalLen, parsedRaw)) << sample.WrittenText;
+        EXPECT_EQ(parsedRaw, nullptr);
+    }
+}
+
+TEST(PackageSerializationTest, StepRoundTrip_BoolFieldRejectsNonZeroOne)
+{
+    // 改前 atoi 把任何非零文本都读成 true：对端写 "2" 会被静默收成 true；
+    // 改后只认 0/1，其余整包拒绝
+    char buff[MaxPackageSize] = {};
+    const int totalLen = MakeFrame(ProtocolTypeType::Step, buff, 1001);
+    ASSERT_GT(totalLen, 0);
+
+    std::string frame(buff, totalLen);
+    EXPECT_NE(frame.find(std::format("{:04X}=1", Items::IsConnected)), std::string::npos);
+
+    Package* controlRaw = nullptr;
+    ASSERT_TRUE(ParseStepFrame(buff, totalLen, controlRaw)) << "对照帧都解析不了，下面的失败结论不作数";
+    EXPECT_TRUE(static_cast<NotifyComponentConnectStatusPackage*>(controlRaw)->NotifyComponentConnectStatus->IsConnected);
+    controlRaw->Deallocate();
+
+    ASSERT_TRUE(PatchStepItemValue(frame, Items::IsConnected, "1", "2"));
+    std::memcpy(buff, frame.data(), frame.size());
+    RefreshStepTail(buff, totalLen);
+
+    Package* parsedRaw = nullptr;
+    EXPECT_FALSE(ParseStepFrame(buff, totalLen, parsedRaw));
+    EXPECT_EQ(parsedRaw, nullptr);
+}

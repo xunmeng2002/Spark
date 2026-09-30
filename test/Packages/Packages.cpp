@@ -121,12 +121,20 @@ bool NotifyComponentConnectStatusPackage::FromStepStream(char* buff, int startIn
 						}
 						case Items::Component:
 						{
-							NotifyComponentConnectStatus->Component = static_cast<ComponentType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, NotifyComponentConnectStatus->Component))
+							{
+								WriteLog(LogLevel::Warning, "Component Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::IsConnected:
 						{
-							NotifyComponentConnectStatus->IsConnected = atoi(value.c_str());
+							if (!StepUtility::ParseBool(value, NotifyComponentConnectStatus->IsConnected))
+							{
+								WriteLog(LogLevel::Warning, "IsConnected Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -1299,12 +1307,20 @@ bool RspQryAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::AccountType:
 						{
-							Account->AccountType = static_cast<AccountTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Account->AccountType))
+							{
+								WriteLog(LogLevel::Warning, "AccountType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::AccountStatus:
 						{
-							Account->AccountStatus = static_cast<AccountStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Account->AccountStatus))
+							{
+								WriteLog(LogLevel::Warning, "AccountStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TradeGroupId:
@@ -1744,7 +1760,11 @@ bool RspQryHolderAccountPackage::FromStepStream(char* buff, int startIndex, int 
 						}
 						case Items::PrimaryFlag:
 						{
-							HolderAccount->PrimaryFlag = atoi(value.c_str());
+							if (!StepUtility::ParseBool(value, HolderAccount->PrimaryFlag))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryFlag Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -2178,112 +2198,200 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::AccountType:
 						{
-							Capital->AccountType = static_cast<AccountTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Capital->AccountType))
+							{
+								WriteLog(LogLevel::Warning, "AccountType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Asset:
 						{
-							Capital->Asset = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->Asset))
+							{
+								WriteLog(LogLevel::Warning, "Asset Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::PreAsset:
 						{
-							Capital->PreAsset = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->PreAsset))
+							{
+								WriteLog(LogLevel::Warning, "PreAsset Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CashAsset:
 						{
-							Capital->CashAsset = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->CashAsset))
+							{
+								WriteLog(LogLevel::Warning, "CashAsset Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::PreCashAsset:
 						{
-							Capital->PreCashAsset = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->PreCashAsset))
+							{
+								WriteLog(LogLevel::Warning, "PreCashAsset Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Available:
 						{
-							Capital->Available = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->Available))
+							{
+								WriteLog(LogLevel::Warning, "Available Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CashIn:
 						{
-							Capital->CashIn = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->CashIn))
+							{
+								WriteLog(LogLevel::Warning, "CashIn Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CashOut:
 						{
-							Capital->CashOut = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->CashOut))
+							{
+								WriteLog(LogLevel::Warning, "CashOut Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Margin:
 						{
-							Capital->Margin = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->Margin))
+							{
+								WriteLog(LogLevel::Warning, "Margin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Commission:
 						{
-							Capital->Commission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->Commission))
+							{
+								WriteLog(LogLevel::Warning, "Commission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::StampTax:
 						{
-							Capital->StampTax = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->StampTax))
+							{
+								WriteLog(LogLevel::Warning, "StampTax Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TransferFee:
 						{
-							Capital->TransferFee = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->TransferFee))
+							{
+								WriteLog(LogLevel::Warning, "TransferFee Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenCash:
 						{
-							Capital->FrozenCash = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->FrozenCash))
+							{
+								WriteLog(LogLevel::Warning, "FrozenCash Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenMargin:
 						{
-							Capital->FrozenMargin = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->FrozenMargin))
+							{
+								WriteLog(LogLevel::Warning, "FrozenMargin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenCommission:
 						{
-							Capital->FrozenCommission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->FrozenCommission))
+							{
+								WriteLog(LogLevel::Warning, "FrozenCommission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenStampTax:
 						{
-							Capital->FrozenStampTax = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->FrozenStampTax))
+							{
+								WriteLog(LogLevel::Warning, "FrozenStampTax Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenTransferFee:
 						{
-							Capital->FrozenTransferFee = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->FrozenTransferFee))
+							{
+								WriteLog(LogLevel::Warning, "FrozenTransferFee Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::MarketValue:
 						{
-							Capital->MarketValue = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->MarketValue))
+							{
+								WriteLog(LogLevel::Warning, "MarketValue Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TotalProfit:
 						{
-							Capital->TotalProfit = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->TotalProfit))
+							{
+								WriteLog(LogLevel::Warning, "TotalProfit Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TodayProfit:
 						{
-							Capital->TodayProfit = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->TodayProfit))
+							{
+								WriteLog(LogLevel::Warning, "TodayProfit Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Deposit:
 						{
-							Capital->Deposit = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->Deposit))
+							{
+								WriteLog(LogLevel::Warning, "Deposit Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Withdraw:
 						{
-							Capital->Withdraw = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->Withdraw))
+							{
+								WriteLog(LogLevel::Warning, "Withdraw Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -2727,7 +2835,11 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::AccountType:
 						{
-							Position->AccountType = static_cast<AccountTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Position->AccountType))
+							{
+								WriteLog(LogLevel::Warning, "AccountType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::ExchangeId:
@@ -2744,12 +2856,20 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::ProductClass:
 						{
-							Position->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Position->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::PosiDirection:
 						{
-							Position->PosiDirection = static_cast<PosiDirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Position->PosiDirection))
+							{
+								WriteLog(LogLevel::Warning, "PosiDirection Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TotalPosition:
@@ -2781,47 +2901,83 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::TotalCostPrice:
 						{
-							Position->TotalCostPrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TotalCostPrice))
+							{
+								WriteLog(LogLevel::Warning, "TotalCostPrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TodayCostPrice:
 						{
-							Position->TodayCostPrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TodayCostPrice))
+							{
+								WriteLog(LogLevel::Warning, "TodayCostPrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CashIn:
 						{
-							Position->CashIn = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->CashIn))
+							{
+								WriteLog(LogLevel::Warning, "CashIn Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CashOut:
 						{
-							Position->CashOut = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->CashOut))
+							{
+								WriteLog(LogLevel::Warning, "CashOut Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Margin:
 						{
-							Position->Margin = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->Margin))
+							{
+								WriteLog(LogLevel::Warning, "Margin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Commission:
 						{
-							Position->Commission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->Commission))
+							{
+								WriteLog(LogLevel::Warning, "Commission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::StampTax:
 						{
-							Position->StampTax = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->StampTax))
+							{
+								WriteLog(LogLevel::Warning, "StampTax Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TransferFee:
 						{
-							Position->TransferFee = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TransferFee))
+							{
+								WriteLog(LogLevel::Warning, "TransferFee Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::MarketValue:
 						{
-							Position->MarketValue = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->MarketValue))
+							{
+								WriteLog(LogLevel::Warning, "MarketValue Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::VolumeMultiple:
@@ -2835,32 +2991,56 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::TotalCost:
 						{
-							Position->TotalCost = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TotalCost))
+							{
+								WriteLog(LogLevel::Warning, "TotalCost Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TodayCost:
 						{
-							Position->TodayCost = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TodayCost))
+							{
+								WriteLog(LogLevel::Warning, "TodayCost Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TotalProfit:
 						{
-							Position->TotalProfit = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TotalProfit))
+							{
+								WriteLog(LogLevel::Warning, "TotalProfit Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TodayProfit:
 						{
-							Position->TodayProfit = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TodayProfit))
+							{
+								WriteLog(LogLevel::Warning, "TodayProfit Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::LastPrice:
 						{
-							Position->LastPrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->LastPrice))
+							{
+								WriteLog(LogLevel::Warning, "LastPrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::PrePrice:
 						{
-							Position->PrePrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->PrePrice))
+							{
+								WriteLog(LogLevel::Warning, "PrePrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -3343,7 +3523,11 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::ProductClass:
 						{
-							Order->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderId:
@@ -3363,22 +3547,38 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::Direction:
 						{
-							Order->Direction = static_cast<DirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->Direction))
+							{
+								WriteLog(LogLevel::Warning, "Direction Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OffsetFlag:
 						{
-							Order->OffsetFlag = static_cast<OffsetFlagType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->OffsetFlag))
+							{
+								WriteLog(LogLevel::Warning, "OffsetFlag Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderPriceType:
 						{
-							Order->OrderPriceType = static_cast<OrderPriceTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->OrderPriceType))
+							{
+								WriteLog(LogLevel::Warning, "OrderPriceType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Price:
 						{
-							Order->Price = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->Price))
+							{
+								WriteLog(LogLevel::Warning, "Price Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Volume:
@@ -3419,7 +3619,11 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::OrderStatus:
 						{
-							Order->OrderStatus = static_cast<OrderStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->OrderStatus))
+							{
+								WriteLog(LogLevel::Warning, "OrderStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::StatusMsg:
@@ -3481,27 +3685,47 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::FrozenCash:
 						{
-							Order->FrozenCash = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenCash))
+							{
+								WriteLog(LogLevel::Warning, "FrozenCash Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenMargin:
 						{
-							Order->FrozenMargin = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenMargin))
+							{
+								WriteLog(LogLevel::Warning, "FrozenMargin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenCommission:
 						{
-							Order->FrozenCommission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenCommission))
+							{
+								WriteLog(LogLevel::Warning, "FrozenCommission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenStampTax:
 						{
-							Order->FrozenStampTax = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenStampTax))
+							{
+								WriteLog(LogLevel::Warning, "FrozenStampTax Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenTransferFee:
 						{
-							Order->FrozenTransferFee = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenTransferFee))
+							{
+								WriteLog(LogLevel::Warning, "FrozenTransferFee Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -3966,7 +4190,11 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::ProductClass:
 						{
-							Trade->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Trade->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderId:
@@ -3992,17 +4220,29 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::Direction:
 						{
-							Trade->Direction = static_cast<DirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Trade->Direction))
+							{
+								WriteLog(LogLevel::Warning, "Direction Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OffsetFlag:
 						{
-							Trade->OffsetFlag = static_cast<OffsetFlagType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Trade->OffsetFlag))
+							{
+								WriteLog(LogLevel::Warning, "OffsetFlag Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Price:
 						{
-							Trade->Price = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Trade->Price))
+							{
+								WriteLog(LogLevel::Warning, "Price Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Volume:
@@ -4025,22 +4265,38 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::TradeAmount:
 						{
-							Trade->TradeAmount = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Trade->TradeAmount))
+							{
+								WriteLog(LogLevel::Warning, "TradeAmount Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Commission:
 						{
-							Trade->Commission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Trade->Commission))
+							{
+								WriteLog(LogLevel::Warning, "Commission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::StampTax:
 						{
-							Trade->StampTax = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Trade->StampTax))
+							{
+								WriteLog(LogLevel::Warning, "StampTax Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TransferFee:
 						{
-							Trade->TransferFee = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Trade->TransferFee))
+							{
+								WriteLog(LogLevel::Warning, "TransferFee Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TradeDate:
@@ -4508,7 +4764,11 @@ bool RspQryInstrumentPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::ProductClass:
 						{
-							Instrument->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Instrument->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -4979,7 +5239,11 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 						}
 						case Items::OptionType:
 						{
-							OptionInstrument->OptionType = static_cast<OptionTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, OptionInstrument->OptionType))
+							{
+								WriteLog(LogLevel::Warning, "OptionType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::UnderlyingInstrumentId:
@@ -4990,17 +5254,29 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 						}
 						case Items::ExecutePrice:
 						{
-							OptionInstrument->ExecutePrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, OptionInstrument->ExecutePrice))
+							{
+								WriteLog(LogLevel::Warning, "ExecutePrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::UnitMargin:
 						{
-							OptionInstrument->UnitMargin = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, OptionInstrument->UnitMargin))
+							{
+								WriteLog(LogLevel::Warning, "UnitMargin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::PriceTick:
 						{
-							OptionInstrument->PriceTick = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, OptionInstrument->PriceTick))
+							{
+								WriteLog(LogLevel::Warning, "PriceTick Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::MaxLimitOrderVolume:
@@ -5265,7 +5541,11 @@ bool ReqQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::ProductClass:
 						{
-							ReqQryCommissionRate->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqQryCommissionRate->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -5460,37 +5740,65 @@ bool RspQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::ProductClass:
 						{
-							CommissionRate->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, CommissionRate->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OpenByMoney:
 						{
-							CommissionRate->OpenByMoney = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, CommissionRate->OpenByMoney))
+							{
+								WriteLog(LogLevel::Warning, "OpenByMoney Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CloseByMoney:
 						{
-							CommissionRate->CloseByMoney = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, CommissionRate->CloseByMoney))
+							{
+								WriteLog(LogLevel::Warning, "CloseByMoney Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OpenByVolume:
 						{
-							CommissionRate->OpenByVolume = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, CommissionRate->OpenByVolume))
+							{
+								WriteLog(LogLevel::Warning, "OpenByVolume Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CloseByVolume:
 						{
-							CommissionRate->CloseByVolume = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, CommissionRate->CloseByVolume))
+							{
+								WriteLog(LogLevel::Warning, "CloseByVolume Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::MinCommission:
 						{
-							CommissionRate->MinCommission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, CommissionRate->MinCommission))
+							{
+								WriteLog(LogLevel::Warning, "MinCommission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::MaxCommission:
 						{
-							CommissionRate->MaxCommission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, CommissionRate->MaxCommission))
+							{
+								WriteLog(LogLevel::Warning, "MaxCommission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -5935,17 +6243,29 @@ bool RspQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 						}
 						case Items::AccountType:
 						{
-							MoneyTransfer->AccountType = static_cast<AccountTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, MoneyTransfer->AccountType))
+							{
+								WriteLog(LogLevel::Warning, "AccountType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TransferDirection:
 						{
-							MoneyTransfer->TransferDirection = static_cast<TransferDirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, MoneyTransfer->TransferDirection))
+							{
+								WriteLog(LogLevel::Warning, "TransferDirection Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TransferAmount:
 						{
-							MoneyTransfer->TransferAmount = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, MoneyTransfer->TransferAmount))
+							{
+								WriteLog(LogLevel::Warning, "TransferAmount Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::InfoMessage:
@@ -6226,22 +6546,38 @@ bool ReqInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::Direction:
 						{
-							ReqInsertOrder->Direction = static_cast<DirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqInsertOrder->Direction))
+							{
+								WriteLog(LogLevel::Warning, "Direction Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OffsetFlag:
 						{
-							ReqInsertOrder->OffsetFlag = static_cast<OffsetFlagType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqInsertOrder->OffsetFlag))
+							{
+								WriteLog(LogLevel::Warning, "OffsetFlag Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderPriceType:
 						{
-							ReqInsertOrder->OrderPriceType = static_cast<OrderPriceTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqInsertOrder->OrderPriceType))
+							{
+								WriteLog(LogLevel::Warning, "OrderPriceType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Price:
 						{
-							ReqInsertOrder->Price = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqInsertOrder->Price))
+							{
+								WriteLog(LogLevel::Warning, "Price Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Volume:
@@ -6518,7 +6854,11 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::ProductClass:
 						{
-							Order->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderId:
@@ -6538,22 +6878,38 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::Direction:
 						{
-							Order->Direction = static_cast<DirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->Direction))
+							{
+								WriteLog(LogLevel::Warning, "Direction Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OffsetFlag:
 						{
-							Order->OffsetFlag = static_cast<OffsetFlagType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->OffsetFlag))
+							{
+								WriteLog(LogLevel::Warning, "OffsetFlag Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderPriceType:
 						{
-							Order->OrderPriceType = static_cast<OrderPriceTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->OrderPriceType))
+							{
+								WriteLog(LogLevel::Warning, "OrderPriceType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Price:
 						{
-							Order->Price = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->Price))
+							{
+								WriteLog(LogLevel::Warning, "Price Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Volume:
@@ -6594,7 +6950,11 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::OrderStatus:
 						{
-							Order->OrderStatus = static_cast<OrderStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->OrderStatus))
+							{
+								WriteLog(LogLevel::Warning, "OrderStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::StatusMsg:
@@ -6656,27 +7016,47 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::FrozenCash:
 						{
-							Order->FrozenCash = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenCash))
+							{
+								WriteLog(LogLevel::Warning, "FrozenCash Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenMargin:
 						{
-							Order->FrozenMargin = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenMargin))
+							{
+								WriteLog(LogLevel::Warning, "FrozenMargin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenCommission:
 						{
-							Order->FrozenCommission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenCommission))
+							{
+								WriteLog(LogLevel::Warning, "FrozenCommission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenStampTax:
 						{
-							Order->FrozenStampTax = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenStampTax))
+							{
+								WriteLog(LogLevel::Warning, "FrozenStampTax Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenTransferFee:
 						{
-							Order->FrozenTransferFee = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenTransferFee))
+							{
+								WriteLog(LogLevel::Warning, "FrozenTransferFee Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -7509,7 +7889,11 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 						}
 						case Items::ProductClass:
 						{
-							Order->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderId:
@@ -7529,22 +7913,38 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 						}
 						case Items::Direction:
 						{
-							Order->Direction = static_cast<DirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->Direction))
+							{
+								WriteLog(LogLevel::Warning, "Direction Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OffsetFlag:
 						{
-							Order->OffsetFlag = static_cast<OffsetFlagType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->OffsetFlag))
+							{
+								WriteLog(LogLevel::Warning, "OffsetFlag Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderPriceType:
 						{
-							Order->OrderPriceType = static_cast<OrderPriceTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->OrderPriceType))
+							{
+								WriteLog(LogLevel::Warning, "OrderPriceType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Price:
 						{
-							Order->Price = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->Price))
+							{
+								WriteLog(LogLevel::Warning, "Price Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Volume:
@@ -7585,7 +7985,11 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 						}
 						case Items::OrderStatus:
 						{
-							Order->OrderStatus = static_cast<OrderStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->OrderStatus))
+							{
+								WriteLog(LogLevel::Warning, "OrderStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::StatusMsg:
@@ -7647,27 +8051,47 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 						}
 						case Items::FrozenCash:
 						{
-							Order->FrozenCash = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenCash))
+							{
+								WriteLog(LogLevel::Warning, "FrozenCash Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenMargin:
 						{
-							Order->FrozenMargin = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenMargin))
+							{
+								WriteLog(LogLevel::Warning, "FrozenMargin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenCommission:
 						{
-							Order->FrozenCommission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenCommission))
+							{
+								WriteLog(LogLevel::Warning, "FrozenCommission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenStampTax:
 						{
-							Order->FrozenStampTax = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenStampTax))
+							{
+								WriteLog(LogLevel::Warning, "FrozenStampTax Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenTransferFee:
 						{
-							Order->FrozenTransferFee = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenTransferFee))
+							{
+								WriteLog(LogLevel::Warning, "FrozenTransferFee Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -7892,7 +8316,11 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 						}
 						case Items::ProductClass:
 						{
-							Trade->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Trade->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderId:
@@ -7918,17 +8346,29 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 						}
 						case Items::Direction:
 						{
-							Trade->Direction = static_cast<DirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Trade->Direction))
+							{
+								WriteLog(LogLevel::Warning, "Direction Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OffsetFlag:
 						{
-							Trade->OffsetFlag = static_cast<OffsetFlagType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Trade->OffsetFlag))
+							{
+								WriteLog(LogLevel::Warning, "OffsetFlag Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Price:
 						{
-							Trade->Price = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Trade->Price))
+							{
+								WriteLog(LogLevel::Warning, "Price Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Volume:
@@ -7951,22 +8391,38 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 						}
 						case Items::TradeAmount:
 						{
-							Trade->TradeAmount = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Trade->TradeAmount))
+							{
+								WriteLog(LogLevel::Warning, "TradeAmount Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Commission:
 						{
-							Trade->Commission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Trade->Commission))
+							{
+								WriteLog(LogLevel::Warning, "Commission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::StampTax:
 						{
-							Trade->StampTax = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Trade->StampTax))
+							{
+								WriteLog(LogLevel::Warning, "StampTax Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TransferFee:
 						{
-							Trade->TransferFee = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Trade->TransferFee))
+							{
+								WriteLog(LogLevel::Warning, "TransferFee Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TradeDate:
@@ -8183,17 +8639,29 @@ bool RtnMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::AccountType:
 						{
-							MoneyTransfer->AccountType = static_cast<AccountTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, MoneyTransfer->AccountType))
+							{
+								WriteLog(LogLevel::Warning, "AccountType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TransferDirection:
 						{
-							MoneyTransfer->TransferDirection = static_cast<TransferDirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, MoneyTransfer->TransferDirection))
+							{
+								WriteLog(LogLevel::Warning, "TransferDirection Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TransferAmount:
 						{
-							MoneyTransfer->TransferAmount = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, MoneyTransfer->TransferAmount))
+							{
+								WriteLog(LogLevel::Warning, "TransferAmount Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::InfoMessage:
@@ -9582,12 +10050,20 @@ bool RtnAccountPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 						}
 						case Items::AccountType:
 						{
-							Account->AccountType = static_cast<AccountTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Account->AccountType))
+							{
+								WriteLog(LogLevel::Warning, "AccountType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::AccountStatus:
 						{
-							Account->AccountStatus = static_cast<AccountStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Account->AccountStatus))
+							{
+								WriteLog(LogLevel::Warning, "AccountStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TradeGroupId:
@@ -9974,7 +10450,11 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::AccountType:
 						{
-							Position->AccountType = static_cast<AccountTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Position->AccountType))
+							{
+								WriteLog(LogLevel::Warning, "AccountType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::ExchangeId:
@@ -9991,12 +10471,20 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::ProductClass:
 						{
-							Position->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Position->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::PosiDirection:
 						{
-							Position->PosiDirection = static_cast<PosiDirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Position->PosiDirection))
+							{
+								WriteLog(LogLevel::Warning, "PosiDirection Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TotalPosition:
@@ -10028,47 +10516,83 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::TotalCostPrice:
 						{
-							Position->TotalCostPrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TotalCostPrice))
+							{
+								WriteLog(LogLevel::Warning, "TotalCostPrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TodayCostPrice:
 						{
-							Position->TodayCostPrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TodayCostPrice))
+							{
+								WriteLog(LogLevel::Warning, "TodayCostPrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CashIn:
 						{
-							Position->CashIn = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->CashIn))
+							{
+								WriteLog(LogLevel::Warning, "CashIn Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CashOut:
 						{
-							Position->CashOut = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->CashOut))
+							{
+								WriteLog(LogLevel::Warning, "CashOut Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Margin:
 						{
-							Position->Margin = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->Margin))
+							{
+								WriteLog(LogLevel::Warning, "Margin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Commission:
 						{
-							Position->Commission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->Commission))
+							{
+								WriteLog(LogLevel::Warning, "Commission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::StampTax:
 						{
-							Position->StampTax = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->StampTax))
+							{
+								WriteLog(LogLevel::Warning, "StampTax Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TransferFee:
 						{
-							Position->TransferFee = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TransferFee))
+							{
+								WriteLog(LogLevel::Warning, "TransferFee Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::MarketValue:
 						{
-							Position->MarketValue = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->MarketValue))
+							{
+								WriteLog(LogLevel::Warning, "MarketValue Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::VolumeMultiple:
@@ -10082,32 +10606,56 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::TotalCost:
 						{
-							Position->TotalCost = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TotalCost))
+							{
+								WriteLog(LogLevel::Warning, "TotalCost Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TodayCost:
 						{
-							Position->TodayCost = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TodayCost))
+							{
+								WriteLog(LogLevel::Warning, "TodayCost Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TotalProfit:
 						{
-							Position->TotalProfit = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TotalProfit))
+							{
+								WriteLog(LogLevel::Warning, "TotalProfit Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TodayProfit:
 						{
-							Position->TodayProfit = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TodayProfit))
+							{
+								WriteLog(LogLevel::Warning, "TodayProfit Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::LastPrice:
 						{
-							Position->LastPrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->LastPrice))
+							{
+								WriteLog(LogLevel::Warning, "LastPrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::PrePrice:
 						{
-							Position->PrePrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->PrePrice))
+							{
+								WriteLog(LogLevel::Warning, "PrePrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -10279,7 +10827,11 @@ bool RtnAccountRiskPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::RiskStatus:
 						{
-							AccountRisk->RiskStatus = static_cast<RiskStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, AccountRisk->RiskStatus))
+							{
+								WriteLog(LogLevel::Warning, "RiskStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -10654,7 +11206,11 @@ bool RtnAccountRiskNotifyPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::RiskStatus:
 						{
-							AccountRiskNotify->RiskStatus = static_cast<RiskStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, AccountRiskNotify->RiskStatus))
+							{
+								WriteLog(LogLevel::Warning, "RiskStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::RiskMessage:
@@ -10998,12 +11554,20 @@ bool RspQryRiskGroupAccountPackage::FromStepStream(char* buff, int startIndex, i
 						}
 						case Items::AccountType:
 						{
-							Account->AccountType = static_cast<AccountTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Account->AccountType))
+							{
+								WriteLog(LogLevel::Warning, "AccountType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::AccountStatus:
 						{
-							Account->AccountStatus = static_cast<AccountStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Account->AccountStatus))
+							{
+								WriteLog(LogLevel::Warning, "AccountStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TradeGroupId:
@@ -11475,112 +12039,200 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 						}
 						case Items::AccountType:
 						{
-							Capital->AccountType = static_cast<AccountTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Capital->AccountType))
+							{
+								WriteLog(LogLevel::Warning, "AccountType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Asset:
 						{
-							Capital->Asset = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->Asset))
+							{
+								WriteLog(LogLevel::Warning, "Asset Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::PreAsset:
 						{
-							Capital->PreAsset = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->PreAsset))
+							{
+								WriteLog(LogLevel::Warning, "PreAsset Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CashAsset:
 						{
-							Capital->CashAsset = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->CashAsset))
+							{
+								WriteLog(LogLevel::Warning, "CashAsset Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::PreCashAsset:
 						{
-							Capital->PreCashAsset = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->PreCashAsset))
+							{
+								WriteLog(LogLevel::Warning, "PreCashAsset Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Available:
 						{
-							Capital->Available = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->Available))
+							{
+								WriteLog(LogLevel::Warning, "Available Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CashIn:
 						{
-							Capital->CashIn = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->CashIn))
+							{
+								WriteLog(LogLevel::Warning, "CashIn Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CashOut:
 						{
-							Capital->CashOut = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->CashOut))
+							{
+								WriteLog(LogLevel::Warning, "CashOut Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Margin:
 						{
-							Capital->Margin = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->Margin))
+							{
+								WriteLog(LogLevel::Warning, "Margin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Commission:
 						{
-							Capital->Commission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->Commission))
+							{
+								WriteLog(LogLevel::Warning, "Commission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::StampTax:
 						{
-							Capital->StampTax = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->StampTax))
+							{
+								WriteLog(LogLevel::Warning, "StampTax Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TransferFee:
 						{
-							Capital->TransferFee = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->TransferFee))
+							{
+								WriteLog(LogLevel::Warning, "TransferFee Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenCash:
 						{
-							Capital->FrozenCash = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->FrozenCash))
+							{
+								WriteLog(LogLevel::Warning, "FrozenCash Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenMargin:
 						{
-							Capital->FrozenMargin = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->FrozenMargin))
+							{
+								WriteLog(LogLevel::Warning, "FrozenMargin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenCommission:
 						{
-							Capital->FrozenCommission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->FrozenCommission))
+							{
+								WriteLog(LogLevel::Warning, "FrozenCommission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenStampTax:
 						{
-							Capital->FrozenStampTax = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->FrozenStampTax))
+							{
+								WriteLog(LogLevel::Warning, "FrozenStampTax Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenTransferFee:
 						{
-							Capital->FrozenTransferFee = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->FrozenTransferFee))
+							{
+								WriteLog(LogLevel::Warning, "FrozenTransferFee Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::MarketValue:
 						{
-							Capital->MarketValue = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->MarketValue))
+							{
+								WriteLog(LogLevel::Warning, "MarketValue Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TotalProfit:
 						{
-							Capital->TotalProfit = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->TotalProfit))
+							{
+								WriteLog(LogLevel::Warning, "TotalProfit Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TodayProfit:
 						{
-							Capital->TodayProfit = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->TodayProfit))
+							{
+								WriteLog(LogLevel::Warning, "TodayProfit Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Deposit:
 						{
-							Capital->Deposit = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->Deposit))
+							{
+								WriteLog(LogLevel::Warning, "Deposit Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Withdraw:
 						{
-							Capital->Withdraw = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Capital->Withdraw))
+							{
+								WriteLog(LogLevel::Warning, "Withdraw Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -12035,7 +12687,11 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::AccountType:
 						{
-							Position->AccountType = static_cast<AccountTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Position->AccountType))
+							{
+								WriteLog(LogLevel::Warning, "AccountType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::ExchangeId:
@@ -12052,12 +12708,20 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::ProductClass:
 						{
-							Position->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Position->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::PosiDirection:
 						{
-							Position->PosiDirection = static_cast<PosiDirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Position->PosiDirection))
+							{
+								WriteLog(LogLevel::Warning, "PosiDirection Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TotalPosition:
@@ -12089,47 +12753,83 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::TotalCostPrice:
 						{
-							Position->TotalCostPrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TotalCostPrice))
+							{
+								WriteLog(LogLevel::Warning, "TotalCostPrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TodayCostPrice:
 						{
-							Position->TodayCostPrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TodayCostPrice))
+							{
+								WriteLog(LogLevel::Warning, "TodayCostPrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CashIn:
 						{
-							Position->CashIn = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->CashIn))
+							{
+								WriteLog(LogLevel::Warning, "CashIn Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CashOut:
 						{
-							Position->CashOut = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->CashOut))
+							{
+								WriteLog(LogLevel::Warning, "CashOut Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Margin:
 						{
-							Position->Margin = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->Margin))
+							{
+								WriteLog(LogLevel::Warning, "Margin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Commission:
 						{
-							Position->Commission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->Commission))
+							{
+								WriteLog(LogLevel::Warning, "Commission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::StampTax:
 						{
-							Position->StampTax = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->StampTax))
+							{
+								WriteLog(LogLevel::Warning, "StampTax Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TransferFee:
 						{
-							Position->TransferFee = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TransferFee))
+							{
+								WriteLog(LogLevel::Warning, "TransferFee Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::MarketValue:
 						{
-							Position->MarketValue = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->MarketValue))
+							{
+								WriteLog(LogLevel::Warning, "MarketValue Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::VolumeMultiple:
@@ -12143,32 +12843,56 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::TotalCost:
 						{
-							Position->TotalCost = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TotalCost))
+							{
+								WriteLog(LogLevel::Warning, "TotalCost Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TodayCost:
 						{
-							Position->TodayCost = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TodayCost))
+							{
+								WriteLog(LogLevel::Warning, "TodayCost Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TotalProfit:
 						{
-							Position->TotalProfit = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TotalProfit))
+							{
+								WriteLog(LogLevel::Warning, "TotalProfit Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TodayProfit:
 						{
-							Position->TodayProfit = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->TodayProfit))
+							{
+								WriteLog(LogLevel::Warning, "TodayProfit Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::LastPrice:
 						{
-							Position->LastPrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->LastPrice))
+							{
+								WriteLog(LogLevel::Warning, "LastPrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::PrePrice:
 						{
-							Position->PrePrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Position->PrePrice))
+							{
+								WriteLog(LogLevel::Warning, "PrePrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -12662,7 +13386,11 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::ProductClass:
 						{
-							Order->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderId:
@@ -12682,22 +13410,38 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::Direction:
 						{
-							Order->Direction = static_cast<DirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->Direction))
+							{
+								WriteLog(LogLevel::Warning, "Direction Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OffsetFlag:
 						{
-							Order->OffsetFlag = static_cast<OffsetFlagType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->OffsetFlag))
+							{
+								WriteLog(LogLevel::Warning, "OffsetFlag Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderPriceType:
 						{
-							Order->OrderPriceType = static_cast<OrderPriceTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->OrderPriceType))
+							{
+								WriteLog(LogLevel::Warning, "OrderPriceType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Price:
 						{
-							Order->Price = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->Price))
+							{
+								WriteLog(LogLevel::Warning, "Price Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Volume:
@@ -12738,7 +13482,11 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::OrderStatus:
 						{
-							Order->OrderStatus = static_cast<OrderStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->OrderStatus))
+							{
+								WriteLog(LogLevel::Warning, "OrderStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::StatusMsg:
@@ -12800,27 +13548,47 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::FrozenCash:
 						{
-							Order->FrozenCash = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenCash))
+							{
+								WriteLog(LogLevel::Warning, "FrozenCash Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenMargin:
 						{
-							Order->FrozenMargin = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenMargin))
+							{
+								WriteLog(LogLevel::Warning, "FrozenMargin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenCommission:
 						{
-							Order->FrozenCommission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenCommission))
+							{
+								WriteLog(LogLevel::Warning, "FrozenCommission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenStampTax:
 						{
-							Order->FrozenStampTax = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenStampTax))
+							{
+								WriteLog(LogLevel::Warning, "FrozenStampTax Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenTransferFee:
 						{
-							Order->FrozenTransferFee = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenTransferFee))
+							{
+								WriteLog(LogLevel::Warning, "FrozenTransferFee Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -13296,7 +14064,11 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::ProductClass:
 						{
-							Trade->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Trade->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderId:
@@ -13322,17 +14094,29 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::Direction:
 						{
-							Trade->Direction = static_cast<DirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Trade->Direction))
+							{
+								WriteLog(LogLevel::Warning, "Direction Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OffsetFlag:
 						{
-							Trade->OffsetFlag = static_cast<OffsetFlagType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Trade->OffsetFlag))
+							{
+								WriteLog(LogLevel::Warning, "OffsetFlag Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Price:
 						{
-							Trade->Price = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Trade->Price))
+							{
+								WriteLog(LogLevel::Warning, "Price Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Volume:
@@ -13355,22 +14139,38 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::TradeAmount:
 						{
-							Trade->TradeAmount = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Trade->TradeAmount))
+							{
+								WriteLog(LogLevel::Warning, "TradeAmount Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Commission:
 						{
-							Trade->Commission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Trade->Commission))
+							{
+								WriteLog(LogLevel::Warning, "Commission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::StampTax:
 						{
-							Trade->StampTax = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Trade->StampTax))
+							{
+								WriteLog(LogLevel::Warning, "StampTax Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TransferFee:
 						{
-							Trade->TransferFee = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Trade->TransferFee))
+							{
+								WriteLog(LogLevel::Warning, "TransferFee Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TradeDate:
@@ -13805,7 +14605,11 @@ bool RspQryRiskGroupAccountRiskPackage::FromStepStream(char* buff, int startInde
 						}
 						case Items::RiskStatus:
 						{
-							AccountRisk->RiskStatus = static_cast<RiskStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, AccountRisk->RiskStatus))
+							{
+								WriteLog(LogLevel::Warning, "RiskStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -14265,7 +15069,11 @@ bool RspQryRiskGroupAccountRiskNotifyPackage::FromStepStream(char* buff, int sta
 						}
 						case Items::RiskStatus:
 						{
-							AccountRiskNotify->RiskStatus = static_cast<RiskStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, AccountRiskNotify->RiskStatus))
+							{
+								WriteLog(LogLevel::Warning, "RiskStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::RiskMessage:
@@ -14540,22 +15348,38 @@ bool ReqRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::Direction:
 						{
-							ReqRiskInsertOrder->Direction = static_cast<DirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqRiskInsertOrder->Direction))
+							{
+								WriteLog(LogLevel::Warning, "Direction Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OffsetFlag:
 						{
-							ReqRiskInsertOrder->OffsetFlag = static_cast<OffsetFlagType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqRiskInsertOrder->OffsetFlag))
+							{
+								WriteLog(LogLevel::Warning, "OffsetFlag Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderPriceType:
 						{
-							ReqRiskInsertOrder->OrderPriceType = static_cast<OrderPriceTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqRiskInsertOrder->OrderPriceType))
+							{
+								WriteLog(LogLevel::Warning, "OrderPriceType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Price:
 						{
-							ReqRiskInsertOrder->Price = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqRiskInsertOrder->Price))
+							{
+								WriteLog(LogLevel::Warning, "Price Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Volume:
@@ -14578,7 +15402,11 @@ bool ReqRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::IsForceClose:
 						{
-							ReqRiskInsertOrder->IsForceClose = atoi(value.c_str());
+							if (!StepUtility::ParseBool(value, ReqRiskInsertOrder->IsForceClose))
+							{
+								WriteLog(LogLevel::Warning, "IsForceClose Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -14837,7 +15665,11 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::ProductClass:
 						{
-							Order->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderId:
@@ -14857,22 +15689,38 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::Direction:
 						{
-							Order->Direction = static_cast<DirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->Direction))
+							{
+								WriteLog(LogLevel::Warning, "Direction Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OffsetFlag:
 						{
-							Order->OffsetFlag = static_cast<OffsetFlagType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->OffsetFlag))
+							{
+								WriteLog(LogLevel::Warning, "OffsetFlag Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderPriceType:
 						{
-							Order->OrderPriceType = static_cast<OrderPriceTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->OrderPriceType))
+							{
+								WriteLog(LogLevel::Warning, "OrderPriceType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Price:
 						{
-							Order->Price = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->Price))
+							{
+								WriteLog(LogLevel::Warning, "Price Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Volume:
@@ -14913,7 +15761,11 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::OrderStatus:
 						{
-							Order->OrderStatus = static_cast<OrderStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, Order->OrderStatus))
+							{
+								WriteLog(LogLevel::Warning, "OrderStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::StatusMsg:
@@ -14975,27 +15827,47 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::FrozenCash:
 						{
-							Order->FrozenCash = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenCash))
+							{
+								WriteLog(LogLevel::Warning, "FrozenCash Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenMargin:
 						{
-							Order->FrozenMargin = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenMargin))
+							{
+								WriteLog(LogLevel::Warning, "FrozenMargin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenCommission:
 						{
-							Order->FrozenCommission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenCommission))
+							{
+								WriteLog(LogLevel::Warning, "FrozenCommission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenStampTax:
 						{
-							Order->FrozenStampTax = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenStampTax))
+							{
+								WriteLog(LogLevel::Warning, "FrozenStampTax Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FrozenTransferFee:
 						{
-							Order->FrozenTransferFee = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, Order->FrozenTransferFee))
+							{
+								WriteLog(LogLevel::Warning, "FrozenTransferFee Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -17457,37 +18329,65 @@ bool RtnShortMdPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 						}
 						case Items::LastPrice:
 						{
-							ShortMd->LastPrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ShortMd->LastPrice))
+							{
+								WriteLog(LogLevel::Warning, "LastPrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::ClosePrice:
 						{
-							ShortMd->ClosePrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ShortMd->ClosePrice))
+							{
+								WriteLog(LogLevel::Warning, "ClosePrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::PreClosePrice:
 						{
-							ShortMd->PreClosePrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ShortMd->PreClosePrice))
+							{
+								WriteLog(LogLevel::Warning, "PreClosePrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::SettlementPrice:
 						{
-							ShortMd->SettlementPrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ShortMd->SettlementPrice))
+							{
+								WriteLog(LogLevel::Warning, "SettlementPrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::PreSettlementPrice:
 						{
-							ShortMd->PreSettlementPrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ShortMd->PreSettlementPrice))
+							{
+								WriteLog(LogLevel::Warning, "PreSettlementPrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::UpperLimitPrice:
 						{
-							ShortMd->UpperLimitPrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ShortMd->UpperLimitPrice))
+							{
+								WriteLog(LogLevel::Warning, "UpperLimitPrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::LowerLimitPrice:
 						{
-							ShortMd->LowerLimitPrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ShortMd->LowerLimitPrice))
+							{
+								WriteLog(LogLevel::Warning, "LowerLimitPrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -17660,7 +18560,11 @@ bool RtnExchangeStatusPackage::FromStepStream(char* buff, int startIndex, int en
 						}
 						case Items::ExchangeStatus:
 						{
-							RtnExchangeStatus->ExchangeStatus = static_cast<ExchangeStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, RtnExchangeStatus->ExchangeStatus))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -21667,7 +22571,11 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::AccountClass:
 						{
-							ReqAddPrimaryAccount->AccountClass = static_cast<AccountClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqAddPrimaryAccount->AccountClass))
+							{
+								WriteLog(LogLevel::Warning, "AccountClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::BrokerPassword:
@@ -21687,17 +22595,29 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::IsAllowLogin:
 						{
-							ReqAddPrimaryAccount->IsAllowLogin = atoi(value.c_str());
+							if (!StepUtility::ParseBool(value, ReqAddPrimaryAccount->IsAllowLogin))
+							{
+								WriteLog(LogLevel::Warning, "IsAllowLogin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::IsSimulateAccount:
 						{
-							ReqAddPrimaryAccount->IsSimulateAccount = atoi(value.c_str());
+							if (!StepUtility::ParseBool(value, ReqAddPrimaryAccount->IsSimulateAccount))
+							{
+								WriteLog(LogLevel::Warning, "IsSimulateAccount Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::AccountStatus:
 						{
-							ReqAddPrimaryAccount->AccountStatus = static_cast<AccountStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqAddPrimaryAccount->AccountStatus))
+							{
+								WriteLog(LogLevel::Warning, "AccountStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Password:
@@ -21726,7 +22646,11 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::IsAutoAudit:
 						{
-							ReqAddPrimaryAccount->IsAutoAudit = atoi(value.c_str());
+							if (!StepUtility::ParseBool(value, ReqAddPrimaryAccount->IsAutoAudit))
+							{
+								WriteLog(LogLevel::Warning, "IsAutoAudit Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -22189,7 +23113,11 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::AccountClass:
 						{
-							ReqUpdatePrimaryAccount->AccountClass = static_cast<AccountClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqUpdatePrimaryAccount->AccountClass))
+							{
+								WriteLog(LogLevel::Warning, "AccountClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::BrokerPassword:
@@ -22209,17 +23137,29 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::IsAllowLogin:
 						{
-							ReqUpdatePrimaryAccount->IsAllowLogin = atoi(value.c_str());
+							if (!StepUtility::ParseBool(value, ReqUpdatePrimaryAccount->IsAllowLogin))
+							{
+								WriteLog(LogLevel::Warning, "IsAllowLogin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::IsSimulateAccount:
 						{
-							ReqUpdatePrimaryAccount->IsSimulateAccount = atoi(value.c_str());
+							if (!StepUtility::ParseBool(value, ReqUpdatePrimaryAccount->IsSimulateAccount))
+							{
+								WriteLog(LogLevel::Warning, "IsSimulateAccount Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::AccountStatus:
 						{
-							ReqUpdatePrimaryAccount->AccountStatus = static_cast<AccountStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqUpdatePrimaryAccount->AccountStatus))
+							{
+								WriteLog(LogLevel::Warning, "AccountStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Password:
@@ -22248,7 +23188,11 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::IsAutoAudit:
 						{
-							ReqUpdatePrimaryAccount->IsAutoAudit = atoi(value.c_str());
+							if (!StepUtility::ParseBool(value, ReqUpdatePrimaryAccount->IsAutoAudit))
+							{
+								WriteLog(LogLevel::Warning, "IsAutoAudit Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -23121,7 +24065,11 @@ bool ReqAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::AccountStatus:
 						{
-							ReqAddAccount->AccountStatus = static_cast<AccountStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqAddAccount->AccountStatus))
+							{
+								WriteLog(LogLevel::Warning, "AccountStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Password:
@@ -23159,7 +24107,11 @@ bool ReqAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::IsAutoAudit:
 						{
-							ReqAddAccount->IsAutoAudit = atoi(value.c_str());
+							if (!StepUtility::ParseBool(value, ReqAddAccount->IsAutoAudit))
+							{
+								WriteLog(LogLevel::Warning, "IsAutoAudit Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -23614,7 +24566,11 @@ bool ReqUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::AccountStatus:
 						{
-							ReqUpdateAccount->AccountStatus = static_cast<AccountStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqUpdateAccount->AccountStatus))
+							{
+								WriteLog(LogLevel::Warning, "AccountStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Password:
@@ -23652,7 +24608,11 @@ bool ReqUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::IsAutoAudit:
 						{
-							ReqUpdateAccount->IsAutoAudit = atoi(value.c_str());
+							if (!StepUtility::ParseBool(value, ReqUpdateAccount->IsAutoAudit))
+							{
+								WriteLog(LogLevel::Warning, "IsAutoAudit Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -24509,27 +25469,47 @@ bool ReqAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::ProductClass:
 						{
-							ReqAddBaseCommission->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqAddBaseCommission->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OpenStampTaxByMoney:
 						{
-							ReqAddBaseCommission->OpenStampTaxByMoney = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqAddBaseCommission->OpenStampTaxByMoney))
+							{
+								WriteLog(LogLevel::Warning, "OpenStampTaxByMoney Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CloseStampTaxByMoney:
 						{
-							ReqAddBaseCommission->CloseStampTaxByMoney = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqAddBaseCommission->CloseStampTaxByMoney))
+							{
+								WriteLog(LogLevel::Warning, "CloseStampTaxByMoney Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OpenTransferFeeByMoney:
 						{
-							ReqAddBaseCommission->OpenTransferFeeByMoney = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqAddBaseCommission->OpenTransferFeeByMoney))
+							{
+								WriteLog(LogLevel::Warning, "OpenTransferFeeByMoney Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CloseTransferFeeByMoney:
 						{
-							ReqAddBaseCommission->CloseTransferFeeByMoney = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqAddBaseCommission->CloseTransferFeeByMoney))
+							{
+								WriteLog(LogLevel::Warning, "CloseTransferFeeByMoney Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -24729,7 +25709,11 @@ bool RspAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::ProductClass:
 						{
-							RspAddBaseCommission->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, RspAddBaseCommission->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -24985,27 +25969,47 @@ bool ReqUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::ProductClass:
 						{
-							ReqUpdateBaseCommission->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqUpdateBaseCommission->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OpenStampTaxByMoney:
 						{
-							ReqUpdateBaseCommission->OpenStampTaxByMoney = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqUpdateBaseCommission->OpenStampTaxByMoney))
+							{
+								WriteLog(LogLevel::Warning, "OpenStampTaxByMoney Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CloseStampTaxByMoney:
 						{
-							ReqUpdateBaseCommission->CloseStampTaxByMoney = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqUpdateBaseCommission->CloseStampTaxByMoney))
+							{
+								WriteLog(LogLevel::Warning, "CloseStampTaxByMoney Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OpenTransferFeeByMoney:
 						{
-							ReqUpdateBaseCommission->OpenTransferFeeByMoney = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqUpdateBaseCommission->OpenTransferFeeByMoney))
+							{
+								WriteLog(LogLevel::Warning, "OpenTransferFeeByMoney Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CloseTransferFeeByMoney:
 						{
-							ReqUpdateBaseCommission->CloseTransferFeeByMoney = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqUpdateBaseCommission->CloseTransferFeeByMoney))
+							{
+								WriteLog(LogLevel::Warning, "CloseTransferFeeByMoney Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -25205,7 +26209,11 @@ bool RspUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::ProductClass:
 						{
-							RspUpdateBaseCommission->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, RspUpdateBaseCommission->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -25457,7 +26465,11 @@ bool ReqRemoveBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::ProductClass:
 						{
-							ReqRemoveBaseCommission->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqRemoveBaseCommission->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -25702,7 +26714,11 @@ bool RspRemoveBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::ProductClass:
 						{
-							RspRemoveBaseCommission->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, RspRemoveBaseCommission->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -25936,37 +26952,65 @@ bool ReqAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 						}
 						case Items::ProductClass:
 						{
-							ReqAddCommissionGroup->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqAddCommissionGroup->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OpenByMoney:
 						{
-							ReqAddCommissionGroup->OpenByMoney = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqAddCommissionGroup->OpenByMoney))
+							{
+								WriteLog(LogLevel::Warning, "OpenByMoney Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CloseByMoney:
 						{
-							ReqAddCommissionGroup->CloseByMoney = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqAddCommissionGroup->CloseByMoney))
+							{
+								WriteLog(LogLevel::Warning, "CloseByMoney Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OpenByVolume:
 						{
-							ReqAddCommissionGroup->OpenByVolume = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqAddCommissionGroup->OpenByVolume))
+							{
+								WriteLog(LogLevel::Warning, "OpenByVolume Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CloseByVolume:
 						{
-							ReqAddCommissionGroup->CloseByVolume = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqAddCommissionGroup->CloseByVolume))
+							{
+								WriteLog(LogLevel::Warning, "CloseByVolume Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::MinCommission:
 						{
-							ReqAddCommissionGroup->MinCommission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqAddCommissionGroup->MinCommission))
+							{
+								WriteLog(LogLevel::Warning, "MinCommission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::MaxCommission:
 						{
-							ReqAddCommissionGroup->MaxCommission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqAddCommissionGroup->MaxCommission))
+							{
+								WriteLog(LogLevel::Warning, "MaxCommission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -26176,7 +27220,11 @@ bool RspAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 						}
 						case Items::ProductClass:
 						{
-							RspAddCommissionGroup->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, RspAddCommissionGroup->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -26455,37 +27503,65 @@ bool ReqUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::ProductClass:
 						{
-							ReqUpdateCommissionGroup->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqUpdateCommissionGroup->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OpenByMoney:
 						{
-							ReqUpdateCommissionGroup->OpenByMoney = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqUpdateCommissionGroup->OpenByMoney))
+							{
+								WriteLog(LogLevel::Warning, "OpenByMoney Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CloseByMoney:
 						{
-							ReqUpdateCommissionGroup->CloseByMoney = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqUpdateCommissionGroup->CloseByMoney))
+							{
+								WriteLog(LogLevel::Warning, "CloseByMoney Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OpenByVolume:
 						{
-							ReqUpdateCommissionGroup->OpenByVolume = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqUpdateCommissionGroup->OpenByVolume))
+							{
+								WriteLog(LogLevel::Warning, "OpenByVolume Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CloseByVolume:
 						{
-							ReqUpdateCommissionGroup->CloseByVolume = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqUpdateCommissionGroup->CloseByVolume))
+							{
+								WriteLog(LogLevel::Warning, "CloseByVolume Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::MinCommission:
 						{
-							ReqUpdateCommissionGroup->MinCommission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqUpdateCommissionGroup->MinCommission))
+							{
+								WriteLog(LogLevel::Warning, "MinCommission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::MaxCommission:
 						{
-							ReqUpdateCommissionGroup->MaxCommission = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqUpdateCommissionGroup->MaxCommission))
+							{
+								WriteLog(LogLevel::Warning, "MaxCommission Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -26695,7 +27771,11 @@ bool RspUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::ProductClass:
 						{
-							RspUpdateCommissionGroup->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, RspUpdateCommissionGroup->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -26957,7 +28037,11 @@ bool ReqRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::ProductClass:
 						{
-							ReqRemoveCommissionGroup->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqRemoveCommissionGroup->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -27167,7 +28251,11 @@ bool RspRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::ProductClass:
 						{
-							RspRemoveCommissionGroup->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, RspRemoveCommissionGroup->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -27420,12 +28508,20 @@ bool ReqAddOptionMarginParamPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::Param1:
 						{
-							ReqAddOptionMarginParam->Param1 = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqAddOptionMarginParam->Param1))
+							{
+								WriteLog(LogLevel::Warning, "Param1 Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Param2:
 						{
-							ReqAddOptionMarginParam->Param2 = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqAddOptionMarginParam->Param2))
+							{
+								WriteLog(LogLevel::Warning, "Param2 Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -27861,12 +28957,20 @@ bool ReqUpdateOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 						}
 						case Items::Param1:
 						{
-							ReqUpdateOptionMarginParam->Param1 = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqUpdateOptionMarginParam->Param1))
+							{
+								WriteLog(LogLevel::Warning, "Param1 Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Param2:
 						{
-							ReqUpdateOptionMarginParam->Param2 = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqUpdateOptionMarginParam->Param2))
+							{
+								WriteLog(LogLevel::Warning, "Param2 Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -28723,7 +29827,11 @@ bool ReqAddTradeOfferPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::OfferType:
 						{
-							ReqAddTradeOffer->OfferType = static_cast<OfferTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqAddTradeOffer->OfferType))
+							{
+								WriteLog(LogLevel::Warning, "OfferType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OfferPassword:
@@ -29167,7 +30275,11 @@ bool ReqUpdateTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 						}
 						case Items::OfferType:
 						{
-							ReqUpdateTradeOffer->OfferType = static_cast<OfferTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqUpdateTradeOffer->OfferType))
+							{
+								WriteLog(LogLevel::Warning, "OfferType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OfferPassword:
@@ -31286,7 +32398,11 @@ bool ReqAddTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::AccountClass:
 						{
-							ReqAddTradeGroupItem->AccountClass = static_cast<AccountClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqAddTradeGroupItem->AccountClass))
+							{
+								WriteLog(LogLevel::Warning, "AccountClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::PrimaryAccountId:
@@ -31480,7 +32596,11 @@ bool RspAddTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::AccountClass:
 						{
-							RspAddTradeGroupItem->AccountClass = static_cast<AccountClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, RspAddTradeGroupItem->AccountClass))
+							{
+								WriteLog(LogLevel::Warning, "AccountClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -31725,7 +32845,11 @@ bool ReqUpdateTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::AccountClass:
 						{
-							ReqUpdateTradeGroupItem->AccountClass = static_cast<AccountClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqUpdateTradeGroupItem->AccountClass))
+							{
+								WriteLog(LogLevel::Warning, "AccountClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::PrimaryAccountId:
@@ -31919,7 +33043,11 @@ bool RspUpdateTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::AccountClass:
 						{
-							RspUpdateTradeGroupItem->AccountClass = static_cast<AccountClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, RspUpdateTradeGroupItem->AccountClass))
+							{
+								WriteLog(LogLevel::Warning, "AccountClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -32159,7 +33287,11 @@ bool ReqRemoveTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::AccountClass:
 						{
-							ReqRemoveTradeGroupItem->AccountClass = static_cast<AccountClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqRemoveTradeGroupItem->AccountClass))
+							{
+								WriteLog(LogLevel::Warning, "AccountClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -32347,7 +33479,11 @@ bool RspRemoveTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::AccountClass:
 						{
-							RspRemoveTradeGroupItem->AccountClass = static_cast<AccountClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, RspRemoveTradeGroupItem->AccountClass))
+							{
+								WriteLog(LogLevel::Warning, "AccountClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -35176,7 +36312,11 @@ bool ReqAddOrUpdateRiskPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::RiskClassId:
 						{
-							ReqAddOrUpdateRisk->RiskClassId = static_cast<RiskClassIdType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqAddOrUpdateRisk->RiskClassId))
+							{
+								WriteLog(LogLevel::Warning, "RiskClassId Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -36029,7 +37169,11 @@ bool ReqAddRiskRulePackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::RiskRuleStyle:
 						{
-							ReqAddRiskRule->RiskRuleStyle = static_cast<RiskRuleStyleType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqAddRiskRule->RiskRuleStyle))
+							{
+								WriteLog(LogLevel::Warning, "RiskRuleStyle Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::FormatRiskMessage:
@@ -36534,7 +37678,11 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::RiskIndexType:
 						{
-							ReqAddRiskRuleItem->RiskIndexType = static_cast<RiskIndexTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqAddRiskRuleItem->RiskIndexType))
+							{
+								WriteLog(LogLevel::Warning, "RiskIndexType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::RiskIndexId:
@@ -36593,12 +37741,20 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::LogicFunc:
 						{
-							ReqAddRiskRuleItem->LogicFunc = static_cast<LogicFuncType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqAddRiskRuleItem->LogicFunc))
+							{
+								WriteLog(LogLevel::Warning, "LogicFunc Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::LogicParamType1:
 						{
-							ReqAddRiskRuleItem->LogicParamType1 = static_cast<ParamTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqAddRiskRuleItem->LogicParamType1))
+							{
+								WriteLog(LogLevel::Warning, "LogicParamType1 Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::LogicParam1:
@@ -36618,7 +37774,11 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::LogicParamType2:
 						{
-							ReqAddRiskRuleItem->LogicParamType2 = static_cast<ParamTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqAddRiskRuleItem->LogicParamType2))
+							{
+								WriteLog(LogLevel::Warning, "LogicParamType2 Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::LogicParam2:
@@ -37081,7 +38241,11 @@ bool ReqAddRiskTradeScopePackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::TradeScopeType:
 						{
-							ReqAddRiskTradeScope->TradeScopeType = static_cast<TradeScopeTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqAddRiskTradeScope->TradeScopeType))
+							{
+								WriteLog(LogLevel::Warning, "TradeScopeType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::InstrumentGroupId:
@@ -38438,17 +39602,29 @@ bool ReqMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::AccountType:
 						{
-							ReqMoneyTransfer->AccountType = static_cast<AccountTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqMoneyTransfer->AccountType))
+							{
+								WriteLog(LogLevel::Warning, "AccountType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TransferDirection:
 						{
-							ReqMoneyTransfer->TransferDirection = static_cast<TransferDirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqMoneyTransfer->TransferDirection))
+							{
+								WriteLog(LogLevel::Warning, "TransferDirection Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TransferAmount:
 						{
-							ReqMoneyTransfer->TransferAmount = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqMoneyTransfer->TransferAmount))
+							{
+								WriteLog(LogLevel::Warning, "TransferAmount Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::InfoMessage:
@@ -38960,7 +40136,11 @@ bool ReqAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::AuditStatus:
 						{
-							ReqAuditOrder->AuditStatus = static_cast<AuditStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqAuditOrder->AuditStatus))
+							{
+								WriteLog(LogLevel::Warning, "AuditStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -39192,7 +40372,11 @@ bool RspAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::AuditStatus:
 						{
-							RspAuditOrder->AuditStatus = static_cast<AuditStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, RspAuditOrder->AuditStatus))
+							{
+								WriteLog(LogLevel::Warning, "AuditStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -41532,7 +42716,11 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::OptionType:
 						{
-							OfferOptionInstrument->OptionType = static_cast<OptionTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, OfferOptionInstrument->OptionType))
+							{
+								WriteLog(LogLevel::Warning, "OptionType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::UnderlyingInstrumentId:
@@ -41543,17 +42731,29 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::ExecutePrice:
 						{
-							OfferOptionInstrument->ExecutePrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, OfferOptionInstrument->ExecutePrice))
+							{
+								WriteLog(LogLevel::Warning, "ExecutePrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::UnitMargin:
 						{
-							OfferOptionInstrument->UnitMargin = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, OfferOptionInstrument->UnitMargin))
+							{
+								WriteLog(LogLevel::Warning, "UnitMargin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::PriceTick:
 						{
-							OfferOptionInstrument->PriceTick = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, OfferOptionInstrument->PriceTick))
+							{
+								WriteLog(LogLevel::Warning, "PriceTick Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::MaxLimitOrderVolume:
@@ -41778,7 +42978,11 @@ bool ReqOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::ProductClass:
 						{
-							ReqOfferOrder->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqOfferOrder->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderId:
@@ -41792,22 +42996,38 @@ bool ReqOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::Direction:
 						{
-							ReqOfferOrder->Direction = static_cast<DirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqOfferOrder->Direction))
+							{
+								WriteLog(LogLevel::Warning, "Direction Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OffsetFlag:
 						{
-							ReqOfferOrder->OffsetFlag = static_cast<OffsetFlagType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqOfferOrder->OffsetFlag))
+							{
+								WriteLog(LogLevel::Warning, "OffsetFlag Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderPriceType:
 						{
-							ReqOfferOrder->OrderPriceType = static_cast<OrderPriceTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqOfferOrder->OrderPriceType))
+							{
+								WriteLog(LogLevel::Warning, "OrderPriceType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Price:
 						{
-							ReqOfferOrder->Price = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, ReqOfferOrder->Price))
+							{
+								WriteLog(LogLevel::Warning, "Price Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Volume:
@@ -42019,12 +43239,20 @@ bool ReqOfferCancelOrderPackage::FromStepStream(char* buff, int startIndex, int 
 						}
 						case Items::ProductClass:
 						{
-							ReqOfferCancelOrder->ProductClass = static_cast<ProductClassType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqOfferCancelOrder->ProductClass))
+							{
+								WriteLog(LogLevel::Warning, "ProductClass Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Direction:
 						{
-							ReqOfferCancelOrder->Direction = static_cast<DirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, ReqOfferCancelOrder->Direction))
+							{
+								WriteLog(LogLevel::Warning, "Direction Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CancelOrderId:
@@ -42297,22 +43525,38 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::Direction:
 						{
-							OfferOrder->Direction = static_cast<DirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, OfferOrder->Direction))
+							{
+								WriteLog(LogLevel::Warning, "Direction Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OffsetFlag:
 						{
-							OfferOrder->OffsetFlag = static_cast<OffsetFlagType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, OfferOrder->OffsetFlag))
+							{
+								WriteLog(LogLevel::Warning, "OffsetFlag Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OrderPriceType:
 						{
-							OfferOrder->OrderPriceType = static_cast<OrderPriceTypeType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, OfferOrder->OrderPriceType))
+							{
+								WriteLog(LogLevel::Warning, "OrderPriceType Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Price:
 						{
-							OfferOrder->Price = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, OfferOrder->Price))
+							{
+								WriteLog(LogLevel::Warning, "Price Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Volume:
@@ -42344,7 +43588,11 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::OrderStatus:
 						{
-							OfferOrder->OrderStatus = static_cast<OrderStatusType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, OfferOrder->OrderStatus))
+							{
+								WriteLog(LogLevel::Warning, "OrderStatus Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::StatusMsg:
@@ -42379,7 +43627,11 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::IsNewOrder:
 						{
-							OfferOrder->IsNewOrder = atoi(value.c_str());
+							if (!StepUtility::ParseBool(value, OfferOrder->IsNewOrder))
+							{
+								WriteLog(LogLevel::Warning, "IsNewOrder Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -42619,17 +43871,29 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::Direction:
 						{
-							OfferTrade->Direction = static_cast<DirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, OfferTrade->Direction))
+							{
+								WriteLog(LogLevel::Warning, "Direction Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::OffsetFlag:
 						{
-							OfferTrade->OffsetFlag = static_cast<OffsetFlagType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, OfferTrade->OffsetFlag))
+							{
+								WriteLog(LogLevel::Warning, "OffsetFlag Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Price:
 						{
-							OfferTrade->Price = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, OfferTrade->Price))
+							{
+								WriteLog(LogLevel::Warning, "Price Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Volume:
@@ -42873,7 +44137,11 @@ bool RtnOfferErrorCancelOrderPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::Direction:
 						{
-							OfferErrorCancelOrder->Direction = static_cast<DirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, OfferErrorCancelOrder->Direction))
+							{
+								WriteLog(LogLevel::Warning, "Direction Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::CancelOrderId:
@@ -43070,7 +44338,11 @@ bool RtnOfferCapitalPackage::FromStepStream(char* buff, int startIndex, int endI
 						}
 						case Items::PreCashAsset:
 						{
-							OfferCapital->PreCashAsset = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, OfferCapital->PreCashAsset))
+							{
+								WriteLog(LogLevel::Warning, "PreCashAsset Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:
@@ -43270,7 +44542,11 @@ bool RtnOfferPositionPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::PosiDirection:
 						{
-							OfferPosition->PosiDirection = static_cast<PosiDirectionType>(atoi(value.c_str()));
+							if (!StepUtility::ParseEnum(value, OfferPosition->PosiDirection))
+							{
+								WriteLog(LogLevel::Warning, "PosiDirection Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::TotalPosition:
@@ -43293,17 +44569,29 @@ bool RtnOfferPositionPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::TotalCostPrice:
 						{
-							OfferPosition->TotalCostPrice = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, OfferPosition->TotalCostPrice))
+							{
+								WriteLog(LogLevel::Warning, "TotalCostPrice Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::Margin:
 						{
-							OfferPosition->Margin = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, OfferPosition->Margin))
+							{
+								WriteLog(LogLevel::Warning, "Margin Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						case Items::MarketValue:
 						{
-							OfferPosition->MarketValue = atof(value.c_str());
+							if (!StepUtility::ParseDouble(value, OfferPosition->MarketValue))
+							{
+								WriteLog(LogLevel::Warning, "MarketValue Out Of Range. Value:%s", value.c_str());
+								return false;
+							}
 							break;
 						}
 						default:

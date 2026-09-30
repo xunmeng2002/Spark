@@ -976,3 +976,103 @@ TEST(StepUtilityTest, ParseIntegerPinsHexFields)
     ExpectRejectedWithoutChanging<Int16Type>("8000", Int16Type(-7), 16);
     ExpectIntegerParsed<Int16Type>("-8000", std::numeric_limits<Int16Type>::min(), 16);
 }
+
+namespace
+{
+template <typename T>
+void ExpectEnumParsed(const char* text, T expected)
+{
+    T value = static_cast<T>(-1);
+    EXPECT_TRUE(StepUtility::ParseEnum(std::string(text), value)) << text;
+    EXPECT_EQ(value, expected) << text;
+}
+
+template <typename T>
+void ExpectEnumRejected(const char* text, T sentinel)
+{
+    T value = sentinel;
+    EXPECT_FALSE(StepUtility::ParseEnum(std::string(text), value)) << text;
+    EXPECT_EQ(value, sentinel) << text;
+}
+
+void ExpectBoolParsed(const char* text, bool expected)
+{
+    bool value = !expected;
+    EXPECT_TRUE(StepUtility::ParseBool(std::string(text), value)) << text;
+    EXPECT_EQ(value, expected) << text;
+}
+
+void ExpectBoolRejected(const char* text)
+{
+    bool value = true;
+    EXPECT_FALSE(StepUtility::ParseBool(std::string(text), value)) << text;
+    EXPECT_TRUE(value) << text;
+}
+
+void ExpectDoubleParsed(const char* text, DoubleType expected)
+{
+    DoubleType value = -7.5;
+    EXPECT_TRUE(StepUtility::ParseDouble(std::string(text), value)) << text;
+    EXPECT_EQ(value, expected) << text;
+}
+
+void ExpectDoubleRejected(const char* text)
+{
+    DoubleType value = -7.5;
+    EXPECT_FALSE(StepUtility::ParseDouble(std::string(text), value)) << text;
+    EXPECT_EQ(value, -7.5) << text;
+}
+}
+
+TEST(StepUtilityTest, ParseEnumAcceptsTheIntegerRangeOnly)
+{
+    const char* const rejected[] = {"", "+1", " 1", "1 ", "1abc", "1.0", "-", "--1", "abc", "0x1", "2147483648", "-2147483649"};
+    for (const char* text : rejected)
+    {
+        SCOPED_TRACE(std::string("拒绝 \"") + text + "\"");
+        ExpectEnumRejected<ProductClassType>(text, ProductClassType::ETF);
+        ExpectEnumRejected<ComponentType>(text, ComponentType::MarketData);
+    }
+
+    ExpectEnumParsed<ProductClassType>("0", ProductClassType::Future);
+    ExpectEnumParsed<ProductClassType>("8", ProductClassType::ETF);
+    ExpectEnumParsed<ProductClassType>("00123", static_cast<ProductClassType>(123));
+    ExpectEnumParsed<ProductClassType>("-1", static_cast<ProductClassType>(-1));
+    ExpectEnumParsed<ComponentType>("4", ComponentType::MarketData);
+    ExpectEnumParsed<ComponentType>("-2147483648", static_cast<ComponentType>(std::numeric_limits<Int32Type>::min()));
+    ExpectEnumParsed<ComponentType>("2147483647", static_cast<ComponentType>(std::numeric_limits<Int32Type>::max()));
+}
+
+TEST(StepUtilityTest, ParseBoolAcceptsOnlyZeroAndOne)
+{
+    const char* const rejected[] = {"", "-1", "2", " 0", "0 ", "true", "false", "0x1", "1abc", "+1", "2147483647"};
+    for (const char* text : rejected)
+    {
+        SCOPED_TRACE(std::string("拒绝 \"") + text + "\"");
+        ExpectBoolRejected(text);
+    }
+
+    ExpectBoolParsed("0", false);
+    ExpectBoolParsed("1", true);
+    ExpectBoolParsed("00", false);
+    ExpectBoolParsed("01", true);
+}
+
+TEST(StepUtilityTest, ParseDoubleRejectsMalformedAndNonFinite)
+{
+    const char* const rejected[] = {"",    "+1.5", " 1.5", "1.5 ", "1.5abc", ".",     "-",      "1e",  "abc",
+                                    "nan", "NaN",  "-nan", "inf",  "-inf",   "1e999", "-1e999", "0x10"};
+    for (const char* text : rejected)
+    {
+        SCOPED_TRACE(std::string("拒绝 \"") + text + "\"");
+        ExpectDoubleRejected(text);
+    }
+
+    ExpectDoubleParsed("0", 0.0);
+    ExpectDoubleParsed("123.456789", 123.456789);
+    ExpectDoubleParsed("-1.5", -1.5);
+    ExpectDoubleParsed("1e3", 1000.0);
+    ExpectDoubleParsed("1E-3", 0.001);
+    ExpectDoubleParsed("0.000001", 0.000001);
+    ExpectDoubleParsed("1.7976931348623157e+308", std::numeric_limits<DoubleType>::max());
+}
