@@ -128,7 +128,7 @@ public:
 };
 
 template <typename StopCondition>
-void DriveIoEventsUntil(IoBase& io, StopCondition&& stopCondition, std::chrono::milliseconds limit)
+[[nodiscard]] bool DriveIoEventsUntil(IoBase& io, StopCondition&& stopCondition, std::chrono::milliseconds limit)
 {
     const auto deadline = std::chrono::steady_clock::now() + limit;
     while (!stopCondition() && std::chrono::steady_clock::now() < deadline)
@@ -136,7 +136,10 @@ void DriveIoEventsUntil(IoBase& io, StopCondition&& stopCondition, std::chrono::
         io.HandleIoEvent();
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
+    return stopCondition();
 }
+
+constexpr const char* DriveBudgetExhaustedMessage = "驱动预算耗尽：到点停条件仍不成立，与断言的状态不符不是一回事";
 }
 
 // ============================================================
@@ -282,7 +285,7 @@ TEST(ShmConnectLifecycleTest, ReclaimsConnectWhosePeerNeverAttached)
     EXPECT_EQ(probe.DisConnectCount, 0);
     EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::Accepted);
 
-    DriveIoEventsUntil(*server, [&probe] { return probe.DisConnectCount > 0; }, ReclaimDriveLimit);
+    ASSERT_TRUE(DriveIoEventsUntil(*server, [&probe] { return probe.DisConnectCount > 0; }, ReclaimDriveLimit)) << DriveBudgetExhaustedMessage;
     EXPECT_EQ(probe.DisConnectCount, 1);
     EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::UnConnected);
 
@@ -306,10 +309,11 @@ TEST(ShmConnectLifecycleTest, ReclaimsConnectWhosePeerNeverConfirmedAndResetsThe
     EXPECT_EQ(probe.ConnectCount, 1);
     EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, ControlHeaderIndex), ConnectStatusType::Accepted);
 
-    DriveIoEventsUntil(
+    ASSERT_TRUE(DriveIoEventsUntil(
         *server, [&probe, &shmObjectName]
         { return probe.DisConnectCount > 0 && ReadShmHeaderStatus(shmObjectName, ControlHeaderIndex) == ConnectStatusType::UnConnected; },
-        ReclaimDriveLimit);
+        ReclaimDriveLimit))
+        << DriveBudgetExhaustedMessage;
     EXPECT_EQ(probe.DisConnectCount, 1);
     EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, ControlHeaderIndex), ConnectStatusType::UnConnected);
     EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::UnConnected);
@@ -369,7 +373,9 @@ TEST(ShmClientConfirmTest, LeavesRevokedAcceptUnconfirmedAndRetries)
     client->HandleIoEvent();
     EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, ControlHeaderIndex), ConnectStatusType::Connecting);
 
-    DriveIoEventsUntil(*server, [&serverProbe] { return serverProbe.DisConnectCount > 0; }, ReclaimDriveLimit);
+    ASSERT_TRUE(DriveIoEventsUntil(
+        *server, [&serverProbe] { return serverProbe.DisConnectCount > 0; }, ReclaimDriveLimit))
+        << DriveBudgetExhaustedMessage;
     EXPECT_EQ(serverProbe.DisConnectCount, 1);
     EXPECT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::UnConnected);
 }
