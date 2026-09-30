@@ -14,7 +14,7 @@ protected:
     static constexpr int HandshakeTimeoutSeconds = 5;
 
     unsigned connectCount_;
-    std::chrono::system_clock::time_point lastWriteTimePoint_;
+    std::chrono::steady_clock::time_point lastWriteTimePoint_;
 
 private:
     virtual void Accept() override;
@@ -24,6 +24,6 @@ private:
 
     virtual void RemoveConnect(Connect* connect) override;
 
-    bool TryReclaimConnect(ShmConnect<ShmBufferSize>& shmConnect, const std::chrono::system_clock::time_point& currentTimePoint);
+    bool TryReclaimConnect(ShmConnect<ShmBufferSize>& shmConnect, const std::chrono::steady_clock::time_point& currentTimePoint);
 };
 }

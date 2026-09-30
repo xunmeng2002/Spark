@@ -18,7 +18,7 @@ class ShmConnect : public Connect
 public:
     ShmConnect(SessionIdType sessionId, const char* remoteAddress, int remotePort, ServerTypeType serverType, void* shmAddr,
                ConnectStatusType connectStatus, unsigned connectionCount)
-        : Connect(sessionId, remoteAddress, remotePort, connectStatus), CreateTimePoint(std::chrono::system_clock::now())
+        : Connect(sessionId, remoteAddress, remotePort, connectStatus), CreateTimePoint(std::chrono::steady_clock::now())
     {
         shmBuffer_ = ObjectPool<ShmBuffer<Size>>::GetInstance().Allocate(serverType, remotePort, shmAddr, connectStatus, connectionCount);
     }
@@ -38,7 +38,7 @@ public:
     virtual void Deallocate() override { ObjectPool<ShmConnect<Size>>::GetInstance().Deallocate(this); }
     ShmBuffer<Size>* GetBuffer() { return shmBuffer_; }
 
-    std::chrono::system_clock::time_point CreateTimePoint;
+    std::chrono::steady_clock::time_point CreateTimePoint;
 
 private:
     ShmBuffer<Size>* shmBuffer_;

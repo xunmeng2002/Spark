@@ -40,7 +40,7 @@ void ShmServer::Accept()
                     }
                 }
             }
-            lastWriteTimePoint_ = chrono::system_clock::now();
+            lastWriteTimePoint_ = chrono::steady_clock::now();
             semConnect_->UnLock();
         }
         else
@@ -52,7 +52,7 @@ void ShmServer::Accept()
     case ConnectStatusType::Accepted:
     case ConnectStatusType::Rejected:
     {
-        auto currTimePoint = chrono::system_clock::now();
+        auto currTimePoint = chrono::steady_clock::now();
         auto t = chrono::duration_cast<chrono::seconds>(currTimePoint - lastWriteTimePoint_);
         if (t.count() >= HandshakeTimeoutSeconds)
         {
@@ -82,7 +82,7 @@ void ShmServer::Accept()
 }
 void ShmServer::CheckConnect()
 {
-    const auto currentTimePoint = chrono::system_clock::now();
+    const auto currentTimePoint = chrono::steady_clock::now();
     for (auto& it : connects_)
     {
         auto shmConnect = static_cast<ShmConnect<ShmBufferSize>*>(it.second);
@@ -94,7 +94,7 @@ void ShmServer::CheckConnect()
     }
 }
 
-bool ShmServer::TryReclaimConnect(ShmConnect<ShmBufferSize>& shmConnect, const chrono::system_clock::time_point& currentTimePoint)
+bool ShmServer::TryReclaimConnect(ShmConnect<ShmBufferSize>& shmConnect, const chrono::steady_clock::time_point& currentTimePoint)
 {
     const ConnectStatusType connectStatus = shmConnect.GetBuffer()->GetConnectStatus();
     if (connectStatus == ConnectStatusType::DisConnected)

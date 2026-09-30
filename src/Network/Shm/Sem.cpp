@@ -54,7 +54,7 @@ bool Sem::Lock()
 
 #ifdef __linux__
     struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
+    clock_gettime(CLOCK_MONOTONIC, &ts);
     ts.tv_sec += timeOutMilliSecond_ / 1000;
     ts.tv_nsec += (timeOutMilliSecond_ % 1000) * 1000000L;
     if (ts.tv_nsec >= 1000000000)
@@ -62,7 +62,7 @@ bool Sem::Lock()
         ts.tv_sec += ts.tv_nsec / 1000000000;
         ts.tv_nsec = ts.tv_nsec % 1000000000;
     }
-    return sem_timedwait(sem_, &ts) == 0;
+    return sem_clockwait(sem_, CLOCK_MONOTONIC, &ts) == 0;
 #endif
 }
 bool Sem::UnLock()
