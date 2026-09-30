@@ -116,6 +116,11 @@ public:
     }
     void AttachIo(IoBase* ioBase) { ioBase_ = ioBase; }
     void AttachReader(SessionIdType sessionId, PackageReader* packageReader) { sessionPackageReaders_.insert({sessionId, packageReader}); }
+    PackageReader* ReaderOf(SessionIdType sessionId)
+    {
+        auto it = sessionPackageReaders_.find(sessionId);
+        return it == sessionPackageReaders_.end() ? nullptr : it->second;
+    }
 };
 
 // 一条完整 Step 报文的字节数；buff 的容量由调用方给足
@@ -196,4 +201,19 @@ TEST_F(ProtocolRecvTest, APackageParsedWithoutASubscriberIsReturnedToTheFactory)
     EXPECT_EQ(accounting_.CreatedCount, 1);
     EXPECT_EQ(accounting_.DisposedCount, 1);
     EXPECT_EQ(ioProbe_->DisConnectCount, 0);
+}
+
+TEST_F(ProtocolRecvTest, ARepeatedOnConnectForOneSessionKeepsTheFirstReaderAndReturnsTheSecondToThePool)
+{
+    PackageReader* recycledReader = PackageReader::Allocate(ProtocolTypeType::Step, &packageFactory_, SessionId, IP);
+    recycledReader->Deallocate();
+
+    protocol_->OnConnect(SessionId, IP, 10001);
+
+    // 还回去了才会再取到同一个槽：没还回去，这一次取到的就是池里的下一个槽
+    PackageReader* nextReader = PackageReader::Allocate(ProtocolTypeType::Step, &packageFactory_, SessionId, IP);
+    EXPECT_EQ(nextReader, recycledReader);
+    nextReader->Deallocate();
+    // 在册的仍是先来的那个 reader：重复的会话号不得把表项换掉
+    EXPECT_EQ(protocol_->ReaderOf(SessionId), packageReader_);
 }

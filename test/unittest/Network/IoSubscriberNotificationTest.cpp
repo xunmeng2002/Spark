@@ -74,6 +74,7 @@ public:
     void RegisterConnect(Connect* connect) { AddConnect(connect); }
     void UnregisterConnect(Connect* connect) { RemoveConnect(connect); }
     bool HasRegisteredConnect(SessionIdType sessionId) { return GetConnect(sessionId) != nullptr; }
+    bool IsRegisteredConnect(Connect* connect) { return GetConnect(connect->SessionId) == connect; }
     void DeliverRecv(Connect* connect, const char* data, size_t length) { NotifySubscriberRecvSafely(connect, data, length); }
 
 protected:
@@ -142,4 +143,23 @@ TEST(IoSubscriberNotificationTest, AnUnregisteredConnectionIsReturnedWithoutADis
     EXPECT_EQ(subscriber.ConnectCount, 0);
     EXPECT_EQ(subscriber.DisConnectCount, 0);
     EXPECT_EQ(connect.DeallocateCount, 1);
+}
+
+TEST(IoSubscriberNotificationTest, ARepeatedSessionIdIsRefusedWithoutASecondConnectNotification)
+{
+    ProbeIo io;
+    SubscriberNotificationProbe subscriber;
+    io.Subscribe(&subscriber);
+    ProbeConnect firstConnect;
+    ProbeConnect secondConnect;
+
+    io.RegisterConnect(&firstConnect);
+    io.RegisterConnect(&secondConnect);
+
+    EXPECT_EQ(subscriber.ConnectCount, 1);
+    EXPECT_TRUE(io.IsRegisteredConnect(&firstConnect));
+    EXPECT_FALSE(io.IsRegisteredConnect(&secondConnect));
+    EXPECT_EQ(firstConnect.DeallocateCount, 0);
+    // 拒绝不等于代拆：被拒的连接对象仍归调用方，登记之后还要接着用它
+    EXPECT_EQ(secondConnect.DeallocateCount, 0);
 }

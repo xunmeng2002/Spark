@@ -122,7 +122,13 @@ bool Protocol::Send(Package* package)
 void Protocol::OnConnect(SessionIdType sessionId, const char* ip, int port)
 {
     WriteLog(LogLevel::Info, "Protocol::OnConnect SessionId:%lld, IP:%s, Port:%d", sessionId, ip, port);
-    sessionPackageReaders_.insert(std::make_pair(sessionId, PackageReader::Allocate(protocolType_, packageFactory_, sessionId, ip)));
+    PackageReader* packageReader = PackageReader::Allocate(protocolType_, packageFactory_, sessionId, ip);
+    if (!sessionPackageReaders_.insert(std::make_pair(sessionId, packageReader)).second)
+    {
+        WriteLog(LogLevel::Error, "SessionId Already Has PackageReader, Reader Returned. SessionId:%lld", sessionId);
+        packageReader->Deallocate();
+        return;
+    }
     if (subscriber_)
     {
         subscriber_->OnProtocolConnect(sessionId, ip, port);

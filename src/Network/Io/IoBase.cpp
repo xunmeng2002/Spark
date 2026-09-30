@@ -73,9 +73,16 @@ void IoBase::AddConnect(Connect* connect)
 {
     WriteLog(LogLevel::Info, "New Connection. SessionId:%lld, RemoteAddress:%s, RemotePort:%d", connect->SessionId, connect->RemoteAddress,
              connect->RemotePort);
+    bool wasNewlyRegistered = false;
     {
         std::lock_guard<std::mutex> guard(connectsMutex_);
-        connects_.insert(std::make_pair(connect->SessionId, connect));
+        wasNewlyRegistered = connects_.insert(std::make_pair(connect->SessionId, connect)).second;
+    }
+    if (!wasNewlyRegistered)
+    {
+        WriteLog(LogLevel::Error, "SessionId Already Registered, Connection Refused. SessionId:%lld, RemoteAddress:%s, RemotePort:%d",
+                 connect->SessionId, connect->RemoteAddress, connect->RemotePort);
+        return;
     }
     if (ioSubscriber_ != nullptr)
     {
