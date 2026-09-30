@@ -463,6 +463,50 @@ TEST(ObjectPoolTest, ConcurrentBatchAllocateDeallocate)
     pool.Deallocate(item);
 }
 
+// ---------- 线程退出回收 ----------
+
+TEST(ObjectPoolTest, ThreadExit_ReturnsThreadLocalNodesToSharedList)
+{
+    struct ThreadExitReclaimType
+    {
+        long long value = 0;
+    };
+
+    ObjectPool<ThreadExitReclaimType>& pool = ObjectPool<ThreadExitReclaimType>::GetInstance();
+    pool.SetBlockUnitNum(4);
+
+    std::set<ThreadExitReclaimType*> exitedThreadNodes;
+    std::thread allocatingThread(
+        [&pool, &exitedThreadNodes]()
+        {
+            std::vector<ThreadExitReclaimType*> items;
+            for (int i = 0; i < 4; ++i)
+            {
+                items.push_back(pool.Allocate());
+            }
+            for (ThreadExitReclaimType* item : items)
+            {
+                exitedThreadNodes.insert(item);
+                pool.Deallocate(item);
+            }
+        });
+    allocatingThread.join();
+
+    std::vector<ThreadExitReclaimType*> reclaimedSlots;
+    for (int i = 0; i < 4; ++i)
+    {
+        reclaimedSlots.push_back(pool.Allocate());
+    }
+
+    const std::set<ThreadExitReclaimType*> reclaimedNodes(reclaimedSlots.begin(), reclaimedSlots.end());
+    EXPECT_EQ(reclaimedNodes, exitedThreadNodes);
+
+    for (ThreadExitReclaimType* slot : reclaimedSlots)
+    {
+        pool.Deallocate(slot);
+    }
+}
+
 // ---------- 析构/构造计数 ----------
 
 TEST(ObjectPoolTest, TrackedType_ConstructAndDestroy)

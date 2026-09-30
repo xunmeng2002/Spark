@@ -29,6 +29,15 @@ CAS 就会把一个**正在使用中**的对象发布成新的链头。把 pop/p
 - 只有池自己发出的指针才可归还。Debug 构建下每条取出的对象都登记在册（`RegisterAllocatedItem`），
   归还时先摘牌再析构（`AssertAndUnregisterOwnedItem`）：摘牌与析构分成两步，是为了先放开登记表的锁，
   使「析构里归还本池的另一个对象」不会自锁。重复归还或交进外来指针会就地报出类型与指针，而不是留到别处以越界写现形。
+- 线程退出时，本地链上剩余的空闲节点由 `ThreadLocalCache` 的析构整批交回共享链。不回收的话这些槽位
+  再不参与流通，池只能靠新申请块补足，反复创建/销毁线程时按块累积（默认一块 64 个槽位，
+  `LinearBuffer<BufferSize>` 一块约 4 MiB）。
+
+这条回收依赖一条次序保证：**同一线程内，线程存储期对象的析构先于静态存储期对象的析构**，故析构发生时池单例必定还活着。
+2026-09-30 在 MSVC 与 GCC 上各测了四种组合（本地对象先/后于池初始化、本地对象有无用户声明的构造函数），
+本地对象与 DLL 内的池都成立（DLL 侧另测一遍）。
+代价是一条宿主纪律：**线程不得比进程活得久**（进程退出前 join），模块也不得在线程存活时卸载——
+这两种情形下线程本地对象的析构会晚于池单例，与池自身的实现无关。
 
 ## 二、失败路径各自退回到哪里
 
@@ -62,6 +71,11 @@ CAS 就会把一个**正在使用中**的对象发布成新的链头。把 pop/p
 （`Refill` 搬来的至多一块、`Deallocate` 超限即整批交回、`Allocate` 弹出只会减），
 而回退是把计数还原成弹出前的值，故还原后仍不超限，`ReturnExcessThreadLocalNodesToSharedList` 在那条路上不会被调用。
 
+交回共享链的搬运只有一处：`SpliceThreadLocalNodesToSharedListLocked(nodeCount)`（调用方须持 `mutex_`）；
+两个调用点各自算出要交回的个数——「本地链积压超过一块」交 `min(count, blockUnitNum_)` 个，线程退出交剩下的全部。
+后者能一次交完，靠的正是上面这条「本地链长度恒 ≤ 一块」的不变量。该函数开头有一条 Debug 期断言
+（`1 <= nodeCount <= count`）；它拦的是「算错个数」这类改动，Release 下零成本。
+
 ## 四、相关测试与其输入输出
 
 | 用例 | 输入 | 输出 |
@@ -70,14 +84,16 @@ CAS 就会把一个**正在使用中**的对象发布成新的链头。把 pop/p
 | `ObjectPoolTest.AllocateAndDeallocate_Recycles` | 取一个、归还、再取一个 | 复用同一槽位 |
 | `ObjectPoolTest.RecycleAfterExcessReturnToSharedList` | 块容量 8、40 个对象反复取还 | 40 个地址互不重复，且全部来自原槽位 |
 | `ObjectPoolTest.ConcurrentBatchAllocateDeallocate` | 8 线程 × 40 轮 × 每轮 12 个 | 共享集合里无重复登记（同一地址不得同时属于两个线程） |
+| `ObjectPoolTest.ThreadExit_ReturnsThreadLocalNodesToSharedList` | 块容量 4；子线程取满 4 个、全部归还后**退出**；主线程再取 4 个 | 主线程取回的 4 个地址与子线程那 4 个**逐一相同**：不回收就会去申请新块，地址集合随即不等 |
 
 新用例对旧实现的判据已实测：把回退那两行去掉重跑，4 个槽位里只有 1 个能取回，另外 3 个来自新申请的块，
 断言在「地址集合不等」处失败（`ObjectPoolTest.cpp` 第 115 行）。
 
+线程退出那条同样实测过判别力：把 `ThreadLocalCache` 的析构改成 `= default`（即回到回收之前）重跑，
+主线程取回的 4 个地址与子线程那 4 个**无一相同**——它们来自新申请的块。
+
 ## 五、已知未覆盖与未决
 
-- **线程退出不回收本地链上的残留节点**。上界约「每退出线程一块」（默认 64 个），反复创建/销毁线程会累积。
-  备选方案（线程退出登记表、`GetInstance()` 惰性清扫）未择定。
 - **`SetBlockUnitNum` 不在 `mutex_` 内、热路径读 `blockUnitNum_` 非原子**。现状仅测试与启动期调用，
   是否立「启动期可调、此后禁改」的成文契约未有裁定。
 - **`AllocateShared` 的控制块失败路径无用例**：`std::bad_alloc` 无法注入，只能靠代码审读。

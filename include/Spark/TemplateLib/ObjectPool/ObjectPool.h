@@ -1,11 +1,11 @@
 #pragma once
+#include <cassert>
 #include <cstddef>
 #include <memory>
 #include <mutex>
 #include <stdexcept>
 #include <utility>
 #ifndef NDEBUG
-#include <cassert>
 #include <cstdio>
 #include <typeinfo>
 #include <unordered_set>
@@ -114,6 +114,17 @@ private:
     // 线程弹出、构造、再推回（ABA）就会让 CAS 把已在使用的对象发布成新链头。
     struct ThreadLocalCache
     {
+        ~ThreadLocalCache()
+        {
+            if (FreeListHead == nullptr)
+            {
+                return;
+            }
+            ObjectPool& pool = ObjectPool::GetInstance();
+            std::lock_guard<std::mutex> guard(pool.mutex_);
+            pool.SpliceThreadLocalNodesToSharedListLocked(FreeNodeCount);
+        }
+
         FreeNode* FreeListHead = nullptr;
         int FreeNodeCount = 0;
     };
@@ -235,16 +246,23 @@ private:
     {
         std::lock_guard<std::mutex> guard(mutex_);
         const int returnCount = (threadLocalCache_.FreeNodeCount < blockUnitNum_) ? threadLocalCache_.FreeNodeCount : blockUnitNum_;
+        SpliceThreadLocalNodesToSharedListLocked(returnCount);
+    }
 
-        FreeNode* returnHead = threadLocalCache_.FreeListHead;
+    // 把本地链头起的 nodeCount 个节点摘下、整批前插到共享链；调用方须持 mutex_
+    void SpliceThreadLocalNodesToSharedListLocked(int nodeCount)
+    {
+        assert(nodeCount > 0 && nodeCount <= threadLocalCache_.FreeNodeCount);
+
+        FreeNode* const returnHead = threadLocalCache_.FreeListHead;
         FreeNode* returnTail = returnHead;
-        for (int i = 1; i < returnCount; ++i)
+        for (int i = 1; i < nodeCount; ++i)
         {
             returnTail = returnTail->Next;
         }
 
         threadLocalCache_.FreeListHead = returnTail->Next;
-        threadLocalCache_.FreeNodeCount -= returnCount;
+        threadLocalCache_.FreeNodeCount -= nodeCount;
         returnTail->Next = sharedFreeList_;
         sharedFreeList_ = returnHead;
     }
