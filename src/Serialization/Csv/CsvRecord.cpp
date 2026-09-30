@@ -28,7 +28,7 @@ void CsvRecord::SetSeparator(char separatorChar)
 
 char* CsvRecord::AppendNameToken(const char* token)
 {
-    int tokenLen = (int)strlen(token) + 1;
+    int tokenLen = static_cast<int>(strlen(token)) + 1;
     char* target = nameBuffer_ + nameBufferLen_;
     memcpy(nameBuffer_ + nameBufferLen_, token, tokenLen);
     nameBufferLen_ += tokenLen;
@@ -37,7 +37,7 @@ char* CsvRecord::AppendNameToken(const char* token)
 
 char* CsvRecord::AppendContentToken(const char* token)
 {
-    int tokenLen = (int)strlen(token) + 1;
+    int tokenLen = static_cast<int>(strlen(token)) + 1;
     char* target = contentBuffer_ + contentBufferLen_;
     memcpy(contentBuffer_ + contentBufferLen_, token, tokenLen);
     contentBufferLen_ += tokenLen;

@@ -50,10 +50,7 @@ public:
             readIndex_ += len;
         }
     }
-    void Reset()
-    {
-        ClearIndices();
-    }
+    void Reset() { ClearIndices(); }
     void MemMove()
     {
         const size_t length = GetLength();

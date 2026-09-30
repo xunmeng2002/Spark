@@ -59,7 +59,7 @@ bool TcpIocpBase::Init()
         WriteErrorLog(LogLevel::Error, "Create TcpIocpCompletePort Failed.");
         return false;
     }
-    if (!ioCompletePort_->AssociateDevice((HANDLE)socket_, socket_))
+    if (!ioCompletePort_->AssociateDevice(reinterpret_cast<HANDLE>(socket_), socket_))
     {
         WriteErrorLog(WSAGetLastError(), "AssociateDevice Failed.");
         return false;
@@ -102,7 +102,7 @@ void TcpIocpBase::HandleTcpEvent()
     ULONG_PTR competionKey;
     MyOverlapped* overlapped;
 
-    auto bOK = ioCompletePort_->GetStatus(&len, &competionKey, reinterpret_cast<LPOVERLAPPED*>(&overlapped), (DWORD)timeOut_.count());
+    auto bOK = ioCompletePort_->GetStatus(&len, &competionKey, reinterpret_cast<LPOVERLAPPED*>(&overlapped), static_cast<DWORD>(timeOut_.count()));
     WriteLog(LogLevel::Debug, "CompletionKey:%d, Len:%d, Ret:%d.", competionKey, len, bOK);
     if (!bOK)
     {
@@ -208,7 +208,7 @@ bool TcpIocpBase::PostDisConnect(MyOverlapped* overlapped)
 
     WriteLog(LogLevel::Info, "PostDisConnect SessionId:%lld, Socket:%lld", overlapped->Connect->SessionId, overlapped->Connect->SocketId);
     DWORD transBytes = 0, flag = 0;
-    CancelIoEx((HANDLE)overlapped->Connect->SocketId, NULL);
+    CancelIoEx(reinterpret_cast<HANDLE>(overlapped->Connect->SocketId), NULL);
     auto ret = SocketApi::GetInstance().DisconnectEx(overlapped->Connect->SocketId, overlapped, TF_REUSE_SOCKET, 0);
     auto lastError = WSAGetLastError();
     if (!ret && lastError != ERROR_IO_PENDING)
@@ -260,8 +260,8 @@ bool TcpIocpBase::PostRecv(MyOverlapped* overlapped)
     overlapped->EventId = IocpEvent::EventRecv;
     overlapped->Connect = tcpIocpConnect;
 
-    WriteLog(LogLevel::Debug, "PostRecv SessionId:%lld, Socket:%lld, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu", tcpIocpConnect->SessionId,
-             tcpIocpConnect->SocketId, overlapped, overlapped->MyBuffer, overlapped->MyBuffer->GetLength());
+    WriteLog(LogLevel::Debug, "PostRecv SessionId:%lld, Socket:%lld, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu",
+             tcpIocpConnect->SessionId, tcpIocpConnect->SocketId, overlapped, overlapped->MyBuffer, overlapped->MyBuffer->GetLength());
     DWORD transBytes = 0, flag = 0;
     auto ret = WSARecv(tcpIocpConnect->SocketId, &overlapped->WsaBuffer, 1, nullptr, &flag, overlapped, NULL);
     if (ret == SOCKET_ERROR)
@@ -332,7 +332,7 @@ void TcpIocpBase::ReleaseAllInFlightConnectRequests()
         }
         auto tcpIocpConnect = static_cast<TcpIocpConnect*>(overlapped->Connect);
         SOCKET requestSocket = overlapped->EventId == IocpEvent::EventAccept ? socket_ : tcpIocpConnect->SocketId;
-        CancelIoEx((HANDLE)requestSocket, overlapped);
+        CancelIoEx(reinterpret_cast<HANDLE>(requestSocket), overlapped);
         if (ReapCancelledConnectRequest(overlapped, reapDeadline))
         {
             ReleaseUnsubmittedIoRequest(tcpIocpConnect, overlapped);
@@ -353,7 +353,8 @@ void TcpIocpBase::OnDisConnectComplete(MyOverlapped* overlapped)
 }
 void TcpIocpBase::OnSendComplete(MyOverlapped* overlapped, int bytesTransferred)
 {
-    WriteLog(LogLevel::Debug, "OnSendComplete SessionId:%lld, Socket:%lld, bytesTransferred:%d, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu",
+    WriteLog(LogLevel::Debug,
+             "OnSendComplete SessionId:%lld, Socket:%lld, bytesTransferred:%d, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu",
              overlapped->Connect->SessionId, overlapped->Connect->SocketId, bytesTransferred, overlapped, overlapped->MyBuffer,
              overlapped->MyBuffer->GetLength());
     if (static_cast<size_t>(bytesTransferred) < overlapped->MyBuffer->GetLength())
@@ -387,7 +388,8 @@ void TcpIocpBase::OnSendComplete(MyOverlapped* overlapped, int bytesTransferred)
 }
 void TcpIocpBase::OnRecvComplete(MyOverlapped* overlapped, int bytesTransferred)
 {
-    WriteLog(LogLevel::Debug, "OnRecvComplete SessionId:%lld, Socket:%lld, bytesTransferred:%d, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu",
+    WriteLog(LogLevel::Debug,
+             "OnRecvComplete SessionId:%lld, Socket:%lld, bytesTransferred:%d, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu",
              overlapped->Connect->SessionId, overlapped->Connect->SocketId, bytesTransferred, overlapped, overlapped->MyBuffer,
              overlapped->MyBuffer->GetLength());
     overlapped->MyBuffer->SetLength(static_cast<size_t>(bytesTransferred));

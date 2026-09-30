@@ -75,7 +75,7 @@ void TcpSelectClient::CheckConnect()
     ++maxId_;
 
     memcpy(&selectSocketTimeOutTemp_, &selectSocketTimeOut_, sizeof(timeval));
-    ::select((int)maxId_, nullptr, &writeFds_, &errorFds_, &selectSocketTimeOutTemp_);
+    ::select(static_cast<int>(maxId_), nullptr, &writeFds_, &errorFds_, &selectSocketTimeOutTemp_);
     for (auto& it : connectings_)
     {
         auto connect = static_cast<TcpConnect*>(it.second);

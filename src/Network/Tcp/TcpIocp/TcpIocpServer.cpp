@@ -97,7 +97,7 @@ SOCKET TcpIocpServer::PrepareAcceptSocket()
         WriteLog(LogLevel::Error, "Create SOCKET Failed.");
         return INVALID_SOCKET;
     }
-    if (!ioCompletePort_->AssociateDevice((HANDLE)socketId, socketId))
+    if (!ioCompletePort_->AssociateDevice(reinterpret_cast<HANDLE>(socketId), socketId))
     {
         WriteLog(LogLevel::Warning, "Associate CompletionPort Failed, Socket:%lld", socketId);
         closesocket(socketId);

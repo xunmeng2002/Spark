@@ -9,7 +9,7 @@ using namespace Spark::Core;
 
 void CalcalateMD5(const char* src, int len)
 {
-    string s = getMD5((const unsigned char*)src, len);
+    string s = getMD5(reinterpret_cast<const unsigned char*>(src), len);
     WriteLog(LogLevel::Info, "getMD5 Result:%s", s.c_str());
 }
 

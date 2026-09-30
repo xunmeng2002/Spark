@@ -160,7 +160,7 @@ TEST(StepUtilityTest, GetNext_SimpleField)
     std::string value;
     int sohIndex = -1;
 
-    EXPECT_TRUE(StepUtility::GetNext(&field[0], 0, (int)field.size(), key, value, sohIndex));
+    EXPECT_TRUE(StepUtility::GetNext(&field[0], 0, static_cast<int>(field.size()), key, value, sohIndex));
     EXPECT_EQ(key, 1);
     EXPECT_EQ(value, "0001");
 }
@@ -172,7 +172,7 @@ TEST(StepUtilityTest, GetNext_StringValue)
     std::string value;
     int sohIndex = -1;
 
-    EXPECT_TRUE(StepUtility::GetNext(&field[0], 0, (int)field.size(), key, value, sohIndex));
+    EXPECT_TRUE(StepUtility::GetNext(&field[0], 0, static_cast<int>(field.size()), key, value, sohIndex));
     EXPECT_EQ(key, 0x100D);
     EXPECT_EQ(value, "600001");
 }
@@ -267,7 +267,7 @@ TEST(StepUtilityTest, GetFieldStart_Found)
     unsigned short fieldId = 0;
     int startIndex = -1;
 
-    EXPECT_TRUE(StepUtility::GetFieldStart(&data[0], 0, (int)data.size(), fieldId, startIndex));
+    EXPECT_TRUE(StepUtility::GetFieldStart(&data[0], 0, static_cast<int>(data.size()), fieldId, startIndex));
     EXPECT_EQ(fieldId, 0x100D);
     EXPECT_GE(startIndex, 0);
 }
@@ -278,7 +278,7 @@ TEST(StepUtilityTest, GetFieldStart_NotFound)
     unsigned short fieldId = 0;
     int startIndex = -1;
 
-    EXPECT_FALSE(StepUtility::GetFieldStart(&data[0], 0, (int)data.size(), fieldId, startIndex));
+    EXPECT_FALSE(StepUtility::GetFieldStart(&data[0], 0, static_cast<int>(data.size()), fieldId, startIndex));
 }
 
 TEST(StepUtilityTest, GetFieldEnd_Found)
@@ -287,7 +287,7 @@ TEST(StepUtilityTest, GetFieldEnd_Found)
     unsigned short fieldId = 0;
     int endIndex = -1;
 
-    EXPECT_TRUE(StepUtility::GetFieldEnd(&data[0], 0, (int)data.size(), fieldId, endIndex));
+    EXPECT_TRUE(StepUtility::GetFieldEnd(&data[0], 0, static_cast<int>(data.size()), fieldId, endIndex));
     EXPECT_EQ(fieldId, 0x100D);
 }
 
@@ -297,7 +297,7 @@ TEST(StepUtilityTest, GetNextFieldZone_Complete)
     unsigned short fieldId = 0;
     int startIdx = -1, endIdx = -1;
 
-    EXPECT_TRUE(StepUtility::GetNextFieldZone(&data[0], 0, (int)data.size(), fieldId, startIdx, endIdx));
+    EXPECT_TRUE(StepUtility::GetNextFieldZone(&data[0], 0, static_cast<int>(data.size()), fieldId, startIdx, endIdx));
     EXPECT_EQ(fieldId, 0x100D);
     EXPECT_GE(startIdx, 0);
     EXPECT_GT(endIdx, startIdx);
@@ -310,7 +310,7 @@ TEST(StepUtilityTest, GetNextFieldZone_MismatchedIds)
     unsigned short fieldId = 0;
     int startIdx = -1, endIdx = -1;
 
-    EXPECT_FALSE(StepUtility::GetNextFieldZone(&data[0], 0, (int)data.size(), fieldId, startIdx, endIdx));
+    EXPECT_FALSE(StepUtility::GetNextFieldZone(&data[0], 0, static_cast<int>(data.size()), fieldId, startIdx, endIdx));
 }
 
 TEST(StepUtilityTest, GetFieldStart_MaxFieldId)
@@ -320,7 +320,7 @@ TEST(StepUtilityTest, GetFieldStart_MaxFieldId)
     uint16_t fieldId = 0;
     int startIndex = -1;
 
-    EXPECT_TRUE(StepUtility::GetFieldStart(&data[0], 0, (int)data.size(), fieldId, startIndex));
+    EXPECT_TRUE(StepUtility::GetFieldStart(&data[0], 0, static_cast<int>(data.size()), fieldId, startIndex));
     EXPECT_EQ(fieldId, 0xFFFF);
 }
 
@@ -331,7 +331,7 @@ TEST(StepUtilityTest, GetFieldStart_FieldIdOutOfRange)
     uint16_t fieldId = 0;
     int startIndex = -1;
 
-    EXPECT_FALSE(StepUtility::GetFieldStart(&data[0], 0, (int)data.size(), fieldId, startIndex));
+    EXPECT_FALSE(StepUtility::GetFieldStart(&data[0], 0, static_cast<int>(data.size()), fieldId, startIndex));
 }
 
 TEST(StepUtilityTest, GetNextFieldZone_FieldEndIdOutOfRange)
@@ -341,7 +341,7 @@ TEST(StepUtilityTest, GetNextFieldZone_FieldEndIdOutOfRange)
     uint16_t fieldId = 0;
     int startIdx = -1, endIdx = -1;
 
-    EXPECT_FALSE(StepUtility::GetNextFieldZone(&data[0], 0, (int)data.size(), fieldId, startIdx, endIdx));
+    EXPECT_FALSE(StepUtility::GetNextFieldZone(&data[0], 0, static_cast<int>(data.size()), fieldId, startIdx, endIdx));
 }
 
 // ============================================================
@@ -581,7 +581,7 @@ TEST(StepUtilityTest, HeadStreamRoundTrip)
 {
     std::string stream = MakeStepHeadStream(0x1001, 128, 42, 0);
 
-    int headLen = (int)stream.size();
+    int headLen = static_cast<int>(stream.size());
     EXPECT_EQ(headLen, static_cast<int>(StepHeadLen));
 
     HeadField parsed = {};
@@ -650,8 +650,8 @@ TEST(StepUtilityTest, HeadFromStream_BodyFollowsHead)
 
     HeadField parsed = {};
     int headEndIndex = -1;
-    EXPECT_TRUE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
-    EXPECT_EQ(headEndIndex, (int)(stream.size() - body.size()));
+    EXPECT_TRUE(StepUtility::HeadFromStream(&stream[0], 0, static_cast<int>(stream.size()), &parsed, headEndIndex));
+    EXPECT_EQ(headEndIndex, static_cast<int>(stream.size() - body.size()));
     EXPECT_EQ(parsed.BodyLen, static_cast<unsigned short>(body.size()));
 }
 
@@ -664,7 +664,7 @@ TEST(StepUtilityTest, HeadFromStream_MissingKey)
 
     HeadField parsed = {};
     int headEndIndex = -1;
-    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
+    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, static_cast<int>(stream.size()), &parsed, headEndIndex));
 }
 
 TEST(StepUtilityTest, HeadFromStream_UnknownKey)
@@ -674,7 +674,7 @@ TEST(StepUtilityTest, HeadFromStream_UnknownKey)
 
     HeadField parsed = {};
     int headEndIndex = -1;
-    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
+    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, static_cast<int>(stream.size()), &parsed, headEndIndex));
 }
 
 TEST(StepUtilityTest, HeadFromStream_WrongMagic)
@@ -683,7 +683,7 @@ TEST(StepUtilityTest, HeadFromStream_WrongMagic)
 
     HeadField parsed = {};
     int headEndIndex = -1;
-    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
+    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, static_cast<int>(stream.size()), &parsed, headEndIndex));
 }
 
 TEST(StepUtilityTest, HeadFromStream_UnparseableValue)
@@ -693,7 +693,7 @@ TEST(StepUtilityTest, HeadFromStream_UnparseableValue)
 
     HeadField parsed = {};
     int headEndIndex = -1;
-    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
+    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, static_cast<int>(stream.size()), &parsed, headEndIndex));
 }
 
 TEST(StepUtilityTest, HeadFromStream_TrailingGarbageValue)
@@ -703,7 +703,7 @@ TEST(StepUtilityTest, HeadFromStream_TrailingGarbageValue)
 
     HeadField parsed = {};
     int headEndIndex = -1;
-    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
+    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, static_cast<int>(stream.size()), &parsed, headEndIndex));
 }
 
 TEST(StepUtilityTest, HeadFromStream_BodyLenOutOfRange)
@@ -733,7 +733,7 @@ TEST(StepUtilityTest, HeadFromStream_EmptyValue)
 
     HeadField parsed = {};
     int headEndIndex = -1;
-    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, (int)stream.size(), &parsed, headEndIndex));
+    EXPECT_FALSE(StepUtility::HeadFromStream(&stream[0], 0, static_cast<int>(stream.size()), &parsed, headEndIndex));
 }
 
 // ============================================================
@@ -759,7 +759,7 @@ TEST(StepUtilityTest, TailStreamRoundTrip)
     EXPECT_EQ(buff[StepTailLen - 1], SOH);
 
     TailField parsed = {};
-    EXPECT_TRUE(StepUtility::TailFromStream(&buff[0], 0, (int)buff.size(), &parsed));
+    EXPECT_TRUE(StepUtility::TailFromStream(&buff[0], 0, static_cast<int>(buff.size()), &parsed));
     EXPECT_EQ(parsed.CheckSum, 123u);
 }
 
@@ -768,7 +768,7 @@ TEST(StepUtilityTest, TailStreamRoundTrip_Zero)
     std::string buff = MakeStepTailStream(0);
 
     TailField parsed = {};
-    EXPECT_TRUE(StepUtility::TailFromStream(&buff[0], 0, (int)buff.size(), &parsed));
+    EXPECT_TRUE(StepUtility::TailFromStream(&buff[0], 0, static_cast<int>(buff.size()), &parsed));
     EXPECT_EQ(parsed.CheckSum, 0u);
 }
 
@@ -778,7 +778,7 @@ TEST(StepUtilityTest, TailStreamRoundTrip_Max)
     std::string buff = MakeStepTailStream(0xFFFFFFFFu);
 
     TailField parsed = {};
-    EXPECT_TRUE(StepUtility::TailFromStream(&buff[0], 0, (int)buff.size(), &parsed));
+    EXPECT_TRUE(StepUtility::TailFromStream(&buff[0], 0, static_cast<int>(buff.size()), &parsed));
     EXPECT_EQ(parsed.CheckSum, 0xFFFFFFFFu);
 }
 
@@ -787,7 +787,7 @@ TEST(StepUtilityTest, TailFromStream_InvalidKey)
     // TailFromStream 不会跳过前导字节，数据应为标准 key=value\SOH 格式
     std::string tailStream = MakeStepField(0xFFFF, "test");
     TailField tail = {};
-    EXPECT_FALSE(StepUtility::TailFromStream(&tailStream[0], 0, (int)tailStream.size(), &tail));
+    EXPECT_FALSE(StepUtility::TailFromStream(&tailStream[0], 0, static_cast<int>(tailStream.size()), &tail));
 }
 
 TEST(StepUtilityTest, TailFromStream_OutOfRangeCheckSum)
@@ -795,7 +795,7 @@ TEST(StepUtilityTest, TailFromStream_OutOfRangeCheckSum)
     // 9 位十六进制超过 32 位，必须判失败而不是截断
     std::string tailStream = MakeStepField(Items::CheckSum, "1FFFFFFFF");
     TailField tail = {};
-    EXPECT_FALSE(StepUtility::TailFromStream(&tailStream[0], 0, (int)tailStream.size(), &tail));
+    EXPECT_FALSE(StepUtility::TailFromStream(&tailStream[0], 0, static_cast<int>(tailStream.size()), &tail));
 }
 
 TEST(StepUtilityTest, TailFromStream_NoField)
@@ -830,13 +830,13 @@ TEST(StepUtilityTest, CompleteHeadBodyTail)
     std::string message(headBuf, headBuf + headLen);
     message += body;
     // 校验和覆盖包头与包体，与 Package::MakePackage 的算法一致
-    auto checkSum = CalculateCrc32c(reinterpret_cast<const unsigned char*>(message.data()), (int)message.size());
+    auto checkSum = CalculateCrc32c(reinterpret_cast<const unsigned char*>(message.data()), static_cast<int>(message.size()));
     message += MakeStepTailStream(checkSum);
 
     // 反向解析：包头
     HeadField parsedHead = {};
     int headEndIndex = -1;
-    EXPECT_TRUE(StepUtility::HeadFromStream(&message[0], 0, (int)message.size(), &parsedHead, headEndIndex));
+    EXPECT_TRUE(StepUtility::HeadFromStream(&message[0], 0, static_cast<int>(message.size()), &parsedHead, headEndIndex));
     EXPECT_EQ(parsedHead.PackageId, 0x1001);
     EXPECT_EQ(parsedHead.MsgSeqNum, 1u);
     EXPECT_EQ(headEndIndex, headLen);

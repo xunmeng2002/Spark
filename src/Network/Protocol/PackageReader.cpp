@@ -124,7 +124,7 @@ bool PackageReader::ParseXtpPackage(Package*& package)
             return true;
         }
         memcpy(&tail_, data_ + sizeof(HeadField) + head_.BodyLen, sizeof(tail_));
-        auto checkSum = CalculateCrc32c((const unsigned char*)data_, sizeof(HeadField) + head_.BodyLen);
+        auto checkSum = CalculateCrc32c(reinterpret_cast<const unsigned char*>(data_), sizeof(HeadField) + head_.BodyLen);
         if (checkSum != tail_.CheckSum)
         {
             WriteLog(LogLevel::Error, "CheckSum not Match. Tail.CheckSum:0x%08X, CalculateCrc32c:0x%08X", tail_.CheckSum, checkSum);
@@ -211,7 +211,7 @@ bool PackageReader::ParseStepPackage(Package*& package)
             DiscardFront(1);
             continue;
         }
-        auto checkSum = CalculateCrc32c((const unsigned char*)data_, tailIndex);
+        auto checkSum = CalculateCrc32c(reinterpret_cast<const unsigned char*>(data_), tailIndex);
         if (checkSum != tail_.CheckSum)
         {
             WriteLog(LogLevel::Warning, "CheckSum not Match. Tail.CheckSum:0x%08X, CalculateCrc32c:0x%08X", tail_.CheckSum, checkSum);

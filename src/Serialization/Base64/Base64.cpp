@@ -47,7 +47,7 @@ void Base64Encode(const unsigned char* src, int srcLen, unsigned char* dest, int
         *p++ = '=';
     }
     *p = 0;
-    destLen = (int)(p - dest);
+    destLen = static_cast<int>(p - dest);
 }
 void Base64Decode(const unsigned char* src, int srcLen, unsigned char* dest, int& destLen)
 {
@@ -78,6 +78,6 @@ void Base64Decode(const unsigned char* src, int srcLen, unsigned char* dest, int
         }
     }
     *p = '\0';
-    destLen = (int)(p - dest);
+    destLen = static_cast<int>(p - dest);
 }
 }

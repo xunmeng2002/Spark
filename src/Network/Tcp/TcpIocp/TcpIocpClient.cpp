@@ -120,7 +120,7 @@ SOCKET TcpIocpClient::PrepareConnectSocket()
         closesocket(socketId);
         return INVALID_SOCKET;
     }
-    if (!ioCompletePort_->AssociateDevice((HANDLE)socketId, socketId))
+    if (!ioCompletePort_->AssociateDevice(reinterpret_cast<HANDLE>(socketId), socketId))
     {
         WriteErrorLog(WSAGetLastError(), "AssociateDevice Failed.");
         closesocket(socketId);

@@ -337,14 +337,14 @@ std::string TimeUtility::ToLocalDateTime(time_t* time)
 
 void TimeUtility::GetDateTimeFromUpdateTs(long long updateTs, int& date, int& hour, int& minute, int& second, int& milliSecond)
 {
-    milliSecond = (int)(updateTs % 1000LL);
+    milliSecond = static_cast<int>(updateTs % 1000LL);
     updateTs /= 1000LL;
-    second = (int)(updateTs % 100LL);
+    second = static_cast<int>(updateTs % 100LL);
     updateTs /= 100LL;
-    minute = (int)(updateTs % 100LL);
+    minute = static_cast<int>(updateTs % 100LL);
     updateTs /= 100LL;
-    hour = (int)(updateTs % 100LL);
-    date = (int)(updateTs / 100LL);
+    hour = static_cast<int>(updateTs % 100LL);
+    date = static_cast<int>(updateTs / 100LL);
 }
 int TimeUtility::CalculateNextBarFromDayBar(int tradingDay, int barPeriod)
 {

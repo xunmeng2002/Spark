@@ -4,6 +4,39 @@
 
 本文是方案与计划，不含代码改动。所有"现状"结论均标注文件与行号，便于逐条复核。
 
+## 修订记录
+
+> 正文 §1–§12 与附录是 v2 原文，其中的「改造后」一律是**计划时态**。落地后的实际格式与本节记载不一致时，**以本节为准**；正文按 §8「禁止静默覆盖历史记录」保留原文不回改，过期段落只在此登记。
+
+### v3（STEP 线格式落地）
+
+**落地批次**：2026-09-14「STEP 协议数字化收口」；本节 2026-09-30 补记。
+
+Step 侧 §6.7 的条目全部落地，与 v2 写法有四处差异：
+
+| v2 原文（§6.7） | v3 实际（代码事实） |
+| :--- | :--- |
+| 「`HeadToStream` 先写 magic（`0=SPK2`）再写版本」 | 键一律 **4 位大写十六进制**；锚点为 `SOH 0000=SPK2 SOH`（11 字节），由 `AppendPackageMagicField` 与包头首字段**共用一次格式化**（`StepUtility.cpp:30-32`） |
+| 「锚点从 `SOH`+`1`+`=` 改为 `SOH`+`0`+`=`+`SPK2`+`SOH`」 | **已实现**。且包头写序不是 Id 序，而是 `HeadToStream` 中 `AppendField` 的出现序：`0000`→`0008`→`0001`→`0002`→`0004`→`0003`（`StepUtility.cpp:243-247`） |
+| 「`StepHeaderLen` 必须改成由 `HeadToStream` 返回实际长度，不能再硬编码 36」 | 已落地：包头 **62 字节**（`StepHeadLen`，由 `StepKeyTextLen` 推导并 `static_assert` 钉死），写满则返回 `StepHeadLen`、写漏返回 0；报尾 11 → **14 字节**（`StepUtility.h:17-31`） |
+| 「校验和同样换 CRC32C」 | 已落地，报尾写 `SOH 0005=E3069283 SOH`；`TailField::CheckSum` 由有符号改**无符号** |
+
+附录 B 的改造后样例 `SOH 0=SPK2 SOH 8=N SOH 1=XXXX SOH 2=NNNNN SOH 3=NNNNNNNNNNNNN SOH 4=N SOH` 实际为（Version 已升 3、`MsgSeqNum` 取 `0xFFFFFFFF`）：
+
+```text
+SOH 0000=SPK2 SOH 0008=0003 SOH 0001=00A1 SOH 0002=0008 SOH 0004=FFFFFFFF SOH 0003=1 SOH
+```
+
+`MessageChain` 仍是 **1 位十进制**（`{:d}`），其余数值字段定宽大写十六进制。
+
+XTP 侧（§6.1 / 附录 B）的布局与 v2 一致，已落地并用编译期断言钉住：`sizeof(HeadField) == 16`（`Magic` 4 / `MsgSeqNum` 4 / `PackageId` 2 / `BodyLen` 2 / `Version` 2 / `Chain` 1 / `Rsv` 1）、`sizeof(TailField) == 4`、单帧固定开销 20 字节；字面 `ProtocolMagicValue` 与文本 `ProtocolMagicText` 互为字节镜像（`ProtocolVersion.h:22,34-58`）。
+
+**版本号 2 → 3**：线格式破坏性变更，`ProtocolVersionValue` 现为 `3`（§6.5 的版本不符处理据此生效）。不升版本会让两端按各自格式解析同一串字节；其失败模式是 `HeadFromStream` 锚点匹配不上、返回 false，**这是有意的**，不是静默读错值。
+
+**过期段落（不回改，仅登记）**：§6.7 第 2 条（`0=SPK2`）与附录 B 的改造后样例（`NNNNN` 等十进制定宽），均已被上表取代。
+
+**尚未覆盖的范围**：`QuantTrading` 侧已 `cmake --install` 重刷、`PackagesStatic` 构建通过且零源码改动；QT 全量构建未验证（仍卡在既有的 `MdbStatic` 问题）；`Libs/Spark` 只有 `x64-windows` 一个三元组，Linux 侧属未编译验证。
+
 ## 1. 背景与目标
 
 Xtp 路径当前的报文头是把一个 native C++ 结构体原样 `memcpy` 上线的：

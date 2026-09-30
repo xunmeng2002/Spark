@@ -123,14 +123,14 @@ TEST(ShmBufferTest, OutOfRangeConnectionIndexTripsAssert)
     ASSERT_DEATH(
         {
             ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Client, 0, memory.data(), ConnectStatusType::Connected, TestShmConnectCount);
-            (void)buffer;
+            static_cast<void>(buffer);
         },
         "IsValidConnectionIndex");
     ASSERT_DEATH(
         {
             ShmBuffer<TestShmBufferSize> buffer(ServerTypeType::Client, OutOfRangeConnectionIndex, memory.data(), ConnectStatusType::Connected,
                                                 TestShmConnectCount);
-            (void)buffer;
+            static_cast<void>(buffer);
         },
         "IsValidConnectionIndex");
 }

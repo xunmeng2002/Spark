@@ -58,7 +58,7 @@ void TcpSelectBase::HandleTcpEvent()
 {
     PrepareFds();
     memcpy(&selectSocketTimeOutTemp_, &selectSocketTimeOut_, sizeof(timeval));
-    ::select((int)maxId_, &readFds_, &writeFds_, &errorFds_, &selectSocketTimeOutTemp_);
+    ::select(static_cast<int>(maxId_), &readFds_, &writeFds_, &errorFds_, &selectSocketTimeOutTemp_);
     if (FD_ISSET(socketNotify_->GetReadSocket(), &readFds_))
     {
         socketNotify_->Consume();

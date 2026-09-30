@@ -31,7 +31,7 @@ void ServerIoSubscriberImpl::OnRecv(SessionIdType sessionId, const char* data, s
     //if (count % 1000 == 0)
     {
         char message[2048] = {0};
-        snprintf(message, sizeof(message), "ServerIoSubscriberImpl::OnRecv SessionId:[%lld], Data:[%.*s]", (long long)sessionId,
+        snprintf(message, sizeof(message), "ServerIoSubscriberImpl::OnRecv SessionId:[%lld], Data:[%.*s]", static_cast<long long>(sessionId),
                  static_cast<int>(length), data);
         WriteLog(LogLevel::Info, message);
     }

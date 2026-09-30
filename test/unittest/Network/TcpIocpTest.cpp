@@ -130,14 +130,8 @@ public:
     }
     virtual ~IocpLoopbackServer() {}
 
-    virtual void OnProtocolConnect(SessionIdType sessionId, const char* ip, int port) override
-    {
-        ++connectCount_;
-    }
-    virtual void OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port) override
-    {
-        ++disConnectCount_;
-    }
+    virtual void OnProtocolConnect(SessionIdType sessionId, const char* ip, int port) override { ++connectCount_; }
+    virtual void OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port) override { ++disConnectCount_; }
     virtual void OnMessage(Package* ownedPackage) override
     {
         EchoedOrder order;
@@ -186,10 +180,7 @@ public:
         sessionId_ = sessionId;
         SendDistinctOrders();
     }
-    virtual void OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port) override
-    {
-        ++disConnectCount_;
-    }
+    virtual void OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port) override { ++disConnectCount_; }
     virtual void OnMessage(Package* ownedPackage) override
     {
         EchoedOrder order;

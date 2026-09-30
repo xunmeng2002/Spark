@@ -16,35 +16,35 @@ TEST(MD5Test, EmptyString)
 TEST(MD5Test, StringAbc)
 {
     std::string input = "abc";
-    std::string result = getMD5(reinterpret_cast<const unsigned char*>(input.c_str()), (int)input.length());
+    std::string result = getMD5(reinterpret_cast<const unsigned char*>(input.c_str()), static_cast<int>(input.length()));
     EXPECT_EQ(result, "900150983cd24fb0d6963f7d28e17f72");
 }
 
 TEST(MD5Test, StringMessageDigest)
 {
     std::string input = "message digest";
-    std::string result = getMD5(reinterpret_cast<const unsigned char*>(input.c_str()), (int)input.length());
+    std::string result = getMD5(reinterpret_cast<const unsigned char*>(input.c_str()), static_cast<int>(input.length()));
     EXPECT_EQ(result, "f96b697d7cb7938d525a2f31aaf161d0");
 }
 
 TEST(MD5Test, StringA_Z)
 {
     std::string input = "abcdefghijklmnopqrstuvwxyz";
-    std::string result = getMD5(reinterpret_cast<const unsigned char*>(input.c_str()), (int)input.length());
+    std::string result = getMD5(reinterpret_cast<const unsigned char*>(input.c_str()), static_cast<int>(input.length()));
     EXPECT_EQ(result, "c3fcd3d76192e4007dfb496cca67e13b");
 }
 
 TEST(MD5Test, NumericChars)
 {
     std::string input = "12345678901234567890123456789012345678901234567890123456789012345678901234567890";
-    std::string result = getMD5(reinterpret_cast<const unsigned char*>(input.c_str()), (int)input.length());
+    std::string result = getMD5(reinterpret_cast<const unsigned char*>(input.c_str()), static_cast<int>(input.length()));
     EXPECT_EQ(result, "57edf4a22be3c955ac49da2e2107b67a");
 }
 
 TEST(MD5Test, OutputLength)
 {
     std::string input = "HelloWorld";
-    std::string result = getMD5(reinterpret_cast<const unsigned char*>(input.c_str()), (int)input.length());
+    std::string result = getMD5(reinterpret_cast<const unsigned char*>(input.c_str()), static_cast<int>(input.length()));
     // MD5 hex string 始终是 32 字符
     EXPECT_EQ(result.length(), 32);
 }
@@ -52,7 +52,7 @@ TEST(MD5Test, OutputLength)
 TEST(MD5Test, OnlyHexChars)
 {
     std::string input = "HelloWorld";
-    std::string result = getMD5(reinterpret_cast<const unsigned char*>(input.c_str()), (int)input.length());
+    std::string result = getMD5(reinterpret_cast<const unsigned char*>(input.c_str()), static_cast<int>(input.length()));
     // 只包含 0-9 和 a-f
     for (char c : result)
     {
@@ -63,7 +63,7 @@ TEST(MD5Test, OnlyHexChars)
 TEST(MD5Test, Deterministic)
 {
     std::string input = "HelloWorld";
-    auto r1 = getMD5(reinterpret_cast<const unsigned char*>(input.c_str()), (int)input.length());
-    auto r2 = getMD5(reinterpret_cast<const unsigned char*>(input.c_str()), (int)input.length());
+    auto r1 = getMD5(reinterpret_cast<const unsigned char*>(input.c_str()), static_cast<int>(input.length()));
+    auto r2 = getMD5(reinterpret_cast<const unsigned char*>(input.c_str()), static_cast<int>(input.length()));
     EXPECT_EQ(r1, r2);
 }

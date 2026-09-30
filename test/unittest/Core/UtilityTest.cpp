@@ -37,42 +37,42 @@ TEST(UtilityTest, FtoA_NotEmpty)
 TEST(UtilityTest, RemoveCharacter_AtStart)
 {
     char buf[] = "  hello";
-    Utility::RemoveCharacter(buf, (int)sizeof(buf), ' ');
+    Utility::RemoveCharacter(buf, static_cast<int>(sizeof(buf)), ' ');
     EXPECT_STREQ(buf, "hello");
 }
 
 TEST(UtilityTest, RemoveCharacter_AtEnd)
 {
     char buf[] = "hello  ";
-    Utility::RemoveCharacter(buf, (int)sizeof(buf), ' ');
+    Utility::RemoveCharacter(buf, static_cast<int>(sizeof(buf)), ' ');
     EXPECT_STREQ(buf, "hello");
 }
 
 TEST(UtilityTest, RemoveCharacter_AllSpaces)
 {
     char buf[] = "     ";
-    Utility::RemoveCharacter(buf, (int)sizeof(buf), ' ');
+    Utility::RemoveCharacter(buf, static_cast<int>(sizeof(buf)), ' ');
     EXPECT_STREQ(buf, "");
 }
 
 TEST(UtilityTest, RemoveCharacter_NoMatch)
 {
     char buf[] = "hello";
-    Utility::RemoveCharacter(buf, (int)sizeof(buf), 'x');
+    Utility::RemoveCharacter(buf, static_cast<int>(sizeof(buf)), 'x');
     EXPECT_STREQ(buf, "hello");
 }
 
 TEST(UtilityTest, RemoveCharacter_Mixed)
 {
     char buf[] = "a b c d";
-    Utility::RemoveCharacter(buf, (int)sizeof(buf), ' ');
+    Utility::RemoveCharacter(buf, static_cast<int>(sizeof(buf)), ' ');
     EXPECT_STREQ(buf, "abcd");
 }
 
 TEST(UtilityTest, RemoveCharacter_Empty)
 {
     char buf[] = "";
-    Utility::RemoveCharacter(buf, (int)sizeof(buf), ' ');
+    Utility::RemoveCharacter(buf, static_cast<int>(sizeof(buf)), ' ');
     EXPECT_STREQ(buf, "");
 }
 
@@ -110,7 +110,7 @@ TEST(UtilityTest, GetConfigProtocolType_CaseSensitive)
 TEST(UtilityTest, ParseProcessName)
 {
     char buf[256] = {};
-    Utility::ParseProcessName("/usr/local/bin/myapp.exe", buf, (int)sizeof(buf));
+    Utility::ParseProcessName("/usr/local/bin/myapp.exe", buf, static_cast<int>(sizeof(buf)));
     // 函数用 strrchr 找 '/' 或 '\'，然后截断到 '.'
     // 不同平台行为不同，验证不崩溃且非空即可
     EXPECT_GT(std::strlen(buf), 0);
