@@ -756,6 +756,12 @@
 
 - **`ShmConnectLifecycleTest.ReclaimsConnectWhosePeerNeverAttached` 的时间裕量不足（2026-09-30 实测，待决）**：WSL GCC Release 全量跑中出现 **1 次**失败（`DriveIoEventsUntil` 到点仍未等到 `OnDisConnect`）；此后 **9 次**通过（6 次全量跑含本批今天这次、3 次隔离跑）。实测该用例单独耗时 **5.3～7.5 秒**，而 `ReclaimDriveLimit = 8000 ms`（`ShmInitTest.cpp:264`）叠加 `HandshakeTimeoutSeconds = 5` 的握手窗口：50 ms 轮询间隔下，「5 秒撤回 + 逐轮驱动本身的开销」已贴住 8 秒上限，机器一慢即超。**与本批无关的证据只到「不在改动面内」这一层**——被回收的连接确实登记在册、`RemoveConnect` 的通知条件仍为真，回溯路径 `TryReclaimConnect` → `RevokeUnconfirmedAccept` 未被本批触碰；但该条只跑稳了 9 次，**未证明**独立性。**待决**：是否把 `ReclaimDriveLimit` 放宽（或改为按 `HandshakeTimeoutSeconds` 派生），以及是否把「超时未达」与「断言失败」在用例里分开报告，以免偶发与真回归混在一起。
 
+**已关闭（2026-09-30，提交 `634350b`）**：本条的残留一项（`DriveIoEventsUntil` 到点静默返回，预算耗尽与真回归在输出上无从区分）已收口——该函数由 `void` 改为 `[[nodiscard]] bool`，返回到点前是否达停条件；三处调用点改由 `ASSERT_TRUE(...) << DriveBudgetExhaustedMessage`（文案「驱动预算耗尽：到点停条件仍不成立，与断言的状态不符不是一回事」）承接，预算耗尽时停条件断言当场失败、不再与紧随的 `EXPECT_EQ(probe.DisConnectCount, 1)` 混成同一条判据。**A/B 实测**：把首处调用点的 `ReclaimDriveLimit` 临时改为 200 ms，输出恰好一条失败、文案即该条，且紧随的状态断言未再重复报错；改回 8000 ms 后四档全通过。本条的「是否放宽 `ReclaimDriveLimit`」之问仍答**不需要**（定性见上文 `b9bc500`：8 秒预算对 5.45 秒实耗有约 2.5 秒余量，此前贴崖的是钟不是预算）。
+
+主文件短版原文（2026-09-30 半关闭时留）：
+
+- **回收用例的「驱动到点」与「断言失败」仍混在一条判据里（承自归档 `Q.52`，2026-09-30 半关闭）**：该条原先归因的「时间裕量不足」已由同日 `b9bc500` 定性并修复——根因不是 8 秒预算紧，而是 `system_clock` / `CLOCK_REALTIME` 会被宿主向后步进（WSL2 客机实测每约 32.5 秒后跳约 2.5 秒，使 5 秒握手窗口实耗 7.1~7.6 秒、贴死 `ReclaimDriveLimit`）；改用单调钟后 40 次连跑 **0 失败、0 慢档**（gtest 报时 5283~5452 ms），故「是否放宽 `ReclaimDriveLimit`」之问**已不需要**（8 秒预算对 5.45 秒实耗有约 2.5 秒余量）。**残留（未决）**：`DriveIoEventsUntil` 到点即静默返回，用例随后只做 `EXPECT_EQ(probe.DisConnectCount, 1)`——预算耗尽与真回归在输出上无从区分（本条当初诊断困难正源于此）。**待决**：是否让 `DriveIoEventsUntil` 返回是否达停条件、由用例把两种情形分开报告。原文与实测数据见归档 `Q.52`。
+
 ### Q.51
 
 - **`ObjectPool::Allocate` 的池块泄漏在客户端确认路径上变得可达（2026-09-28 本批暴露，待决）**：`ObjectPool::Allocate` 是先弹出空闲链节点、再在块上放置构造，**构造抛出时不回滚**（`ObjectPool.h:51-58`），该块从此既不在空闲链、也不被任何对象持有。本批给 `ShmClient::EstablishConfirmedConnection` 加了异常回滚，**槽位这一侧已兜住**（`Allocate` 抛时把槽位从 `Connected` 置回 `DisConnected`，钥匙交回服务端，服务端当轮回收），但**池块那一侧仍漏**——于是「分配失败」这条路上，槽位会回池而池块不会。**待决**：是否给 `ObjectPool::Allocate` 补一步「构造抛出即把节点推回空闲链」的回滚（该组件是通用件、调用点遍布 IO 与缓冲两族，改动面不止 Shm）。同一路径上另两处不整齐，一并记下：①`AddConnect` 在连接表插入**之后**、订阅者回调里抛时，清理会补发一次 `OnDisConnect`（回调不抛异常是全仓既有假设，`IoBase` 另外两处回调同样未加保护）；②这两条都需要给 `Allocate` / `AddConnect` 开注入缝才可复现，故**无用例**。详见 `docs/shm-channel-and-connect-model.md` 第四节与第六节。
