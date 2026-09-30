@@ -157,6 +157,14 @@
   槽位头清零、槽位对下次协商可复用，`connectCount_` 与连接对象一并收回。
   **控制头那侧同点收尾**：`ShmServer::Accept` 的 5 秒超时分支只复位**控制头**（不再碰槽位头），
   两侧计时起点是同一时刻——`CreateTimePoint` 先于 `lastWriteTimePoint_` 取，故回收的计时**不晚于**控制头超时。
+- **两侧计时都取单调钟**（2026-09-30 起）：`CreateTimePoint` 与 `lastWriteTimePoint_` 都是
+  `std::chrono::steady_clock::time_point`，`Sem::Lock()` 的 100 ms 等待也以 `CLOCK_MONOTONIC` 为基准
+  （`sem_clockwait`）。理由：这三个量都是「过去了多久」，而 `CLOCK_REALTIME` 会被 NTP / 宿主向后步进
+  （WSL2 客机实测每约 32.5 秒后跳约 2.5 秒，见 `PROGRESS.md` 归档 `Q.52`）——按后跳的钟量出的间隔会偏小，
+  5 秒窗口实耗 7.1~7.6 秒，信号量等待偶发拉长到约 2.6 秒。
+  **`.h` 里的公有数据成员类型必须跟着改**：`CreateTimePoint` 参与减法，与 `TryReclaimConnect` 的形参
+  必须是同一个 `time_point`，不能只改取时刻的那几行。Windows 侧 `WaitForSingleObject` 本就是相对超时、
+  不受影响；Linux 侧的代价是 `sem_clockwait` 要求 glibc ≥ 2.30。
 - **`RevokeUnconfirmedAccept` 只撤 `Accepted`**：以 `compare_exchange_strong` 置换，已确认（`Connected`）的连接
   不会被回收路径撤掉——对端只要确认过，回收路径就与它无关；重复调用只有第一次返回 true。
   也因此它**不负责**清槽位头：置位后由 `ShmConnect` 析构走上一段的仲裁，回收路径与正常断连共用同一段收尾。
