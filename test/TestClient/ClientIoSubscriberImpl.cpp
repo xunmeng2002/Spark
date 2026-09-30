@@ -73,10 +73,7 @@ void ClientIoSubscriberImpl::Send(SessionIdType sessionId)
     auto message = reqInsertOrder.GetDebugString();
 
     LinearBuffer<BufferSize>* buffer = io_->AllocateSendBuffer();
-    auto data = buffer->GetData();
-    auto len = strlen(message);
-    memcpy(data, message, len);
-    buffer->SetLength(len);
+    buffer->Append(message, strlen(message));
 
     io_->Send(sessionId, buffer);
 }

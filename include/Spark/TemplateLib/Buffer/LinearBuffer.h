@@ -33,11 +33,17 @@ public:
         }
         return len;
     }
-    void SetLength(size_t len)
+    bool SetLength(size_t len)
     {
         const size_t capacity = Size - readIndex_;
         assert(len <= capacity);
-        writeIndex_ = readIndex_ + (std::min)(len, capacity);
+        if (len > capacity)
+        {
+            writeIndex_ = readIndex_;
+            return false;
+        }
+        writeIndex_ = readIndex_ + len;
+        return true;
     }
     void Shift(size_t len)
     {

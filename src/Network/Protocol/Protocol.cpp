@@ -110,11 +110,10 @@ bool Protocol::Send(Package* package)
         return false;
     LinearBuffer<BufferSize>* buffer = LinearBuffer<BufferSize>::Allocate();
     auto len = package->MakePackage(protocolType_, buffer->GetData(), BufferSize);
-    if (len <= 0)
+    if (len <= 0 || !buffer->SetLength(static_cast<size_t>(len)))
     {
-        WriteLog(LogLevel::Info, "MakePackage len is 0");
+        WriteLog(LogLevel::Warning, "MakePackage Failed, Frame Not Sent. Len:%d, SessionId:%lld", len, package->SessionId);
     }
-    buffer->SetLength(len);
     ioBase_->Send(package->SessionId, buffer);
     return true;
 }

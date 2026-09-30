@@ -392,11 +392,17 @@ void TcpIocpBase::OnRecvComplete(MyOverlapped* overlapped, int bytesTransferred)
              "OnRecvComplete SessionId:%lld, Socket:%lld, bytesTransferred:%d, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu",
              overlapped->Connect->SessionId, overlapped->Connect->SocketId, bytesTransferred, overlapped, overlapped->MyBuffer,
              overlapped->MyBuffer->GetLength());
-    overlapped->MyBuffer->SetLength(static_cast<size_t>(bytesTransferred));
+    if (bytesTransferred <= 0 || !overlapped->MyBuffer->SetLength(static_cast<size_t>(bytesTransferred)))
+    {
+        WriteLog(LogLevel::Error, "OnRecvComplete Invalid BytesTransferred. SessionId:%lld, Socket:%lld, BytesTransferred:%d",
+                 overlapped->Connect->SessionId, overlapped->Connect->SocketId, bytesTransferred);
+        PostDisConnect(overlapped);
+        return;
+    }
     auto tcpConnect = static_cast<TcpConnect*>(overlapped->Connect);
     if (ioSubscriber_)
     {
-        NotifySubscriberRecvSafely(tcpConnect, overlapped->MyBuffer->GetData(), static_cast<size_t>(bytesTransferred));
+        NotifySubscriberRecvSafely(tcpConnect, overlapped->MyBuffer->GetData(), overlapped->MyBuffer->GetLength());
     }
     PostRecv(overlapped);
 }

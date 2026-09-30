@@ -156,9 +156,9 @@ protected:
 TEST(LinearBufferTest, SetLength)
 {
     LinearBuffer<kBufferSize> buf;
-    buf.SetLength(10);
+    EXPECT_TRUE(buf.SetLength(10));
     EXPECT_EQ(buf.GetLength(), 10u);
-    buf.SetLength(0);
+    EXPECT_TRUE(buf.SetLength(0));
     EXPECT_EQ(buf.GetLength(), 0u);
 }
 
@@ -167,14 +167,14 @@ TEST_F(PartiallyConsumedBufferTest, SetLength_AtCapacityFillsWriteWindow)
     // 从读位置到缓冲末尾的容量 = 剩余长度 + 写窗口；登记满容量后写窗口应为 0
     const size_t capacity = buffer_.GetLength() + buffer_.GetWriteBufferSize();
     ASSERT_EQ(capacity, kBufferSize - 5);
-    buffer_.SetLength(capacity);
+    EXPECT_TRUE(buffer_.SetLength(capacity));
     ExpectFilledToEndOfCapacity();
 }
 
 TEST_F(PartiallyConsumedBufferTest, SetLength_ReportsLengthFromReadPosition)
 {
     // 登记的是「从读位置起的有效字节数」，不搬移数据、也不是写入增量
-    buffer_.SetLength(3);
+    EXPECT_TRUE(buffer_.SetLength(3));
     EXPECT_EQ(buffer_.GetLength(), 3u);
     EXPECT_EQ(buffer_.GetWriteBufferSize(), kBufferSize - 8);
     EXPECT_EQ(std::memcmp(buffer_.GetData(), "Wor", 3), 0);
@@ -191,11 +191,15 @@ TEST_F(PartiallyConsumedBufferTest, SetLength_BeyondCapacityTripsAssert)
 #endif
 
 #ifdef NDEBUG
-// 断言关闭后钳位是唯一防线，故本用例只在 Release 构建下有意义
-TEST_F(PartiallyConsumedBufferTest, SetLength_BeyondCapacityClampsWithoutAssert)
+// 断言关闭后返回值是唯一防线，故本用例只在 Release 构建下有意义
+TEST_F(PartiallyConsumedBufferTest, SetLength_BeyondCapacityReportsRejectionWithoutAssert)
 {
-    buffer_.SetLength(kBufferSize);
-    ExpectFilledToEndOfCapacity();
+    EXPECT_FALSE(buffer_.SetLength(kBufferSize));
+    EXPECT_EQ(buffer_.GetLength(), 0u);
+    EXPECT_EQ(buffer_.GetWriteBufferSize(), kBufferSize - 5);
+    EXPECT_EQ(buffer_.GetData(), buffer_.GetWritePos());
+    EXPECT_EQ(std::memcmp(buffer_.GetData(), "World", 5), 0);
+    EXPECT_EQ(buffer_.Append("Z", 1), 1u);
 }
 #endif
 
