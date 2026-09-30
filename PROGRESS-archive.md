@@ -778,6 +778,12 @@
 
 ## ❓ 原待讨论 / 待决策
 
+### Q.57
+
+- **空帧（`MakePackage` 返回 ≤ 0）的处置已在 `Protocol::Send` 内统一（2026-09-30 登记、同日收尾；**仍待决：返回语义**）**：原状是三套后端各写各的——IOCP `TcpIocpBase.cpp:72-77` 丢弃、Shm `ShmBase.cpp:174` 的 `while (GetLength() > 0)` 不进循环后 `Deallocate`、而 Select/Epoll 共用的 `TcpBase.cpp:82-91` **没有零长判断** ⇒ `:142` 的 `send(fd, p, 0, 0)` 返回 0 既非 `> 0` 也非负，落进 `:157` 的 `else` 取 `:159` **过期**的 `WSAGetLastError()`，按「发送失败」`DisConnect`——一条超长帧会断掉整条会话（既有行为）。**已修**：`Protocol.cpp:113-119` 在 `len <= 0` 或 `SetLength` 拒收时就地 `buffer->Deallocate()` 后返回，不再调 `ioBase_->Send`，与 `TcpBase::Send:86-87`、`TcpIocpBase::Send:72-77` 各自丢弃时**同一套惯用法**；三后端自此对空帧的可见行为一致（都收不到）。**仍待决一项**：`Protocol::Send` 此时仍返 `true`，调用方无从得知这一帧没发出去；改为 `false` 属公开返回语义变更（§3.1）——未动，待裁。`MakePackage` 返 ≤ 0 本身并非不可达（`ToXtpStream` / `ToStepStream` 报出的长度超容量即命中），故这条判据是活的。
+
+**2026-09-30 关闭**：本条两项均已落地——处置前移到 `Protocol::Send`（`128ad63`：失败即 `Deallocate` 后返回，不再把零长缓冲下发给后端），返回语义改为 `false`（`0db1f09`，用户当日授权）。原文所记的三后端不一致（IOCP 丢弃 / Shm 静默丢弃 / Select、Epoll 断连）自此不复存在：三后端都不会再收到空帧。
+
 ### Q.56
 
 - **登记待批（承自归档 `D.18`「协议写路径收尾」，2026-09-17 按用户指示只保留本仓项）**：④仓内手写代码 **105 处 / 24 文件**的 C 风格 cast（`StepUtilityTest` 28、`PackageReaderTest` 17、`PackageSerializationTest` 11、`MD5Test` 8、`UtilityTest` 7、`TimeUtility` 5、`SingleShm` 4，其余各 1~2），另开一批。**2026-09-24 部分清理**：`src/Network/Shm/` 已清零 13 处（见 ✅ 区）；但该 105 是用**窄口径**（`([A-Za-z_]+\*)`，会漏掉带模板实参的 cast——`ShmConnect<ShmBufferSize>*` 6 处就是这么漏的）数出来的，与本批新用的宽口径**不可直接相减**。**2026-09-24 宽口径重测**：指针类残留 **37 处 / 13 文件**（剔 JsonCpp 等 vendored 后 36/12），集中于 `src/Network/Tcp/`（`TcpIocpBase` 7、`TcpBase` 5、`TcpEpollBase` 4，余 1~3）；旧数 105 已被后续清零批消化大半。**同日已全部清零**（36 处 / 12 文件，提交 `2d546ab`，见 ✅ 区）：第一方指针类 cast 现 **0 处**，宽口径残留 **1 处**（vendored JsonCpp `value.h`，不动），窄口径同为 0。非指针 cast 另计约 88 处，**口径未校验**（正则未含 `DWORD`/`UINT` 等 typedef、未剔注释），引用前须核实。该条其余各项均涉仓外模板或消费方，已删除；原文见归档 `D.18` 与本仓 git 历史 `b913108`。
