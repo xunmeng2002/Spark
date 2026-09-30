@@ -112,7 +112,9 @@ bool Protocol::Send(Package* package)
     auto len = package->MakePackage(protocolType_, buffer->GetData(), BufferSize);
     if (len <= 0 || !buffer->SetLength(static_cast<size_t>(len)))
     {
-        WriteLog(LogLevel::Warning, "MakePackage Failed, Frame Not Sent. Len:%d, SessionId:%lld", len, package->SessionId);
+        WriteLog(LogLevel::Warning, "MakePackage Failed, Frame Dropped. Len:%d, SessionId:%lld", len, package->SessionId);
+        buffer->Deallocate();
+        return true;
     }
     ioBase_->Send(package->SessionId, buffer);
     return true;

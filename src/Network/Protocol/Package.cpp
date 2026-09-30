@@ -91,7 +91,12 @@ int Package::MakePackage(ProtocolTypeType protocolType, char* buff, int size)
             return 0;
         }
         Tail.CheckSum = CalculateCrc32c(reinterpret_cast<const unsigned char*>(buff), headLen + bodyLen);
-        StepUtility::TailToStream(&Tail, buff + headLen + bodyLen, static_cast<int>(StepTailLen));
+        const int tailLen = StepUtility::TailToStream(&Tail, buff + headLen + bodyLen, static_cast<int>(StepTailLen));
+        if (tailLen != static_cast<int>(StepTailLen))
+        {
+            WriteLog(LogLevel::Error, "Step Tail To Stream Failed. Expected TailLen:%u, Actual:%d", StepTailLen, tailLen);
+            return 0;
+        }
         return headLen + bodyLen + static_cast<int>(StepTailLen);
     }
     return 0;
