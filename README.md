@@ -73,7 +73,7 @@ Spark/
 ├── test/                       # 测试程序
 │   ├── unittest/               # GTest 单元测试（主要测试入口）
 │   │   ├── Core/               # Core 模块单元测试（9 文件）
-│   │   ├── Network/            # Network 模块单元测试（8 文件）
+│   │   ├── Network/            # Network 模块单元测试（9 文件）
 │   │   ├── Serialization/      # Serialization 模块单元测试（4 文件）
 │   │   ├── TemplateLib/        # TemplateLib 模块单元测试（6 文件）
 │   │   └── CMakeLists.txt      # 单元测试构建配置
@@ -352,6 +352,7 @@ int main(int argc, const char* argv[])
 | | `ProtocolUtilityTest` | CRC32C 校验和与字节模式查找 |
 | | `PackageReaderTest` | 缓冲管理：Append/PopFront/Reset |
 | | `PackageSerializationTest` | MakePackage ↔ ParsePackage 端到端往返、重同步与版本校验 |
+| | `ProtocolTest` | 取包循环：解析出的包的去处、订阅者抛出的兜底 |
 | | `SendBufferOwnershipTest` | 发送缓冲的跨模块所有权与归还 |
 | | `IoSubscriberNotificationTest` | 订阅者通知契约：配对与回调异常兜底 |
 | | `ShmInitTest` | Shm 后端 Init 门禁、连接回收与客户端确认 |

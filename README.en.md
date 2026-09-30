@@ -73,7 +73,7 @@ Spark/
 ├── test/                       # Test programs
 │   ├── unittest/               # GTest unit tests (primary test entry)
 │   │   ├── Core/               # Core module tests (9 files)
-│   │   ├── Network/            # Network module tests (8 files)
+│   │   ├── Network/            # Network module tests (9 files)
 │   │   ├── Serialization/      # Serialization module tests (4 files)
 │   │   ├── TemplateLib/        # TemplateLib module tests (6 files)
 │   │   └── CMakeLists.txt      # Unit test build configuration
@@ -353,6 +353,7 @@ The project includes a comprehensive **Google Test**-based unit test suite with 
 | | `ProtocolUtilityTest` | CRC32C calculation and byte pattern search |
 | | `PackageReaderTest` | Buffer management: Append/PopFront/Reset |
 | | `PackageSerializationTest` | End-to-end MakePackage ↔ ParsePackage round-trip, resync and version check |
+| | `ProtocolTest` | Recv loop: where a parsed package goes, containment of a throwing subscriber |
 | | `SendBufferOwnershipTest` | Cross-module ownership and return of send buffers |
 | | `IoSubscriberNotificationTest` | Subscriber notification contract: pairing and callback exception containment |
 | | `ShmInitTest` | Shm backend Init gate, connect reclaim and client confirmation |
