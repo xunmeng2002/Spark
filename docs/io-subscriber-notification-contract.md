@@ -178,3 +178,20 @@ backlog 收完即可批量接入。故它仍需一次专门的决定（见 `PROG
 在旧代码下把同一批两帧喂进去，异常照常穿出，`MessageCount` 停在 1 而 reader 里仍压着 76 字节
 （正是第 2 帧的长度），随后一次 `OnRecv(sessionId, frames, 0)` 才把它取出去（`MessageCount` 变 2、
 序号为第 2 帧）。探针已删，不留在仓库里。
+
+同一契约的取包侧另有三条在 `test/unittest/Network/ProtocolTest.cpp`（`ProtocolRecvTest` 夹具）：
+
+| 用例 | 输入 | 输出 |
+| --- | --- | --- |
+| `AThrowingOnMessageNeitherEscapesTheRecvLoopNorStrandsTheRestOfTheBatch` | 同一段字节里两帧，订阅者在第 1 帧抛出（抛出前已 `Deallocate`） | `OnRecv` 返回到调用方；两帧都被派发（`MessageCount` 2、末次 `MsgSeqNum` 为第 2 帧）；工厂交出去 2 个、收回 2 个（抛出那一帧由订阅者自己归还） |
+| `APackageParsedWithoutASubscriberIsReturnedToTheFactory` | 一帧、没有任何订阅者 | 工厂交出去 1 个、收回 1 个 |
+| `ARepeatedOnConnectForOneSessionKeepsTheFirstReaderAndReturnsTheSecondToThePool` | 同一会话号 `OnConnect` 两次（表里已有 reader） | 在册的仍是先来的那个 reader；新取的那个已还回池 |
+
+第三条的判据用**同一地址**：池空闲时下一次 `Allocate` 取回的正是刚归还的那个槽，故
+`nextReader == recycledReader` 即证明它确实还了回去；没还回去的话，这一次取到的是池里的下一个槽。
+
+夹具的搭法（都是为了不挂共享内存、不依赖时序）：`RecvProbeIo` 只用来占住 `Protocol::ioBase_`，
+取包循环回不到它；`ProtocolProbe` 把 `ioBase_` 与 `sessionPackageReaders_` 这两个受保护面揭给用例；
+`LedgeredPackage` 与 `PackageAccountingFactory` 给「工厂交出去」与「收回来」的包各记一个数，
+两数一比就能看出取包循环漏掉了哪些。`TearDown` 里须在 `protocol_.reset()` **之前**取完
+`ioProbe_` 的计数——`~Protocol` 会 `delete ioBase_`。

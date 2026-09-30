@@ -6,13 +6,6 @@
 
 using namespace Spark::Network;
 
-// ============================================================
-// 订阅者通知契约：OnConnect 与 OnDisConnect 的配对、回调异常的兜底
-// 契约见 docs/io-subscriber-notification-contract.md：
-// 回调不得让异常穿出 IO 层；每个已登记的连接恰好一次 OnConnect 调用、一次 OnDisConnect 调用；
-// 拆除动作不依赖回调完成，未宣告过的连接不产生 OnDisConnect。
-// ============================================================
-
 namespace
 {
 constexpr SessionIdType ProbeSessionId = 20260930001LL;
@@ -160,6 +153,5 @@ TEST(IoSubscriberNotificationTest, ARepeatedSessionIdIsRefusedWithoutASecondConn
     EXPECT_TRUE(io.IsRegisteredConnect(&firstConnect));
     EXPECT_FALSE(io.IsRegisteredConnect(&secondConnect));
     EXPECT_EQ(firstConnect.DeallocateCount, 0);
-    // 拒绝不等于代拆：被拒的连接对象仍归调用方，登记之后还要接着用它
     EXPECT_EQ(secondConnect.DeallocateCount, 0);
 }

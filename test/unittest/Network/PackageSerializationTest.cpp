@@ -814,7 +814,6 @@ TEST(PackageSerializationTest, StepRoundTrip_Int32OutOfRangeIsRejected)
 
 namespace
 {
-// 一条 STEP 帧解析一遍。返回 false 时 parsed 必为 nullptr，与 reader 的失败约定一致
 bool ParseStepFrame(char* frameData, int totalLen, Package*& parsed)
 {
     PackageFactory factory;
@@ -858,8 +857,6 @@ constexpr NonFiniteAssetSample NonFiniteAssetSamples[] = {
 
 TEST(PackageSerializationTest, StepRoundTrip_EnumFieldRejectsNonIntegerText)
 {
-    // 读侧由 static_cast<AccountTypeType>(atoi(...)) 换成 ParseEnum：整型文本照收，
-    // 非整型文本从"静默落成 0"改成整包拒绝。具名值域仍不校验，一并钉住
     auto* pkg = CreateSampleCapital(AccountTypeType::Primary, 100.5);
     char buff[MaxPackageSize] = {};
     const int totalLen = pkg->MakePackage(ProtocolTypeType::Step, buff, MaxPackageSize);
@@ -875,7 +872,6 @@ TEST(PackageSerializationTest, StepRoundTrip_EnumFieldRejectsNonIntegerText)
     EXPECT_EQ(static_cast<int>(static_cast<RspQryCapitalPackage*>(parsedRaw)->Capital->AccountType), static_cast<int>(AccountTypeType::Primary));
     parsedRaw->Deallocate();
 
-    // 非整型文本：改前 atoi("x") 得 0，报文照常解析成功并把 Primary 原样留下
     std::string nonIntegerFrame = frame;
     ASSERT_TRUE(PatchStepItemValue(nonIntegerFrame, Items::AccountType, "0", "x"));
     std::memcpy(buff, nonIntegerFrame.data(), nonIntegerFrame.size());
@@ -884,7 +880,6 @@ TEST(PackageSerializationTest, StepRoundTrip_EnumFieldRejectsNonIntegerText)
     EXPECT_FALSE(ParseStepFrame(buff, totalLen, parsedRaw));
     EXPECT_EQ(parsedRaw, nullptr);
 
-    // 已知界限：9 落在整数范围内、却不属于 AccountTypeType 的具名值，仍被收下（跨模型取成员数未做）
     std::string unnamedValueFrame = frame;
     ASSERT_TRUE(PatchStepItemValue(unnamedValueFrame, Items::AccountType, "0", "9"));
     std::memcpy(buff, unnamedValueFrame.data(), unnamedValueFrame.size());
@@ -897,8 +892,6 @@ TEST(PackageSerializationTest, StepRoundTrip_EnumFieldRejectsNonIntegerText)
 
 TEST(PackageSerializationTest, StepRoundTrip_NonFiniteDoubleFieldIsRejected)
 {
-    // 写侧 {:.6f} 对 nan/inf 原样输出（不报错也不替换），改前 atof 照单全收，
-    // 非有限值就此静默流进业务字段。改后读侧拒绝整包
     auto* controlPkg = CreateSampleCapital(AccountTypeType::Primary, 100.5);
     char controlBuff[MaxPackageSize] = {};
     const int controlLen = controlPkg->MakePackage(ProtocolTypeType::Step, controlBuff, MaxPackageSize);
@@ -930,8 +923,6 @@ TEST(PackageSerializationTest, StepRoundTrip_NonFiniteDoubleFieldIsRejected)
 
 TEST(PackageSerializationTest, StepRoundTrip_BoolFieldRejectsNonZeroOne)
 {
-    // 改前 atoi 把任何非零文本都读成 true：对端写 "2" 会被静默收成 true；
-    // 改后只认 0/1，其余整包拒绝
     char buff[MaxPackageSize] = {};
     const int totalLen = MakeFrame(ProtocolTypeType::Step, buff, 1001);
     ASSERT_GT(totalLen, 0);
