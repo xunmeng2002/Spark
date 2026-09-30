@@ -72,8 +72,18 @@ private:
     static size_t LoadIndex(size_t& index) { return std::atomic_ref<size_t>(index).load(std::memory_order_acquire); }
     static void StoreIndex(size_t& index, size_t value) { std::atomic_ref<size_t>(index).store(value, std::memory_order_release); }
 
-    size_t CountReadableBytes(size_t readIndex) const { return LoadIndex(writeIndex_) - readIndex; }
-    size_t CountWritableBytes(size_t writeIndex) const { return Size - (writeIndex - LoadIndex(readIndex_)); }
+    size_t CountReadableBytes(size_t readIndex) const
+    {
+        const size_t readableBytes = LoadIndex(writeIndex_) - readIndex;
+        assert(readableBytes <= Size);
+        return readableBytes;
+    }
+    size_t CountWritableBytes(size_t writeIndex) const
+    {
+        const size_t inFlightBytes = writeIndex - LoadIndex(readIndex_);
+        assert(inFlightBytes <= Size);
+        return Size - inFlightBytes;
+    }
 
     void CopyIntoRing(size_t writeIndex, const char* source, size_t length) const
     {
