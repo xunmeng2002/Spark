@@ -6,14 +6,17 @@
 #include <gtest/gtest.h>
 
 #include <memory>
+#include <stdexcept>
 
 using namespace Spark;
 using namespace Spark::Network;
 using namespace Spark::Packages;
 
 // ============================================================
-// Protocol 取包循环：取出的包必须有个去处
-// 交出去的归订阅者，没交出去的（订阅者为空）必须由 Protocol 自己归还，不能随指针出作用域丢掉
+// Protocol 取包循环：取出的包必须有个去处，订阅者抛出不许打断这一批
+// 交出去的归订阅者（含抛出时），没交出去的（订阅者为空）必须由 Protocol 自己归还
+// 契约见 docs/io-subscriber-notification-contract.md：IO 层的兜底只保证异常不穿出 IO 层，
+// 而 Protocol 自身就是 IoSubscriber，它在这一层的兜底由本文件钉住
 // ============================================================
 
 namespace
@@ -21,6 +24,7 @@ namespace
 constexpr SessionIdType SessionId = 42;
 constexpr const char* IP = "192.168.1.100";
 constexpr int FirstMsgSeqNum = 1001;
+constexpr int SecondMsgSeqNum = 1002;
 
 class PackageAccounting
 {
@@ -80,6 +84,27 @@ protected:
     void DoRecv(Connect*) override {}
 };
 
+class ThrowingMessageProbe : public ProtocolSubscriber
+{
+public:
+    void OnProtocolDisConnect(SessionIdType, const char*, int) override {}
+    void OnMessage(Package* ownedPackage) override
+    {
+        ++MessageCount;
+        LastMsgSeqNum = ownedPackage->Head.MsgSeqNum;
+        // 形参即所有权：先归还再抛，与只管本包、不管后事的真实订阅者一致
+        ownedPackage->Deallocate();
+        if (MessageCount == ThrowingMessageIndex)
+        {
+            throw std::runtime_error("Probe OnMessage Failure.");
+        }
+    }
+
+    int ThrowingMessageIndex = 0;
+    int MessageCount = 0;
+    int LastMsgSeqNum = 0;
+};
+
 // 把 Protocol 的受保护面揭给用例：ioBase_ 由用例装配、会话的 PackageReader 由用例插入，
 // 取包循环因此可以在不挂共享内存、不依赖时序的情况下被逐帧驱动
 class ProtocolProbe : public Protocol
@@ -129,6 +154,34 @@ protected:
     std::unique_ptr<ProtocolProbe> protocol_;
     PackageReader* packageReader_ = nullptr;
 };
+}
+
+TEST_F(ProtocolRecvTest, AThrowingOnMessageNeitherEscapesTheRecvLoopNorStrandsTheRestOfTheBatch)
+{
+    ThrowingMessageProbe subscriber;
+    subscriber.ThrowingMessageIndex = 1;
+    protocol_->Subscribe(&subscriber);
+
+    char frames[MaxPackageSize] = {};
+    int firstLen = MakeStepFrame(frames, MaxPackageSize, FirstMsgSeqNum);
+    ASSERT_GT(firstLen, 0);
+    int secondLen = MakeStepFrame(frames + firstLen, MaxPackageSize - firstLen, SecondMsgSeqNum);
+    ASSERT_GT(secondLen, 0);
+    int totalLen = firstLen + secondLen;
+    ASSERT_LT(totalLen, MaxPackageSize);
+
+    bool recvReturnedToItsCaller = false;
+    protocol_->OnRecv(SessionId, frames, static_cast<size_t>(totalLen));
+    recvReturnedToItsCaller = true;
+
+    // 第一帧抛出后，同一段字节里的第二帧仍要在这一次 OnRecv 里派发出去，不能滞留在 reader 里等下一批流量
+    EXPECT_TRUE(recvReturnedToItsCaller);
+    EXPECT_EQ(subscriber.MessageCount, 2);
+    EXPECT_EQ(subscriber.LastMsgSeqNum, SecondMsgSeqNum);
+    EXPECT_EQ(accounting_.CreatedCount, 2);
+    // 抛出时 Protocol 不得替订阅者归还：形参是所有权移交，再由它归还就是把同一指针二次入池
+    EXPECT_EQ(accounting_.DisposedCount, 2);
+    EXPECT_EQ(ioProbe_->DisConnectCount, 0);
 }
 
 TEST_F(ProtocolRecvTest, APackageParsedWithoutASubscriberIsReturnedToTheFactory)

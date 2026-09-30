@@ -3,33 +3,13 @@
 #include <Spark/Core/Utility/TimeUtility.h>
 #include <Spark/Core/Logger/Logger.h>
 
-#include <exception>
+#include "Io/SubscriberNotification.h"
 
 using namespace std;
 using namespace Spark::Core;
 
 namespace Spark::Network
 {
-namespace
-{
-template <typename InvokeSubscriberNotification>
-void NotifySubscriberSafely(const char* notificationName, SessionIdType sessionId, InvokeSubscriberNotification&& invokeSubscriberNotification)
-{
-    try
-    {
-        invokeSubscriberNotification();
-    }
-    catch (const std::exception& notificationFailure)
-    {
-        WriteLog(LogLevel::Error, "Subscriber %s Threw. SessionId:%lld, Reason:%s", notificationName, sessionId, notificationFailure.what());
-    }
-    catch (...)
-    {
-        WriteLog(LogLevel::Error, "Subscriber %s Threw An Unknown Exception. SessionId:%lld", notificationName, sessionId);
-    }
-}
-}
-
 IoBase::IoBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
     : serverType_(serverType), addressName_(addressName), timeOut_(chrono::milliseconds(milliSeconds)), ioSubscriber_(nullptr), lastSessionIndex_(0LL)
 {

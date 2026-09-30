@@ -3,6 +3,8 @@
 本文定义 `IoBase` 向 `IoSubscriber` 投递通知时的契约：通知与登记的关系、通知之间的配对、
 以及回调抛异常时由谁承担。四个后端（Tcp Select / Tcp Epoll / Tcp Iocp / Shm）共用 `IoBase` 的登记与拆除，
 故本契约对四者一致；收包通知（`OnRecv`）与连接通知共用同一份兜底，差别只在调用点，见「收包通知」一节。
+`Protocol` 自身也是 `IoSubscriber`，它在 `OnRecv` 之后还要把包转交给 `ProtocolSubscriber::OnMessage`，
+那一层另有取包循环自己的责任，见「取包通知」一节。
 
 ## 契约
 
@@ -35,6 +37,26 @@ IOCP 一列的后果最重：IO 循环跑在 `IoThread` 上，而 `ThreadBase` �
 正因为缓冲不属于订阅者，后端把它还回池这一步**不能**挂在回调成功上——这也是兜底收在
 `IoBase` 而非各后端各写一份的原因。
 
+## 取包通知
+
+`Protocol` 自己也是 `IoSubscriber`，上一节只保证异常不穿出 IO 层。异常到了 `Protocol` 这一层之后，
+`Protocol::OnRecv` 的取包 `while` 循环还有自己的一份责任——它在这个循环里向
+`ProtocolSubscriber::OnMessage` 移交包的所有权，故三件事必须一起定：抛出怎么处理、那一帧归谁、
+没订阅者时归谁。
+
+- **一帧抛出不打断这一批**。`OnMessage` 抛出的异常由 `Protocol` 收住并记一条 `Error`（含 `what()`），
+  循环继续取下一帧。此前异常直接穿出循环，同一段字节里其后的帧留在 reader 里、等下一次流量才被解析
+  （实测：两帧一批，第 1 帧抛出后 reader 里仍压着 76 字节，正是第 2 帧的长度）——顺序不变但延迟不定，
+  对「对端发一批就等回话」的应用协议足以形成死锁。
+- **抛出时 `Protocol` 不归还那一帧**。`OnMessage` 的形参是 `Package* ownedPackage`，即所有权移交；
+  抛出时 `Protocol` 无法分辨订阅者是否已归还，替它归还就是把同一指针二次推入池的空闲链
+  （`ObjectPool::Deallocate` 对已归还指针没有防护）。故归 subscriber 自理。
+- **没有订阅者时由 `Protocol` 归还**。`subscriber_ == nullptr` 时包同样不投递，但它从未交出去过，
+  必须由 `Protocol` 放回池；此前这一帧随指针出作用域丢掉，是一次静默泄漏。
+  `UnSubscribe()` 之后会话照旧连着，该分支可达。
+
+三条合起来是一句话：**没交出去的要归还，交出去的不管**。
+
 ## 为什么以「登记」为准
 
 「已登记」与「已向订阅者宣告过」是等价的，这一点由两件事保证：
@@ -53,14 +75,16 @@ IOCP 一列的后果最重：IO 循环跑在 `IoThread` 上，而 `ThreadBase` �
 
 ## 实现落点
 
-`IoBase.cpp` 里一个文件局部的 `NotifySubscriberSafely` 模板（`try` / `catch (const std::exception&)` / `catch (...)`，
-名称与 `SessionIdType` 由调用方传入，回调本身以泛型可调用对象传入），由 `AddConnect` 与 `RemoveConnect` 各调一次；
-`RemoveConnect` 在通知前先取一次锁判断该会话是否登记在册。
+兜底只有一份实现，即 `src/Network/Io/SubscriberNotification.h` 里的 `NotifySubscriberSafely` 模板
+（`try` / `catch (const std::exception&)` / `catch (...)`，名称与 `SessionIdType` 由调用方传入，
+回调本身以泛型可调用对象传入）。它是模块内部的头文件（`src/Network` 是模块的 PRIVATE 包含目录），
+不进公开面：`IoBase.cpp` 与 `Protocol.cpp` 各包含一次，因此三层通知（连接、收包、取包）共用同一个 `catch`。
 
-三个后端的收包点经 `IoBase::NotifySubscriberRecvSafely`（一个 `protected` 成员）进入同一份兜底，
-故整条链路上 `catch` 只有一处实现：泛型可调用对象是 `IoBase.cpp` 文件局部的实现细节，
-`IoBase.h` 上只多一个非模板成员，既不用把 `Logger.h` 拉进公开头文件，也避开了 `std::function`
-在收包热路径上的堆分配。
+- `IoBase.cpp` 的 `AddConnect` 与 `RemoveConnect` 各调一次，后者的通知前先取一次锁判断该会话是否登记在册。
+- 三个后端的收包点经 `IoBase::NotifySubscriberRecvSafely`（一个 `protected` 成员）进入同一份兜底。
+  泛型可调用对象是文件局部的实现细节，`IoBase.h` 上只多一个非模板成员，既不用把 `Logger.h`
+  拉进公开头文件，也避开了 `std::function` 在收包热路径上的堆分配。
+- `Protocol::OnRecv` 的取包循环直接把这个模板用在 `OnMessage` 上。
 
 `ShmClient::EstablishConfirmedConnection` 的 `catch` 一字未改（仍走 `RemoveConnect`）：此时该连接未登记、
 故不通知，而 `Deallocate` 照常执行 —— `~ShmConnect` 自会把槽位由 `Connected` 置成 `DisConnected`，
@@ -76,10 +100,9 @@ IOCP 一列的后果最重：IO 循环跑在 `IoThread` 上，而 `ThreadBase` �
 
 ## 未覆盖与未决
 
-- **`Protocol::OnRecv` 的取包循环仍非异常安全**：`Protocol` 自身也是 `IoSubscriber`，本文的兜底只保证
-  异常不穿出 IO 层；而 `Protocol::OnRecv` 内部的取包 `while` 循环一旦被 `ProtocolSubscriber` 抛出打断，
-  已取出但尚未派发的包会滞留在 reader 里，直到下一批数据到达才被一并处理（顺序不变，但延迟不定）。
-  该点在 `Protocol` 一层，已单独登记。
+- **`OnMessage` 抛出时那一帧归 subscriber 自理**：本文只保证 `Protocol` 不再二次归还，也保证这一批里
+  其后的帧照常派发；订阅者若在自己的 `OnMessage` 里抛出且未在抛出前 `Deallocate`，那一帧就漏了，
+  本契约不代偿（见「取包通知」一节的理由）。
 - **重复 `RemoveConnect` 仍会二次归还连接对象**：第二次调用时该连接已不在册，故不再通知，
   但 `Deallocate()` 照常执行。未验证该形态是否可达。
 - 回调抛异常后连接保留，订阅者须自负其未完成初始化的后果；本契约只保证它仍会收到配对的 `OnDisConnect`。
@@ -105,3 +128,23 @@ IOCP 一列的后果最重：IO 循环跑在 `IoThread` 上，而 `ThreadBase` �
 每发一个驱动一次服务端 —— 期望服务端收到恰好 100 次、最后一次长度 5、全程无 `OnDisConnect`。
 它同时覆盖了「异常不穿出 IO 循环」与「抛过异常的连接照常收后续包」；撤掉 `ShmBase.cpp` 的单行改动重跑，
 该用例以同样的 `C++ exception … thrown in the test body` 失败。
+
+`test/unittest/Network/ProtocolTest.cpp` 两条，钉在 `Protocol` 一层。用例装一个自造的 `IoBase` 当 `ioBase_`、
+把 `PackageReader` 插进受保护的 `sessionPackageReaders_`，故取包循环可在不挂共享内存、不依赖时序的情况下
+逐帧驱动；包由 `PackageAccountingFactory` 的 `CreatePackage` 发放记名的 `LedgeredPackage`，
+交出去几个、`Deallocate` 收回来几个两数一比即知：
+
+| 用例 | 输入 | 输出 |
+| --- | --- | --- |
+| `AThrowingOnMessageNeitherEscapesTheRecvLoopNorStrandsTheRestOfTheBatch` | 两帧一批，订阅者在第 1 帧抛出 | 不传播；两帧都派发（末帧为第 2 帧）；发放 2 / 归还 2 |
+| `APackageParsedWithoutASubscriberIsReturnedToTheFactory` | 无订阅者，送入一帧 | 不投递；发放 1 / 归还 1 |
+
+第 1 条经 A/B 实测：把 `Protocol.cpp` 里 `OnMessage` 那行改回直接调用重跑，该用例以
+「C++ exception … thrown in the test body」失败。第 2 条同理——加 `else` 分支之前，
+它以 `DisposedCount` 期望 1 实得 0 失败。
+两条的「归还 2 / 归还 1」同时也钉住了另一半：`Protocol` 没有替订阅者二次归还。
+
+第 1 条**没有**断言「滞留」这一半（抛出已经把控制流带走，断言读不到），故它由一只临时探针单独量过：
+在旧代码下把同一批两帧喂进去，异常照常穿出，`MessageCount` 停在 1 而 reader 里仍压着 76 字节
+（正是第 2 帧的长度），随后一次 `OnRecv(sessionId, frames, 0)` 才把它取出去（`MessageCount` 变 2、
+序号为第 2 帧）。探针已删，不留在仓库里。

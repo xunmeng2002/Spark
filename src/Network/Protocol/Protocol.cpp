@@ -3,6 +3,8 @@
 #include <Spark/Network/Io/IoFactory.h>
 #include <stdexcept>
 
+#include "Io/SubscriberNotification.h"
+
 using namespace Spark::Core;
 namespace Spark::Network
 {
@@ -169,7 +171,7 @@ void Protocol::OnRecv(SessionIdType sessionId, const char* data, size_t length)
         }
         else if (subscriber_ != nullptr)
         {
-            subscriber_->OnMessage(package);
+            NotifySubscriberSafely("OnMessage", sessionId, [&] { subscriber_->OnMessage(package); });
         }
         else
         {
