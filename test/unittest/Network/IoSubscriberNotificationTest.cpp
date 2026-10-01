@@ -2,7 +2,11 @@
 #include <Spark/Network/Io/IoBase.h>
 #include <Spark/TemplateLib/Buffer/LinearBuffer.h>
 
+#include <algorithm>
+#include <atomic>
 #include <stdexcept>
+#include <thread>
+#include <vector>
 
 using namespace Spark::Network;
 
@@ -59,15 +63,19 @@ public:
 class ProbeIo : public IoBase
 {
 public:
+    static constexpr SessionIdType SequenceBudget = SessionIdSequencePerMillisecond;
+
     ProbeIo() : IoBase(ServerTypeType::Server, "tcp://127.0.0.1:10001", 1000) {}
 
     void Send(SessionIdType, Spark::LinearBuffer<BufferSize>*) override {}
     void HandleIoEvent() override {}
 
-    void RegisterConnect(Connect* connect) { AddConnect(connect); }
+    bool RegisterConnect(Connect* connect) { return AddConnect(connect); }
     void UnregisterConnect(Connect* connect) { RemoveConnect(connect); }
+    void DiscardRefused(Connect* connect) { DiscardRefusedConnect(connect); }
     bool HasRegisteredConnect(SessionIdType sessionId) { return GetConnect(sessionId) != nullptr; }
     bool IsRegisteredConnect(Connect* connect) { return GetConnect(connect->SessionId) == connect; }
+    SessionIdType NextSessionId() { return GetSessionId(); }
     void DeliverRecv(Connect* connect, const char* data, size_t length) { NotifySubscriberRecvSafely(connect, data, length); }
 
 protected:
@@ -146,12 +154,102 @@ TEST(IoSubscriberNotificationTest, ARepeatedSessionIdIsRefusedWithoutASecondConn
     ProbeConnect firstConnect;
     ProbeConnect secondConnect;
 
-    io.RegisterConnect(&firstConnect);
-    io.RegisterConnect(&secondConnect);
+    EXPECT_TRUE(io.RegisterConnect(&firstConnect));
+    EXPECT_FALSE(io.RegisterConnect(&secondConnect));
 
     EXPECT_EQ(subscriber.ConnectCount, 1);
     EXPECT_TRUE(io.IsRegisteredConnect(&firstConnect));
     EXPECT_FALSE(io.IsRegisteredConnect(&secondConnect));
     EXPECT_EQ(firstConnect.DeallocateCount, 0);
     EXPECT_EQ(secondConnect.DeallocateCount, 0);
+}
+
+TEST(IoSubscriberNotificationTest, ARefusedConnectIsReturnedExactlyOnceByItsCaller)
+{
+    ProbeIo io;
+    SubscriberNotificationProbe subscriber;
+    io.Subscribe(&subscriber);
+    ProbeConnect firstConnect;
+    ProbeConnect refusedConnect;
+    io.RegisterConnect(&firstConnect);
+
+    ASSERT_FALSE(io.RegisterConnect(&refusedConnect));
+    io.DiscardRefused(&refusedConnect);
+
+    EXPECT_EQ(refusedConnect.DeallocateCount, 1);
+    EXPECT_TRUE(io.IsRegisteredConnect(&firstConnect));
+    EXPECT_EQ(firstConnect.DeallocateCount, 0);
+    EXPECT_EQ(subscriber.ConnectCount, 1);
+    EXPECT_EQ(subscriber.DisConnectCount, 0);
+}
+
+TEST(IoSubscriberNotificationTest, ARemoveOfAnotherConnectNeverErasesTheRegisteredEntry)
+{
+    ProbeIo io;
+    SubscriberNotificationProbe subscriber;
+    io.Subscribe(&subscriber);
+    ProbeConnect registeredConnect;
+    ProbeConnect sameIdConnect;
+    io.RegisterConnect(&registeredConnect);
+
+    io.UnregisterConnect(&sameIdConnect);
+
+    EXPECT_TRUE(io.IsRegisteredConnect(&registeredConnect));
+    EXPECT_EQ(subscriber.DisConnectCount, 0);
+    EXPECT_EQ(sameIdConnect.DeallocateCount, 1);
+}
+
+TEST(IoSubscriberNotificationTest, SessionIdSequenceAdvancesByOneAndWrapsAtTheBudget)
+{
+    constexpr SessionIdType Budget = ProbeIo::SequenceBudget;
+    ProbeIo io;
+    SessionIdType previousId = io.NextSessionId();
+    bool didWrapAtTheBudget = false;
+
+    for (SessionIdType step = 0; step < Budget * 2; ++step)
+    {
+        SessionIdType currentId = io.NextSessionId();
+        SessionIdType sequenceAdvance = (currentId % Budget - previousId % Budget + Budget) % Budget;
+        EXPECT_EQ(sequenceAdvance, 1);
+        EXPECT_GE(currentId / Budget, previousId / Budget);
+        didWrapAtTheBudget = didWrapAtTheBudget || currentId % Budget == 0;
+        previousId = currentId;
+    }
+    // 走满两轮预算是为了让「回绕」这一步确实发生：否则本条只钉住了「每次 +1」，
+    // 与用例名里的 wraps 不符。序号域与时间戳域的分离由上面两条断言分别钉住。
+    EXPECT_TRUE(didWrapAtTheBudget);
+}
+
+TEST(IoSubscriberNotificationTest, SessionIdsTakenConcurrentlyAreAllDistinct)
+{
+    constexpr int ThreadCount = 4;
+    constexpr int IdsPerThread = 5;
+    ProbeIo io;
+    std::vector<SessionIdType> takenIds(ThreadCount * IdsPerThread);
+    std::atomic<int> readyThreadCount{0};
+    std::vector<std::thread> workers;
+
+    for (int threadIndex = 0; threadIndex < ThreadCount; ++threadIndex)
+    {
+        workers.emplace_back(
+            [&io, &takenIds, &readyThreadCount, threadIndex]
+            {
+                readyThreadCount.fetch_add(1);
+                while (readyThreadCount.load() < ThreadCount)
+                {
+                }
+                for (int indexWithinThread = 0; indexWithinThread < IdsPerThread; ++indexWithinThread)
+                {
+                    takenIds[threadIndex * IdsPerThread + indexWithinThread] = io.NextSessionId();
+                }
+            });
+    }
+    for (auto& worker : workers)
+    {
+        worker.join();
+    }
+
+    std::vector<SessionIdType> sortedIds = takenIds;
+    std::sort(sortedIds.begin(), sortedIds.end());
+    EXPECT_EQ(std::adjacent_find(sortedIds.begin(), sortedIds.end()), sortedIds.end());
 }

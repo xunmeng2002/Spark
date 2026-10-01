@@ -69,10 +69,8 @@ void IoBase::DoDisConnect()
     }
     disConnectSessionIds_.clear();
 }
-void IoBase::AddConnect(Connect* connect)
+bool IoBase::AddConnect(Connect* connect)
 {
-    WriteLog(LogLevel::Info, "New Connection. SessionId:%lld, RemoteAddress:%s, RemotePort:%d", connect->SessionId, connect->RemoteAddress,
-             connect->RemotePort);
     bool wasNewlyRegistered = false;
     {
         std::lock_guard<std::mutex> guard(connectsMutex_);
@@ -80,15 +78,25 @@ void IoBase::AddConnect(Connect* connect)
     }
     if (!wasNewlyRegistered)
     {
-        WriteLog(LogLevel::Error, "SessionId Already Registered, Connection Refused. SessionId:%lld, RemoteAddress:%s, RemotePort:%d",
-                 connect->SessionId, connect->RemoteAddress, connect->RemotePort);
-        return;
+        const SessionIdType sequenceWithinMillisecond = connect->SessionId % SessionIdSequencePerMillisecond;
+        WriteLog(LogLevel::Error,
+                 "SessionId Already Registered, Connection Refused. SessionId:%lld, RemoteAddress:%s, RemotePort:%d, Sequence:%zu, Budget:%zu",
+                 connect->SessionId, connect->RemoteAddress, connect->RemotePort, static_cast<size_t>(sequenceWithinMillisecond),
+                 static_cast<size_t>(SessionIdSequencePerMillisecond));
+        return false;
     }
+    WriteLog(LogLevel::Info, "New Connection. SessionId:%lld, RemoteAddress:%s, RemotePort:%d", connect->SessionId, connect->RemoteAddress,
+             connect->RemotePort);
     if (ioSubscriber_ != nullptr)
     {
         NotifySubscriberSafely("OnConnect", connect->SessionId,
                                [&] { ioSubscriber_->OnConnect(connect->SessionId, connect->RemoteAddress, connect->RemotePort); });
     }
+    return true;
+}
+void IoBase::DiscardRefusedConnect(Connect* connect)
+{
+    connect->Deallocate();
 }
 void IoBase::RemoveConnect(Connect* connect)
 {
@@ -97,15 +105,23 @@ void IoBase::RemoveConnect(Connect* connect)
     bool wasRegistered = false;
     {
         std::lock_guard<std::mutex> guard(connectsMutex_);
-        wasRegistered = connects_.find(connect->SessionId) != connects_.end();
+        auto registeredEntry = connects_.find(connect->SessionId);
+        wasRegistered = registeredEntry != connects_.end() && registeredEntry->second == connect;
+        if (wasRegistered)
+        {
+            connects_.erase(registeredEntry);
+        }
+        else if (registeredEntry != connects_.end())
+        {
+            WriteLog(LogLevel::Error, "SessionId Registered By Another Connect, Entry Kept. SessionId:%lld, RemoteAddress:%s, RemotePort:%d",
+                     connect->SessionId, connect->RemoteAddress, connect->RemotePort);
+        }
     }
     if (wasRegistered && ioSubscriber_ != nullptr)
     {
         NotifySubscriberSafely("OnDisConnect", connect->SessionId,
                                [&] { ioSubscriber_->OnDisConnect(connect->SessionId, connect->RemoteAddress, connect->RemotePort); });
     }
-    std::lock_guard<std::mutex> guard(connectsMutex_);
-    connects_.erase(connect->SessionId);
     connect->Deallocate();
 }
 Connect* IoBase::GetConnect(SessionIdType sessionId)
@@ -126,6 +142,6 @@ void IoBase::NotifySubscriberRecvSafely(const Connect* connect, const char* data
 
 SessionIdType IoBase::GetSessionId()
 {
-    return TimeUtility::GetMilliSecondTimeStamp() * 100LL + (++lastSessionIndex_) % 100LL;
+    return TimeUtility::GetMilliSecondTimeStamp() * SessionIdSequencePerMillisecond + (++lastSessionIndex_) % SessionIdSequencePerMillisecond;
 }
 }

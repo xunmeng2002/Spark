@@ -187,12 +187,17 @@
     `UnConnected`**：这把钥匙交回服务端——`TryReclaimConnect` 见到 `DisConnected` 即当轮入延迟删除，
     由它那侧的 `~ShmConnect` 走「已是 `DisConnected`」→ 清头，与正常断连、回收路径共用同一段收尾；
     `UnConnected` 则会让服务端认为「对端还在、只是还没连上」，槽位与 `connectCount_` 一起卡死。
-  - 登记未成（`AddConnect` 抛）→ 调 `RemoveConnect` 而不是上面那笔 CAS：
-    连接表可能已插入该对象，必须一并抹掉，否则留下一个悬垂指针；这一步的 `~ShmConnect` 自己就会
-    把 `Connected` 置成 `DisConnected`（走的是 `MarkDisconnectedAndReportWhetherLastHolder` 里那次 CAS，
-    因该调用前是 `Connected` 而返 false，故**不清头**，同样把钥匙交回服务端）。
-    **`AddConnect` 如今只剩「插入失败」一种抛法**（2026-09-30：订阅者回调的异常由 `IoBase` 收住，不再穿出，
-    见 `docs/io-subscriber-notification-contract.md`）；插入失败即未登记，故这一步的拆除不补发 `OnDisConnect`。
+  - 登记未成 → 调 `DiscardRefusedConnect`（2026-10-01 起；此前是 `RemoveConnect`）而不是上面那笔 CAS：
+    这一步**不能再走 `RemoveConnect`** —— 会话号被占时 `connects_` 里那一项指向的是在册的**另一条**连接，
+    按号 `erase` 抹掉的正是它。2026-10-01 给 `erase` 加了指针身份校验，误解登记这一记已挡下
+    （见 `docs/io-subscriber-notification-contract.md`），但被拒的连接本就未登记，收尾不该从「注销」那道门走。
+    这一步的 `~ShmConnect` 自己就会把 `Connected` 置成 `DisConnected`（走的是
+    `MarkDisconnectedAndReportWhetherLastHolder` 里那次 CAS，因该调用前是 `Connected` 而返 false，故**不清头**，
+    同样把钥匙交回服务端）。
+    **会话号被占如今是一条返回值而非异常**（2026-10-01：`AddConnect` 改返回 `bool`），
+    故 `EstablishConfirmedConnection` 多出一条与 `catch` 同路的显式分支；`AddConnect` 只剩「插入失败」一种抛法
+    （2026-09-30：订阅者回调的异常由 `IoBase` 收住，不再穿出，见 `docs/io-subscriber-notification-contract.md`）；
+    两种登记未成都不补发 `OnDisConnect`。
   - 失败只记一条 `Confirm Connect Setup Failed.` 的错误日志，`connected_` 保持 false，随后由既有的 1 秒重试再来一轮。
   - **池块那一侧也已补齐**（2026-09-29 修）：`ObjectPool::Allocate` 原先「先弹空闲块、后放置构造且无异常回滚」
     （`ObjectPool.h:51-58`），故上面第一条路里抛出的那一刻，那个池块会泄漏出空闲链，槽位那笔撤回只兜住槽位一侧。
@@ -204,6 +209,15 @@
     「未登记即不通知」这一条同时消掉了 `TcpSelectClient::CheckConnect` 与 `TcpEpollBase` 的连接失败路径上
     **一直可达**的同形误报（那两处拆的是一个从未 `AddConnect` 过的对象）。
     契约与三条探针用例见 `docs/io-subscriber-notification-contract.md`。`OnRecv` 三处仍未兜底，另记。
+- **服务端那条拒绝路径另要把槽位放回空闲**（2026-10-01，随 `AddConnect` 改返回 `bool` 新增）：`ShmServer::Accept`
+  是在挑到空闲槽位**之后**才 `AddConnect` 的，被拒时该槽已被构造抬到 `Accepted`，却从未经 `DownWriteCount` 告知客户端。
+  此时只调 `DiscardRefusedConnect` 不够：`~ShmConnect` 里那道 CAS 只会把它推进 `DisConnected` 而**不清头**
+  ——上面那条「把钥匙交回服务端」的理由在服务端并不成立（这一侧没有第二个持有者），而全仓没有认领
+  `DisConnected` 槽位的路径（`Accept` 只挑 `UnConnected`、`TryReclaimConnect` 只遍历 `connects_`，被拒连接从未入表），
+  该槽与它的 1 MB 通道就此永久失去。故拒绝分支在归还之后补一次
+  `SingleShmHeader::ResetChannelHeader(commonShmHeader_ + i)`——该函数本就同时做「四个游标归零 ＋ 状态置 `UnConnected`」，
+  正是「把这一格放回空闲」的既有入口。客户端侧无需配合：它只从 `DownWriteCount` 得知自己的槽位号，本轮从未被告知。
+
 - **三处状态迁移收敛成同一个具名机制**（2026-09-28）：槽位头上的条件置换原先在三处各写一遍
   `compare_exchange_strong`（`RevokeUnconfirmedAccept`、`ConfirmAcceptedConnection`、本批新增的撤回），
   现统一走 `SingleShmHeader::ChangeStatusIfEqualTo(header, expectedStatus, targetStatus)`（成功序 `acq_rel`、

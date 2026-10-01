@@ -35,7 +35,11 @@ bool TcpEpollClient::ConnectToServer(const char* ip, unsigned short port)
     TcpConnect* tcpConnect = TcpConnect::Allocate(GetSessionId(), socketId, address_, port_);
     if (ret == 0)
     {
-        AddConnect(tcpConnect);
+        if (!AddConnect(tcpConnect))
+        {
+            DiscardRefusedConnect(tcpConnect);
+            return false;
+        }
     }
     else
     {

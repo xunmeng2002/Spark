@@ -106,10 +106,12 @@ void TcpBase::HandleIoEvent()
     DoDisConnect();
     HandleTcpEvent();
 }
-void TcpBase::AddConnect(Connect* connect)
+bool TcpBase::AddConnect(Connect* connect)
 {
+    bool accepted = IoBase::AddConnect(connect);
+    // 发起动作到此为止：受理与否都不再「在途」，清掉才能让 TryAutoReconnect 在间隔后重试。
     autoConnectPending_ = false;
-    IoBase::AddConnect(connect);
+    return accepted;
 }
 void TcpBase::RemoveConnect(Connect* connect)
 {
@@ -212,7 +214,13 @@ void TcpBase::DoAccept()
         auto ret = TcpUtility::GetNameinfo(reinterpret_cast<sockaddr*>(&remoteAddress_), remoteAddressLen_, ip, port);
         TcpUtility::SetSockNodelay(socketId);
         auto connect = TcpConnect::Allocate(GetSessionId(), socketId, ip, port);
-        AddConnect(connect);
+        if (!AddConnect(connect))
+        {
+            DiscardRefusedConnect(connect);
+            // 本毫秒的号已用尽，继续 accept 只会连着被拒：余下的连接留在内核 backlog，
+            // 下一个事件循环（毫秒翻转后）再收。select / epoll 均为水平触发，不会漏通知。
+            break;
+        }
     }
 }
 }

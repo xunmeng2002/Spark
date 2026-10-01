@@ -86,7 +86,10 @@ void TcpEpollBase::HandleTcpEvent()
                 else
                 {
                     RemoveEpollEvent(tcpConnect);
-                    AddConnect(tcpConnect);
+                    if (!AddConnect(tcpConnect))
+                    {
+                        DiscardRefusedConnect(tcpConnect);
+                    }
                 }
             }
             else
@@ -101,10 +104,14 @@ void TcpEpollBase::HandleTcpEvent()
     }
 #endif
 }
-void TcpEpollBase::AddConnect(Connect* connect)
+bool TcpEpollBase::AddConnect(Connect* connect)
 {
-    TcpBase::AddConnect(connect);
+    if (!TcpBase::AddConnect(connect))
+    {
+        return false;
+    }
     AddEpollEvent(static_cast<TcpConnect*>(connect));
+    return true;
 }
 void TcpEpollBase::RemoveConnect(Connect* connect)
 {

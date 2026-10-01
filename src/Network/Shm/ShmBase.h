@@ -28,7 +28,7 @@ public:
 protected:
     virtual void DoSend(Connect* connect) override;
     virtual void DoRecv(Connect* connect) override;
-    virtual void AddConnect(Connect* connect) override;
+    virtual bool AddConnect(Connect* connect) override;
 
     virtual void ConnectToServer() {}
     virtual void Accept() {}

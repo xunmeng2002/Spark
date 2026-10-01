@@ -229,10 +229,10 @@ void ShmBase::DoRecv(Connect* connect)
     buffer->Deallocate();
 }
 
-void ShmBase::AddConnect(Connect* connect)
+bool ShmBase::AddConnect(Connect* connect)
 {
     assert(connect != nullptr && dynamic_cast<ShmConnect<ShmBufferSize>*>(connect) != nullptr);
-    IoBase::AddConnect(connect);
+    return IoBase::AddConnect(connect);
 }
 bool ShmBase::WindowsInit()
 {

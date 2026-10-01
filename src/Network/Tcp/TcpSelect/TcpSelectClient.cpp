@@ -47,7 +47,11 @@ bool TcpSelectClient::ConnectToServer(const char* ip, unsigned short port)
     TcpConnect* tcpConnect = TcpConnect::Allocate(GetSessionId(), socketId, address_, port_);
     if (ret == 0)
     {
-        AddConnect(tcpConnect);
+        if (!AddConnect(tcpConnect))
+        {
+            DiscardRefusedConnect(tcpConnect);
+            return false;
+        }
     }
     else
     {
@@ -81,7 +85,15 @@ void TcpSelectClient::CheckConnect()
         auto connect = static_cast<TcpConnect*>(it.second);
         if (FD_ISSET(connect->SocketId, &writeFds_))
         {
-            AddConnect(connect);
+            if (!AddConnect(connect))
+            {
+                // 会话号先取出再归还：归还即析构，之后不得再读 connect 的成员。
+                SessionIdType refusedSessionId = connect->SessionId;
+                DiscardRefusedConnect(connect);
+                connectFailedSessions_.push_back(refusedSessionId);
+                // 必须跳过本轮的 error 分支：它会读 connect->SocketId，而对象已归还。
+                continue;
+            }
             connectSuccessedSessions_.push_back(connect->SessionId);
         }
         if (FD_ISSET(connect->SocketId, &errorFds_))
