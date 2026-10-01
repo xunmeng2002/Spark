@@ -15,7 +15,7 @@ namespace Spark::Network
 namespace
 {
 // Client 断线自动重连的固定重试间隔
-constexpr int kAutoReconnectIntervalMs = 3000;
+constexpr int AutoReconnectIntervalMs = 3000;
 }
 
 TcpBase::TcpBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
@@ -123,7 +123,7 @@ void TcpBase::TryAutoReconnect()
         return;
     }
     auto now = std::chrono::steady_clock::now();
-    if (now - lastConnectAttemptTime_ < std::chrono::milliseconds(kAutoReconnectIntervalMs))
+    if (now - lastConnectAttemptTime_ < std::chrono::milliseconds(AutoReconnectIntervalMs))
     {
         return;
     }

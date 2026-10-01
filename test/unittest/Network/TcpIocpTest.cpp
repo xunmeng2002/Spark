@@ -31,18 +31,18 @@ using namespace Spark::Packages;
 
 namespace
 {
-constexpr char kIocpLoopbackAddress[] = "tcp://127.0.0.1:20011";
-constexpr int kRoundTripFrameCount = 200;
-constexpr char kRejectedConnectAddress[] = "tcp://127.0.0.1:0";
-constexpr char kAbandonedConnectAddress[] = "tcp://192.0.2.1:9";
-constexpr char kThrowawayListenAddress[] = "tcp://127.0.0.1:0";
-constexpr int kBuildTeardownRoundCount = 20;
-constexpr long kAllowedHandleGrowth = 2;
-constexpr int kFirstOrderIndex = 1;
-constexpr int kPriceBase = 100;
-constexpr char kAccountId[] = "Xunmeng001";
-constexpr char kExchangeId[] = "SHSE";
-constexpr char kInstrumentId[] = "600036";
+constexpr char IocpLoopbackAddress[] = "tcp://127.0.0.1:20011";
+constexpr int RoundTripFrameCount = 200;
+constexpr char RejectedConnectAddress[] = "tcp://127.0.0.1:0";
+constexpr char AbandonedConnectAddress[] = "tcp://192.0.2.1:9";
+constexpr char ThrowawayListenAddress[] = "tcp://127.0.0.1:0";
+constexpr int BuildTeardownRoundCount = 20;
+constexpr long AllowedHandleGrowth = 2;
+constexpr int FirstOrderIndex = 1;
+constexpr int PriceBase = 100;
+constexpr char ExpectedAccountId[] = "Xunmeng001";
+constexpr char ExpectedExchangeId[] = "SHSE";
+constexpr char ExpectedInstrumentId[] = "600036";
 
 struct EchoedOrder
 {
@@ -106,17 +106,17 @@ bool TryExtractEchoedOrder(const Package* package, EchoedOrder& order)
 
 void ExpectAllOrdersIntact(const std::vector<EchoedOrder>& orders)
 {
-    ASSERT_EQ(orders.size(), static_cast<size_t>(kRoundTripFrameCount));
+    ASSERT_EQ(orders.size(), static_cast<size_t>(RoundTripFrameCount));
     for (size_t offset = 0; offset < orders.size(); ++offset)
     {
-        const int expectedIndex = kFirstOrderIndex + static_cast<int>(offset);
+        const int expectedIndex = FirstOrderIndex + static_cast<int>(offset);
         const EchoedOrder& order = orders[offset];
         EXPECT_EQ(order.Index, expectedIndex);
         EXPECT_EQ(order.Volume, expectedIndex);
-        EXPECT_NEAR(order.Price, kPriceBase + expectedIndex, 1e-6);
-        EXPECT_EQ(order.AccountId, kAccountId);
-        EXPECT_EQ(order.ExchangeId, kExchangeId);
-        EXPECT_EQ(order.InstrumentId, kInstrumentId);
+        EXPECT_NEAR(order.Price, PriceBase + expectedIndex, 1e-6);
+        EXPECT_EQ(order.AccountId, ExpectedAccountId);
+        EXPECT_EQ(order.ExchangeId, ExpectedExchangeId);
+        EXPECT_EQ(order.InstrumentId, ExpectedInstrumentId);
     }
 }
 
@@ -126,7 +126,7 @@ public:
     IocpLoopbackServer() : Protocol(ProtocolTypeType::Step, ServerTypeType::Server, IoModelType::Iocp, 0, new PackageFactory())
     {
         Subscribe(this);
-        RegisterFront(kIocpLoopbackAddress);
+        RegisterFront(IocpLoopbackAddress);
     }
     virtual ~IocpLoopbackServer() {}
 
@@ -170,7 +170,7 @@ public:
     IocpLoopbackClient() : Protocol(ProtocolTypeType::Step, ServerTypeType::Client, IoModelType::Iocp, 0, new PackageFactory())
     {
         Subscribe(this);
-        RegisterFront(kIocpLoopbackAddress);
+        RegisterFront(IocpLoopbackAddress);
     }
     virtual ~IocpLoopbackClient() {}
 
@@ -208,7 +208,7 @@ public:
 private:
     void SendDistinctOrders()
     {
-        for (int index = kFirstOrderIndex; index < kFirstOrderIndex + kRoundTripFrameCount; ++index)
+        for (int index = FirstOrderIndex; index < FirstOrderIndex + RoundTripFrameCount; ++index)
         {
             SendOneOrder(index);
         }
@@ -218,13 +218,13 @@ private:
         ReqInsertOrderPackage* reqInsertOrder = ReqInsertOrderPackage::Allocate();
         reqInsertOrder->Prepare(sessionId_, false, index);
         reqInsertOrder->ReqInsertOrder = ObjectPool<ReqInsertOrderField>::GetInstance().Allocate();
-        Utility::Strcpy(reqInsertOrder->ReqInsertOrder->AccountId, kAccountId);
-        Utility::Strcpy(reqInsertOrder->ReqInsertOrder->ExchangeId, kExchangeId);
-        Utility::Strcpy(reqInsertOrder->ReqInsertOrder->InstrumentId, kInstrumentId);
+        Utility::Strcpy(reqInsertOrder->ReqInsertOrder->AccountId, ExpectedAccountId);
+        Utility::Strcpy(reqInsertOrder->ReqInsertOrder->ExchangeId, ExpectedExchangeId);
+        Utility::Strcpy(reqInsertOrder->ReqInsertOrder->InstrumentId, ExpectedInstrumentId);
         reqInsertOrder->ReqInsertOrder->Direction = DirectionType::Buy;
         reqInsertOrder->ReqInsertOrder->OffsetFlag = OffsetFlagType::Open;
         reqInsertOrder->ReqInsertOrder->OrderPriceType = OrderPriceTypeType::LimitPrice;
-        reqInsertOrder->ReqInsertOrder->Price = kPriceBase + index;
+        reqInsertOrder->ReqInsertOrder->Price = PriceBase + index;
         reqInsertOrder->ReqInsertOrder->Volume = index;
         reqInsertOrder->ReqInsertOrder->ClientOrderId = index;
         Send(reqInsertOrder);
@@ -265,13 +265,13 @@ private:
     IoThread clientThread_;
 };
 
-int g_errorLogCount = 0;
+int CapturedErrorLogCount = 0;
 
 void CountErrorLog(LogLevel level, const char*, int, const char*, const char*, ...)
 {
     if (level >= LogLevel::Error)
     {
-        ++g_errorLogCount;
+        ++CapturedErrorLogCount;
     }
 }
 
@@ -305,14 +305,14 @@ struct BuildTeardownMeasurement
 BuildTeardownMeasurement MeasureBuildTeardownRounds(int roundCount, const std::function<void()>& runOneRound)
 {
     runOneRound();
-    g_errorLogCount = 0;
+    CapturedErrorLogCount = 0;
     const unsigned long handleCountBefore = GetCurrentProcessHandleCount();
     for (int round = 0; round < roundCount; ++round)
     {
         runOneRound();
     }
     const unsigned long handleCountAfter = GetCurrentProcessHandleCount();
-    return {static_cast<long>(handleCountAfter) - static_cast<long>(handleCountBefore), g_errorLogCount};
+    return {static_cast<long>(handleCountAfter) - static_cast<long>(handleCountBefore), CapturedErrorLogCount};
 }
 }
 
@@ -327,8 +327,8 @@ TEST(TcpIocpTest, LoopbackRoundTripKeepsEveryFrameIntactOnASingleConnection)
     ASSERT_TRUE(threads.Start());
 
     const auto roundTripTimeout = std::chrono::seconds(30);
-    const bool clientReceivedAll = client.WaitForReceivedCount(kRoundTripFrameCount, roundTripTimeout);
-    const bool serverReceivedAll = server.WaitForReceivedCount(kRoundTripFrameCount, roundTripTimeout);
+    const bool clientReceivedAll = client.WaitForReceivedCount(RoundTripFrameCount, roundTripTimeout);
+    const bool serverReceivedAll = server.WaitForReceivedCount(RoundTripFrameCount, roundTripTimeout);
 
     const int serverDisConnectCountDuringRoundTrip = server.DisConnectCount();
     const int clientDisConnectCountDuringRoundTrip = client.DisConnectCount();
@@ -354,14 +354,13 @@ TEST(TcpIocpTest, RepeatedlyRejectedConnectAttemptsKeepProcessHandleCountFlat)
     Logger::SetExternLogger(CountErrorLog);
 
     const BuildTeardownMeasurement measurement =
-        MeasureBuildTeardownRounds(kBuildTeardownRoundCount, [] { RunOneClientBuildAndTeardown(kRejectedConnectAddress); });
+        MeasureBuildTeardownRounds(BuildTeardownRoundCount, [] { RunOneClientBuildAndTeardown(RejectedConnectAddress); });
 
     Logger::SetExternLogger(savedWriteLogFunc);
 
-    EXPECT_EQ(measurement.ErrorLogCount, kBuildTeardownRoundCount)
-        << kBuildTeardownRoundCount << " 次尝试只记到 " << measurement.ErrorLogCount << " 次同步拒绝：失败模式变了，本用例量的已不是同一条路径";
-    EXPECT_LE(measurement.HandleGrowth, kAllowedHandleGrowth)
-        << kBuildTeardownRoundCount << " 次被拒的连接尝试让句柄涨了 " << measurement.HandleGrowth;
+    EXPECT_EQ(measurement.ErrorLogCount, BuildTeardownRoundCount)
+        << BuildTeardownRoundCount << " 次尝试只记到 " << measurement.ErrorLogCount << " 次同步拒绝：失败模式变了，本用例量的已不是同一条路径";
+    EXPECT_LE(measurement.HandleGrowth, AllowedHandleGrowth) << BuildTeardownRoundCount << " 次被拒的连接尝试让句柄涨了 " << measurement.HandleGrowth;
 }
 
 TEST(TcpIocpTest, AbandonedPendingConnectKeepsProcessHandleCountFlat)
@@ -370,24 +369,24 @@ TEST(TcpIocpTest, AbandonedPendingConnectKeepsProcessHandleCountFlat)
     Logger::SetExternLogger(CountErrorLog);
 
     const BuildTeardownMeasurement measurement =
-        MeasureBuildTeardownRounds(kBuildTeardownRoundCount, [] { RunOneClientBuildAndTeardown(kAbandonedConnectAddress); });
+        MeasureBuildTeardownRounds(BuildTeardownRoundCount, [] { RunOneClientBuildAndTeardown(AbandonedConnectAddress); });
 
     Logger::SetExternLogger(savedWriteLogFunc);
 
     EXPECT_EQ(measurement.ErrorLogCount, 0) << "出现 " << measurement.ErrorLogCount
                                             << " 条 Error 级日志：目标地址已被同步拒绝，本用例量的不再是「悬着的请求」";
-    EXPECT_LE(measurement.HandleGrowth, kAllowedHandleGrowth)
-        << kBuildTeardownRoundCount << " 轮建/毁让句柄涨了 " << measurement.HandleGrowth << "：ConnectEx 请求没被收回来";
+    EXPECT_LE(measurement.HandleGrowth, AllowedHandleGrowth)
+        << BuildTeardownRoundCount << " 轮建/毁让句柄涨了 " << measurement.HandleGrowth << "：ConnectEx 请求没被收回来";
 }
 
 TEST(TcpIocpTest, ServerAbandonedPendingAcceptsKeepProcessHandleCountFlat)
 {
     const BuildTeardownMeasurement measurement =
-        MeasureBuildTeardownRounds(kBuildTeardownRoundCount, [] { RunOneServerBuildAndTeardown(kThrowawayListenAddress); });
+        MeasureBuildTeardownRounds(BuildTeardownRoundCount, [] { RunOneServerBuildAndTeardown(ThrowawayListenAddress); });
 
     EXPECT_EQ(measurement.ErrorLogCount, 0) << "析构路径记到 " << measurement.ErrorLogCount << " 条 Error 级日志";
-    EXPECT_LE(measurement.HandleGrowth, kAllowedHandleGrowth)
-        << kBuildTeardownRoundCount << " 轮建/毁让句柄涨了 " << measurement.HandleGrowth << "：AcceptEx 请求没被收回来";
+    EXPECT_LE(measurement.HandleGrowth, AllowedHandleGrowth)
+        << BuildTeardownRoundCount << " 轮建/毁让句柄涨了 " << measurement.HandleGrowth << "：AcceptEx 请求没被收回来";
 }
 
 #endif // _WIN32

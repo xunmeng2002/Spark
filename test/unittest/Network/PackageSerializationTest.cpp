@@ -309,19 +309,19 @@ TEST(PackageSerializationTest, XtpRoundTrip_MagicSplitAcrossAppend)
     int totalLen = MakeFrame(ProtocolTypeType::Xtp, buff, 1001);
     ASSERT_GT(totalLen, 0);
     // 先只送入魔术字的前两个字节
-    constexpr int kSplit = 2;
-    ASSERT_LT(kSplit, static_cast<int>(sizeof(ProtocolMagicValue)));
+    constexpr int Split = 2;
+    ASSERT_LT(Split, static_cast<int>(sizeof(ProtocolMagicValue)));
 
     PackageFactory factory;
     PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, IP);
-    EXPECT_EQ(reader.Append(buff, kSplit), static_cast<size_t>(kSplit));
+    EXPECT_EQ(reader.Append(buff, Split), static_cast<size_t>(Split));
 
     Package* parsedRaw = nullptr;
     EXPECT_TRUE(reader.ParsePackage(parsedRaw));
     EXPECT_EQ(parsedRaw, nullptr);
-    EXPECT_EQ(reader.Length(), static_cast<size_t>(kSplit));
+    EXPECT_EQ(reader.Length(), static_cast<size_t>(Split));
 
-    EXPECT_EQ(reader.Append(buff + kSplit, totalLen - kSplit), static_cast<size_t>(totalLen - kSplit));
+    EXPECT_EQ(reader.Append(buff + Split, totalLen - Split), static_cast<size_t>(totalLen - Split));
     EXPECT_TRUE(reader.ParsePackage(parsedRaw));
     ASSERT_NE(parsedRaw, nullptr);
     EXPECT_EQ(parsedRaw->Head.MsgSeqNum, 1001);
@@ -405,19 +405,19 @@ TEST(PackageSerializationTest, StepRoundTrip_AnchorSplitAcrossAppend)
     ASSERT_GT(totalLen, 0);
 
     int anchorLen = static_cast<int>(StepUtility::GetPackageStartAnchor().size());
-    constexpr int kSplit = 5;
-    ASSERT_LT(kSplit, anchorLen);
+    constexpr int Split = 5;
+    ASSERT_LT(Split, anchorLen);
 
     PackageFactory factory;
     PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
-    EXPECT_EQ(reader.Append(buff, kSplit), static_cast<size_t>(kSplit));
+    EXPECT_EQ(reader.Append(buff, Split), static_cast<size_t>(Split));
 
     Package* parsedRaw = nullptr;
     EXPECT_TRUE(reader.ParsePackage(parsedRaw));
     EXPECT_EQ(parsedRaw, nullptr);
-    EXPECT_EQ(reader.Length(), static_cast<size_t>(kSplit));
+    EXPECT_EQ(reader.Length(), static_cast<size_t>(Split));
 
-    EXPECT_EQ(reader.Append(buff + kSplit, totalLen - kSplit), static_cast<size_t>(totalLen - kSplit));
+    EXPECT_EQ(reader.Append(buff + Split, totalLen - Split), static_cast<size_t>(totalLen - Split));
     EXPECT_TRUE(reader.ParsePackage(parsedRaw));
     ASSERT_NE(parsedRaw, nullptr);
     VerifyPackage(static_cast<NotifyComponentConnectStatusPackage*>(parsedRaw), SessionId, 1001);

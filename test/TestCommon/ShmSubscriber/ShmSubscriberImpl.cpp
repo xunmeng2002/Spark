@@ -8,7 +8,6 @@ using namespace Spark;
 using namespace Spark::Core;
 using namespace Spark::Network;
 
-static int g_Count = 0;
 ShmSubscriberImpl::ShmSubscriberImpl(IoBase* io, ServerTypeType serverType) : connected_(false), sessionId_(0LL), io_(io), serverType_(serverType)
 {
     buff_ = new char[BufferSize];

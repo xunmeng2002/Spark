@@ -14,8 +14,8 @@ namespace Spark::Network
 {
 namespace
 {
-constexpr DWORD kCancelledRequestReapTimeoutMs = 1000;
-constexpr DWORD kCancelledRequestReapPollMs = 10;
+constexpr DWORD CancelledRequestReapTimeoutMs = 1000;
+constexpr DWORD CancelledRequestReapPollMs = 10;
 }
 
 TcpIocpBase::TcpIocpBase(ServerTypeType serverType, const char* addressName, int milliSeconds, int backlog)
@@ -312,7 +312,7 @@ bool TcpIocpBase::ReapCancelledConnectRequest(MyOverlapped* overlapped, chrono::
         DWORD transBytes = 0;
         ULONG_PTR completionKey = 0;
         LPOVERLAPPED completedOverlapped = nullptr;
-        ioCompletePort_->GetStatus(&transBytes, &completionKey, &completedOverlapped, kCancelledRequestReapPollMs);
+        ioCompletePort_->GetStatus(&transBytes, &completionKey, &completedOverlapped, CancelledRequestReapPollMs);
         if (completedOverlapped == reinterpret_cast<LPOVERLAPPED>(overlapped))
         {
             return true;
@@ -322,7 +322,7 @@ bool TcpIocpBase::ReapCancelledConnectRequest(MyOverlapped* overlapped, chrono::
 }
 void TcpIocpBase::ReleaseAllInFlightConnectRequests()
 {
-    const auto reapDeadline = chrono::steady_clock::now() + chrono::milliseconds(kCancelledRequestReapTimeoutMs);
+    const auto reapDeadline = chrono::steady_clock::now() + chrono::milliseconds(CancelledRequestReapTimeoutMs);
     for (;;)
     {
         auto overlapped = TakeOneInFlightConnectRequest();

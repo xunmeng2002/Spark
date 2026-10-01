@@ -53,52 +53,52 @@ TEST(DirTest, IsDir_NonExistentPath)
 
 TEST(DirTest, Create_NewDirectory)
 {
-    const char* kTestDir = "test_dir_create";
+    const char* testDir = "test_dir_create";
 
     // 清理残留
-    RemoveDir(kTestDir);
+    RemoveDir(testDir);
 
     // 创建新目录
-    EXPECT_TRUE(Dir::Create(kTestDir));
-    EXPECT_TRUE(Dir::IsDir(kTestDir));
+    EXPECT_TRUE(Dir::Create(testDir));
+    EXPECT_TRUE(Dir::IsDir(testDir));
 
     // 清理
-    RemoveDir(kTestDir);
-    EXPECT_FALSE(Dir::IsDir(kTestDir));
+    RemoveDir(testDir);
+    EXPECT_FALSE(Dir::IsDir(testDir));
 }
 
 TEST(DirTest, Create_ExistingDirectory)
 {
-    const char* kTestDir = "test_dir_existing";
+    const char* testDir = "test_dir_existing";
 
-    RemoveDir(kTestDir);
-    EXPECT_TRUE(Dir::Create(kTestDir));
+    RemoveDir(testDir);
+    EXPECT_TRUE(Dir::Create(testDir));
 
     // 再次创建已存在的目录 —— 不同平台上 _mkdir/mkdir 返回 false
     // 我们只验证第一次创建成功且存在
-    EXPECT_TRUE(Dir::IsDir(kTestDir));
+    EXPECT_TRUE(Dir::IsDir(testDir));
 
-    RemoveDir(kTestDir);
+    RemoveDir(testDir);
 }
 
 TEST(DirTest, Create_WithMode)
 {
     // mode 参数在 Linux 下生效，Windows 忽略
     // 验证函数能正常调用
-    const char* kTestDir = "test_dir_mode";
+    const char* testDir = "test_dir_mode";
 
-    RemoveDir(kTestDir);
-    EXPECT_TRUE(Dir::Create(kTestDir, 0755));
-    EXPECT_TRUE(Dir::IsDir(kTestDir));
+    RemoveDir(testDir);
+    EXPECT_TRUE(Dir::Create(testDir, 0755));
+    EXPECT_TRUE(Dir::IsDir(testDir));
 
-    RemoveDir(kTestDir);
+    RemoveDir(testDir);
 }
 
 TEST(DirTest, CreateAndVerifyMultipleDirs)
 {
-    const char* kDirs[] = {"test_dir_a", "test_dir_b", "test_dir_c"};
+    const char* dirs[] = {"test_dir_a", "test_dir_b", "test_dir_c"};
 
-    for (const char* dir : kDirs)
+    for (const char* dir : dirs)
     {
         RemoveDir(dir);
         EXPECT_TRUE(Dir::Create(dir));
@@ -106,7 +106,7 @@ TEST(DirTest, CreateAndVerifyMultipleDirs)
     }
 
     // 清理
-    for (const char* dir : kDirs)
+    for (const char* dir : dirs)
     {
         RemoveDir(dir);
         EXPECT_FALSE(Dir::IsDir(dir));

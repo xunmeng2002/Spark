@@ -312,18 +312,18 @@ TEST(ObjectPoolTest, MultiThreadAllocate)
     };
 
     ObjectPool<MTPoolType>& pool = ObjectPool<MTPoolType>::GetInstance();
-    constexpr int kPerThread = 100;
-    constexpr int kThreads = 4;
+    constexpr int PerThread = 100;
+    constexpr int Threads = 4;
 
     std::vector<std::thread> threads;
     std::atomic<long long> sum{0};
 
-    for (int t = 0; t < kThreads; ++t)
+    for (int t = 0; t < Threads; ++t)
     {
         threads.emplace_back(
             [&pool, &sum]()
             {
-                for (int i = 0; i < kPerThread; ++i)
+                for (int i = 0; i < PerThread; ++i)
                 {
                     auto* obj = pool.Allocate(i);
                     sum.fetch_add(obj->value, std::memory_order_relaxed);
@@ -335,8 +335,8 @@ TEST(ObjectPoolTest, MultiThreadAllocate)
     for (auto& th : threads)
         th.join();
 
-    // 每个线程分配 0..kPerThread-1，共 kThreads 个线程
-    long long expected = static_cast<long long>(kPerThread) * (kPerThread - 1) / 2 * kThreads;
+    // 每个线程分配 0..PerThread-1，共 Threads 个线程
+    long long expected = static_cast<long long>(PerThread) * (PerThread - 1) / 2 * Threads;
     EXPECT_EQ(sum.load(), expected);
 
     // Clean up any remaining items left in pool
@@ -354,11 +354,11 @@ TEST(ObjectPoolTest, CrossThreadDeallocate)
         long long value;
     };
 
-    constexpr int kItemCount = 64;
+    constexpr int ItemCount = 64;
     ObjectPool<CrossThreadType>& pool = ObjectPool<CrossThreadType>::GetInstance();
 
     std::vector<CrossThreadType*> allocated;
-    for (int i = 0; i < kItemCount; ++i)
+    for (int i = 0; i < ItemCount; ++i)
     {
         CrossThreadType* item = pool.Allocate();
         ASSERT_NE(item, nullptr);
@@ -377,7 +377,7 @@ TEST(ObjectPoolTest, CrossThreadDeallocate)
         });
     releaser.join();
 
-    for (int i = 0; i < kItemCount; ++i)
+    for (int i = 0; i < ItemCount; ++i)
     {
         CrossThreadType* item = pool.Allocate();
         ASSERT_NE(item, nullptr);
@@ -398,9 +398,9 @@ TEST(ObjectPoolTest, ConcurrentBatchAllocateDeallocate)
         long long value;
     };
 
-    constexpr int kThreadCount = 8;
-    constexpr int kRoundCount = 40;
-    constexpr int kBatchSize = 12; // 每线程每轮同时持有 12 个（远超本地上限的一半），反复触发整批取回与整批交回
+    constexpr int ThreadCount = 8;
+    constexpr int RoundCount = 40;
+    constexpr int BatchSize = 12; // 每线程每轮同时持有 12 个（远超本地上限的一半），反复触发整批取回与整批交回
 
     ObjectPool<ConcurrentBatchType>& pool = ObjectPool<ConcurrentBatchType>::GetInstance();
     pool.SetBlockUnitNum(16);
@@ -412,17 +412,17 @@ TEST(ObjectPoolTest, ConcurrentBatchAllocateDeallocate)
     std::atomic<bool> duplicatePointerSeen{false};
 
     std::vector<std::thread> workers;
-    workers.reserve(kThreadCount);
-    for (int t = 0; t < kThreadCount; ++t)
+    workers.reserve(ThreadCount);
+    for (int t = 0; t < ThreadCount; ++t)
     {
         workers.emplace_back(
             [&pool, &livePointerMutex, &livePointers, &duplicatePointerSeen, t]()
             {
-                for (int round = 0; round < kRoundCount; ++round)
+                for (int round = 0; round < RoundCount; ++round)
                 {
                     std::vector<ConcurrentBatchType*> batch;
-                    batch.reserve(kBatchSize);
-                    for (int i = 0; i < kBatchSize; ++i)
+                    batch.reserve(BatchSize);
+                    for (int i = 0; i < BatchSize; ++i)
                     {
                         ConcurrentBatchType* item = pool.Allocate();
                         item->value = static_cast<long long>(t) * 1000 + i;

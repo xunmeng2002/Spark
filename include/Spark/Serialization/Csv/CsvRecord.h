@@ -56,7 +56,7 @@ private:
 
 inline int CsvRecord::GetFieldCount()
 {
-    return (int)csvFields_.size();
+    return static_cast<int>(csvFields_.size());
 }
 
 inline const char* CsvRecord::GetFieldName(int fieldIndex)

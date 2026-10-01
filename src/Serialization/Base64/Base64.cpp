@@ -2,8 +2,8 @@
 
 namespace Spark::Serialization
 {
-static const char* g_Codes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-static const unsigned char g_Decodes[256] = {
+static const char* Base64Codes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+static const unsigned char Base64DecodeTable[256] = {
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 62,  255, 255, 255, 63,  52,  53,  54,  55,  56,  57,  58,  59,  60,  61,
     255, 255, 255, 254, 255, 255, 255, 0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20,  21,
@@ -20,10 +20,10 @@ void Base64Encode(const unsigned char* src, int srcLen, unsigned char* dest, int
     int remainder = srcLen % 3;
     for (auto i = 0; i < srcLen - remainder; i += 3)
     {
-        *p++ = g_Codes[src[i] >> 2];
-        *p++ = g_Codes[((src[i] & 3) << 4) + (src[i + 1] >> 4)];
-        *p++ = g_Codes[((src[i + 1] & 0xF) << 2) + (src[i + 2] >> 6)];
-        *p++ = g_Codes[src[i + 2] & 0x3F];
+        *p++ = Base64Codes[src[i] >> 2];
+        *p++ = Base64Codes[((src[i] & 3) << 4) + (src[i + 1] >> 4)];
+        *p++ = Base64Codes[((src[i + 1] & 0xF) << 2) + (src[i + 2] >> 6)];
+        *p++ = Base64Codes[src[i + 2] & 0x3F];
     }
 
     if (remainder > 0)
@@ -34,11 +34,11 @@ void Base64Encode(const unsigned char* src, int srcLen, unsigned char* dest, int
         {
             b = src[srcLen - remainder + 1];
         }
-        *p++ = g_Codes[a >> 2];
-        *p++ = g_Codes[((a & 3) << 4) + (b >> 4)];
+        *p++ = Base64Codes[a >> 2];
+        *p++ = Base64Codes[((a & 3) << 4) + (b >> 4)];
         if (remainder > 1)
         {
-            *p++ = g_Codes[(b & 0xf) << 2];
+            *p++ = Base64Codes[(b & 0xf) << 2];
         }
         else
         {
@@ -61,19 +61,19 @@ void Base64Decode(const unsigned char* src, int srcLen, unsigned char* dest, int
     unsigned char value;
     for (auto i = 0; i < srcLen - remainder; i += 4)
     {
-        value = g_Decodes[src[i]] << 2;
-        value += g_Decodes[src[i + 1]] >> 4;
+        value = Base64DecodeTable[src[i]] << 2;
+        value += Base64DecodeTable[src[i + 1]] >> 4;
         *p++ = value;
         if (src[i + 2] != '=')
         {
-            value = g_Decodes[src[i + 1]] << 4;
-            value += g_Decodes[src[i + 2]] >> 2;
+            value = Base64DecodeTable[src[i + 1]] << 4;
+            value += Base64DecodeTable[src[i + 2]] >> 2;
             *p++ = value;
         }
         if (src[i + 3] != '=')
         {
-            value = g_Decodes[src[i + 2]] << 6;
-            value += g_Decodes[src[i + 3]];
+            value = Base64DecodeTable[src[i + 2]] << 6;
+            value += Base64DecodeTable[src[i + 3]];
             *p++ = value;
         }
     }

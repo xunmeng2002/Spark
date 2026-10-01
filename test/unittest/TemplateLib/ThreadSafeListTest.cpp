@@ -83,8 +83,8 @@ TEST(ThreadSafeListTest, CopyConstructor)
 TEST(ThreadSafeListTest, SingleProducerSingleConsumer)
 {
     ThreadSafeList<int> list;
-    constexpr int kItemCount = 1000;
-    std::vector<int> items(kItemCount);
+    constexpr int ItemCount = 1000;
+    std::vector<int> items(ItemCount);
     std::iota(items.begin(), items.end(), 0);
 
     std::vector<int> results;
@@ -92,7 +92,7 @@ TEST(ThreadSafeListTest, SingleProducerSingleConsumer)
     std::thread producer(
         [&]()
         {
-            for (int i = 0; i < kItemCount; ++i)
+            for (int i = 0; i < ItemCount; ++i)
             {
                 list.PushBack(&items[i]);
             }
@@ -101,7 +101,7 @@ TEST(ThreadSafeListTest, SingleProducerSingleConsumer)
     std::thread consumer(
         [&]()
         {
-            for (int i = 0; i < kItemCount; ++i)
+            for (int i = 0; i < ItemCount; ++i)
             {
                 int* item = list.PopFront();
                 results.push_back(*item);
@@ -111,8 +111,8 @@ TEST(ThreadSafeListTest, SingleProducerSingleConsumer)
     producer.join();
     consumer.join();
 
-    ASSERT_EQ(results.size(), static_cast<size_t>(kItemCount));
-    for (int i = 0; i < kItemCount; ++i)
+    ASSERT_EQ(results.size(), static_cast<size_t>(ItemCount));
+    for (int i = 0; i < ItemCount; ++i)
     {
         EXPECT_EQ(results[i], i);
     }
@@ -123,22 +123,22 @@ TEST(ThreadSafeListTest, SingleProducerSingleConsumer)
 TEST(ThreadSafeListTest, MultiProducerSingleConsumer)
 {
     ThreadSafeList<int> list;
-    constexpr int kProducers = 4;
-    constexpr int kItemsPerProducer = 500;
-    constexpr int kTotalItems = kProducers * kItemsPerProducer;
+    constexpr int Producers = 4;
+    constexpr int ItemsPerProducer = 500;
+    constexpr int TotalItems = Producers * ItemsPerProducer;
 
     // 预分配存储，确保指针生命周期
-    std::vector<int> itemStorage(kTotalItems);
+    std::vector<int> itemStorage(TotalItems);
     std::iota(itemStorage.begin(), itemStorage.end(), 0);
 
     std::vector<std::thread> producers;
-    for (int t = 0; t < kProducers; ++t)
+    for (int t = 0; t < Producers; ++t)
     {
         producers.emplace_back(
             [&, t]()
             {
-                int start = t * kItemsPerProducer;
-                for (int i = 0; i < kItemsPerProducer; ++i)
+                int start = t * ItemsPerProducer;
+                for (int i = 0; i < ItemsPerProducer; ++i)
                 {
                     list.PushBack(&itemStorage[start + i]);
                 }
@@ -149,7 +149,7 @@ TEST(ThreadSafeListTest, MultiProducerSingleConsumer)
     std::thread consumer(
         [&]()
         {
-            for (int i = 0; i < kTotalItems; ++i)
+            for (int i = 0; i < TotalItems; ++i)
             {
                 int* item = list.PopFront();
                 results.push_back(*item);
@@ -163,8 +163,8 @@ TEST(ThreadSafeListTest, MultiProducerSingleConsumer)
     consumer.join();
 
     // 验证收到全部元素
-    ASSERT_EQ(results.size(), static_cast<size_t>(kTotalItems));
-    for (int i = 0; i < kTotalItems; ++i)
+    ASSERT_EQ(results.size(), static_cast<size_t>(TotalItems));
+    for (int i = 0; i < TotalItems; ++i)
     {
         EXPECT_EQ(results[i], i);
     }

@@ -122,13 +122,13 @@ TEST(LockFreeQueueTest, StringType)
 TEST(LockFreeQueueTest, MultiThread_SingleProducerSingleConsumer)
 {
     LockFreeQueue<int> q;
-    constexpr int kItemCount = 10000;
+    constexpr int ItemCount = 10000;
 
     // Producer
     std::thread producer(
         [&]()
         {
-            for (int i = 0; i < kItemCount; ++i)
+            for (int i = 0; i < ItemCount; ++i)
             {
                 q.PushBack(std::make_shared<int>(i));
             }
@@ -140,7 +140,7 @@ TEST(LockFreeQueueTest, MultiThread_SingleProducerSingleConsumer)
         [&]()
         {
             int received = 0;
-            while (received < kItemCount)
+            while (received < ItemCount)
             {
                 auto item = q.PopFront();
                 if (item)
@@ -160,8 +160,8 @@ TEST(LockFreeQueueTest, MultiThread_SingleProducerSingleConsumer)
     consumer.join();
 
     // 验证收到全部数据并按 FIFO 顺序
-    ASSERT_EQ(results.size(), static_cast<size_t>(kItemCount));
-    for (int i = 0; i < kItemCount; ++i)
+    ASSERT_EQ(results.size(), static_cast<size_t>(ItemCount));
+    for (int i = 0; i < ItemCount; ++i)
     {
         EXPECT_EQ(results[i], i);
     }

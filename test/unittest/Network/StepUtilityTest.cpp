@@ -26,7 +26,7 @@ std::string MakeStepField(unsigned int key, const std::string& value)
 }
 
 //包头用例里"合法版本号"的唯一取值。写成常量，版本一升就不必逐处翻找占位串
-const std::string kStepVersionText = std::format("{:04X}", ProtocolVersionValue);
+const std::string StepVersionText = std::format("{:04X}", ProtocolVersionValue);
 
 //写入路径用例骨架：搭缓冲 → 建游标 → 写一个字段 → 与预期字段串逐字节比对。
 //容量取 64：写入路径的字段都是短文本或单个数字；容量边界与截断语义另有专门用例，不走这里
@@ -82,7 +82,7 @@ std::string MakeStepHeadStream(UInt16Type packageId, UInt16Type bodyLen, UInt32T
 
 // 手工拼包头，只留出字段值可控的口子，便于构造坏值用例。
 // 各字段的默认值都取合法十六进制文本，用例只覆盖自己关心的那一个
-std::string MakeRawStepHeadStream(const std::string& magic = ProtocolMagicText, const std::string& version = kStepVersionText,
+std::string MakeRawStepHeadStream(const std::string& magic = ProtocolMagicText, const std::string& version = StepVersionText,
                                   const std::string& packageId = "1001", const std::string& bodyLen = "0008",
                                   const std::string& msgSeqNum = "00000007", const std::string& messageChain = "0", const std::string& trailing = "")
 {
@@ -658,7 +658,7 @@ TEST(StepUtilityTest, HeadFromStream_BodyFollowsHead)
 TEST(StepUtilityTest, HeadFromStream_MissingKey)
 {
     // 少一个字段（这里去掉 MessageChain）必须判失败，六个字段全到齐才算解析成功
-    std::string stream = std::string(1, SOH) + MakeStepField(Items::Magic, ProtocolMagicText) + MakeStepField(Items::Version, kStepVersionText) +
+    std::string stream = std::string(1, SOH) + MakeStepField(Items::Magic, ProtocolMagicText) + MakeStepField(Items::Version, StepVersionText) +
                          MakeStepField(Items::PackageId, "1001") + MakeStepField(Items::BodyLen, "0008") +
                          MakeStepField(Items::MsgSeqNum, "00000007") + MakeStepField(0x100D, "600001");
 
@@ -679,7 +679,7 @@ TEST(StepUtilityTest, HeadFromStream_UnknownKey)
 
 TEST(StepUtilityTest, HeadFromStream_WrongMagic)
 {
-    std::string stream = MakeRawStepHeadStream("XPK2", kStepVersionText, "1001", "0008", "00000007", "0", MakeStepField(0x100D, "600001"));
+    std::string stream = MakeRawStepHeadStream("XPK2", StepVersionText, "1001", "0008", "00000007", "0", MakeStepField(0x100D, "600001"));
 
     HeadField parsed = {};
     int headEndIndex = -1;
@@ -709,8 +709,7 @@ TEST(StepUtilityTest, HeadFromStream_TrailingGarbageValue)
 TEST(StepUtilityTest, HeadFromStream_BodyLenOutOfRange)
 {
     // 包体长度是 16 位无符号，超范围必须判失败，不能截断成 0x9999 = 39321
-    std::string stream =
-        MakeRawStepHeadStream(ProtocolMagicText, kStepVersionText, "1001", "99999", "00000007", "0", MakeStepField(0x100D, "600001"));
+    std::string stream = MakeRawStepHeadStream(ProtocolMagicText, StepVersionText, "1001", "99999", "00000007", "0", MakeStepField(0x100D, "600001"));
 
     HeadField parsed = {};
     int headEndIndex = -1;
@@ -720,7 +719,7 @@ TEST(StepUtilityTest, HeadFromStream_BodyLenOutOfRange)
 TEST(StepUtilityTest, HeadFromStream_NegativeMsgSeqNum)
 {
     // MsgSeqNum 是无符号的，from_chars 对无符号目标拒绝 '-'，不得把 -1 读成补码大数
-    std::string stream = MakeRawStepHeadStream(ProtocolMagicText, kStepVersionText, "1001", "0008", "-1", "0", MakeStepField(0x100D, "600001"));
+    std::string stream = MakeRawStepHeadStream(ProtocolMagicText, StepVersionText, "1001", "0008", "-1", "0", MakeStepField(0x100D, "600001"));
 
     HeadField parsed = {};
     int headEndIndex = -1;
@@ -729,7 +728,7 @@ TEST(StepUtilityTest, HeadFromStream_NegativeMsgSeqNum)
 
 TEST(StepUtilityTest, HeadFromStream_EmptyValue)
 {
-    std::string stream = MakeRawStepHeadStream(ProtocolMagicText, kStepVersionText, "1001", "", "00000007", "0", MakeStepField(0x100D, "600001"));
+    std::string stream = MakeRawStepHeadStream(ProtocolMagicText, StepVersionText, "1001", "", "00000007", "0", MakeStepField(0x100D, "600001"));
 
     HeadField parsed = {};
     int headEndIndex = -1;
