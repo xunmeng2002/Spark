@@ -29,6 +29,13 @@ CAS 就会把一个**正在使用中**的对象发布成新的链头。把 pop/p
 - 只有池自己发出的指针才可归还。Debug 构建下每条取出的对象都登记在册（`RegisterAllocatedItem`），
   归还时先摘牌再析构（`AssertAndUnregisterOwnedItem`）：摘牌与析构分成两步，是为了先放开登记表的锁，
   使「析构里归还本池的另一个对象」不会自锁。重复归还或交进外来指针会就地报出类型与指针，而不是留到别处以越界写现形。
+- **归还必须发生在取得该对象的同一个模块内**。`GetInstance()` 与 Debug 期的登记表都是**模板内的函数局部 static**，
+  MSVC 不跨模块唯一化：`Networkd.dll` 与 `UnitTests.exe` 各持一份池、也各持一份登记表。实测把 DLL 内分配的
+  `LinearBuffer<65536>` 交给测试侧 mock 归还，Debug 会报 `Deallocate got an item that is not currently held` 并就地断言；
+  分配与归还都放回 DLL 则通过。两个模块**都未定义 `NDEBUG`**，故不是编译开关不一致，而是登记表本身有两份。
+  生产侧各模块只归还自己分配的，这条约束因此一直成立——但它此前没有写下来，任何一次「跨模块转交池对象所有权」的改动都会踩到。
+- `SetBlockUnitNum` 只在**启动期**调用，其后不得再改：它不在 `mutex_` 内，而热路径读 `blockUnitNum_` 是非原子的，
+  热路径上改它就是数据竞争。约定即「启动期可调、此后禁改」，当前调用点只有测试与启动期两处，与此相符。
 - 线程退出时，本地链上剩余的空闲节点由 `ThreadLocalCache` 的析构整批交回共享链。不回收的话这些槽位
   再不参与流通，池只能靠新申请块补足，反复创建/销毁线程时按块累积（默认一块 64 个槽位，
   `LinearBuffer<BufferSize>` 一块约 4 MiB）。
@@ -94,7 +101,5 @@ CAS 就会把一个**正在使用中**的对象发布成新的链头。把 pop/p
 
 ## 五、已知未覆盖与未决
 
-- **`SetBlockUnitNum` 不在 `mutex_` 内、热路径读 `blockUnitNum_` 非原子**。现状仅测试与启动期调用，
-  是否立「启动期可调、此后禁改」的成文契约未有裁定。
 - **`AllocateShared` 的控制块失败路径无用例**：`std::bad_alloc` 无法注入，只能靠代码审读。
 - 构造抛出这条路径的**计数与登记表一致性**由上述用例间接覆盖（Debug 下登记表若有偏差会走 `ReportOwnershipViolation` 直接断言失败），无独立用例。
