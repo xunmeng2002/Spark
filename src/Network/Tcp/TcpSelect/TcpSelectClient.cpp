@@ -86,8 +86,8 @@ void TcpSelectClient::CheckConnect()
         }
         if (FD_ISSET(connect->SocketId, &errorFds_))
         {
-            RemoveConnect(connect);
             connectFailedSessions_.push_back(connect->SessionId);
+            RemoveConnect(connect);
         }
     }
     for (auto& sessionId : connectSuccessedSessions_)
