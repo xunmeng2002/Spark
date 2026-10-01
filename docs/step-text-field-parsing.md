@@ -45,11 +45,12 @@
 | 枚举（123 处） | `ParseEnum` | `static_cast<T>(atoi(value.c_str()))` | 整型范围内的一切文本 |
 | 布尔（12 处） | `ParseBool` | `atoi(value.c_str())` | `0` 或 `1` |
 | 双精度（187 处） | `ParseDouble` | `atof(value.c_str())` | 有限值的十进制/科学计数文本 |
-| 字符串（584 处） | 未动 | 未动 | 任意文本，超长即截断（见第六节） |
+| 字符串（584 处） | 容量校验后 `memcpy`（本批改） | `memcpy` 静默截断到容量 | 长度 < 目标数组容量的一切文本（`N-1` 个字符照收，第 `N` 个起拒） |
 | `char`（0 处） | 未动 | 未动 | 取首字节 |
 
-计数取自当前产物：`ParseInteger` 294 + `ParseEnum` 123 + `ParseBool` 12 + `ParseDouble` 187 = 616，
-与产物里 616 处 `Out Of Range` 日志逐一对上（每族各有一句同形的拒收日志）。
+计数取自当前产物：`ParseInteger` 294 + `ParseEnum` 123 + `ParseBool` 12 + `ParseDouble` 187 + 字符串容量校验 584 = 1200，
+与产物里 1200 处 `Out Of Range` 日志逐一对上（每族各有一句同形的拒收日志）。字符串族那句印的是
+`Length:%zu, Capacity:%zu` 而非字段值——`Password` 之类的字段不许进日志，这条口径全族统一遵守。
 
 三个助手的实现都在 `include/Spark/Network/Protocol/StepUtility.h`（`ParseEnum:131`、`ParseBool:144`、`ParseDouble:154`）。
 
@@ -104,6 +105,10 @@
 判据是**自洽**：写侧的输出必须落在读侧能收的集合内，否则自家报文自己解析不了。测试里为此各留一条断言
 （例如「枚举写侧必须写成裸十进制整数」）。
 
+字符串族的自洽性正是第六节第三条新判据成立的前提：写侧在 `strlen(...) >= sizeof(...)` 时把目标数组第 `N-1`
+个字节强制置 `0`（`Packages.cpp.tpl:167-170`），故它写出去的字符串**最长 `N-1` 个字符**，恒落在读侧
+「长度 < `N`」的集合内——按旧口径能收下的帧，新口径一个都不会挡。这条对称性由 `step_e2e` 的 89 帧实测印证。
+
 一处例外值得知道：写侧 `{:d}`／`{:.6f}` 对非有限值的输出（`nan` / `inf`）**不在**读侧能收的集合内——
 自家写出 nan 就会自家解析失败。这不是缺陷，正是第三节裁定的结果；用例也正用这一点构造（把 `Asset` 置 nan 后
 直接 `MakePackage`，报文里就会出现 `Asset=nan`，无需改写文本）。
@@ -112,10 +117,10 @@
 
 1. **写侧 `{:.6f}` 的精度上限**：小数点后第 7 位起在写出时被舍入，读回的值与内存中的值不再逐位相等。这是写侧固有损失，本批未动。
 2. **写侧不拒 `nan` / `inf`**：仍会原样写出（读侧已拒，故后果是自家报文解析失败而非静默传播）。
-3. **字符串分支静默截断**：584 处 `memcpy` 按目标数组长度截断，不记日志、不返回 false。与整数族的严格口径不一致，
-   但动它要先定「截断算不算错」，本批不动。
+上面 ①② **已于 2026-10-01 定为协议口径、不再改**。
 
-上面 ①② **已于 2026-10-01 定为协议口径、不再改**；③ 仍未决。裁定理由见第八节。
+第三条（字符串分支静默截断）当时以「动它要先定『截断算不算错』」登记为未决，**同日裁定「算错」并已修**：
+584 处改为容量校验后拒收，不再是未修项。改动落点、判据与理由见第二节表、第七节用例、第八节。
 
 ## 七、测试与实测
 
@@ -127,24 +132,37 @@
 | `ParseBoolAcceptsOnlyZeroAndOne:1046` | `""`、`-1`、`2`、`" 0"`、`"0 "`、`true`、`false`、`0x1`、`1abc`、`+1`、`2147483647` | `0`、`1`、`00`、`01` |
 | `ParseDoubleRejectsMalformedAndNonFinite:1061` | `""`、`+1.5`、`" 1.5"`、`"1.5 "`、`1.5abc`、`.`、`-`、`1e`、`abc`、`nan`、`NaN`、`-nan`、`inf`、`-inf`、`1e999`、`-1e999`、`0x10` | `0`、`123.456789`、`-1.5`、`1e3`、`1E-3`、`0.000001`、`1.7976931348623157e+308` |
 
-包级（`test/unittest/Network/PackageSerializationTest.cpp`，`ParseStepFrame:818` 是新增的「一帧解析一遍」助手）：
+包级（`test/unittest/Network/PackageSerializationTest.cpp`，行号一律记**用例的 `TEST` 宏那一行**）：
 
 | 用例 | 输入 | 输出 |
 | --- | --- | --- |
-| `StepRoundTrip_EnumFieldRejectsNonIntegerText:859` | `RspQryCapitalPackage`（0x100A）的 `Capital->AccountType` 由 `0` 等宽改成 `x`（改后重算报尾） | `ParsePackage` 返 false、包为 nullptr；同一帧改成 `9` 仍解析成功（钉住第四节的界限） |
-| `StepRoundTrip_NonFiniteDoubleFieldIsRejected:898` | `Capital->Asset` 分别置 `nan` / `+inf` / `-inf` 后 `MakePackage` | 三条都返 false；对照帧 `100.5` 正常解析。用例先断言帧里确有 `nan` / `inf` / `-inf` 文本 |
-| `StepRoundTrip_BoolFieldRejectsNonZeroOne:931` | `NotifyComponentConnectStatusPackage` 的 `IsConnected` 由 `1` 改成 `2` | 返 false；对照帧为 true |
+| `ParseStepFrame:859` | —— | 「一帧解析一遍」助手；返回 `false` 时 `parsed` 必为 `nullptr` |
+| `StepRoundTrip_EnumFieldRejectsNonIntegerText:900` | `RspQryCapitalPackage`（0x100A）的 `Capital->AccountType` 由 `0` 等宽改成 `x`（改后重算报尾） | `ParsePackage` 返 false、包为 nullptr；同一帧改成 `9` 仍解析成功（钉住第四节的界限） |
+| `StepRoundTrip_NonFiniteDoubleFieldIsRejected:935` | `Capital->Asset` 分别置 `nan` / `+inf` / `-inf` 后 `MakePackage` | 三条都返 false；对照帧 `100.5` 正常解析。用例先断言帧里确有 `nan` / `inf` / `-inf` 文本 |
+| `StepRoundTrip_BoolFieldRejectsNonZeroOne:966` | `NotifyComponentConnectStatusPackage` 的 `IsConnected` 由 `1` 改成 `2` | 返 false；对照帧为 true |
+| `StepRoundTrip_StringFieldLongerThanCapacityIsRejected:989` | `RspQryCapitalPackage` 的 `Capital->AccountId`（`char[32]`）由 `Xunmeng001` 改成 31 个 `A`（容量内最长）与 32 个 `A`（超一个）。文本变宽会挤动后文，故同时改写包头 `BodyLen` 并重算报尾 | 31 个 `A`：解析成功、`AccountId` 长度 = 31；32 个 `A`：返 false、包为 nullptr |
 
-三条包级用例都带一条**对照帧**断言（同一帧不改值先解析一次），以免「失败」其实来自别的原因。
+四条包级用例都带一条**对照帧**断言（同一帧不改值先解析一次），以免「失败」其实来自别的原因。
 
 助手契约：`ParseStepFrame` 一帧解析一遍，**返回 `false` 时 `parsed` 必为 `nullptr`**——与 reader
 在解析失败时的约定一致（帧已被弹掉、包已归还池，见第八节），故用例只需断言这一个返回值。
 
-**A/B 实测**：把生成物换回 `HEAD` 版、并把三个助手的判据临时去掉后重跑，上表六条**全部失败**——
-三条包级用例在 `ParseStepFrame` 上实测返 `true`（旧代码收下了 `x` / `nan` / `inf` / `-inf` / `2`），
-助手级用例里 `ParseDouble` 实测收下 `1e999` 并得 `-inf`、收下 `0x10` 并得 `0`。恢复后六条全绿。
+**A/B 实测**：把生成物换回 `HEAD` 版（模板改动留着）、并把三个助手的判据临时去掉后重跑，上表七条**全部失败**——
+四条包级用例在 `ParseStepFrame` 上实测返 `true`（旧代码收下了 `x` / `nan` / `inf` / `-inf` / `2`，以及 32 个 `A` 的
+`AccountId`），助手级三条里 `ParseDouble` 实测收下 `1e999` 并得 `-inf`、收下 `0x10` 并得 `0`。恢复后七条全绿。
 
-四档单测：MSVC Debug **493** / Release **494**、WSL GCC Debug **488** / Release **489**（基线 487/488/482/483，各 +6）。
+字符串那条 A/B 的具体形态（本轮实测）：换回 `HEAD` 生成物后，用例仍**只在最后两条断言上失败**——
+31 个 `A` 的对照帧照旧解析成功、`AccountId` 长度 31（说明这条用例拒的是长度本身，不是"全拒"），
+32 个 `A` 那帧则被旧代码**照收**（`ParseStepFrame` 返 `true`）。这就是该用例的判别力所在。
+
+单测：本批 MSVC Debug **500**（上一批四档为 MSVC Debug 493 / Release 494、WSL GCC Debug 488 / Release 489，
+本批 +1）。**Release 与 WSL GCC 两档按 2026-09-30 验收口径欠到整体改完时补跑**，本批未跑。
+
+冒烟（改动触及 `TestServer` / `TestClient` 编译到的代码，故照纪律逐条单独跑）：Shm 3 轮（仅出现已知的
+`Sem UnLock Failed.`，见下）、Tcp-Select 与 Tcp-Iocp 各 1 轮通过、`tools/step_e2e.py` 单独跑 40 秒通过
+（服务端解析 89 帧 / 客户端 8 帧、字段全吻合、0 ERROR）。**`step_e2e` 这条同时是判据对称性的实测证据**：
+它走的是 `Protocol::Send` 的真实成帧路径，写侧产出的每一个字符串字段（含定长的 10 字符 `AccountId`）都被
+读侧照收——新判据没有把自家写侧的合法值挡住。
 
 ## 八、已知未覆盖与未决
 
@@ -154,7 +172,12 @@
 - 写侧 `{:.6f}` 精度上限、写侧不拒 `nan` / `inf`（第六节）：**2026-10-01 定为协议口径、不再改**。前者：6 位小数
   就是本协议 double 字段的线格式精度，是规格而非缺陷——改它等于改线格式，须连同 `ProtocolVersionValue` 与对端
   一起升。后者：写侧原样写出 `nan` / `inf` 是第三节裁定的直接结果，且正是包级用例的构造手段（第五节末段）。
-- 字符串静默截断（第六节）：**仍未决**——动它要先定「截断算不算错」。
+- 字符串超容量（第六节第三条）：**2026-10-01 裁定「算错」并已落定**——584 处由静默截断改为拒收。四条理由：
+  (1) 读侧其余各族越界一律拒收，字符串是最后一处静默改值；(2) ①② 的「严格性反噬兼容性」搬不过来——被截断的
+  字符串在 `char[N]` 里**根本表示不出来**，而未知枚举值是**可表示**的，读侧对表示不出来的整数本来就拒（第四节
+  那两条只约束「可表示但未知」）；(3) 对称模型下这条分支不可达，走到即说明两侧模型已经分叉，正是要知道的时候；
+  (4) 代价不对称——一条点名字段的 `Warning` 对一份下游看不见的错数据。**判据钉在容量上**：`N-1` 个字符
+  （写侧能产出的最长值）照收，第 `N` 个起拒，故按旧口径收下的帧行为不变。
 - `ParseDouble` 不认 16 进制浮点（`0x10` 被拒）——`std::from_chars` 的浮点重载本就不接受 `0x` 前缀，
   与 `strtod` 不同；线上格式由自家写侧产生，不含这种形式，故不补。
 - 包头的 `BodyLen` 走 `ParseInteger(value, head->BodyLen, 16)`（base 16），与包体的十进制口径不同，本批未动。

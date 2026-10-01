@@ -294,14 +294,22 @@ bool ReqAccountLoginPackage::FromStepStream(char* buff, int startIndex, int endI
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqAccountLogin->AccountId) ? sizeof(ReqAccountLogin->AccountId) - 1 : value.length();
-							memcpy(ReqAccountLogin->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAccountLogin->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAccountLogin->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqAccountLogin->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Password:
 						{
-							size_t len = value.length() >= sizeof(ReqAccountLogin->Password) ? sizeof(ReqAccountLogin->Password) - 1 : value.length();
-							memcpy(ReqAccountLogin->Password, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAccountLogin->Password))
+							{
+								WriteLog(LogLevel::Warning, "Password Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAccountLogin->Password) - 1);
+								return false;
+							}
+							memcpy(ReqAccountLogin->Password, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -483,20 +491,32 @@ bool RspAccountLoginPackage::FromStepStream(char* buff, int startIndex, int endI
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(RspAccountLogin->AccountId) ? sizeof(RspAccountLogin->AccountId) - 1 : value.length();
-							memcpy(RspAccountLogin->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAccountLogin->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAccountLogin->AccountId) - 1);
+								return false;
+							}
+							memcpy(RspAccountLogin->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::LoginDate:
 						{
-							size_t len = value.length() >= sizeof(RspAccountLogin->LoginDate) ? sizeof(RspAccountLogin->LoginDate) - 1 : value.length();
-							memcpy(RspAccountLogin->LoginDate, value.c_str(), len);
+							if (value.length() >= sizeof(RspAccountLogin->LoginDate))
+							{
+								WriteLog(LogLevel::Warning, "LoginDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAccountLogin->LoginDate) - 1);
+								return false;
+							}
+							memcpy(RspAccountLogin->LoginDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::LoginTime:
 						{
-							size_t len = value.length() >= sizeof(RspAccountLogin->LoginTime) ? sizeof(RspAccountLogin->LoginTime) - 1 : value.length();
-							memcpy(RspAccountLogin->LoginTime, value.c_str(), len);
+							if (value.length() >= sizeof(RspAccountLogin->LoginTime))
+							{
+								WriteLog(LogLevel::Warning, "LoginTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAccountLogin->LoginTime) - 1);
+								return false;
+							}
+							memcpy(RspAccountLogin->LoginTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::SessionId:
@@ -549,8 +569,12 @@ bool RspAccountLoginPackage::FromStepStream(char* buff, int startIndex, int endI
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -728,8 +752,12 @@ bool ReqAccountLogoutPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqAccountLogout->AccountId) ? sizeof(ReqAccountLogout->AccountId) - 1 : value.length();
-							memcpy(ReqAccountLogout->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAccountLogout->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAccountLogout->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqAccountLogout->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -900,8 +928,12 @@ bool RspAccountLogoutPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(RspAccountLogout->AccountId) ? sizeof(RspAccountLogout->AccountId) - 1 : value.length();
-							memcpy(RspAccountLogout->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAccountLogout->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAccountLogout->AccountId) - 1);
+								return false;
+							}
+							memcpy(RspAccountLogout->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -945,8 +977,12 @@ bool RspAccountLogoutPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -1124,8 +1160,12 @@ bool ReqQryAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryAccount->AccountId) ? sizeof(ReqQryAccount->AccountId) - 1 : value.length();
-							memcpy(ReqQryAccount->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryAccount->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryAccount->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqQryAccount->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -1301,8 +1341,12 @@ bool RspQryAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(Account->AccountId) ? sizeof(Account->AccountId) - 1 : value.length();
-							memcpy(Account->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(Account->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Account->AccountId) - 1);
+								return false;
+							}
+							memcpy(Account->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountType:
@@ -1391,8 +1435,12 @@ bool RspQryAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -1570,8 +1618,12 @@ bool ReqQryHolderAccountPackage::FromStepStream(char* buff, int startIndex, int 
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryHolderAccount->AccountId) ? sizeof(ReqQryHolderAccount->AccountId) - 1 : value.length();
-							memcpy(ReqQryHolderAccount->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryHolderAccount->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryHolderAccount->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqQryHolderAccount->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -1748,14 +1800,22 @@ bool RspQryHolderAccountPackage::FromStepStream(char* buff, int startIndex, int 
 							break;
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(HolderAccount->ExchangeId) ? sizeof(HolderAccount->ExchangeId) - 1 : value.length();
-							memcpy(HolderAccount->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(HolderAccount->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(HolderAccount->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(HolderAccount->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::HolderAccountId:
 						{
-							size_t len = value.length() >= sizeof(HolderAccount->HolderAccountId) ? sizeof(HolderAccount->HolderAccountId) - 1 : value.length();
-							memcpy(HolderAccount->HolderAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(HolderAccount->HolderAccountId))
+							{
+								WriteLog(LogLevel::Warning, "HolderAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(HolderAccount->HolderAccountId) - 1);
+								return false;
+							}
+							memcpy(HolderAccount->HolderAccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryFlag:
@@ -1808,8 +1868,12 @@ bool RspQryHolderAccountPackage::FromStepStream(char* buff, int startIndex, int 
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -1987,8 +2051,12 @@ bool ReqQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryCapital->AccountId) ? sizeof(ReqQryCapital->AccountId) - 1 : value.length();
-							memcpy(ReqQryCapital->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryCapital->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryCapital->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqQryCapital->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -2186,14 +2254,22 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(Capital->TradingDay) ? sizeof(Capital->TradingDay) - 1 : value.length();
-							memcpy(Capital->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(Capital->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Capital->TradingDay) - 1);
+								return false;
+							}
+							memcpy(Capital->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(Capital->AccountId) ? sizeof(Capital->AccountId) - 1 : value.length();
-							memcpy(Capital->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(Capital->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Capital->AccountId) - 1);
+								return false;
+							}
+							memcpy(Capital->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountType:
@@ -2435,8 +2511,12 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -2614,8 +2694,12 @@ bool ReqQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryPosition->AccountId) ? sizeof(ReqQryPosition->AccountId) - 1 : value.length();
-							memcpy(ReqQryPosition->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryPosition->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryPosition->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqQryPosition->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -2823,14 +2907,22 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(Position->TradingDay) ? sizeof(Position->TradingDay) - 1 : value.length();
-							memcpy(Position->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(Position->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Position->TradingDay) - 1);
+								return false;
+							}
+							memcpy(Position->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(Position->AccountId) ? sizeof(Position->AccountId) - 1 : value.length();
-							memcpy(Position->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(Position->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Position->AccountId) - 1);
+								return false;
+							}
+							memcpy(Position->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountType:
@@ -2844,14 +2936,22 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(Position->ExchangeId) ? sizeof(Position->ExchangeId) - 1 : value.length();
-							memcpy(Position->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(Position->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Position->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(Position->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(Position->InstrumentId) ? sizeof(Position->InstrumentId) - 1 : value.length();
-							memcpy(Position->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(Position->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Position->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(Position->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -3084,8 +3184,12 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -3263,8 +3367,12 @@ bool ReqQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryOrder->AccountId) ? sizeof(ReqQryOrder->AccountId) - 1 : value.length();
-							memcpy(ReqQryOrder->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryOrder->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryOrder->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqQryOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -3499,26 +3607,42 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(Order->TradingDay) ? sizeof(Order->TradingDay) - 1 : value.length();
-							memcpy(Order->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(Order->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->TradingDay) - 1);
+								return false;
+							}
+							memcpy(Order->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(Order->AccountId) ? sizeof(Order->AccountId) - 1 : value.length();
-							memcpy(Order->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->AccountId) - 1);
+								return false;
+							}
+							memcpy(Order->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(Order->ExchangeId) ? sizeof(Order->ExchangeId) - 1 : value.length();
-							memcpy(Order->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(Order->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(Order->InstrumentId) ? sizeof(Order->InstrumentId) - 1 : value.length();
-							memcpy(Order->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(Order->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -3541,8 +3665,12 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::OrderSysId:
 						{
-							size_t len = value.length() >= sizeof(Order->OrderSysId) ? sizeof(Order->OrderSysId) - 1 : value.length();
-							memcpy(Order->OrderSysId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->OrderSysId))
+							{
+								WriteLog(LogLevel::Warning, "OrderSysId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->OrderSysId) - 1);
+								return false;
+							}
+							memcpy(Order->OrderSysId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Direction:
@@ -3628,32 +3756,52 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::StatusMsg:
 						{
-							size_t len = value.length() >= sizeof(Order->StatusMsg) ? sizeof(Order->StatusMsg) - 1 : value.length();
-							memcpy(Order->StatusMsg, value.c_str(), len);
+							if (value.length() >= sizeof(Order->StatusMsg))
+							{
+								WriteLog(LogLevel::Warning, "StatusMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->StatusMsg) - 1);
+								return false;
+							}
+							memcpy(Order->StatusMsg, value.c_str(), value.length());
 							break;
 						}
 						case Items::OrderDate:
 						{
-							size_t len = value.length() >= sizeof(Order->OrderDate) ? sizeof(Order->OrderDate) - 1 : value.length();
-							memcpy(Order->OrderDate, value.c_str(), len);
+							if (value.length() >= sizeof(Order->OrderDate))
+							{
+								WriteLog(LogLevel::Warning, "OrderDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->OrderDate) - 1);
+								return false;
+							}
+							memcpy(Order->OrderDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::OrderTime:
 						{
-							size_t len = value.length() >= sizeof(Order->OrderTime) ? sizeof(Order->OrderTime) - 1 : value.length();
-							memcpy(Order->OrderTime, value.c_str(), len);
+							if (value.length() >= sizeof(Order->OrderTime))
+							{
+								WriteLog(LogLevel::Warning, "OrderTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->OrderTime) - 1);
+								return false;
+							}
+							memcpy(Order->OrderTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::CancelDate:
 						{
-							size_t len = value.length() >= sizeof(Order->CancelDate) ? sizeof(Order->CancelDate) - 1 : value.length();
-							memcpy(Order->CancelDate, value.c_str(), len);
+							if (value.length() >= sizeof(Order->CancelDate))
+							{
+								WriteLog(LogLevel::Warning, "CancelDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->CancelDate) - 1);
+								return false;
+							}
+							memcpy(Order->CancelDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::CancelTime:
 						{
-							size_t len = value.length() >= sizeof(Order->CancelTime) ? sizeof(Order->CancelTime) - 1 : value.length();
-							memcpy(Order->CancelTime, value.c_str(), len);
+							if (value.length() >= sizeof(Order->CancelTime))
+							{
+								WriteLog(LogLevel::Warning, "CancelTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->CancelTime) - 1);
+								return false;
+							}
+							memcpy(Order->CancelTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::SessionId:
@@ -3769,8 +3917,12 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -3948,8 +4100,12 @@ bool ReqQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryTrade->AccountId) ? sizeof(ReqQryTrade->AccountId) - 1 : value.length();
-							memcpy(ReqQryTrade->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryTrade->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryTrade->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqQryTrade->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -4166,26 +4322,42 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(Trade->TradingDay) ? sizeof(Trade->TradingDay) - 1 : value.length();
-							memcpy(Trade->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->TradingDay) - 1);
+								return false;
+							}
+							memcpy(Trade->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(Trade->AccountId) ? sizeof(Trade->AccountId) - 1 : value.length();
-							memcpy(Trade->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->AccountId) - 1);
+								return false;
+							}
+							memcpy(Trade->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(Trade->ExchangeId) ? sizeof(Trade->ExchangeId) - 1 : value.length();
-							memcpy(Trade->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(Trade->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(Trade->InstrumentId) ? sizeof(Trade->InstrumentId) - 1 : value.length();
-							memcpy(Trade->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(Trade->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -4208,14 +4380,22 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::OrderSysId:
 						{
-							size_t len = value.length() >= sizeof(Trade->OrderSysId) ? sizeof(Trade->OrderSysId) - 1 : value.length();
-							memcpy(Trade->OrderSysId, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->OrderSysId))
+							{
+								WriteLog(LogLevel::Warning, "OrderSysId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->OrderSysId) - 1);
+								return false;
+							}
+							memcpy(Trade->OrderSysId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeId:
 						{
-							size_t len = value.length() >= sizeof(Trade->TradeId) ? sizeof(Trade->TradeId) - 1 : value.length();
-							memcpy(Trade->TradeId, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->TradeId))
+							{
+								WriteLog(LogLevel::Warning, "TradeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->TradeId) - 1);
+								return false;
+							}
+							memcpy(Trade->TradeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Direction:
@@ -4301,14 +4481,22 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::TradeDate:
 						{
-							size_t len = value.length() >= sizeof(Trade->TradeDate) ? sizeof(Trade->TradeDate) - 1 : value.length();
-							memcpy(Trade->TradeDate, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->TradeDate))
+							{
+								WriteLog(LogLevel::Warning, "TradeDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->TradeDate) - 1);
+								return false;
+							}
+							memcpy(Trade->TradeDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeTime:
 						{
-							size_t len = value.length() >= sizeof(Trade->TradeTime) ? sizeof(Trade->TradeTime) - 1 : value.length();
-							memcpy(Trade->TradeTime, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->TradeTime))
+							{
+								WriteLog(LogLevel::Warning, "TradeTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->TradeTime) - 1);
+								return false;
+							}
+							memcpy(Trade->TradeTime, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -4352,8 +4540,12 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -4536,14 +4728,22 @@ bool ReqQryInstrumentPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryInstrument->ExchangeId) ? sizeof(ReqQryInstrument->ExchangeId) - 1 : value.length();
-							memcpy(ReqQryInstrument->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryInstrument->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryInstrument->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqQryInstrument->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryInstrument->InstrumentId) ? sizeof(ReqQryInstrument->InstrumentId) - 1 : value.length();
-							memcpy(ReqQryInstrument->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryInstrument->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryInstrument->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(ReqQryInstrument->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -4731,26 +4931,42 @@ bool RspQryInstrumentPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(Instrument->ExchangeId) ? sizeof(Instrument->ExchangeId) - 1 : value.length();
-							memcpy(Instrument->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(Instrument->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Instrument->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(Instrument->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(Instrument->InstrumentId) ? sizeof(Instrument->InstrumentId) - 1 : value.length();
-							memcpy(Instrument->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(Instrument->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Instrument->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(Instrument->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeInstId:
 						{
-							size_t len = value.length() >= sizeof(Instrument->ExchangeInstId) ? sizeof(Instrument->ExchangeInstId) - 1 : value.length();
-							memcpy(Instrument->ExchangeInstId, value.c_str(), len);
+							if (value.length() >= sizeof(Instrument->ExchangeInstId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeInstId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Instrument->ExchangeInstId) - 1);
+								return false;
+							}
+							memcpy(Instrument->ExchangeInstId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentName:
 						{
-							size_t len = value.length() >= sizeof(Instrument->InstrumentName) ? sizeof(Instrument->InstrumentName) - 1 : value.length();
-							memcpy(Instrument->InstrumentName, value.c_str(), len);
+							if (value.length() >= sizeof(Instrument->InstrumentName))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Instrument->InstrumentName) - 1);
+								return false;
+							}
+							memcpy(Instrument->InstrumentName, value.c_str(), value.length());
 							break;
 						}
 						case Items::VolumeMultiple:
@@ -4812,8 +5028,12 @@ bool RspQryInstrumentPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -4996,14 +5216,22 @@ bool ReqQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 							break;
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryOptionInstrument->ExchangeId) ? sizeof(ReqQryOptionInstrument->ExchangeId) - 1 : value.length();
-							memcpy(ReqQryOptionInstrument->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryOptionInstrument->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryOptionInstrument->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqQryOptionInstrument->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryOptionInstrument->InstrumentId) ? sizeof(ReqQryOptionInstrument->InstrumentId) - 1 : value.length();
-							memcpy(ReqQryOptionInstrument->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryOptionInstrument->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryOptionInstrument->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(ReqQryOptionInstrument->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -5206,26 +5434,42 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 							break;
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(OptionInstrument->ExchangeId) ? sizeof(OptionInstrument->ExchangeId) - 1 : value.length();
-							memcpy(OptionInstrument->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(OptionInstrument->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OptionInstrument->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(OptionInstrument->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(OptionInstrument->InstrumentId) ? sizeof(OptionInstrument->InstrumentId) - 1 : value.length();
-							memcpy(OptionInstrument->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(OptionInstrument->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OptionInstrument->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(OptionInstrument->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeInstId:
 						{
-							size_t len = value.length() >= sizeof(OptionInstrument->ExchangeInstId) ? sizeof(OptionInstrument->ExchangeInstId) - 1 : value.length();
-							memcpy(OptionInstrument->ExchangeInstId, value.c_str(), len);
+							if (value.length() >= sizeof(OptionInstrument->ExchangeInstId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeInstId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OptionInstrument->ExchangeInstId) - 1);
+								return false;
+							}
+							memcpy(OptionInstrument->ExchangeInstId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentName:
 						{
-							size_t len = value.length() >= sizeof(OptionInstrument->InstrumentName) ? sizeof(OptionInstrument->InstrumentName) - 1 : value.length();
-							memcpy(OptionInstrument->InstrumentName, value.c_str(), len);
+							if (value.length() >= sizeof(OptionInstrument->InstrumentName))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OptionInstrument->InstrumentName) - 1);
+								return false;
+							}
+							memcpy(OptionInstrument->InstrumentName, value.c_str(), value.length());
 							break;
 						}
 						case Items::VolumeMultiple:
@@ -5248,8 +5492,12 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 						}
 						case Items::UnderlyingInstrumentId:
 						{
-							size_t len = value.length() >= sizeof(OptionInstrument->UnderlyingInstrumentId) ? sizeof(OptionInstrument->UnderlyingInstrumentId) - 1 : value.length();
-							memcpy(OptionInstrument->UnderlyingInstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(OptionInstrument->UnderlyingInstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "UnderlyingInstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OptionInstrument->UnderlyingInstrumentId) - 1);
+								return false;
+							}
+							memcpy(OptionInstrument->UnderlyingInstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExecutePrice:
@@ -5299,8 +5547,12 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 						}
 						case Items::ExpiringDate:
 						{
-							size_t len = value.length() >= sizeof(OptionInstrument->ExpiringDate) ? sizeof(OptionInstrument->ExpiringDate) - 1 : value.length();
-							memcpy(OptionInstrument->ExpiringDate, value.c_str(), len);
+							if (value.length() >= sizeof(OptionInstrument->ExpiringDate))
+							{
+								WriteLog(LogLevel::Warning, "ExpiringDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OptionInstrument->ExpiringDate) - 1);
+								return false;
+							}
+							memcpy(OptionInstrument->ExpiringDate, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -5344,8 +5596,12 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -5529,14 +5785,22 @@ bool ReqQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryCommissionRate->AccountId) ? sizeof(ReqQryCommissionRate->AccountId) - 1 : value.length();
-							memcpy(ReqQryCommissionRate->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryCommissionRate->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryCommissionRate->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqQryCommissionRate->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryCommissionRate->ExchangeId) ? sizeof(ReqQryCommissionRate->ExchangeId) - 1 : value.length();
-							memcpy(ReqQryCommissionRate->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryCommissionRate->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryCommissionRate->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqQryCommissionRate->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -5728,14 +5992,22 @@ bool RspQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(CommissionRate->AccountId) ? sizeof(CommissionRate->AccountId) - 1 : value.length();
-							memcpy(CommissionRate->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(CommissionRate->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(CommissionRate->AccountId) - 1);
+								return false;
+							}
+							memcpy(CommissionRate->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(CommissionRate->ExchangeId) ? sizeof(CommissionRate->ExchangeId) - 1 : value.length();
-							memcpy(CommissionRate->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(CommissionRate->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(CommissionRate->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(CommissionRate->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -5842,8 +6114,12 @@ bool RspQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -6021,8 +6297,12 @@ bool ReqQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryMoneyTransfer->AccountId) ? sizeof(ReqQryMoneyTransfer->AccountId) - 1 : value.length();
-							memcpy(ReqQryMoneyTransfer->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryMoneyTransfer->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryMoneyTransfer->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqQryMoneyTransfer->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -6222,14 +6502,22 @@ bool RspQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(MoneyTransfer->TradingDay) ? sizeof(MoneyTransfer->TradingDay) - 1 : value.length();
-							memcpy(MoneyTransfer->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(MoneyTransfer->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(MoneyTransfer->TradingDay) - 1);
+								return false;
+							}
+							memcpy(MoneyTransfer->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(MoneyTransfer->AccountId) ? sizeof(MoneyTransfer->AccountId) - 1 : value.length();
-							memcpy(MoneyTransfer->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(MoneyTransfer->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(MoneyTransfer->AccountId) - 1);
+								return false;
+							}
+							memcpy(MoneyTransfer->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::MoneyTransferId:
@@ -6270,26 +6558,42 @@ bool RspQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 						}
 						case Items::InfoMessage:
 						{
-							size_t len = value.length() >= sizeof(MoneyTransfer->InfoMessage) ? sizeof(MoneyTransfer->InfoMessage) - 1 : value.length();
-							memcpy(MoneyTransfer->InfoMessage, value.c_str(), len);
+							if (value.length() >= sizeof(MoneyTransfer->InfoMessage))
+							{
+								WriteLog(LogLevel::Warning, "InfoMessage Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(MoneyTransfer->InfoMessage) - 1);
+								return false;
+							}
+							memcpy(MoneyTransfer->InfoMessage, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(MoneyTransfer->UserId) ? sizeof(MoneyTransfer->UserId) - 1 : value.length();
-							memcpy(MoneyTransfer->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(MoneyTransfer->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(MoneyTransfer->UserId) - 1);
+								return false;
+							}
+							memcpy(MoneyTransfer->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TransferDate:
 						{
-							size_t len = value.length() >= sizeof(MoneyTransfer->TransferDate) ? sizeof(MoneyTransfer->TransferDate) - 1 : value.length();
-							memcpy(MoneyTransfer->TransferDate, value.c_str(), len);
+							if (value.length() >= sizeof(MoneyTransfer->TransferDate))
+							{
+								WriteLog(LogLevel::Warning, "TransferDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(MoneyTransfer->TransferDate) - 1);
+								return false;
+							}
+							memcpy(MoneyTransfer->TransferDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::TransferTime:
 						{
-							size_t len = value.length() >= sizeof(MoneyTransfer->TransferTime) ? sizeof(MoneyTransfer->TransferTime) - 1 : value.length();
-							memcpy(MoneyTransfer->TransferTime, value.c_str(), len);
+							if (value.length() >= sizeof(MoneyTransfer->TransferTime))
+							{
+								WriteLog(LogLevel::Warning, "TransferTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(MoneyTransfer->TransferTime) - 1);
+								return false;
+							}
+							memcpy(MoneyTransfer->TransferTime, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -6333,8 +6637,12 @@ bool RspQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -6528,20 +6836,32 @@ bool ReqInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqInsertOrder->AccountId) ? sizeof(ReqInsertOrder->AccountId) - 1 : value.length();
-							memcpy(ReqInsertOrder->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqInsertOrder->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqInsertOrder->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqInsertOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqInsertOrder->ExchangeId) ? sizeof(ReqInsertOrder->ExchangeId) - 1 : value.length();
-							memcpy(ReqInsertOrder->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqInsertOrder->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqInsertOrder->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqInsertOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(ReqInsertOrder->InstrumentId) ? sizeof(ReqInsertOrder->InstrumentId) - 1 : value.length();
-							memcpy(ReqInsertOrder->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqInsertOrder->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqInsertOrder->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(ReqInsertOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Direction:
@@ -6830,26 +7150,42 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(Order->TradingDay) ? sizeof(Order->TradingDay) - 1 : value.length();
-							memcpy(Order->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(Order->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->TradingDay) - 1);
+								return false;
+							}
+							memcpy(Order->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(Order->AccountId) ? sizeof(Order->AccountId) - 1 : value.length();
-							memcpy(Order->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->AccountId) - 1);
+								return false;
+							}
+							memcpy(Order->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(Order->ExchangeId) ? sizeof(Order->ExchangeId) - 1 : value.length();
-							memcpy(Order->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(Order->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(Order->InstrumentId) ? sizeof(Order->InstrumentId) - 1 : value.length();
-							memcpy(Order->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(Order->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -6872,8 +7208,12 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::OrderSysId:
 						{
-							size_t len = value.length() >= sizeof(Order->OrderSysId) ? sizeof(Order->OrderSysId) - 1 : value.length();
-							memcpy(Order->OrderSysId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->OrderSysId))
+							{
+								WriteLog(LogLevel::Warning, "OrderSysId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->OrderSysId) - 1);
+								return false;
+							}
+							memcpy(Order->OrderSysId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Direction:
@@ -6959,32 +7299,52 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::StatusMsg:
 						{
-							size_t len = value.length() >= sizeof(Order->StatusMsg) ? sizeof(Order->StatusMsg) - 1 : value.length();
-							memcpy(Order->StatusMsg, value.c_str(), len);
+							if (value.length() >= sizeof(Order->StatusMsg))
+							{
+								WriteLog(LogLevel::Warning, "StatusMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->StatusMsg) - 1);
+								return false;
+							}
+							memcpy(Order->StatusMsg, value.c_str(), value.length());
 							break;
 						}
 						case Items::OrderDate:
 						{
-							size_t len = value.length() >= sizeof(Order->OrderDate) ? sizeof(Order->OrderDate) - 1 : value.length();
-							memcpy(Order->OrderDate, value.c_str(), len);
+							if (value.length() >= sizeof(Order->OrderDate))
+							{
+								WriteLog(LogLevel::Warning, "OrderDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->OrderDate) - 1);
+								return false;
+							}
+							memcpy(Order->OrderDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::OrderTime:
 						{
-							size_t len = value.length() >= sizeof(Order->OrderTime) ? sizeof(Order->OrderTime) - 1 : value.length();
-							memcpy(Order->OrderTime, value.c_str(), len);
+							if (value.length() >= sizeof(Order->OrderTime))
+							{
+								WriteLog(LogLevel::Warning, "OrderTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->OrderTime) - 1);
+								return false;
+							}
+							memcpy(Order->OrderTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::CancelDate:
 						{
-							size_t len = value.length() >= sizeof(Order->CancelDate) ? sizeof(Order->CancelDate) - 1 : value.length();
-							memcpy(Order->CancelDate, value.c_str(), len);
+							if (value.length() >= sizeof(Order->CancelDate))
+							{
+								WriteLog(LogLevel::Warning, "CancelDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->CancelDate) - 1);
+								return false;
+							}
+							memcpy(Order->CancelDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::CancelTime:
 						{
-							size_t len = value.length() >= sizeof(Order->CancelTime) ? sizeof(Order->CancelTime) - 1 : value.length();
-							memcpy(Order->CancelTime, value.c_str(), len);
+							if (value.length() >= sizeof(Order->CancelTime))
+							{
+								WriteLog(LogLevel::Warning, "CancelTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->CancelTime) - 1);
+								return false;
+							}
+							memcpy(Order->CancelTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::SessionId:
@@ -7100,8 +7460,12 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -7297,20 +7661,32 @@ bool ReqCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqCancelOrder->AccountId) ? sizeof(ReqCancelOrder->AccountId) - 1 : value.length();
-							memcpy(ReqCancelOrder->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqCancelOrder->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqCancelOrder->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqCancelOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqCancelOrder->ExchangeId) ? sizeof(ReqCancelOrder->ExchangeId) - 1 : value.length();
-							memcpy(ReqCancelOrder->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqCancelOrder->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqCancelOrder->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqCancelOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(ReqCancelOrder->InstrumentId) ? sizeof(ReqCancelOrder->InstrumentId) - 1 : value.length();
-							memcpy(ReqCancelOrder->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqCancelOrder->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqCancelOrder->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(ReqCancelOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ClientCancelOrderId:
@@ -7333,8 +7709,12 @@ bool ReqCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::OrderSysId:
 						{
-							size_t len = value.length() >= sizeof(ReqCancelOrder->OrderSysId) ? sizeof(ReqCancelOrder->OrderSysId) - 1 : value.length();
-							memcpy(ReqCancelOrder->OrderSysId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqCancelOrder->OrderSysId))
+							{
+								WriteLog(LogLevel::Warning, "OrderSysId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqCancelOrder->OrderSysId) - 1);
+								return false;
+							}
+							memcpy(ReqCancelOrder->OrderSysId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ClientOrderId:
@@ -7532,20 +7912,32 @@ bool RspCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(CancelOrder->AccountId) ? sizeof(CancelOrder->AccountId) - 1 : value.length();
-							memcpy(CancelOrder->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(CancelOrder->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(CancelOrder->AccountId) - 1);
+								return false;
+							}
+							memcpy(CancelOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(CancelOrder->ExchangeId) ? sizeof(CancelOrder->ExchangeId) - 1 : value.length();
-							memcpy(CancelOrder->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(CancelOrder->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(CancelOrder->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(CancelOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(CancelOrder->InstrumentId) ? sizeof(CancelOrder->InstrumentId) - 1 : value.length();
-							memcpy(CancelOrder->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(CancelOrder->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(CancelOrder->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(CancelOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ClientCancelOrderId:
@@ -7568,8 +7960,12 @@ bool RspCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::OrderSysId:
 						{
-							size_t len = value.length() >= sizeof(CancelOrder->OrderSysId) ? sizeof(CancelOrder->OrderSysId) - 1 : value.length();
-							memcpy(CancelOrder->OrderSysId, value.c_str(), len);
+							if (value.length() >= sizeof(CancelOrder->OrderSysId))
+							{
+								WriteLog(LogLevel::Warning, "OrderSysId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(CancelOrder->OrderSysId) - 1);
+								return false;
+							}
+							memcpy(CancelOrder->OrderSysId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ClientOrderId:
@@ -7622,8 +8018,12 @@ bool RspCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -7865,26 +8265,42 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(Order->TradingDay) ? sizeof(Order->TradingDay) - 1 : value.length();
-							memcpy(Order->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(Order->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->TradingDay) - 1);
+								return false;
+							}
+							memcpy(Order->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(Order->AccountId) ? sizeof(Order->AccountId) - 1 : value.length();
-							memcpy(Order->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->AccountId) - 1);
+								return false;
+							}
+							memcpy(Order->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(Order->ExchangeId) ? sizeof(Order->ExchangeId) - 1 : value.length();
-							memcpy(Order->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(Order->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(Order->InstrumentId) ? sizeof(Order->InstrumentId) - 1 : value.length();
-							memcpy(Order->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(Order->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -7907,8 +8323,12 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 						}
 						case Items::OrderSysId:
 						{
-							size_t len = value.length() >= sizeof(Order->OrderSysId) ? sizeof(Order->OrderSysId) - 1 : value.length();
-							memcpy(Order->OrderSysId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->OrderSysId))
+							{
+								WriteLog(LogLevel::Warning, "OrderSysId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->OrderSysId) - 1);
+								return false;
+							}
+							memcpy(Order->OrderSysId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Direction:
@@ -7994,32 +8414,52 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 						}
 						case Items::StatusMsg:
 						{
-							size_t len = value.length() >= sizeof(Order->StatusMsg) ? sizeof(Order->StatusMsg) - 1 : value.length();
-							memcpy(Order->StatusMsg, value.c_str(), len);
+							if (value.length() >= sizeof(Order->StatusMsg))
+							{
+								WriteLog(LogLevel::Warning, "StatusMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->StatusMsg) - 1);
+								return false;
+							}
+							memcpy(Order->StatusMsg, value.c_str(), value.length());
 							break;
 						}
 						case Items::OrderDate:
 						{
-							size_t len = value.length() >= sizeof(Order->OrderDate) ? sizeof(Order->OrderDate) - 1 : value.length();
-							memcpy(Order->OrderDate, value.c_str(), len);
+							if (value.length() >= sizeof(Order->OrderDate))
+							{
+								WriteLog(LogLevel::Warning, "OrderDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->OrderDate) - 1);
+								return false;
+							}
+							memcpy(Order->OrderDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::OrderTime:
 						{
-							size_t len = value.length() >= sizeof(Order->OrderTime) ? sizeof(Order->OrderTime) - 1 : value.length();
-							memcpy(Order->OrderTime, value.c_str(), len);
+							if (value.length() >= sizeof(Order->OrderTime))
+							{
+								WriteLog(LogLevel::Warning, "OrderTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->OrderTime) - 1);
+								return false;
+							}
+							memcpy(Order->OrderTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::CancelDate:
 						{
-							size_t len = value.length() >= sizeof(Order->CancelDate) ? sizeof(Order->CancelDate) - 1 : value.length();
-							memcpy(Order->CancelDate, value.c_str(), len);
+							if (value.length() >= sizeof(Order->CancelDate))
+							{
+								WriteLog(LogLevel::Warning, "CancelDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->CancelDate) - 1);
+								return false;
+							}
+							memcpy(Order->CancelDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::CancelTime:
 						{
-							size_t len = value.length() >= sizeof(Order->CancelTime) ? sizeof(Order->CancelTime) - 1 : value.length();
-							memcpy(Order->CancelTime, value.c_str(), len);
+							if (value.length() >= sizeof(Order->CancelTime))
+							{
+								WriteLog(LogLevel::Warning, "CancelTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->CancelTime) - 1);
+								return false;
+							}
+							memcpy(Order->CancelTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::SessionId:
@@ -8292,26 +8732,42 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(Trade->TradingDay) ? sizeof(Trade->TradingDay) - 1 : value.length();
-							memcpy(Trade->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->TradingDay) - 1);
+								return false;
+							}
+							memcpy(Trade->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(Trade->AccountId) ? sizeof(Trade->AccountId) - 1 : value.length();
-							memcpy(Trade->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->AccountId) - 1);
+								return false;
+							}
+							memcpy(Trade->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(Trade->ExchangeId) ? sizeof(Trade->ExchangeId) - 1 : value.length();
-							memcpy(Trade->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(Trade->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(Trade->InstrumentId) ? sizeof(Trade->InstrumentId) - 1 : value.length();
-							memcpy(Trade->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(Trade->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -8334,14 +8790,22 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 						}
 						case Items::OrderSysId:
 						{
-							size_t len = value.length() >= sizeof(Trade->OrderSysId) ? sizeof(Trade->OrderSysId) - 1 : value.length();
-							memcpy(Trade->OrderSysId, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->OrderSysId))
+							{
+								WriteLog(LogLevel::Warning, "OrderSysId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->OrderSysId) - 1);
+								return false;
+							}
+							memcpy(Trade->OrderSysId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeId:
 						{
-							size_t len = value.length() >= sizeof(Trade->TradeId) ? sizeof(Trade->TradeId) - 1 : value.length();
-							memcpy(Trade->TradeId, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->TradeId))
+							{
+								WriteLog(LogLevel::Warning, "TradeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->TradeId) - 1);
+								return false;
+							}
+							memcpy(Trade->TradeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Direction:
@@ -8427,14 +8891,22 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 						}
 						case Items::TradeDate:
 						{
-							size_t len = value.length() >= sizeof(Trade->TradeDate) ? sizeof(Trade->TradeDate) - 1 : value.length();
-							memcpy(Trade->TradeDate, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->TradeDate))
+							{
+								WriteLog(LogLevel::Warning, "TradeDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->TradeDate) - 1);
+								return false;
+							}
+							memcpy(Trade->TradeDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeTime:
 						{
-							size_t len = value.length() >= sizeof(Trade->TradeTime) ? sizeof(Trade->TradeTime) - 1 : value.length();
-							memcpy(Trade->TradeTime, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->TradeTime))
+							{
+								WriteLog(LogLevel::Warning, "TradeTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->TradeTime) - 1);
+								return false;
+							}
+							memcpy(Trade->TradeTime, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -8618,14 +9090,22 @@ bool RtnMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(MoneyTransfer->TradingDay) ? sizeof(MoneyTransfer->TradingDay) - 1 : value.length();
-							memcpy(MoneyTransfer->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(MoneyTransfer->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(MoneyTransfer->TradingDay) - 1);
+								return false;
+							}
+							memcpy(MoneyTransfer->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(MoneyTransfer->AccountId) ? sizeof(MoneyTransfer->AccountId) - 1 : value.length();
-							memcpy(MoneyTransfer->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(MoneyTransfer->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(MoneyTransfer->AccountId) - 1);
+								return false;
+							}
+							memcpy(MoneyTransfer->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::MoneyTransferId:
@@ -8666,26 +9146,42 @@ bool RtnMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::InfoMessage:
 						{
-							size_t len = value.length() >= sizeof(MoneyTransfer->InfoMessage) ? sizeof(MoneyTransfer->InfoMessage) - 1 : value.length();
-							memcpy(MoneyTransfer->InfoMessage, value.c_str(), len);
+							if (value.length() >= sizeof(MoneyTransfer->InfoMessage))
+							{
+								WriteLog(LogLevel::Warning, "InfoMessage Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(MoneyTransfer->InfoMessage) - 1);
+								return false;
+							}
+							memcpy(MoneyTransfer->InfoMessage, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(MoneyTransfer->UserId) ? sizeof(MoneyTransfer->UserId) - 1 : value.length();
-							memcpy(MoneyTransfer->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(MoneyTransfer->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(MoneyTransfer->UserId) - 1);
+								return false;
+							}
+							memcpy(MoneyTransfer->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TransferDate:
 						{
-							size_t len = value.length() >= sizeof(MoneyTransfer->TransferDate) ? sizeof(MoneyTransfer->TransferDate) - 1 : value.length();
-							memcpy(MoneyTransfer->TransferDate, value.c_str(), len);
+							if (value.length() >= sizeof(MoneyTransfer->TransferDate))
+							{
+								WriteLog(LogLevel::Warning, "TransferDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(MoneyTransfer->TransferDate) - 1);
+								return false;
+							}
+							memcpy(MoneyTransfer->TransferDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::TransferTime:
 						{
-							size_t len = value.length() >= sizeof(MoneyTransfer->TransferTime) ? sizeof(MoneyTransfer->TransferTime) - 1 : value.length();
-							memcpy(MoneyTransfer->TransferTime, value.c_str(), len);
+							if (value.length() >= sizeof(MoneyTransfer->TransferTime))
+							{
+								WriteLog(LogLevel::Warning, "TransferTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(MoneyTransfer->TransferTime) - 1);
+								return false;
+							}
+							memcpy(MoneyTransfer->TransferTime, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -8846,8 +9342,12 @@ bool RtnAccountLogoutPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(AccountLogout->AccountId) ? sizeof(AccountLogout->AccountId) - 1 : value.length();
-							memcpy(AccountLogout->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(AccountLogout->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(AccountLogout->AccountId) - 1);
+								return false;
+							}
+							memcpy(AccountLogout->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ErrorId:
@@ -8861,8 +9361,12 @@ bool RtnAccountLogoutPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(AccountLogout->ErrorMsg) ? sizeof(AccountLogout->ErrorMsg) - 1 : value.length();
-							memcpy(AccountLogout->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(AccountLogout->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(AccountLogout->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(AccountLogout->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -9022,14 +9526,22 @@ bool ReqRiskUserLoginPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRiskUserLogin->UserId) ? sizeof(ReqRiskUserLogin->UserId) - 1 : value.length();
-							memcpy(ReqRiskUserLogin->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRiskUserLogin->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRiskUserLogin->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqRiskUserLogin->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Password:
 						{
-							size_t len = value.length() >= sizeof(ReqRiskUserLogin->Password) ? sizeof(ReqRiskUserLogin->Password) - 1 : value.length();
-							memcpy(ReqRiskUserLogin->Password, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRiskUserLogin->Password))
+							{
+								WriteLog(LogLevel::Warning, "Password Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRiskUserLogin->Password) - 1);
+								return false;
+							}
+							memcpy(ReqRiskUserLogin->Password, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -9212,8 +9724,12 @@ bool RspRiskUserLoginPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(RspRiskUserLogin->UserId) ? sizeof(RspRiskUserLogin->UserId) - 1 : value.length();
-							memcpy(RspRiskUserLogin->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRiskUserLogin->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRiskUserLogin->UserId) - 1);
+								return false;
+							}
+							memcpy(RspRiskUserLogin->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -9227,14 +9743,22 @@ bool RspRiskUserLoginPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::LoginDate:
 						{
-							size_t len = value.length() >= sizeof(RspRiskUserLogin->LoginDate) ? sizeof(RspRiskUserLogin->LoginDate) - 1 : value.length();
-							memcpy(RspRiskUserLogin->LoginDate, value.c_str(), len);
+							if (value.length() >= sizeof(RspRiskUserLogin->LoginDate))
+							{
+								WriteLog(LogLevel::Warning, "LoginDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRiskUserLogin->LoginDate) - 1);
+								return false;
+							}
+							memcpy(RspRiskUserLogin->LoginDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::LoginTime:
 						{
-							size_t len = value.length() >= sizeof(RspRiskUserLogin->LoginTime) ? sizeof(RspRiskUserLogin->LoginTime) - 1 : value.length();
-							memcpy(RspRiskUserLogin->LoginTime, value.c_str(), len);
+							if (value.length() >= sizeof(RspRiskUserLogin->LoginTime))
+							{
+								WriteLog(LogLevel::Warning, "LoginTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRiskUserLogin->LoginTime) - 1);
+								return false;
+							}
+							memcpy(RspRiskUserLogin->LoginTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::SessionId:
@@ -9287,8 +9811,12 @@ bool RspRiskUserLoginPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -9466,8 +9994,12 @@ bool ReqRiskUserLogoutPackage::FromStepStream(char* buff, int startIndex, int en
 							break;
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRiskUserLogout->UserId) ? sizeof(ReqRiskUserLogout->UserId) - 1 : value.length();
-							memcpy(ReqRiskUserLogout->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRiskUserLogout->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRiskUserLogout->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqRiskUserLogout->UserId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -9638,8 +10170,12 @@ bool RspRiskUserLogoutPackage::FromStepStream(char* buff, int startIndex, int en
 							break;
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(RspRiskUserLogout->UserId) ? sizeof(RspRiskUserLogout->UserId) - 1 : value.length();
-							memcpy(RspRiskUserLogout->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRiskUserLogout->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRiskUserLogout->UserId) - 1);
+								return false;
+							}
+							memcpy(RspRiskUserLogout->UserId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -9683,8 +10219,12 @@ bool RspRiskUserLogoutPackage::FromStepStream(char* buff, int startIndex, int en
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -9868,8 +10408,12 @@ bool RtnRiskUserLogoutPackage::FromStepStream(char* buff, int startIndex, int en
 							break;
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(RiskUserLogout->UserId) ? sizeof(RiskUserLogout->UserId) - 1 : value.length();
-							memcpy(RiskUserLogout->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(RiskUserLogout->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RiskUserLogout->UserId) - 1);
+								return false;
+							}
+							memcpy(RiskUserLogout->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ErrorId:
@@ -9883,8 +10427,12 @@ bool RtnRiskUserLogoutPackage::FromStepStream(char* buff, int startIndex, int en
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RiskUserLogout->ErrorMsg) ? sizeof(RiskUserLogout->ErrorMsg) - 1 : value.length();
-							memcpy(RiskUserLogout->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RiskUserLogout->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RiskUserLogout->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RiskUserLogout->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -10044,8 +10592,12 @@ bool RtnAccountPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(Account->AccountId) ? sizeof(Account->AccountId) - 1 : value.length();
-							memcpy(Account->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(Account->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Account->AccountId) - 1);
+								return false;
+							}
+							memcpy(Account->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountType:
@@ -10245,8 +10797,12 @@ bool RtnAccountDeletePackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(AccountDelete->AccountId) ? sizeof(AccountDelete->AccountId) - 1 : value.length();
-							memcpy(AccountDelete->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(AccountDelete->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(AccountDelete->AccountId) - 1);
+								return false;
+							}
+							memcpy(AccountDelete->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -10438,14 +10994,22 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(Position->TradingDay) ? sizeof(Position->TradingDay) - 1 : value.length();
-							memcpy(Position->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(Position->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Position->TradingDay) - 1);
+								return false;
+							}
+							memcpy(Position->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(Position->AccountId) ? sizeof(Position->AccountId) - 1 : value.length();
-							memcpy(Position->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(Position->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Position->AccountId) - 1);
+								return false;
+							}
+							memcpy(Position->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountType:
@@ -10459,14 +11023,22 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(Position->ExchangeId) ? sizeof(Position->ExchangeId) - 1 : value.length();
-							memcpy(Position->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(Position->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Position->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(Position->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(Position->InstrumentId) ? sizeof(Position->InstrumentId) - 1 : value.length();
-							memcpy(Position->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(Position->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Position->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(Position->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -10812,8 +11384,12 @@ bool RtnAccountRiskPackage::FromStepStream(char* buff, int startIndex, int endIn
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(AccountRisk->AccountId) ? sizeof(AccountRisk->AccountId) - 1 : value.length();
-							memcpy(AccountRisk->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(AccountRisk->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(AccountRisk->AccountId) - 1);
+								return false;
+							}
+							memcpy(AccountRisk->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -10987,8 +11563,12 @@ bool RtnAccountRiskDeletePackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(AccountRiskDelete->AccountId) ? sizeof(AccountRiskDelete->AccountId) - 1 : value.length();
-							memcpy(AccountRiskDelete->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(AccountRiskDelete->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(AccountRiskDelete->AccountId) - 1);
+								return false;
+							}
+							memcpy(AccountRiskDelete->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -11170,20 +11750,32 @@ bool RtnAccountRiskNotifyPackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::NotifyDate:
 						{
-							size_t len = value.length() >= sizeof(AccountRiskNotify->NotifyDate) ? sizeof(AccountRiskNotify->NotifyDate) - 1 : value.length();
-							memcpy(AccountRiskNotify->NotifyDate, value.c_str(), len);
+							if (value.length() >= sizeof(AccountRiskNotify->NotifyDate))
+							{
+								WriteLog(LogLevel::Warning, "NotifyDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(AccountRiskNotify->NotifyDate) - 1);
+								return false;
+							}
+							memcpy(AccountRiskNotify->NotifyDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::NotifyTime:
 						{
-							size_t len = value.length() >= sizeof(AccountRiskNotify->NotifyTime) ? sizeof(AccountRiskNotify->NotifyTime) - 1 : value.length();
-							memcpy(AccountRiskNotify->NotifyTime, value.c_str(), len);
+							if (value.length() >= sizeof(AccountRiskNotify->NotifyTime))
+							{
+								WriteLog(LogLevel::Warning, "NotifyTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(AccountRiskNotify->NotifyTime) - 1);
+								return false;
+							}
+							memcpy(AccountRiskNotify->NotifyTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(AccountRiskNotify->AccountId) ? sizeof(AccountRiskNotify->AccountId) - 1 : value.length();
-							memcpy(AccountRiskNotify->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(AccountRiskNotify->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(AccountRiskNotify->AccountId) - 1);
+								return false;
+							}
+							memcpy(AccountRiskNotify->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -11215,8 +11807,12 @@ bool RtnAccountRiskNotifyPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::RiskMessage:
 						{
-							size_t len = value.length() >= sizeof(AccountRiskNotify->RiskMessage) ? sizeof(AccountRiskNotify->RiskMessage) - 1 : value.length();
-							memcpy(AccountRiskNotify->RiskMessage, value.c_str(), len);
+							if (value.length() >= sizeof(AccountRiskNotify->RiskMessage))
+							{
+								WriteLog(LogLevel::Warning, "RiskMessage Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(AccountRiskNotify->RiskMessage) - 1);
+								return false;
+							}
+							memcpy(AccountRiskNotify->RiskMessage, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -11371,8 +11967,12 @@ bool ReqQryRiskGroupAccountPackage::FromStepStream(char* buff, int startIndex, i
 							break;
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryRiskGroupAccount->UserId) ? sizeof(ReqQryRiskGroupAccount->UserId) - 1 : value.length();
-							memcpy(ReqQryRiskGroupAccount->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryRiskGroupAccount->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryRiskGroupAccount->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqQryRiskGroupAccount->UserId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -11548,8 +12148,12 @@ bool RspQryRiskGroupAccountPackage::FromStepStream(char* buff, int startIndex, i
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(Account->AccountId) ? sizeof(Account->AccountId) - 1 : value.length();
-							memcpy(Account->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(Account->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Account->AccountId) - 1);
+								return false;
+							}
+							memcpy(Account->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountType:
@@ -11638,8 +12242,12 @@ bool RspQryRiskGroupAccountPackage::FromStepStream(char* buff, int startIndex, i
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -11822,14 +12430,22 @@ bool ReqQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							break;
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryRiskGroupCapital->UserId) ? sizeof(ReqQryRiskGroupCapital->UserId) - 1 : value.length();
-							memcpy(ReqQryRiskGroupCapital->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryRiskGroupCapital->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryRiskGroupCapital->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqQryRiskGroupCapital->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryRiskGroupCapital->AccountId) ? sizeof(ReqQryRiskGroupCapital->AccountId) - 1 : value.length();
-							memcpy(ReqQryRiskGroupCapital->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryRiskGroupCapital->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryRiskGroupCapital->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqQryRiskGroupCapital->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -12027,14 +12643,22 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(Capital->TradingDay) ? sizeof(Capital->TradingDay) - 1 : value.length();
-							memcpy(Capital->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(Capital->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Capital->TradingDay) - 1);
+								return false;
+							}
+							memcpy(Capital->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(Capital->AccountId) ? sizeof(Capital->AccountId) - 1 : value.length();
-							memcpy(Capital->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(Capital->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Capital->AccountId) - 1);
+								return false;
+							}
+							memcpy(Capital->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountType:
@@ -12276,8 +12900,12 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -12460,14 +13088,22 @@ bool ReqQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryRiskGroupPosition->UserId) ? sizeof(ReqQryRiskGroupPosition->UserId) - 1 : value.length();
-							memcpy(ReqQryRiskGroupPosition->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryRiskGroupPosition->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryRiskGroupPosition->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqQryRiskGroupPosition->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryRiskGroupPosition->AccountId) ? sizeof(ReqQryRiskGroupPosition->AccountId) - 1 : value.length();
-							memcpy(ReqQryRiskGroupPosition->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryRiskGroupPosition->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryRiskGroupPosition->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqQryRiskGroupPosition->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -12675,14 +13311,22 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(Position->TradingDay) ? sizeof(Position->TradingDay) - 1 : value.length();
-							memcpy(Position->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(Position->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Position->TradingDay) - 1);
+								return false;
+							}
+							memcpy(Position->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(Position->AccountId) ? sizeof(Position->AccountId) - 1 : value.length();
-							memcpy(Position->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(Position->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Position->AccountId) - 1);
+								return false;
+							}
+							memcpy(Position->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountType:
@@ -12696,14 +13340,22 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(Position->ExchangeId) ? sizeof(Position->ExchangeId) - 1 : value.length();
-							memcpy(Position->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(Position->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Position->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(Position->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(Position->InstrumentId) ? sizeof(Position->InstrumentId) - 1 : value.length();
-							memcpy(Position->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(Position->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Position->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(Position->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -12936,8 +13588,12 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -13120,14 +13776,22 @@ bool ReqQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryRiskGroupOrder->UserId) ? sizeof(ReqQryRiskGroupOrder->UserId) - 1 : value.length();
-							memcpy(ReqQryRiskGroupOrder->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryRiskGroupOrder->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryRiskGroupOrder->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqQryRiskGroupOrder->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryRiskGroupOrder->AccountId) ? sizeof(ReqQryRiskGroupOrder->AccountId) - 1 : value.length();
-							memcpy(ReqQryRiskGroupOrder->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryRiskGroupOrder->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryRiskGroupOrder->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqQryRiskGroupOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -13362,26 +14026,42 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(Order->TradingDay) ? sizeof(Order->TradingDay) - 1 : value.length();
-							memcpy(Order->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(Order->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->TradingDay) - 1);
+								return false;
+							}
+							memcpy(Order->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(Order->AccountId) ? sizeof(Order->AccountId) - 1 : value.length();
-							memcpy(Order->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->AccountId) - 1);
+								return false;
+							}
+							memcpy(Order->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(Order->ExchangeId) ? sizeof(Order->ExchangeId) - 1 : value.length();
-							memcpy(Order->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(Order->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(Order->InstrumentId) ? sizeof(Order->InstrumentId) - 1 : value.length();
-							memcpy(Order->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(Order->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -13404,8 +14084,12 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::OrderSysId:
 						{
-							size_t len = value.length() >= sizeof(Order->OrderSysId) ? sizeof(Order->OrderSysId) - 1 : value.length();
-							memcpy(Order->OrderSysId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->OrderSysId))
+							{
+								WriteLog(LogLevel::Warning, "OrderSysId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->OrderSysId) - 1);
+								return false;
+							}
+							memcpy(Order->OrderSysId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Direction:
@@ -13491,32 +14175,52 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::StatusMsg:
 						{
-							size_t len = value.length() >= sizeof(Order->StatusMsg) ? sizeof(Order->StatusMsg) - 1 : value.length();
-							memcpy(Order->StatusMsg, value.c_str(), len);
+							if (value.length() >= sizeof(Order->StatusMsg))
+							{
+								WriteLog(LogLevel::Warning, "StatusMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->StatusMsg) - 1);
+								return false;
+							}
+							memcpy(Order->StatusMsg, value.c_str(), value.length());
 							break;
 						}
 						case Items::OrderDate:
 						{
-							size_t len = value.length() >= sizeof(Order->OrderDate) ? sizeof(Order->OrderDate) - 1 : value.length();
-							memcpy(Order->OrderDate, value.c_str(), len);
+							if (value.length() >= sizeof(Order->OrderDate))
+							{
+								WriteLog(LogLevel::Warning, "OrderDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->OrderDate) - 1);
+								return false;
+							}
+							memcpy(Order->OrderDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::OrderTime:
 						{
-							size_t len = value.length() >= sizeof(Order->OrderTime) ? sizeof(Order->OrderTime) - 1 : value.length();
-							memcpy(Order->OrderTime, value.c_str(), len);
+							if (value.length() >= sizeof(Order->OrderTime))
+							{
+								WriteLog(LogLevel::Warning, "OrderTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->OrderTime) - 1);
+								return false;
+							}
+							memcpy(Order->OrderTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::CancelDate:
 						{
-							size_t len = value.length() >= sizeof(Order->CancelDate) ? sizeof(Order->CancelDate) - 1 : value.length();
-							memcpy(Order->CancelDate, value.c_str(), len);
+							if (value.length() >= sizeof(Order->CancelDate))
+							{
+								WriteLog(LogLevel::Warning, "CancelDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->CancelDate) - 1);
+								return false;
+							}
+							memcpy(Order->CancelDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::CancelTime:
 						{
-							size_t len = value.length() >= sizeof(Order->CancelTime) ? sizeof(Order->CancelTime) - 1 : value.length();
-							memcpy(Order->CancelTime, value.c_str(), len);
+							if (value.length() >= sizeof(Order->CancelTime))
+							{
+								WriteLog(LogLevel::Warning, "CancelTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->CancelTime) - 1);
+								return false;
+							}
+							memcpy(Order->CancelTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::SessionId:
@@ -13632,8 +14336,12 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -13816,14 +14524,22 @@ bool ReqQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryRiskGroupTrade->UserId) ? sizeof(ReqQryRiskGroupTrade->UserId) - 1 : value.length();
-							memcpy(ReqQryRiskGroupTrade->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryRiskGroupTrade->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryRiskGroupTrade->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqQryRiskGroupTrade->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryRiskGroupTrade->AccountId) ? sizeof(ReqQryRiskGroupTrade->AccountId) - 1 : value.length();
-							memcpy(ReqQryRiskGroupTrade->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryRiskGroupTrade->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryRiskGroupTrade->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqQryRiskGroupTrade->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -14040,26 +14756,42 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(Trade->TradingDay) ? sizeof(Trade->TradingDay) - 1 : value.length();
-							memcpy(Trade->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->TradingDay) - 1);
+								return false;
+							}
+							memcpy(Trade->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(Trade->AccountId) ? sizeof(Trade->AccountId) - 1 : value.length();
-							memcpy(Trade->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->AccountId) - 1);
+								return false;
+							}
+							memcpy(Trade->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(Trade->ExchangeId) ? sizeof(Trade->ExchangeId) - 1 : value.length();
-							memcpy(Trade->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(Trade->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(Trade->InstrumentId) ? sizeof(Trade->InstrumentId) - 1 : value.length();
-							memcpy(Trade->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(Trade->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -14082,14 +14814,22 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::OrderSysId:
 						{
-							size_t len = value.length() >= sizeof(Trade->OrderSysId) ? sizeof(Trade->OrderSysId) - 1 : value.length();
-							memcpy(Trade->OrderSysId, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->OrderSysId))
+							{
+								WriteLog(LogLevel::Warning, "OrderSysId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->OrderSysId) - 1);
+								return false;
+							}
+							memcpy(Trade->OrderSysId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeId:
 						{
-							size_t len = value.length() >= sizeof(Trade->TradeId) ? sizeof(Trade->TradeId) - 1 : value.length();
-							memcpy(Trade->TradeId, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->TradeId))
+							{
+								WriteLog(LogLevel::Warning, "TradeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->TradeId) - 1);
+								return false;
+							}
+							memcpy(Trade->TradeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Direction:
@@ -14175,14 +14915,22 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::TradeDate:
 						{
-							size_t len = value.length() >= sizeof(Trade->TradeDate) ? sizeof(Trade->TradeDate) - 1 : value.length();
-							memcpy(Trade->TradeDate, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->TradeDate))
+							{
+								WriteLog(LogLevel::Warning, "TradeDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->TradeDate) - 1);
+								return false;
+							}
+							memcpy(Trade->TradeDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeTime:
 						{
-							size_t len = value.length() >= sizeof(Trade->TradeTime) ? sizeof(Trade->TradeTime) - 1 : value.length();
-							memcpy(Trade->TradeTime, value.c_str(), len);
+							if (value.length() >= sizeof(Trade->TradeTime))
+							{
+								WriteLog(LogLevel::Warning, "TradeTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Trade->TradeTime) - 1);
+								return false;
+							}
+							memcpy(Trade->TradeTime, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -14226,8 +14974,12 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -14410,14 +15162,22 @@ bool ReqQryRiskGroupAccountRiskPackage::FromStepStream(char* buff, int startInde
 							break;
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryRiskGroupAccountRisk->UserId) ? sizeof(ReqQryRiskGroupAccountRisk->UserId) - 1 : value.length();
-							memcpy(ReqQryRiskGroupAccountRisk->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryRiskGroupAccountRisk->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryRiskGroupAccountRisk->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqQryRiskGroupAccountRisk->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryRiskGroupAccountRisk->AccountId) ? sizeof(ReqQryRiskGroupAccountRisk->AccountId) - 1 : value.length();
-							memcpy(ReqQryRiskGroupAccountRisk->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryRiskGroupAccountRisk->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryRiskGroupAccountRisk->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqQryRiskGroupAccountRisk->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -14590,8 +15350,12 @@ bool RspQryRiskGroupAccountRiskPackage::FromStepStream(char* buff, int startInde
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(AccountRisk->AccountId) ? sizeof(AccountRisk->AccountId) - 1 : value.length();
-							memcpy(AccountRisk->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(AccountRisk->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(AccountRisk->AccountId) - 1);
+								return false;
+							}
+							memcpy(AccountRisk->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -14653,8 +15417,12 @@ bool RspQryRiskGroupAccountRiskPackage::FromStepStream(char* buff, int startInde
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -14837,14 +15605,22 @@ bool ReqQryRiskGroupAccountRiskNotifyPackage::FromStepStream(char* buff, int sta
 							break;
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryRiskGroupAccountRiskNotify->UserId) ? sizeof(ReqQryRiskGroupAccountRiskNotify->UserId) - 1 : value.length();
-							memcpy(ReqQryRiskGroupAccountRiskNotify->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryRiskGroupAccountRiskNotify->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryRiskGroupAccountRiskNotify->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqQryRiskGroupAccountRiskNotify->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryRiskGroupAccountRiskNotify->AccountId) ? sizeof(ReqQryRiskGroupAccountRiskNotify->AccountId) - 1 : value.length();
-							memcpy(ReqQryRiskGroupAccountRiskNotify->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryRiskGroupAccountRiskNotify->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryRiskGroupAccountRiskNotify->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqQryRiskGroupAccountRiskNotify->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -15033,20 +15809,32 @@ bool RspQryRiskGroupAccountRiskNotifyPackage::FromStepStream(char* buff, int sta
 							break;
 						case Items::NotifyDate:
 						{
-							size_t len = value.length() >= sizeof(AccountRiskNotify->NotifyDate) ? sizeof(AccountRiskNotify->NotifyDate) - 1 : value.length();
-							memcpy(AccountRiskNotify->NotifyDate, value.c_str(), len);
+							if (value.length() >= sizeof(AccountRiskNotify->NotifyDate))
+							{
+								WriteLog(LogLevel::Warning, "NotifyDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(AccountRiskNotify->NotifyDate) - 1);
+								return false;
+							}
+							memcpy(AccountRiskNotify->NotifyDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::NotifyTime:
 						{
-							size_t len = value.length() >= sizeof(AccountRiskNotify->NotifyTime) ? sizeof(AccountRiskNotify->NotifyTime) - 1 : value.length();
-							memcpy(AccountRiskNotify->NotifyTime, value.c_str(), len);
+							if (value.length() >= sizeof(AccountRiskNotify->NotifyTime))
+							{
+								WriteLog(LogLevel::Warning, "NotifyTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(AccountRiskNotify->NotifyTime) - 1);
+								return false;
+							}
+							memcpy(AccountRiskNotify->NotifyTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(AccountRiskNotify->AccountId) ? sizeof(AccountRiskNotify->AccountId) - 1 : value.length();
-							memcpy(AccountRiskNotify->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(AccountRiskNotify->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(AccountRiskNotify->AccountId) - 1);
+								return false;
+							}
+							memcpy(AccountRiskNotify->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -15078,8 +15866,12 @@ bool RspQryRiskGroupAccountRiskNotifyPackage::FromStepStream(char* buff, int sta
 						}
 						case Items::RiskMessage:
 						{
-							size_t len = value.length() >= sizeof(AccountRiskNotify->RiskMessage) ? sizeof(AccountRiskNotify->RiskMessage) - 1 : value.length();
-							memcpy(AccountRiskNotify->RiskMessage, value.c_str(), len);
+							if (value.length() >= sizeof(AccountRiskNotify->RiskMessage))
+							{
+								WriteLog(LogLevel::Warning, "RiskMessage Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(AccountRiskNotify->RiskMessage) - 1);
+								return false;
+							}
+							memcpy(AccountRiskNotify->RiskMessage, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -15123,8 +15915,12 @@ bool RspQryRiskGroupAccountRiskNotifyPackage::FromStepStream(char* buff, int sta
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -15324,26 +16120,42 @@ bool ReqRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRiskInsertOrder->UserId) ? sizeof(ReqRiskInsertOrder->UserId) - 1 : value.length();
-							memcpy(ReqRiskInsertOrder->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRiskInsertOrder->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRiskInsertOrder->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqRiskInsertOrder->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqRiskInsertOrder->AccountId) ? sizeof(ReqRiskInsertOrder->AccountId) - 1 : value.length();
-							memcpy(ReqRiskInsertOrder->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRiskInsertOrder->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRiskInsertOrder->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqRiskInsertOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqRiskInsertOrder->ExchangeId) ? sizeof(ReqRiskInsertOrder->ExchangeId) - 1 : value.length();
-							memcpy(ReqRiskInsertOrder->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRiskInsertOrder->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRiskInsertOrder->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqRiskInsertOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(ReqRiskInsertOrder->InstrumentId) ? sizeof(ReqRiskInsertOrder->InstrumentId) - 1 : value.length();
-							memcpy(ReqRiskInsertOrder->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRiskInsertOrder->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRiskInsertOrder->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(ReqRiskInsertOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Direction:
@@ -15641,26 +16453,42 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(Order->TradingDay) ? sizeof(Order->TradingDay) - 1 : value.length();
-							memcpy(Order->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(Order->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->TradingDay) - 1);
+								return false;
+							}
+							memcpy(Order->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(Order->AccountId) ? sizeof(Order->AccountId) - 1 : value.length();
-							memcpy(Order->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->AccountId) - 1);
+								return false;
+							}
+							memcpy(Order->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(Order->ExchangeId) ? sizeof(Order->ExchangeId) - 1 : value.length();
-							memcpy(Order->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(Order->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(Order->InstrumentId) ? sizeof(Order->InstrumentId) - 1 : value.length();
-							memcpy(Order->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(Order->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -15683,8 +16511,12 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::OrderSysId:
 						{
-							size_t len = value.length() >= sizeof(Order->OrderSysId) ? sizeof(Order->OrderSysId) - 1 : value.length();
-							memcpy(Order->OrderSysId, value.c_str(), len);
+							if (value.length() >= sizeof(Order->OrderSysId))
+							{
+								WriteLog(LogLevel::Warning, "OrderSysId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->OrderSysId) - 1);
+								return false;
+							}
+							memcpy(Order->OrderSysId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Direction:
@@ -15770,32 +16602,52 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::StatusMsg:
 						{
-							size_t len = value.length() >= sizeof(Order->StatusMsg) ? sizeof(Order->StatusMsg) - 1 : value.length();
-							memcpy(Order->StatusMsg, value.c_str(), len);
+							if (value.length() >= sizeof(Order->StatusMsg))
+							{
+								WriteLog(LogLevel::Warning, "StatusMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->StatusMsg) - 1);
+								return false;
+							}
+							memcpy(Order->StatusMsg, value.c_str(), value.length());
 							break;
 						}
 						case Items::OrderDate:
 						{
-							size_t len = value.length() >= sizeof(Order->OrderDate) ? sizeof(Order->OrderDate) - 1 : value.length();
-							memcpy(Order->OrderDate, value.c_str(), len);
+							if (value.length() >= sizeof(Order->OrderDate))
+							{
+								WriteLog(LogLevel::Warning, "OrderDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->OrderDate) - 1);
+								return false;
+							}
+							memcpy(Order->OrderDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::OrderTime:
 						{
-							size_t len = value.length() >= sizeof(Order->OrderTime) ? sizeof(Order->OrderTime) - 1 : value.length();
-							memcpy(Order->OrderTime, value.c_str(), len);
+							if (value.length() >= sizeof(Order->OrderTime))
+							{
+								WriteLog(LogLevel::Warning, "OrderTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->OrderTime) - 1);
+								return false;
+							}
+							memcpy(Order->OrderTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::CancelDate:
 						{
-							size_t len = value.length() >= sizeof(Order->CancelDate) ? sizeof(Order->CancelDate) - 1 : value.length();
-							memcpy(Order->CancelDate, value.c_str(), len);
+							if (value.length() >= sizeof(Order->CancelDate))
+							{
+								WriteLog(LogLevel::Warning, "CancelDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->CancelDate) - 1);
+								return false;
+							}
+							memcpy(Order->CancelDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::CancelTime:
 						{
-							size_t len = value.length() >= sizeof(Order->CancelTime) ? sizeof(Order->CancelTime) - 1 : value.length();
-							memcpy(Order->CancelTime, value.c_str(), len);
+							if (value.length() >= sizeof(Order->CancelTime))
+							{
+								WriteLog(LogLevel::Warning, "CancelTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(Order->CancelTime) - 1);
+								return false;
+							}
+							memcpy(Order->CancelTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::SessionId:
@@ -15911,8 +16763,12 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -16113,26 +16969,42 @@ bool ReqRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRiskCancelOrder->UserId) ? sizeof(ReqRiskCancelOrder->UserId) - 1 : value.length();
-							memcpy(ReqRiskCancelOrder->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRiskCancelOrder->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRiskCancelOrder->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqRiskCancelOrder->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqRiskCancelOrder->AccountId) ? sizeof(ReqRiskCancelOrder->AccountId) - 1 : value.length();
-							memcpy(ReqRiskCancelOrder->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRiskCancelOrder->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRiskCancelOrder->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqRiskCancelOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqRiskCancelOrder->ExchangeId) ? sizeof(ReqRiskCancelOrder->ExchangeId) - 1 : value.length();
-							memcpy(ReqRiskCancelOrder->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRiskCancelOrder->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRiskCancelOrder->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqRiskCancelOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(ReqRiskCancelOrder->InstrumentId) ? sizeof(ReqRiskCancelOrder->InstrumentId) - 1 : value.length();
-							memcpy(ReqRiskCancelOrder->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRiskCancelOrder->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRiskCancelOrder->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(ReqRiskCancelOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ClientCancelOrderId:
@@ -16155,8 +17027,12 @@ bool ReqRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::OrderSysId:
 						{
-							size_t len = value.length() >= sizeof(ReqRiskCancelOrder->OrderSysId) ? sizeof(ReqRiskCancelOrder->OrderSysId) - 1 : value.length();
-							memcpy(ReqRiskCancelOrder->OrderSysId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRiskCancelOrder->OrderSysId))
+							{
+								WriteLog(LogLevel::Warning, "OrderSysId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRiskCancelOrder->OrderSysId) - 1);
+								return false;
+							}
+							memcpy(ReqRiskCancelOrder->OrderSysId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ClientOrderId:
@@ -16354,20 +17230,32 @@ bool RspRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(CancelOrder->AccountId) ? sizeof(CancelOrder->AccountId) - 1 : value.length();
-							memcpy(CancelOrder->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(CancelOrder->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(CancelOrder->AccountId) - 1);
+								return false;
+							}
+							memcpy(CancelOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(CancelOrder->ExchangeId) ? sizeof(CancelOrder->ExchangeId) - 1 : value.length();
-							memcpy(CancelOrder->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(CancelOrder->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(CancelOrder->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(CancelOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(CancelOrder->InstrumentId) ? sizeof(CancelOrder->InstrumentId) - 1 : value.length();
-							memcpy(CancelOrder->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(CancelOrder->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(CancelOrder->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(CancelOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ClientCancelOrderId:
@@ -16390,8 +17278,12 @@ bool RspRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::OrderSysId:
 						{
-							size_t len = value.length() >= sizeof(CancelOrder->OrderSysId) ? sizeof(CancelOrder->OrderSysId) - 1 : value.length();
-							memcpy(CancelOrder->OrderSysId, value.c_str(), len);
+							if (value.length() >= sizeof(CancelOrder->OrderSysId))
+							{
+								WriteLog(LogLevel::Warning, "OrderSysId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(CancelOrder->OrderSysId) - 1);
+								return false;
+							}
+							memcpy(CancelOrder->OrderSysId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ClientOrderId:
@@ -16444,8 +17336,12 @@ bool RspRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -16628,14 +17524,22 @@ bool ReqMdUserLoginPackage::FromStepStream(char* buff, int startIndex, int endIn
 							break;
 						case Items::MdUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqMdUserLogin->MdUserId) ? sizeof(ReqMdUserLogin->MdUserId) - 1 : value.length();
-							memcpy(ReqMdUserLogin->MdUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqMdUserLogin->MdUserId))
+							{
+								WriteLog(LogLevel::Warning, "MdUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqMdUserLogin->MdUserId) - 1);
+								return false;
+							}
+							memcpy(ReqMdUserLogin->MdUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Password:
 						{
-							size_t len = value.length() >= sizeof(ReqMdUserLogin->Password) ? sizeof(ReqMdUserLogin->Password) - 1 : value.length();
-							memcpy(ReqMdUserLogin->Password, value.c_str(), len);
+							if (value.length() >= sizeof(ReqMdUserLogin->Password))
+							{
+								WriteLog(LogLevel::Warning, "Password Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqMdUserLogin->Password) - 1);
+								return false;
+							}
+							memcpy(ReqMdUserLogin->Password, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -16817,20 +17721,32 @@ bool RspMdUserLoginPackage::FromStepStream(char* buff, int startIndex, int endIn
 							break;
 						case Items::MdUserId:
 						{
-							size_t len = value.length() >= sizeof(RspMdUserLogin->MdUserId) ? sizeof(RspMdUserLogin->MdUserId) - 1 : value.length();
-							memcpy(RspMdUserLogin->MdUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspMdUserLogin->MdUserId))
+							{
+								WriteLog(LogLevel::Warning, "MdUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspMdUserLogin->MdUserId) - 1);
+								return false;
+							}
+							memcpy(RspMdUserLogin->MdUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::LoginDate:
 						{
-							size_t len = value.length() >= sizeof(RspMdUserLogin->LoginDate) ? sizeof(RspMdUserLogin->LoginDate) - 1 : value.length();
-							memcpy(RspMdUserLogin->LoginDate, value.c_str(), len);
+							if (value.length() >= sizeof(RspMdUserLogin->LoginDate))
+							{
+								WriteLog(LogLevel::Warning, "LoginDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspMdUserLogin->LoginDate) - 1);
+								return false;
+							}
+							memcpy(RspMdUserLogin->LoginDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::LoginTime:
 						{
-							size_t len = value.length() >= sizeof(RspMdUserLogin->LoginTime) ? sizeof(RspMdUserLogin->LoginTime) - 1 : value.length();
-							memcpy(RspMdUserLogin->LoginTime, value.c_str(), len);
+							if (value.length() >= sizeof(RspMdUserLogin->LoginTime))
+							{
+								WriteLog(LogLevel::Warning, "LoginTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspMdUserLogin->LoginTime) - 1);
+								return false;
+							}
+							memcpy(RspMdUserLogin->LoginTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::SessionId:
@@ -16883,8 +17799,12 @@ bool RspMdUserLoginPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -17062,8 +17982,12 @@ bool ReqMdUserLogoutPackage::FromStepStream(char* buff, int startIndex, int endI
 							break;
 						case Items::MdUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqMdUserLogout->MdUserId) ? sizeof(ReqMdUserLogout->MdUserId) - 1 : value.length();
-							memcpy(ReqMdUserLogout->MdUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqMdUserLogout->MdUserId))
+							{
+								WriteLog(LogLevel::Warning, "MdUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqMdUserLogout->MdUserId) - 1);
+								return false;
+							}
+							memcpy(ReqMdUserLogout->MdUserId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -17234,8 +18158,12 @@ bool RspMdUserLogoutPackage::FromStepStream(char* buff, int startIndex, int endI
 							break;
 						case Items::MdUserId:
 						{
-							size_t len = value.length() >= sizeof(RspMdUserLogout->MdUserId) ? sizeof(RspMdUserLogout->MdUserId) - 1 : value.length();
-							memcpy(RspMdUserLogout->MdUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspMdUserLogout->MdUserId))
+							{
+								WriteLog(LogLevel::Warning, "MdUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspMdUserLogout->MdUserId) - 1);
+								return false;
+							}
+							memcpy(RspMdUserLogout->MdUserId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -17279,8 +18207,12 @@ bool RspMdUserLogoutPackage::FromStepStream(char* buff, int startIndex, int endI
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -17463,14 +18395,22 @@ bool ReqMdInitPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							break;
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqMdInit->ExchangeId) ? sizeof(ReqMdInit->ExchangeId) - 1 : value.length();
-							memcpy(ReqMdInit->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqMdInit->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqMdInit->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqMdInit->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqMdInit->TradingDay) ? sizeof(ReqMdInit->TradingDay) - 1 : value.length();
-							memcpy(ReqMdInit->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqMdInit->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqMdInit->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqMdInit->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -17646,14 +18586,22 @@ bool RspMdInitPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							break;
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(RspMdInit->ExchangeId) ? sizeof(RspMdInit->ExchangeId) - 1 : value.length();
-							memcpy(RspMdInit->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(RspMdInit->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspMdInit->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(RspMdInit->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(RspMdInit->TradingDay) ? sizeof(RspMdInit->TradingDay) - 1 : value.length();
-							memcpy(RspMdInit->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(RspMdInit->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspMdInit->TradingDay) - 1);
+								return false;
+							}
+							memcpy(RspMdInit->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -17697,8 +18645,12 @@ bool RspMdInitPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -17881,14 +18833,22 @@ bool ReqSubscribeMdPackage::FromStepStream(char* buff, int startIndex, int endIn
 							break;
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqSubscribeMd->ExchangeId) ? sizeof(ReqSubscribeMd->ExchangeId) - 1 : value.length();
-							memcpy(ReqSubscribeMd->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqSubscribeMd->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqSubscribeMd->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqSubscribeMd->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(ReqSubscribeMd->InstrumentId) ? sizeof(ReqSubscribeMd->InstrumentId) - 1 : value.length();
-							memcpy(ReqSubscribeMd->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqSubscribeMd->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqSubscribeMd->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(ReqSubscribeMd->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -18064,14 +19024,22 @@ bool RspSubscribeMdPackage::FromStepStream(char* buff, int startIndex, int endIn
 							break;
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(RspSubscribeMd->ExchangeId) ? sizeof(RspSubscribeMd->ExchangeId) - 1 : value.length();
-							memcpy(RspSubscribeMd->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(RspSubscribeMd->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspSubscribeMd->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(RspSubscribeMd->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(RspSubscribeMd->InstrumentId) ? sizeof(RspSubscribeMd->InstrumentId) - 1 : value.length();
-							memcpy(RspSubscribeMd->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(RspSubscribeMd->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspSubscribeMd->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(RspSubscribeMd->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -18115,8 +19083,12 @@ bool RspSubscribeMdPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -18311,20 +19283,32 @@ bool RtnShortMdPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ShortMd->TradingDay) ? sizeof(ShortMd->TradingDay) - 1 : value.length();
-							memcpy(ShortMd->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ShortMd->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ShortMd->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ShortMd->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ShortMd->ExchangeId) ? sizeof(ShortMd->ExchangeId) - 1 : value.length();
-							memcpy(ShortMd->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ShortMd->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ShortMd->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ShortMd->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(ShortMd->InstrumentId) ? sizeof(ShortMd->InstrumentId) - 1 : value.length();
-							memcpy(ShortMd->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(ShortMd->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ShortMd->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(ShortMd->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::LastPrice:
@@ -18548,14 +19532,22 @@ bool RtnExchangeStatusPackage::FromStepStream(char* buff, int startIndex, int en
 							break;
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(RtnExchangeStatus->ExchangeId) ? sizeof(RtnExchangeStatus->ExchangeId) - 1 : value.length();
-							memcpy(RtnExchangeStatus->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(RtnExchangeStatus->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RtnExchangeStatus->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(RtnExchangeStatus->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeDate:
 						{
-							size_t len = value.length() >= sizeof(RtnExchangeStatus->ExchangeDate) ? sizeof(RtnExchangeStatus->ExchangeDate) - 1 : value.length();
-							memcpy(RtnExchangeStatus->ExchangeDate, value.c_str(), len);
+							if (value.length() >= sizeof(RtnExchangeStatus->ExchangeDate))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RtnExchangeStatus->ExchangeDate) - 1);
+								return false;
+							}
+							memcpy(RtnExchangeStatus->ExchangeDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeStatus:
@@ -18724,14 +19716,22 @@ bool RtnMdInitCompletedPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(MdInitCompleted->ExchangeId) ? sizeof(MdInitCompleted->ExchangeId) - 1 : value.length();
-							memcpy(MdInitCompleted->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(MdInitCompleted->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(MdInitCompleted->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(MdInitCompleted->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(MdInitCompleted->TradingDay) ? sizeof(MdInitCompleted->TradingDay) - 1 : value.length();
-							memcpy(MdInitCompleted->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(MdInitCompleted->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(MdInitCompleted->TradingDay) - 1);
+								return false;
+							}
+							memcpy(MdInitCompleted->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -18891,14 +19891,22 @@ bool ReqAdminUserLoginPackage::FromStepStream(char* buff, int startIndex, int en
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAdminUserLogin->AdminUserId) ? sizeof(ReqAdminUserLogin->AdminUserId) - 1 : value.length();
-							memcpy(ReqAdminUserLogin->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAdminUserLogin->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAdminUserLogin->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAdminUserLogin->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Password:
 						{
-							size_t len = value.length() >= sizeof(ReqAdminUserLogin->Password) ? sizeof(ReqAdminUserLogin->Password) - 1 : value.length();
-							memcpy(ReqAdminUserLogin->Password, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAdminUserLogin->Password))
+							{
+								WriteLog(LogLevel::Warning, "Password Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAdminUserLogin->Password) - 1);
+								return false;
+							}
+							memcpy(ReqAdminUserLogin->Password, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -19080,20 +20088,32 @@ bool RspAdminUserLoginPackage::FromStepStream(char* buff, int startIndex, int en
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAdminUserLogin->AdminUserId) ? sizeof(RspAdminUserLogin->AdminUserId) - 1 : value.length();
-							memcpy(RspAdminUserLogin->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAdminUserLogin->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAdminUserLogin->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAdminUserLogin->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::LoginDate:
 						{
-							size_t len = value.length() >= sizeof(RspAdminUserLogin->LoginDate) ? sizeof(RspAdminUserLogin->LoginDate) - 1 : value.length();
-							memcpy(RspAdminUserLogin->LoginDate, value.c_str(), len);
+							if (value.length() >= sizeof(RspAdminUserLogin->LoginDate))
+							{
+								WriteLog(LogLevel::Warning, "LoginDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAdminUserLogin->LoginDate) - 1);
+								return false;
+							}
+							memcpy(RspAdminUserLogin->LoginDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::LoginTime:
 						{
-							size_t len = value.length() >= sizeof(RspAdminUserLogin->LoginTime) ? sizeof(RspAdminUserLogin->LoginTime) - 1 : value.length();
-							memcpy(RspAdminUserLogin->LoginTime, value.c_str(), len);
+							if (value.length() >= sizeof(RspAdminUserLogin->LoginTime))
+							{
+								WriteLog(LogLevel::Warning, "LoginTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAdminUserLogin->LoginTime) - 1);
+								return false;
+							}
+							memcpy(RspAdminUserLogin->LoginTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::SessionId:
@@ -19146,8 +20166,12 @@ bool RspAdminUserLoginPackage::FromStepStream(char* buff, int startIndex, int en
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -19325,8 +20349,12 @@ bool ReqAdminUserLogoutPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAdminUserLogout->AdminUserId) ? sizeof(ReqAdminUserLogout->AdminUserId) - 1 : value.length();
-							memcpy(ReqAdminUserLogout->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAdminUserLogout->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAdminUserLogout->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAdminUserLogout->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -19497,8 +20525,12 @@ bool RspAdminUserLogoutPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAdminUserLogout->AdminUserId) ? sizeof(RspAdminUserLogout->AdminUserId) - 1 : value.length();
-							memcpy(RspAdminUserLogout->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAdminUserLogout->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAdminUserLogout->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAdminUserLogout->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -19542,8 +20574,12 @@ bool RspAdminUserLogoutPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -19727,8 +20763,12 @@ bool RtnAdminUserLogoutPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(AdminUserLogout->UserId) ? sizeof(AdminUserLogout->UserId) - 1 : value.length();
-							memcpy(AdminUserLogout->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(AdminUserLogout->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(AdminUserLogout->UserId) - 1);
+								return false;
+							}
+							memcpy(AdminUserLogout->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ErrorId:
@@ -19742,8 +20782,12 @@ bool RtnAdminUserLogoutPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(AdminUserLogout->ErrorMsg) ? sizeof(AdminUserLogout->ErrorMsg) - 1 : value.length();
-							memcpy(AdminUserLogout->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(AdminUserLogout->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(AdminUserLogout->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(AdminUserLogout->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -19914,26 +20958,42 @@ bool ReqAddRiskUserPackage::FromStepStream(char* buff, int startIndex, int endIn
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskUser->AdminUserId) ? sizeof(ReqAddRiskUser->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddRiskUser->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskUser->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskUser->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskUser->UserId) ? sizeof(ReqAddRiskUser->UserId) - 1 : value.length();
-							memcpy(ReqAddRiskUser->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskUser->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskUser->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskUser->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserName:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskUser->UserName) ? sizeof(ReqAddRiskUser->UserName) - 1 : value.length();
-							memcpy(ReqAddRiskUser->UserName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskUser->UserName))
+							{
+								WriteLog(LogLevel::Warning, "UserName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskUser->UserName) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskUser->UserName, value.c_str(), value.length());
 							break;
 						}
 						case Items::Password:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskUser->Password) ? sizeof(ReqAddRiskUser->Password) - 1 : value.length();
-							memcpy(ReqAddRiskUser->Password, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskUser->Password))
+							{
+								WriteLog(LogLevel::Warning, "Password Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskUser->Password) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskUser->Password, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -20118,14 +21178,22 @@ bool RspAddRiskUserPackage::FromStepStream(char* buff, int startIndex, int endIn
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddRiskUser->AdminUserId) ? sizeof(RspAddRiskUser->AdminUserId) - 1 : value.length();
-							memcpy(RspAddRiskUser->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddRiskUser->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddRiskUser->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddRiskUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddRiskUser->UserId) ? sizeof(RspAddRiskUser->UserId) - 1 : value.length();
-							memcpy(RspAddRiskUser->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddRiskUser->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddRiskUser->UserId) - 1);
+								return false;
+							}
+							memcpy(RspAddRiskUser->UserId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -20169,8 +21237,12 @@ bool RspAddRiskUserPackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -20364,26 +21436,42 @@ bool ReqUpdateRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateRiskUser->AdminUserId) ? sizeof(ReqUpdateRiskUser->AdminUserId) - 1 : value.length();
-							memcpy(ReqUpdateRiskUser->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateRiskUser->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateRiskUser->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateRiskUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateRiskUser->UserId) ? sizeof(ReqUpdateRiskUser->UserId) - 1 : value.length();
-							memcpy(ReqUpdateRiskUser->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateRiskUser->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateRiskUser->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateRiskUser->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserName:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateRiskUser->UserName) ? sizeof(ReqUpdateRiskUser->UserName) - 1 : value.length();
-							memcpy(ReqUpdateRiskUser->UserName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateRiskUser->UserName))
+							{
+								WriteLog(LogLevel::Warning, "UserName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateRiskUser->UserName) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateRiskUser->UserName, value.c_str(), value.length());
 							break;
 						}
 						case Items::Password:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateRiskUser->Password) ? sizeof(ReqUpdateRiskUser->Password) - 1 : value.length();
-							memcpy(ReqUpdateRiskUser->Password, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateRiskUser->Password))
+							{
+								WriteLog(LogLevel::Warning, "Password Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateRiskUser->Password) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateRiskUser->Password, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -20568,14 +21656,22 @@ bool RspUpdateRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateRiskUser->AdminUserId) ? sizeof(RspUpdateRiskUser->AdminUserId) - 1 : value.length();
-							memcpy(RspUpdateRiskUser->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateRiskUser->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateRiskUser->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateRiskUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateRiskUser->UserId) ? sizeof(RspUpdateRiskUser->UserId) - 1 : value.length();
-							memcpy(RspUpdateRiskUser->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateRiskUser->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateRiskUser->UserId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateRiskUser->UserId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -20619,8 +21715,12 @@ bool RspUpdateRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -20803,14 +21903,22 @@ bool ReqRemoveRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveRiskUser->AdminUserId) ? sizeof(ReqRemoveRiskUser->AdminUserId) - 1 : value.length();
-							memcpy(ReqRemoveRiskUser->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveRiskUser->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveRiskUser->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveRiskUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveRiskUser->UserId) ? sizeof(ReqRemoveRiskUser->UserId) - 1 : value.length();
-							memcpy(ReqRemoveRiskUser->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveRiskUser->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveRiskUser->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveRiskUser->UserId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -20986,14 +22094,22 @@ bool RspRemoveRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveRiskUser->AdminUserId) ? sizeof(RspRemoveRiskUser->AdminUserId) - 1 : value.length();
-							memcpy(RspRemoveRiskUser->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveRiskUser->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveRiskUser->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveRiskUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveRiskUser->UserId) ? sizeof(RspRemoveRiskUser->UserId) - 1 : value.length();
-							memcpy(RspRemoveRiskUser->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveRiskUser->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveRiskUser->UserId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveRiskUser->UserId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -21037,8 +22153,12 @@ bool RspRemoveRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -21231,26 +22351,42 @@ bool ReqAddAdminUserPackage::FromStepStream(char* buff, int startIndex, int endI
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddAdminUser->AdminUserId) ? sizeof(ReqAddAdminUser->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddAdminUser->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddAdminUser->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddAdminUser->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddAdminUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddAdminUser->UserId) ? sizeof(ReqAddAdminUser->UserId) - 1 : value.length();
-							memcpy(ReqAddAdminUser->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddAdminUser->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddAdminUser->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddAdminUser->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserName:
 						{
-							size_t len = value.length() >= sizeof(ReqAddAdminUser->UserName) ? sizeof(ReqAddAdminUser->UserName) - 1 : value.length();
-							memcpy(ReqAddAdminUser->UserName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddAdminUser->UserName))
+							{
+								WriteLog(LogLevel::Warning, "UserName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddAdminUser->UserName) - 1);
+								return false;
+							}
+							memcpy(ReqAddAdminUser->UserName, value.c_str(), value.length());
 							break;
 						}
 						case Items::Password:
 						{
-							size_t len = value.length() >= sizeof(ReqAddAdminUser->Password) ? sizeof(ReqAddAdminUser->Password) - 1 : value.length();
-							memcpy(ReqAddAdminUser->Password, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddAdminUser->Password))
+							{
+								WriteLog(LogLevel::Warning, "Password Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddAdminUser->Password) - 1);
+								return false;
+							}
+							memcpy(ReqAddAdminUser->Password, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -21426,14 +22562,22 @@ bool RspAddAdminUserPackage::FromStepStream(char* buff, int startIndex, int endI
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddAdminUser->AdminUserId) ? sizeof(RspAddAdminUser->AdminUserId) - 1 : value.length();
-							memcpy(RspAddAdminUser->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddAdminUser->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddAdminUser->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddAdminUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddAdminUser->UserId) ? sizeof(RspAddAdminUser->UserId) - 1 : value.length();
-							memcpy(RspAddAdminUser->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddAdminUser->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddAdminUser->UserId) - 1);
+								return false;
+							}
+							memcpy(RspAddAdminUser->UserId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -21477,8 +22621,12 @@ bool RspAddAdminUserPackage::FromStepStream(char* buff, int startIndex, int endI
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -21671,26 +22819,42 @@ bool ReqUpdateAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateAdminUser->AdminUserId) ? sizeof(ReqUpdateAdminUser->AdminUserId) - 1 : value.length();
-							memcpy(ReqUpdateAdminUser->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateAdminUser->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateAdminUser->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateAdminUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateAdminUser->UserId) ? sizeof(ReqUpdateAdminUser->UserId) - 1 : value.length();
-							memcpy(ReqUpdateAdminUser->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateAdminUser->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateAdminUser->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateAdminUser->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserName:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateAdminUser->UserName) ? sizeof(ReqUpdateAdminUser->UserName) - 1 : value.length();
-							memcpy(ReqUpdateAdminUser->UserName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateAdminUser->UserName))
+							{
+								WriteLog(LogLevel::Warning, "UserName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateAdminUser->UserName) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateAdminUser->UserName, value.c_str(), value.length());
 							break;
 						}
 						case Items::Password:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateAdminUser->Password) ? sizeof(ReqUpdateAdminUser->Password) - 1 : value.length();
-							memcpy(ReqUpdateAdminUser->Password, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateAdminUser->Password))
+							{
+								WriteLog(LogLevel::Warning, "Password Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateAdminUser->Password) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateAdminUser->Password, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -21866,14 +23030,22 @@ bool RspUpdateAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateAdminUser->AdminUserId) ? sizeof(RspUpdateAdminUser->AdminUserId) - 1 : value.length();
-							memcpy(RspUpdateAdminUser->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateAdminUser->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateAdminUser->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateAdminUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateAdminUser->UserId) ? sizeof(RspUpdateAdminUser->UserId) - 1 : value.length();
-							memcpy(RspUpdateAdminUser->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateAdminUser->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateAdminUser->UserId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateAdminUser->UserId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -21917,8 +23089,12 @@ bool RspUpdateAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -22101,14 +23277,22 @@ bool ReqRemoveAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveAdminUser->AdminUserId) ? sizeof(ReqRemoveAdminUser->AdminUserId) - 1 : value.length();
-							memcpy(ReqRemoveAdminUser->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveAdminUser->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveAdminUser->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveAdminUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveAdminUser->UserId) ? sizeof(ReqRemoveAdminUser->UserId) - 1 : value.length();
-							memcpy(ReqRemoveAdminUser->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveAdminUser->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveAdminUser->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveAdminUser->UserId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -22284,14 +23468,22 @@ bool RspRemoveAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveAdminUser->AdminUserId) ? sizeof(RspRemoveAdminUser->AdminUserId) - 1 : value.length();
-							memcpy(RspRemoveAdminUser->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveAdminUser->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveAdminUser->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveAdminUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveAdminUser->UserId) ? sizeof(RspRemoveAdminUser->UserId) - 1 : value.length();
-							memcpy(RspRemoveAdminUser->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveAdminUser->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveAdminUser->UserId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveAdminUser->UserId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -22335,8 +23527,12 @@ bool RspRemoveAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -22547,26 +23743,42 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddPrimaryAccount->AdminUserId) ? sizeof(ReqAddPrimaryAccount->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddPrimaryAccount->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddPrimaryAccount->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddPrimaryAccount->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddPrimaryAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqAddPrimaryAccount->TradingDay) ? sizeof(ReqAddPrimaryAccount->TradingDay) - 1 : value.length();
-							memcpy(ReqAddPrimaryAccount->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddPrimaryAccount->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddPrimaryAccount->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqAddPrimaryAccount->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddPrimaryAccount->PrimaryAccountId) ? sizeof(ReqAddPrimaryAccount->PrimaryAccountId) - 1 : value.length();
-							memcpy(ReqAddPrimaryAccount->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddPrimaryAccount->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddPrimaryAccount->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(ReqAddPrimaryAccount->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountName:
 						{
-							size_t len = value.length() >= sizeof(ReqAddPrimaryAccount->PrimaryAccountName) ? sizeof(ReqAddPrimaryAccount->PrimaryAccountName) - 1 : value.length();
-							memcpy(ReqAddPrimaryAccount->PrimaryAccountName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddPrimaryAccount->PrimaryAccountName))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddPrimaryAccount->PrimaryAccountName) - 1);
+								return false;
+							}
+							memcpy(ReqAddPrimaryAccount->PrimaryAccountName, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountClass:
@@ -22580,8 +23792,12 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::BrokerPassword:
 						{
-							size_t len = value.length() >= sizeof(ReqAddPrimaryAccount->BrokerPassword) ? sizeof(ReqAddPrimaryAccount->BrokerPassword) - 1 : value.length();
-							memcpy(ReqAddPrimaryAccount->BrokerPassword, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddPrimaryAccount->BrokerPassword))
+							{
+								WriteLog(LogLevel::Warning, "BrokerPassword Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddPrimaryAccount->BrokerPassword) - 1);
+								return false;
+							}
+							memcpy(ReqAddPrimaryAccount->BrokerPassword, value.c_str(), value.length());
 							break;
 						}
 						case Items::OfferId:
@@ -22622,8 +23838,12 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::Password:
 						{
-							size_t len = value.length() >= sizeof(ReqAddPrimaryAccount->Password) ? sizeof(ReqAddPrimaryAccount->Password) - 1 : value.length();
-							memcpy(ReqAddPrimaryAccount->Password, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddPrimaryAccount->Password))
+							{
+								WriteLog(LogLevel::Warning, "Password Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddPrimaryAccount->Password) - 1);
+								return false;
+							}
+							memcpy(ReqAddPrimaryAccount->Password, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -22826,14 +24046,22 @@ bool RspAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddPrimaryAccount->AdminUserId) ? sizeof(RspAddPrimaryAccount->AdminUserId) - 1 : value.length();
-							memcpy(RspAddPrimaryAccount->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddPrimaryAccount->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddPrimaryAccount->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddPrimaryAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(RspAddPrimaryAccount->PrimaryAccountId) ? sizeof(RspAddPrimaryAccount->PrimaryAccountId) - 1 : value.length();
-							memcpy(RspAddPrimaryAccount->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddPrimaryAccount->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddPrimaryAccount->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(RspAddPrimaryAccount->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -22877,8 +24105,12 @@ bool RspAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -23089,26 +24321,42 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdatePrimaryAccount->AdminUserId) ? sizeof(ReqUpdatePrimaryAccount->AdminUserId) - 1 : value.length();
-							memcpy(ReqUpdatePrimaryAccount->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdatePrimaryAccount->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdatePrimaryAccount->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdatePrimaryAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdatePrimaryAccount->TradingDay) ? sizeof(ReqUpdatePrimaryAccount->TradingDay) - 1 : value.length();
-							memcpy(ReqUpdatePrimaryAccount->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdatePrimaryAccount->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdatePrimaryAccount->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqUpdatePrimaryAccount->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdatePrimaryAccount->PrimaryAccountId) ? sizeof(ReqUpdatePrimaryAccount->PrimaryAccountId) - 1 : value.length();
-							memcpy(ReqUpdatePrimaryAccount->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdatePrimaryAccount->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdatePrimaryAccount->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdatePrimaryAccount->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountName:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdatePrimaryAccount->PrimaryAccountName) ? sizeof(ReqUpdatePrimaryAccount->PrimaryAccountName) - 1 : value.length();
-							memcpy(ReqUpdatePrimaryAccount->PrimaryAccountName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdatePrimaryAccount->PrimaryAccountName))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdatePrimaryAccount->PrimaryAccountName) - 1);
+								return false;
+							}
+							memcpy(ReqUpdatePrimaryAccount->PrimaryAccountName, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountClass:
@@ -23122,8 +24370,12 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::BrokerPassword:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdatePrimaryAccount->BrokerPassword) ? sizeof(ReqUpdatePrimaryAccount->BrokerPassword) - 1 : value.length();
-							memcpy(ReqUpdatePrimaryAccount->BrokerPassword, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdatePrimaryAccount->BrokerPassword))
+							{
+								WriteLog(LogLevel::Warning, "BrokerPassword Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdatePrimaryAccount->BrokerPassword) - 1);
+								return false;
+							}
+							memcpy(ReqUpdatePrimaryAccount->BrokerPassword, value.c_str(), value.length());
 							break;
 						}
 						case Items::OfferId:
@@ -23164,8 +24416,12 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::Password:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdatePrimaryAccount->Password) ? sizeof(ReqUpdatePrimaryAccount->Password) - 1 : value.length();
-							memcpy(ReqUpdatePrimaryAccount->Password, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdatePrimaryAccount->Password))
+							{
+								WriteLog(LogLevel::Warning, "Password Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdatePrimaryAccount->Password) - 1);
+								return false;
+							}
+							memcpy(ReqUpdatePrimaryAccount->Password, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -23368,14 +24624,22 @@ bool RspUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdatePrimaryAccount->AdminUserId) ? sizeof(RspUpdatePrimaryAccount->AdminUserId) - 1 : value.length();
-							memcpy(RspUpdatePrimaryAccount->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdatePrimaryAccount->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdatePrimaryAccount->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspUpdatePrimaryAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdatePrimaryAccount->PrimaryAccountId) ? sizeof(RspUpdatePrimaryAccount->PrimaryAccountId) - 1 : value.length();
-							memcpy(RspUpdatePrimaryAccount->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdatePrimaryAccount->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdatePrimaryAccount->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(RspUpdatePrimaryAccount->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -23419,8 +24683,12 @@ bool RspUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -23603,14 +24871,22 @@ bool ReqRemovePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemovePrimaryAccount->AdminUserId) ? sizeof(ReqRemovePrimaryAccount->AdminUserId) - 1 : value.length();
-							memcpy(ReqRemovePrimaryAccount->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemovePrimaryAccount->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemovePrimaryAccount->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqRemovePrimaryAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemovePrimaryAccount->PrimaryAccountId) ? sizeof(ReqRemovePrimaryAccount->PrimaryAccountId) - 1 : value.length();
-							memcpy(ReqRemovePrimaryAccount->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemovePrimaryAccount->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemovePrimaryAccount->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(ReqRemovePrimaryAccount->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -23786,14 +25062,22 @@ bool RspRemovePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspRemovePrimaryAccount->AdminUserId) ? sizeof(RspRemovePrimaryAccount->AdminUserId) - 1 : value.length();
-							memcpy(RspRemovePrimaryAccount->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemovePrimaryAccount->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemovePrimaryAccount->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspRemovePrimaryAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(RspRemovePrimaryAccount->PrimaryAccountId) ? sizeof(RspRemovePrimaryAccount->PrimaryAccountId) - 1 : value.length();
-							memcpy(RspRemovePrimaryAccount->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemovePrimaryAccount->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemovePrimaryAccount->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(RspRemovePrimaryAccount->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -23837,8 +25121,12 @@ bool RspRemovePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -24041,26 +25329,42 @@ bool ReqAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddAccount->AdminUserId) ? sizeof(ReqAddAccount->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddAccount->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddAccount->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddAccount->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqAddAccount->TradingDay) ? sizeof(ReqAddAccount->TradingDay) - 1 : value.length();
-							memcpy(ReqAddAccount->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddAccount->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddAccount->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqAddAccount->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddAccount->AccountId) ? sizeof(ReqAddAccount->AccountId) - 1 : value.length();
-							memcpy(ReqAddAccount->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddAccount->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddAccount->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqAddAccount->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountName:
 						{
-							size_t len = value.length() >= sizeof(ReqAddAccount->AccountName) ? sizeof(ReqAddAccount->AccountName) - 1 : value.length();
-							memcpy(ReqAddAccount->AccountName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddAccount->AccountName))
+							{
+								WriteLog(LogLevel::Warning, "AccountName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddAccount->AccountName) - 1);
+								return false;
+							}
+							memcpy(ReqAddAccount->AccountName, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountStatus:
@@ -24074,8 +25378,12 @@ bool ReqAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::Password:
 						{
-							size_t len = value.length() >= sizeof(ReqAddAccount->Password) ? sizeof(ReqAddAccount->Password) - 1 : value.length();
-							memcpy(ReqAddAccount->Password, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddAccount->Password))
+							{
+								WriteLog(LogLevel::Warning, "Password Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddAccount->Password) - 1);
+								return false;
+							}
+							memcpy(ReqAddAccount->Password, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeGroupId:
@@ -24287,14 +25595,22 @@ bool RspAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddAccount->AdminUserId) ? sizeof(RspAddAccount->AdminUserId) - 1 : value.length();
-							memcpy(RspAddAccount->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddAccount->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddAccount->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(RspAddAccount->AccountId) ? sizeof(RspAddAccount->AccountId) - 1 : value.length();
-							memcpy(RspAddAccount->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddAccount->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddAccount->AccountId) - 1);
+								return false;
+							}
+							memcpy(RspAddAccount->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -24338,8 +25654,12 @@ bool RspAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -24542,26 +25862,42 @@ bool ReqUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateAccount->AdminUserId) ? sizeof(ReqUpdateAccount->AdminUserId) - 1 : value.length();
-							memcpy(ReqUpdateAccount->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateAccount->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateAccount->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateAccount->TradingDay) ? sizeof(ReqUpdateAccount->TradingDay) - 1 : value.length();
-							memcpy(ReqUpdateAccount->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateAccount->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateAccount->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateAccount->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateAccount->AccountId) ? sizeof(ReqUpdateAccount->AccountId) - 1 : value.length();
-							memcpy(ReqUpdateAccount->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateAccount->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateAccount->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateAccount->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountName:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateAccount->AccountName) ? sizeof(ReqUpdateAccount->AccountName) - 1 : value.length();
-							memcpy(ReqUpdateAccount->AccountName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateAccount->AccountName))
+							{
+								WriteLog(LogLevel::Warning, "AccountName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateAccount->AccountName) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateAccount->AccountName, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountStatus:
@@ -24575,8 +25911,12 @@ bool ReqUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::Password:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateAccount->Password) ? sizeof(ReqUpdateAccount->Password) - 1 : value.length();
-							memcpy(ReqUpdateAccount->Password, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateAccount->Password))
+							{
+								WriteLog(LogLevel::Warning, "Password Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateAccount->Password) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateAccount->Password, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeGroupId:
@@ -24788,14 +26128,22 @@ bool RspUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateAccount->AdminUserId) ? sizeof(RspUpdateAccount->AdminUserId) - 1 : value.length();
-							memcpy(RspUpdateAccount->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateAccount->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateAccount->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateAccount->AccountId) ? sizeof(RspUpdateAccount->AccountId) - 1 : value.length();
-							memcpy(RspUpdateAccount->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateAccount->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateAccount->AccountId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateAccount->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -24839,8 +26187,12 @@ bool RspUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -25023,14 +26375,22 @@ bool ReqRemoveAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveAccount->AdminUserId) ? sizeof(ReqRemoveAccount->AdminUserId) - 1 : value.length();
-							memcpy(ReqRemoveAccount->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveAccount->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveAccount->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveAccount->AccountId) ? sizeof(ReqRemoveAccount->AccountId) - 1 : value.length();
-							memcpy(ReqRemoveAccount->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveAccount->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveAccount->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveAccount->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -25206,14 +26566,22 @@ bool RspRemoveAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveAccount->AdminUserId) ? sizeof(RspRemoveAccount->AdminUserId) - 1 : value.length();
-							memcpy(RspRemoveAccount->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveAccount->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveAccount->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveAccount->AccountId) ? sizeof(RspRemoveAccount->AccountId) - 1 : value.length();
-							memcpy(RspRemoveAccount->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveAccount->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveAccount->AccountId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveAccount->AccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -25257,8 +26625,12 @@ bool RspRemoveAccountPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -25451,20 +26823,32 @@ bool ReqAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddBaseCommission->AdminUserId) ? sizeof(ReqAddBaseCommission->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddBaseCommission->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddBaseCommission->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddBaseCommission->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddBaseCommission->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqAddBaseCommission->TradingDay) ? sizeof(ReqAddBaseCommission->TradingDay) - 1 : value.length();
-							memcpy(ReqAddBaseCommission->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddBaseCommission->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddBaseCommission->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqAddBaseCommission->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddBaseCommission->ExchangeId) ? sizeof(ReqAddBaseCommission->ExchangeId) - 1 : value.length();
-							memcpy(ReqAddBaseCommission->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddBaseCommission->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddBaseCommission->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqAddBaseCommission->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -25691,20 +27075,32 @@ bool RspAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddBaseCommission->AdminUserId) ? sizeof(RspAddBaseCommission->AdminUserId) - 1 : value.length();
-							memcpy(RspAddBaseCommission->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddBaseCommission->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddBaseCommission->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddBaseCommission->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(RspAddBaseCommission->TradingDay) ? sizeof(RspAddBaseCommission->TradingDay) - 1 : value.length();
-							memcpy(RspAddBaseCommission->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddBaseCommission->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddBaseCommission->TradingDay) - 1);
+								return false;
+							}
+							memcpy(RspAddBaseCommission->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(RspAddBaseCommission->ExchangeId) ? sizeof(RspAddBaseCommission->ExchangeId) - 1 : value.length();
-							memcpy(RspAddBaseCommission->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddBaseCommission->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddBaseCommission->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(RspAddBaseCommission->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -25757,8 +27153,12 @@ bool RspAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -25951,20 +27351,32 @@ bool ReqUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateBaseCommission->AdminUserId) ? sizeof(ReqUpdateBaseCommission->AdminUserId) - 1 : value.length();
-							memcpy(ReqUpdateBaseCommission->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateBaseCommission->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateBaseCommission->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateBaseCommission->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateBaseCommission->TradingDay) ? sizeof(ReqUpdateBaseCommission->TradingDay) - 1 : value.length();
-							memcpy(ReqUpdateBaseCommission->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateBaseCommission->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateBaseCommission->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateBaseCommission->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateBaseCommission->ExchangeId) ? sizeof(ReqUpdateBaseCommission->ExchangeId) - 1 : value.length();
-							memcpy(ReqUpdateBaseCommission->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateBaseCommission->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateBaseCommission->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateBaseCommission->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -26191,20 +27603,32 @@ bool RspUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateBaseCommission->AdminUserId) ? sizeof(RspUpdateBaseCommission->AdminUserId) - 1 : value.length();
-							memcpy(RspUpdateBaseCommission->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateBaseCommission->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateBaseCommission->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateBaseCommission->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateBaseCommission->TradingDay) ? sizeof(RspUpdateBaseCommission->TradingDay) - 1 : value.length();
-							memcpy(RspUpdateBaseCommission->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateBaseCommission->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateBaseCommission->TradingDay) - 1);
+								return false;
+							}
+							memcpy(RspUpdateBaseCommission->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateBaseCommission->ExchangeId) ? sizeof(RspUpdateBaseCommission->ExchangeId) - 1 : value.length();
-							memcpy(RspUpdateBaseCommission->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateBaseCommission->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateBaseCommission->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateBaseCommission->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -26257,8 +27681,12 @@ bool RspUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -26447,20 +27875,32 @@ bool ReqRemoveBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveBaseCommission->AdminUserId) ? sizeof(ReqRemoveBaseCommission->AdminUserId) - 1 : value.length();
-							memcpy(ReqRemoveBaseCommission->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveBaseCommission->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveBaseCommission->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveBaseCommission->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveBaseCommission->TradingDay) ? sizeof(ReqRemoveBaseCommission->TradingDay) - 1 : value.length();
-							memcpy(ReqRemoveBaseCommission->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveBaseCommission->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveBaseCommission->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveBaseCommission->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveBaseCommission->ExchangeId) ? sizeof(ReqRemoveBaseCommission->ExchangeId) - 1 : value.length();
-							memcpy(ReqRemoveBaseCommission->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveBaseCommission->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveBaseCommission->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveBaseCommission->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -26660,8 +28100,12 @@ bool RspRemoveBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -26696,20 +28140,32 @@ bool RspRemoveBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveBaseCommission->AdminUserId) ? sizeof(RspRemoveBaseCommission->AdminUserId) - 1 : value.length();
-							memcpy(RspRemoveBaseCommission->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveBaseCommission->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveBaseCommission->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveBaseCommission->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveBaseCommission->TradingDay) ? sizeof(RspRemoveBaseCommission->TradingDay) - 1 : value.length();
-							memcpy(RspRemoveBaseCommission->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveBaseCommission->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveBaseCommission->TradingDay) - 1);
+								return false;
+							}
+							memcpy(RspRemoveBaseCommission->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveBaseCommission->ExchangeId) ? sizeof(RspRemoveBaseCommission->ExchangeId) - 1 : value.length();
-							memcpy(RspRemoveBaseCommission->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveBaseCommission->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveBaseCommission->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveBaseCommission->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -26919,14 +28375,22 @@ bool ReqAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddCommissionGroup->AdminUserId) ? sizeof(ReqAddCommissionGroup->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddCommissionGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddCommissionGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddCommissionGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddCommissionGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqAddCommissionGroup->TradingDay) ? sizeof(ReqAddCommissionGroup->TradingDay) - 1 : value.length();
-							memcpy(ReqAddCommissionGroup->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddCommissionGroup->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddCommissionGroup->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqAddCommissionGroup->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::CommissionGroupId:
@@ -26940,14 +28404,22 @@ bool ReqAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 						}
 						case Items::CommissionGroupName:
 						{
-							size_t len = value.length() >= sizeof(ReqAddCommissionGroup->CommissionGroupName) ? sizeof(ReqAddCommissionGroup->CommissionGroupName) - 1 : value.length();
-							memcpy(ReqAddCommissionGroup->CommissionGroupName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddCommissionGroup->CommissionGroupName))
+							{
+								WriteLog(LogLevel::Warning, "CommissionGroupName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddCommissionGroup->CommissionGroupName) - 1);
+								return false;
+							}
+							memcpy(ReqAddCommissionGroup->CommissionGroupName, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddCommissionGroup->ExchangeId) ? sizeof(ReqAddCommissionGroup->ExchangeId) - 1 : value.length();
-							memcpy(ReqAddCommissionGroup->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddCommissionGroup->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddCommissionGroup->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqAddCommissionGroup->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -27193,14 +28665,22 @@ bool RspAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddCommissionGroup->AdminUserId) ? sizeof(RspAddCommissionGroup->AdminUserId) - 1 : value.length();
-							memcpy(RspAddCommissionGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddCommissionGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddCommissionGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddCommissionGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(RspAddCommissionGroup->TradingDay) ? sizeof(RspAddCommissionGroup->TradingDay) - 1 : value.length();
-							memcpy(RspAddCommissionGroup->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddCommissionGroup->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddCommissionGroup->TradingDay) - 1);
+								return false;
+							}
+							memcpy(RspAddCommissionGroup->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::CommissionGroupId:
@@ -27214,8 +28694,12 @@ bool RspAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(RspAddCommissionGroup->ExchangeId) ? sizeof(RspAddCommissionGroup->ExchangeId) - 1 : value.length();
-							memcpy(RspAddCommissionGroup->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddCommissionGroup->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddCommissionGroup->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(RspAddCommissionGroup->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -27268,8 +28752,12 @@ bool RspAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -27470,14 +28958,22 @@ bool ReqUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateCommissionGroup->AdminUserId) ? sizeof(ReqUpdateCommissionGroup->AdminUserId) - 1 : value.length();
-							memcpy(ReqUpdateCommissionGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateCommissionGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateCommissionGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateCommissionGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateCommissionGroup->TradingDay) ? sizeof(ReqUpdateCommissionGroup->TradingDay) - 1 : value.length();
-							memcpy(ReqUpdateCommissionGroup->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateCommissionGroup->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateCommissionGroup->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateCommissionGroup->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::CommissionGroupId:
@@ -27491,14 +28987,22 @@ bool ReqUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::CommissionGroupName:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateCommissionGroup->CommissionGroupName) ? sizeof(ReqUpdateCommissionGroup->CommissionGroupName) - 1 : value.length();
-							memcpy(ReqUpdateCommissionGroup->CommissionGroupName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateCommissionGroup->CommissionGroupName))
+							{
+								WriteLog(LogLevel::Warning, "CommissionGroupName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateCommissionGroup->CommissionGroupName) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateCommissionGroup->CommissionGroupName, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateCommissionGroup->ExchangeId) ? sizeof(ReqUpdateCommissionGroup->ExchangeId) - 1 : value.length();
-							memcpy(ReqUpdateCommissionGroup->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateCommissionGroup->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateCommissionGroup->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateCommissionGroup->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -27744,14 +29248,22 @@ bool RspUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateCommissionGroup->AdminUserId) ? sizeof(RspUpdateCommissionGroup->AdminUserId) - 1 : value.length();
-							memcpy(RspUpdateCommissionGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateCommissionGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateCommissionGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateCommissionGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateCommissionGroup->TradingDay) ? sizeof(RspUpdateCommissionGroup->TradingDay) - 1 : value.length();
-							memcpy(RspUpdateCommissionGroup->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateCommissionGroup->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateCommissionGroup->TradingDay) - 1);
+								return false;
+							}
+							memcpy(RspUpdateCommissionGroup->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::CommissionGroupId:
@@ -27765,8 +29277,12 @@ bool RspUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateCommissionGroup->ExchangeId) ? sizeof(RspUpdateCommissionGroup->ExchangeId) - 1 : value.length();
-							memcpy(RspUpdateCommissionGroup->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateCommissionGroup->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateCommissionGroup->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateCommissionGroup->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -27819,8 +29335,12 @@ bool RspUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -28010,14 +29530,22 @@ bool ReqRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveCommissionGroup->AdminUserId) ? sizeof(ReqRemoveCommissionGroup->AdminUserId) - 1 : value.length();
-							memcpy(ReqRemoveCommissionGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveCommissionGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveCommissionGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveCommissionGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveCommissionGroup->TradingDay) ? sizeof(ReqRemoveCommissionGroup->TradingDay) - 1 : value.length();
-							memcpy(ReqRemoveCommissionGroup->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveCommissionGroup->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveCommissionGroup->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveCommissionGroup->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::CommissionGroupId:
@@ -28031,8 +29559,12 @@ bool ReqRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveCommissionGroup->ExchangeId) ? sizeof(ReqRemoveCommissionGroup->ExchangeId) - 1 : value.length();
-							memcpy(ReqRemoveCommissionGroup->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveCommissionGroup->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveCommissionGroup->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveCommissionGroup->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -28224,14 +29756,22 @@ bool RspRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveCommissionGroup->AdminUserId) ? sizeof(RspRemoveCommissionGroup->AdminUserId) - 1 : value.length();
-							memcpy(RspRemoveCommissionGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveCommissionGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveCommissionGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveCommissionGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveCommissionGroup->TradingDay) ? sizeof(RspRemoveCommissionGroup->TradingDay) - 1 : value.length();
-							memcpy(RspRemoveCommissionGroup->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveCommissionGroup->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveCommissionGroup->TradingDay) - 1);
+								return false;
+							}
+							memcpy(RspRemoveCommissionGroup->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::CommissionGroupId:
@@ -28245,8 +29785,12 @@ bool RspRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveCommissionGroup->ExchangeId) ? sizeof(RspRemoveCommissionGroup->ExchangeId) - 1 : value.length();
-							memcpy(RspRemoveCommissionGroup->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveCommissionGroup->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveCommissionGroup->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveCommissionGroup->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -28299,8 +29843,12 @@ bool RspRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -28490,20 +30038,32 @@ bool ReqAddOptionMarginParamPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddOptionMarginParam->AdminUserId) ? sizeof(ReqAddOptionMarginParam->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddOptionMarginParam->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddOptionMarginParam->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddOptionMarginParam->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddOptionMarginParam->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqAddOptionMarginParam->TradingDay) ? sizeof(ReqAddOptionMarginParam->TradingDay) - 1 : value.length();
-							memcpy(ReqAddOptionMarginParam->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddOptionMarginParam->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddOptionMarginParam->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqAddOptionMarginParam->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddOptionMarginParam->ExchangeId) ? sizeof(ReqAddOptionMarginParam->ExchangeId) - 1 : value.length();
-							memcpy(ReqAddOptionMarginParam->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddOptionMarginParam->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddOptionMarginParam->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqAddOptionMarginParam->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Param1:
@@ -28697,14 +30257,22 @@ bool RspAddOptionMarginParamPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddOptionMarginParam->AdminUserId) ? sizeof(RspAddOptionMarginParam->AdminUserId) - 1 : value.length();
-							memcpy(RspAddOptionMarginParam->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddOptionMarginParam->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddOptionMarginParam->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddOptionMarginParam->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(RspAddOptionMarginParam->ExchangeId) ? sizeof(RspAddOptionMarginParam->ExchangeId) - 1 : value.length();
-							memcpy(RspAddOptionMarginParam->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddOptionMarginParam->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddOptionMarginParam->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(RspAddOptionMarginParam->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -28748,8 +30316,12 @@ bool RspAddOptionMarginParamPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -28939,20 +30511,32 @@ bool ReqUpdateOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateOptionMarginParam->AdminUserId) ? sizeof(ReqUpdateOptionMarginParam->AdminUserId) - 1 : value.length();
-							memcpy(ReqUpdateOptionMarginParam->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateOptionMarginParam->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateOptionMarginParam->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateOptionMarginParam->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateOptionMarginParam->TradingDay) ? sizeof(ReqUpdateOptionMarginParam->TradingDay) - 1 : value.length();
-							memcpy(ReqUpdateOptionMarginParam->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateOptionMarginParam->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateOptionMarginParam->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateOptionMarginParam->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateOptionMarginParam->ExchangeId) ? sizeof(ReqUpdateOptionMarginParam->ExchangeId) - 1 : value.length();
-							memcpy(ReqUpdateOptionMarginParam->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateOptionMarginParam->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateOptionMarginParam->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateOptionMarginParam->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Param1:
@@ -29146,14 +30730,22 @@ bool RspUpdateOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateOptionMarginParam->AdminUserId) ? sizeof(RspUpdateOptionMarginParam->AdminUserId) - 1 : value.length();
-							memcpy(RspUpdateOptionMarginParam->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateOptionMarginParam->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateOptionMarginParam->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateOptionMarginParam->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateOptionMarginParam->ExchangeId) ? sizeof(RspUpdateOptionMarginParam->ExchangeId) - 1 : value.length();
-							memcpy(RspUpdateOptionMarginParam->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateOptionMarginParam->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateOptionMarginParam->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateOptionMarginParam->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -29197,8 +30789,12 @@ bool RspUpdateOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -29381,14 +30977,22 @@ bool ReqRemoveOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveOptionMarginParam->AdminUserId) ? sizeof(ReqRemoveOptionMarginParam->AdminUserId) - 1 : value.length();
-							memcpy(ReqRemoveOptionMarginParam->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveOptionMarginParam->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveOptionMarginParam->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveOptionMarginParam->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveOptionMarginParam->ExchangeId) ? sizeof(ReqRemoveOptionMarginParam->ExchangeId) - 1 : value.length();
-							memcpy(ReqRemoveOptionMarginParam->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveOptionMarginParam->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveOptionMarginParam->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveOptionMarginParam->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -29564,14 +31168,22 @@ bool RspRemoveOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveOptionMarginParam->AdminUserId) ? sizeof(RspRemoveOptionMarginParam->AdminUserId) - 1 : value.length();
-							memcpy(RspRemoveOptionMarginParam->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveOptionMarginParam->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveOptionMarginParam->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveOptionMarginParam->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveOptionMarginParam->ExchangeId) ? sizeof(RspRemoveOptionMarginParam->ExchangeId) - 1 : value.length();
-							memcpy(RspRemoveOptionMarginParam->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveOptionMarginParam->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveOptionMarginParam->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveOptionMarginParam->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -29615,8 +31227,12 @@ bool RspRemoveOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -29806,8 +31422,12 @@ bool ReqAddTradeOfferPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddTradeOffer->AdminUserId) ? sizeof(ReqAddTradeOffer->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddTradeOffer->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddTradeOffer->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddTradeOffer->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddTradeOffer->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::OfferId:
@@ -29821,8 +31441,12 @@ bool ReqAddTradeOfferPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::OfferName:
 						{
-							size_t len = value.length() >= sizeof(ReqAddTradeOffer->OfferName) ? sizeof(ReqAddTradeOffer->OfferName) - 1 : value.length();
-							memcpy(ReqAddTradeOffer->OfferName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddTradeOffer->OfferName))
+							{
+								WriteLog(LogLevel::Warning, "OfferName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddTradeOffer->OfferName) - 1);
+								return false;
+							}
+							memcpy(ReqAddTradeOffer->OfferName, value.c_str(), value.length());
 							break;
 						}
 						case Items::OfferType:
@@ -29836,8 +31460,12 @@ bool ReqAddTradeOfferPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::OfferPassword:
 						{
-							size_t len = value.length() >= sizeof(ReqAddTradeOffer->OfferPassword) ? sizeof(ReqAddTradeOffer->OfferPassword) - 1 : value.length();
-							memcpy(ReqAddTradeOffer->OfferPassword, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddTradeOffer->OfferPassword))
+							{
+								WriteLog(LogLevel::Warning, "OfferPassword Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddTradeOffer->OfferPassword) - 1);
+								return false;
+							}
+							memcpy(ReqAddTradeOffer->OfferPassword, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -30009,8 +31637,12 @@ bool RspAddTradeOfferPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddTradeOffer->AdminUserId) ? sizeof(RspAddTradeOffer->AdminUserId) - 1 : value.length();
-							memcpy(RspAddTradeOffer->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddTradeOffer->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddTradeOffer->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddTradeOffer->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::OfferId:
@@ -30063,8 +31695,12 @@ bool RspAddTradeOfferPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -30254,8 +31890,12 @@ bool ReqUpdateTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateTradeOffer->AdminUserId) ? sizeof(ReqUpdateTradeOffer->AdminUserId) - 1 : value.length();
-							memcpy(ReqUpdateTradeOffer->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateTradeOffer->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateTradeOffer->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateTradeOffer->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::OfferId:
@@ -30269,8 +31909,12 @@ bool ReqUpdateTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 						}
 						case Items::OfferName:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateTradeOffer->OfferName) ? sizeof(ReqUpdateTradeOffer->OfferName) - 1 : value.length();
-							memcpy(ReqUpdateTradeOffer->OfferName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateTradeOffer->OfferName))
+							{
+								WriteLog(LogLevel::Warning, "OfferName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateTradeOffer->OfferName) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateTradeOffer->OfferName, value.c_str(), value.length());
 							break;
 						}
 						case Items::OfferType:
@@ -30284,8 +31928,12 @@ bool ReqUpdateTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 						}
 						case Items::OfferPassword:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateTradeOffer->OfferPassword) ? sizeof(ReqUpdateTradeOffer->OfferPassword) - 1 : value.length();
-							memcpy(ReqUpdateTradeOffer->OfferPassword, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateTradeOffer->OfferPassword))
+							{
+								WriteLog(LogLevel::Warning, "OfferPassword Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateTradeOffer->OfferPassword) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateTradeOffer->OfferPassword, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -30457,8 +32105,12 @@ bool RspUpdateTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateTradeOffer->AdminUserId) ? sizeof(RspUpdateTradeOffer->AdminUserId) - 1 : value.length();
-							memcpy(RspUpdateTradeOffer->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateTradeOffer->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateTradeOffer->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateTradeOffer->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::OfferId:
@@ -30511,8 +32163,12 @@ bool RspUpdateTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -30691,8 +32347,12 @@ bool ReqRemoveTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveTradeOffer->AdminUserId) ? sizeof(ReqRemoveTradeOffer->AdminUserId) - 1 : value.length();
-							memcpy(ReqRemoveTradeOffer->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveTradeOffer->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveTradeOffer->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveTradeOffer->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::OfferId:
@@ -30873,8 +32533,12 @@ bool RspRemoveTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveTradeOffer->AdminUserId) ? sizeof(RspRemoveTradeOffer->AdminUserId) - 1 : value.length();
-							memcpy(RspRemoveTradeOffer->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveTradeOffer->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveTradeOffer->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveTradeOffer->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::OfferId:
@@ -30927,8 +32591,12 @@ bool RspRemoveTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -31112,8 +32780,12 @@ bool ReqAddTradeGroupPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddTradeGroup->AdminUserId) ? sizeof(ReqAddTradeGroup->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddTradeGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddTradeGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddTradeGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddTradeGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeGroupId:
@@ -31127,8 +32799,12 @@ bool ReqAddTradeGroupPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::TradeGroupName:
 						{
-							size_t len = value.length() >= sizeof(ReqAddTradeGroup->TradeGroupName) ? sizeof(ReqAddTradeGroup->TradeGroupName) - 1 : value.length();
-							memcpy(ReqAddTradeGroup->TradeGroupName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddTradeGroup->TradeGroupName))
+							{
+								WriteLog(LogLevel::Warning, "TradeGroupName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddTradeGroup->TradeGroupName) - 1);
+								return false;
+							}
+							memcpy(ReqAddTradeGroup->TradeGroupName, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -31300,8 +32976,12 @@ bool RspAddTradeGroupPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddTradeGroup->AdminUserId) ? sizeof(RspAddTradeGroup->AdminUserId) - 1 : value.length();
-							memcpy(RspAddTradeGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddTradeGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddTradeGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddTradeGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeGroupId:
@@ -31354,8 +33034,12 @@ bool RspAddTradeGroupPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -31539,8 +33223,12 @@ bool ReqUpdateTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateTradeGroup->AdminUserId) ? sizeof(ReqUpdateTradeGroup->AdminUserId) - 1 : value.length();
-							memcpy(ReqUpdateTradeGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateTradeGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateTradeGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateTradeGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeGroupId:
@@ -31554,8 +33242,12 @@ bool ReqUpdateTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 						}
 						case Items::TradeGroupName:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateTradeGroup->TradeGroupName) ? sizeof(ReqUpdateTradeGroup->TradeGroupName) - 1 : value.length();
-							memcpy(ReqUpdateTradeGroup->TradeGroupName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateTradeGroup->TradeGroupName))
+							{
+								WriteLog(LogLevel::Warning, "TradeGroupName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateTradeGroup->TradeGroupName) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateTradeGroup->TradeGroupName, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -31727,8 +33419,12 @@ bool RspUpdateTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateTradeGroup->AdminUserId) ? sizeof(RspUpdateTradeGroup->AdminUserId) - 1 : value.length();
-							memcpy(RspUpdateTradeGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateTradeGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateTradeGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateTradeGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeGroupId:
@@ -31781,8 +33477,12 @@ bool RspUpdateTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -31961,8 +33661,12 @@ bool ReqRemoveTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveTradeGroup->AdminUserId) ? sizeof(ReqRemoveTradeGroup->AdminUserId) - 1 : value.length();
-							memcpy(ReqRemoveTradeGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveTradeGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveTradeGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveTradeGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeGroupId:
@@ -32143,8 +33847,12 @@ bool RspRemoveTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveTradeGroup->AdminUserId) ? sizeof(RspRemoveTradeGroup->AdminUserId) - 1 : value.length();
-							memcpy(RspRemoveTradeGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveTradeGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveTradeGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveTradeGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeGroupId:
@@ -32197,8 +33905,12 @@ bool RspRemoveTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -32383,8 +34095,12 @@ bool ReqAddTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddTradeGroupItem->AdminUserId) ? sizeof(ReqAddTradeGroupItem->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddTradeGroupItem->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddTradeGroupItem->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddTradeGroupItem->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddTradeGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeGroupId:
@@ -32407,8 +34123,12 @@ bool ReqAddTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddTradeGroupItem->PrimaryAccountId) ? sizeof(ReqAddTradeGroupItem->PrimaryAccountId) - 1 : value.length();
-							memcpy(ReqAddTradeGroupItem->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddTradeGroupItem->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddTradeGroupItem->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(ReqAddTradeGroupItem->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -32581,8 +34301,12 @@ bool RspAddTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddTradeGroupItem->AdminUserId) ? sizeof(RspAddTradeGroupItem->AdminUserId) - 1 : value.length();
-							memcpy(RspAddTradeGroupItem->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddTradeGroupItem->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddTradeGroupItem->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddTradeGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeGroupId:
@@ -32644,8 +34368,12 @@ bool RspAddTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -32830,8 +34558,12 @@ bool ReqUpdateTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateTradeGroupItem->AdminUserId) ? sizeof(ReqUpdateTradeGroupItem->AdminUserId) - 1 : value.length();
-							memcpy(ReqUpdateTradeGroupItem->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateTradeGroupItem->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateTradeGroupItem->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateTradeGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeGroupId:
@@ -32854,8 +34586,12 @@ bool ReqUpdateTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateTradeGroupItem->PrimaryAccountId) ? sizeof(ReqUpdateTradeGroupItem->PrimaryAccountId) - 1 : value.length();
-							memcpy(ReqUpdateTradeGroupItem->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateTradeGroupItem->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateTradeGroupItem->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateTradeGroupItem->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -33028,8 +34764,12 @@ bool RspUpdateTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateTradeGroupItem->AdminUserId) ? sizeof(RspUpdateTradeGroupItem->AdminUserId) - 1 : value.length();
-							memcpy(RspUpdateTradeGroupItem->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateTradeGroupItem->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateTradeGroupItem->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateTradeGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeGroupId:
@@ -33091,8 +34831,12 @@ bool RspUpdateTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -33272,8 +35016,12 @@ bool ReqRemoveTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveTradeGroupItem->AdminUserId) ? sizeof(ReqRemoveTradeGroupItem->AdminUserId) - 1 : value.length();
-							memcpy(ReqRemoveTradeGroupItem->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveTradeGroupItem->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveTradeGroupItem->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveTradeGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeGroupId:
@@ -33464,8 +35212,12 @@ bool RspRemoveTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveTradeGroupItem->AdminUserId) ? sizeof(RspRemoveTradeGroupItem->AdminUserId) - 1 : value.length();
-							memcpy(RspRemoveTradeGroupItem->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveTradeGroupItem->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveTradeGroupItem->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveTradeGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeGroupId:
@@ -33527,8 +35279,12 @@ bool RspRemoveTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -33712,8 +35468,12 @@ bool ReqAddRiskGroupPackage::FromStepStream(char* buff, int startIndex, int endI
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskGroup->AdminUserId) ? sizeof(ReqAddRiskGroup->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddRiskGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -33727,8 +35487,12 @@ bool ReqAddRiskGroupPackage::FromStepStream(char* buff, int startIndex, int endI
 						}
 						case Items::RiskGroupName:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskGroup->RiskGroupName) ? sizeof(ReqAddRiskGroup->RiskGroupName) - 1 : value.length();
-							memcpy(ReqAddRiskGroup->RiskGroupName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskGroup->RiskGroupName))
+							{
+								WriteLog(LogLevel::Warning, "RiskGroupName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskGroup->RiskGroupName) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskGroup->RiskGroupName, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -33900,8 +35664,12 @@ bool RspAddRiskGroupPackage::FromStepStream(char* buff, int startIndex, int endI
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddRiskGroup->AdminUserId) ? sizeof(RspAddRiskGroup->AdminUserId) - 1 : value.length();
-							memcpy(RspAddRiskGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddRiskGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddRiskGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddRiskGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -33954,8 +35722,12 @@ bool RspAddRiskGroupPackage::FromStepStream(char* buff, int startIndex, int endI
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -34139,8 +35911,12 @@ bool ReqUpdateRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateRiskGroup->AdminUserId) ? sizeof(ReqUpdateRiskGroup->AdminUserId) - 1 : value.length();
-							memcpy(ReqUpdateRiskGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateRiskGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateRiskGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateRiskGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -34154,8 +35930,12 @@ bool ReqUpdateRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::RiskGroupName:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateRiskGroup->RiskGroupName) ? sizeof(ReqUpdateRiskGroup->RiskGroupName) - 1 : value.length();
-							memcpy(ReqUpdateRiskGroup->RiskGroupName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateRiskGroup->RiskGroupName))
+							{
+								WriteLog(LogLevel::Warning, "RiskGroupName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateRiskGroup->RiskGroupName) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateRiskGroup->RiskGroupName, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -34327,8 +36107,12 @@ bool RspUpdateRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateRiskGroup->AdminUserId) ? sizeof(RspUpdateRiskGroup->AdminUserId) - 1 : value.length();
-							memcpy(RspUpdateRiskGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateRiskGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateRiskGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateRiskGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -34381,8 +36165,12 @@ bool RspUpdateRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -34561,8 +36349,12 @@ bool ReqRemoveRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveRiskGroup->AdminUserId) ? sizeof(ReqRemoveRiskGroup->AdminUserId) - 1 : value.length();
-							memcpy(ReqRemoveRiskGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveRiskGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveRiskGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveRiskGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -34743,8 +36535,12 @@ bool RspRemoveRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveRiskGroup->AdminUserId) ? sizeof(RspRemoveRiskGroup->AdminUserId) - 1 : value.length();
-							memcpy(RspRemoveRiskGroup->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveRiskGroup->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveRiskGroup->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveRiskGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -34797,8 +36593,12 @@ bool RspRemoveRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -34978,8 +36778,12 @@ bool ReqAddRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, int 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskGroupItem->AdminUserId) ? sizeof(ReqAddRiskGroupItem->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddRiskGroupItem->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskGroupItem->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskGroupItem->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -35170,8 +36974,12 @@ bool RspAddRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, int 
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddRiskGroupItem->AdminUserId) ? sizeof(RspAddRiskGroupItem->AdminUserId) - 1 : value.length();
-							memcpy(RspAddRiskGroupItem->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddRiskGroupItem->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddRiskGroupItem->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddRiskGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -35233,8 +37041,12 @@ bool RspAddRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, int 
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -35414,8 +37226,12 @@ bool ReqUpdateRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqUpdateRiskGroupItem->AdminUserId) ? sizeof(ReqUpdateRiskGroupItem->AdminUserId) - 1 : value.length();
-							memcpy(ReqUpdateRiskGroupItem->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqUpdateRiskGroupItem->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqUpdateRiskGroupItem->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqUpdateRiskGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -35606,8 +37422,12 @@ bool RspUpdateRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspUpdateRiskGroupItem->AdminUserId) ? sizeof(RspUpdateRiskGroupItem->AdminUserId) - 1 : value.length();
-							memcpy(RspUpdateRiskGroupItem->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspUpdateRiskGroupItem->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspUpdateRiskGroupItem->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspUpdateRiskGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -35669,8 +37489,12 @@ bool RspUpdateRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -35850,8 +37674,12 @@ bool ReqRemoveRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveRiskGroupItem->AdminUserId) ? sizeof(ReqRemoveRiskGroupItem->AdminUserId) - 1 : value.length();
-							memcpy(ReqRemoveRiskGroupItem->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveRiskGroupItem->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveRiskGroupItem->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveRiskGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -36042,8 +37870,12 @@ bool RspRemoveRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveRiskGroupItem->AdminUserId) ? sizeof(RspRemoveRiskGroupItem->AdminUserId) - 1 : value.length();
-							memcpy(RspRemoveRiskGroupItem->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveRiskGroupItem->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveRiskGroupItem->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveRiskGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskGroupId:
@@ -36105,8 +37937,12 @@ bool RspRemoveRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -36291,8 +38127,12 @@ bool ReqAddOrUpdateRiskPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddOrUpdateRisk->AdminUserId) ? sizeof(ReqAddOrUpdateRisk->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddOrUpdateRisk->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddOrUpdateRisk->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddOrUpdateRisk->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddOrUpdateRisk->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -36306,8 +38146,12 @@ bool ReqAddOrUpdateRiskPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::RiskName:
 						{
-							size_t len = value.length() >= sizeof(ReqAddOrUpdateRisk->RiskName) ? sizeof(ReqAddOrUpdateRisk->RiskName) - 1 : value.length();
-							memcpy(ReqAddOrUpdateRisk->RiskName, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddOrUpdateRisk->RiskName))
+							{
+								WriteLog(LogLevel::Warning, "RiskName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddOrUpdateRisk->RiskName) - 1);
+								return false;
+							}
+							memcpy(ReqAddOrUpdateRisk->RiskName, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskClassId:
@@ -36488,8 +38332,12 @@ bool RspAddOrUpdateRiskPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddOrUpdateRisk->AdminUserId) ? sizeof(RspAddOrUpdateRisk->AdminUserId) - 1 : value.length();
-							memcpy(RspAddOrUpdateRisk->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddOrUpdateRisk->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddOrUpdateRisk->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddOrUpdateRisk->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -36542,8 +38390,12 @@ bool RspAddOrUpdateRiskPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -36722,8 +38574,12 @@ bool ReqRemoveRiskPackage::FromStepStream(char* buff, int startIndex, int endInd
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveRisk->AdminUserId) ? sizeof(ReqRemoveRisk->AdminUserId) - 1 : value.length();
-							memcpy(ReqRemoveRisk->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveRisk->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveRisk->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveRisk->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -36904,8 +38760,12 @@ bool RspRemoveRiskPackage::FromStepStream(char* buff, int startIndex, int endInd
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveRisk->AdminUserId) ? sizeof(RspRemoveRisk->AdminUserId) - 1 : value.length();
-							memcpy(RspRemoveRisk->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveRisk->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveRisk->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveRisk->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -36958,8 +38818,12 @@ bool RspRemoveRiskPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -37145,8 +39009,12 @@ bool ReqAddRiskRulePackage::FromStepStream(char* buff, int startIndex, int endIn
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskRule->AdminUserId) ? sizeof(ReqAddRiskRule->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddRiskRule->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskRule->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskRule->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskRule->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -37178,8 +39046,12 @@ bool ReqAddRiskRulePackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::FormatRiskMessage:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskRule->FormatRiskMessage) ? sizeof(ReqAddRiskRule->FormatRiskMessage) - 1 : value.length();
-							memcpy(ReqAddRiskRule->FormatRiskMessage, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskRule->FormatRiskMessage))
+							{
+								WriteLog(LogLevel::Warning, "FormatRiskMessage Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskRule->FormatRiskMessage) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskRule->FormatRiskMessage, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -37352,8 +39224,12 @@ bool RspAddRiskRulePackage::FromStepStream(char* buff, int startIndex, int endIn
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddRiskRule->AdminUserId) ? sizeof(RspAddRiskRule->AdminUserId) - 1 : value.length();
-							memcpy(RspAddRiskRule->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddRiskRule->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddRiskRule->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddRiskRule->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -37415,8 +39291,12 @@ bool RspAddRiskRulePackage::FromStepStream(char* buff, int startIndex, int endIn
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -37645,8 +39525,12 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskRuleItem->AdminUserId) ? sizeof(ReqAddRiskRuleItem->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddRiskRuleItem->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskRuleItem->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskRuleItem->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskRuleItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -37705,38 +39589,62 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::IndexParam1:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam1) ? sizeof(ReqAddRiskRuleItem->IndexParam1) - 1 : value.length();
-							memcpy(ReqAddRiskRuleItem->IndexParam1, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam1))
+							{
+								WriteLog(LogLevel::Warning, "IndexParam1 Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskRuleItem->IndexParam1) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskRuleItem->IndexParam1, value.c_str(), value.length());
 							break;
 						}
 						case Items::IndexParam2:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam2) ? sizeof(ReqAddRiskRuleItem->IndexParam2) - 1 : value.length();
-							memcpy(ReqAddRiskRuleItem->IndexParam2, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam2))
+							{
+								WriteLog(LogLevel::Warning, "IndexParam2 Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskRuleItem->IndexParam2) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskRuleItem->IndexParam2, value.c_str(), value.length());
 							break;
 						}
 						case Items::IndexParam3:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam3) ? sizeof(ReqAddRiskRuleItem->IndexParam3) - 1 : value.length();
-							memcpy(ReqAddRiskRuleItem->IndexParam3, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam3))
+							{
+								WriteLog(LogLevel::Warning, "IndexParam3 Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskRuleItem->IndexParam3) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskRuleItem->IndexParam3, value.c_str(), value.length());
 							break;
 						}
 						case Items::IndexParam4:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam4) ? sizeof(ReqAddRiskRuleItem->IndexParam4) - 1 : value.length();
-							memcpy(ReqAddRiskRuleItem->IndexParam4, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam4))
+							{
+								WriteLog(LogLevel::Warning, "IndexParam4 Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskRuleItem->IndexParam4) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskRuleItem->IndexParam4, value.c_str(), value.length());
 							break;
 						}
 						case Items::IndexParam5:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam5) ? sizeof(ReqAddRiskRuleItem->IndexParam5) - 1 : value.length();
-							memcpy(ReqAddRiskRuleItem->IndexParam5, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam5))
+							{
+								WriteLog(LogLevel::Warning, "IndexParam5 Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskRuleItem->IndexParam5) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskRuleItem->IndexParam5, value.c_str(), value.length());
 							break;
 						}
 						case Items::IndexParam6:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam6) ? sizeof(ReqAddRiskRuleItem->IndexParam6) - 1 : value.length();
-							memcpy(ReqAddRiskRuleItem->IndexParam6, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam6))
+							{
+								WriteLog(LogLevel::Warning, "IndexParam6 Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskRuleItem->IndexParam6) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskRuleItem->IndexParam6, value.c_str(), value.length());
 							break;
 						}
 						case Items::LogicFunc:
@@ -37759,8 +39667,12 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::LogicParam1:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskRuleItem->LogicParam1) ? sizeof(ReqAddRiskRuleItem->LogicParam1) - 1 : value.length();
-							memcpy(ReqAddRiskRuleItem->LogicParam1, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskRuleItem->LogicParam1))
+							{
+								WriteLog(LogLevel::Warning, "LogicParam1 Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskRuleItem->LogicParam1) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskRuleItem->LogicParam1, value.c_str(), value.length());
 							break;
 						}
 						case Items::LogicParam1TextRef:
@@ -37783,8 +39695,12 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::LogicParam2:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskRuleItem->LogicParam2) ? sizeof(ReqAddRiskRuleItem->LogicParam2) - 1 : value.length();
-							memcpy(ReqAddRiskRuleItem->LogicParam2, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskRuleItem->LogicParam2))
+							{
+								WriteLog(LogLevel::Warning, "LogicParam2 Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskRuleItem->LogicParam2) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskRuleItem->LogicParam2, value.c_str(), value.length());
 							break;
 						}
 						case Items::LogicParam2TextRef:
@@ -37967,8 +39883,12 @@ bool RspAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddRiskRuleItem->AdminUserId) ? sizeof(RspAddRiskRuleItem->AdminUserId) - 1 : value.length();
-							memcpy(RspAddRiskRuleItem->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddRiskRuleItem->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddRiskRuleItem->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddRiskRuleItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -38039,8 +39959,12 @@ bool RspAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -38226,8 +40150,12 @@ bool ReqAddRiskTradeScopePackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskTradeScope->AdminUserId) ? sizeof(ReqAddRiskTradeScope->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddRiskTradeScope->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskTradeScope->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskTradeScope->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskTradeScope->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -38259,8 +40187,12 @@ bool ReqAddRiskTradeScopePackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::FormatRiskMessage:
 						{
-							size_t len = value.length() >= sizeof(ReqAddRiskTradeScope->FormatRiskMessage) ? sizeof(ReqAddRiskTradeScope->FormatRiskMessage) - 1 : value.length();
-							memcpy(ReqAddRiskTradeScope->FormatRiskMessage, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddRiskTradeScope->FormatRiskMessage))
+							{
+								WriteLog(LogLevel::Warning, "FormatRiskMessage Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddRiskTradeScope->FormatRiskMessage) - 1);
+								return false;
+							}
+							memcpy(ReqAddRiskTradeScope->FormatRiskMessage, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -38432,8 +40364,12 @@ bool RspAddRiskTradeScopePackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddRiskTradeScope->AdminUserId) ? sizeof(RspAddRiskTradeScope->AdminUserId) - 1 : value.length();
-							memcpy(RspAddRiskTradeScope->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddRiskTradeScope->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddRiskTradeScope->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddRiskTradeScope->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -38486,8 +40422,12 @@ bool RspAddRiskTradeScopePackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -38671,14 +40611,22 @@ bool ReqAddAccountRiskPackage::FromStepStream(char* buff, int startIndex, int en
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddAccountRisk->AdminUserId) ? sizeof(ReqAddAccountRisk->AdminUserId) - 1 : value.length();
-							memcpy(ReqAddAccountRisk->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddAccountRisk->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddAccountRisk->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAddAccountRisk->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqAddAccountRisk->AccountId) ? sizeof(ReqAddAccountRisk->AccountId) - 1 : value.length();
-							memcpy(ReqAddAccountRisk->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAddAccountRisk->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAddAccountRisk->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqAddAccountRisk->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -38864,14 +40812,22 @@ bool RspAddAccountRiskPackage::FromStepStream(char* buff, int startIndex, int en
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAddAccountRisk->AdminUserId) ? sizeof(RspAddAccountRisk->AdminUserId) - 1 : value.length();
-							memcpy(RspAddAccountRisk->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddAccountRisk->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddAccountRisk->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAddAccountRisk->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(RspAddAccountRisk->AccountId) ? sizeof(RspAddAccountRisk->AccountId) - 1 : value.length();
-							memcpy(RspAddAccountRisk->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAddAccountRisk->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAddAccountRisk->AccountId) - 1);
+								return false;
+							}
+							memcpy(RspAddAccountRisk->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -38924,8 +40880,12 @@ bool RspAddAccountRiskPackage::FromStepStream(char* buff, int startIndex, int en
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -39109,14 +41069,22 @@ bool ReqRemoveAccountRiskPackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveAccountRisk->AdminUserId) ? sizeof(ReqRemoveAccountRisk->AdminUserId) - 1 : value.length();
-							memcpy(ReqRemoveAccountRisk->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveAccountRisk->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveAccountRisk->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveAccountRisk->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqRemoveAccountRisk->AccountId) ? sizeof(ReqRemoveAccountRisk->AccountId) - 1 : value.length();
-							memcpy(ReqRemoveAccountRisk->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqRemoveAccountRisk->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqRemoveAccountRisk->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqRemoveAccountRisk->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -39302,14 +41270,22 @@ bool RspRemoveAccountRiskPackage::FromStepStream(char* buff, int startIndex, int
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveAccountRisk->AdminUserId) ? sizeof(RspRemoveAccountRisk->AdminUserId) - 1 : value.length();
-							memcpy(RspRemoveAccountRisk->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveAccountRisk->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveAccountRisk->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveAccountRisk->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(RspRemoveAccountRisk->AccountId) ? sizeof(RspRemoveAccountRisk->AccountId) - 1 : value.length();
-							memcpy(RspRemoveAccountRisk->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RspRemoveAccountRisk->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspRemoveAccountRisk->AccountId) - 1);
+								return false;
+							}
+							memcpy(RspRemoveAccountRisk->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::RiskId:
@@ -39362,8 +41338,12 @@ bool RspRemoveAccountRiskPackage::FromStepStream(char* buff, int startIndex, int
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -39575,20 +41555,32 @@ bool ReqMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqMoneyTransfer->AdminUserId) ? sizeof(ReqMoneyTransfer->AdminUserId) - 1 : value.length();
-							memcpy(ReqMoneyTransfer->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqMoneyTransfer->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqMoneyTransfer->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqMoneyTransfer->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqMoneyTransfer->TradingDay) ? sizeof(ReqMoneyTransfer->TradingDay) - 1 : value.length();
-							memcpy(ReqMoneyTransfer->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqMoneyTransfer->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqMoneyTransfer->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqMoneyTransfer->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqMoneyTransfer->AccountId) ? sizeof(ReqMoneyTransfer->AccountId) - 1 : value.length();
-							memcpy(ReqMoneyTransfer->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqMoneyTransfer->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqMoneyTransfer->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqMoneyTransfer->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::MoneyTransferId:
@@ -39629,26 +41621,42 @@ bool ReqMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::InfoMessage:
 						{
-							size_t len = value.length() >= sizeof(ReqMoneyTransfer->InfoMessage) ? sizeof(ReqMoneyTransfer->InfoMessage) - 1 : value.length();
-							memcpy(ReqMoneyTransfer->InfoMessage, value.c_str(), len);
+							if (value.length() >= sizeof(ReqMoneyTransfer->InfoMessage))
+							{
+								WriteLog(LogLevel::Warning, "InfoMessage Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqMoneyTransfer->InfoMessage) - 1);
+								return false;
+							}
+							memcpy(ReqMoneyTransfer->InfoMessage, value.c_str(), value.length());
 							break;
 						}
 						case Items::UserId:
 						{
-							size_t len = value.length() >= sizeof(ReqMoneyTransfer->UserId) ? sizeof(ReqMoneyTransfer->UserId) - 1 : value.length();
-							memcpy(ReqMoneyTransfer->UserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqMoneyTransfer->UserId))
+							{
+								WriteLog(LogLevel::Warning, "UserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqMoneyTransfer->UserId) - 1);
+								return false;
+							}
+							memcpy(ReqMoneyTransfer->UserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TransferDate:
 						{
-							size_t len = value.length() >= sizeof(ReqMoneyTransfer->TransferDate) ? sizeof(ReqMoneyTransfer->TransferDate) - 1 : value.length();
-							memcpy(ReqMoneyTransfer->TransferDate, value.c_str(), len);
+							if (value.length() >= sizeof(ReqMoneyTransfer->TransferDate))
+							{
+								WriteLog(LogLevel::Warning, "TransferDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqMoneyTransfer->TransferDate) - 1);
+								return false;
+							}
+							memcpy(ReqMoneyTransfer->TransferDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::TransferTime:
 						{
-							size_t len = value.length() >= sizeof(ReqMoneyTransfer->TransferTime) ? sizeof(ReqMoneyTransfer->TransferTime) - 1 : value.length();
-							memcpy(ReqMoneyTransfer->TransferTime, value.c_str(), len);
+							if (value.length() >= sizeof(ReqMoneyTransfer->TransferTime))
+							{
+								WriteLog(LogLevel::Warning, "TransferTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqMoneyTransfer->TransferTime) - 1);
+								return false;
+							}
+							memcpy(ReqMoneyTransfer->TransferTime, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -39830,20 +41838,32 @@ bool RspMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspMoneyTransfer->AdminUserId) ? sizeof(RspMoneyTransfer->AdminUserId) - 1 : value.length();
-							memcpy(RspMoneyTransfer->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspMoneyTransfer->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspMoneyTransfer->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspMoneyTransfer->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(RspMoneyTransfer->TradingDay) ? sizeof(RspMoneyTransfer->TradingDay) - 1 : value.length();
-							memcpy(RspMoneyTransfer->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(RspMoneyTransfer->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspMoneyTransfer->TradingDay) - 1);
+								return false;
+							}
+							memcpy(RspMoneyTransfer->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(RspMoneyTransfer->AccountId) ? sizeof(RspMoneyTransfer->AccountId) - 1 : value.length();
-							memcpy(RspMoneyTransfer->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RspMoneyTransfer->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspMoneyTransfer->AccountId) - 1);
+								return false;
+							}
+							memcpy(RspMoneyTransfer->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::MoneyTransferId:
@@ -39896,8 +41916,12 @@ bool RspMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -40097,32 +42121,52 @@ bool ReqAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(ReqAuditOrder->AdminUserId) ? sizeof(ReqAuditOrder->AdminUserId) - 1 : value.length();
-							memcpy(ReqAuditOrder->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAuditOrder->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAuditOrder->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(ReqAuditOrder->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqAuditOrder->TradingDay) ? sizeof(ReqAuditOrder->TradingDay) - 1 : value.length();
-							memcpy(ReqAuditOrder->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAuditOrder->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAuditOrder->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqAuditOrder->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqAuditOrder->AccountId) ? sizeof(ReqAuditOrder->AccountId) - 1 : value.length();
-							memcpy(ReqAuditOrder->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAuditOrder->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAuditOrder->AccountId) - 1);
+								return false;
+							}
+							memcpy(ReqAuditOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqAuditOrder->ExchangeId) ? sizeof(ReqAuditOrder->ExchangeId) - 1 : value.length();
-							memcpy(ReqAuditOrder->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAuditOrder->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAuditOrder->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqAuditOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(ReqAuditOrder->InstrumentId) ? sizeof(ReqAuditOrder->InstrumentId) - 1 : value.length();
-							memcpy(ReqAuditOrder->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqAuditOrder->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqAuditOrder->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(ReqAuditOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::OrderId:
@@ -40333,32 +42377,52 @@ bool RspAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							break;
 						case Items::AdminUserId:
 						{
-							size_t len = value.length() >= sizeof(RspAuditOrder->AdminUserId) ? sizeof(RspAuditOrder->AdminUserId) - 1 : value.length();
-							memcpy(RspAuditOrder->AdminUserId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAuditOrder->AdminUserId))
+							{
+								WriteLog(LogLevel::Warning, "AdminUserId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAuditOrder->AdminUserId) - 1);
+								return false;
+							}
+							memcpy(RspAuditOrder->AdminUserId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(RspAuditOrder->TradingDay) ? sizeof(RspAuditOrder->TradingDay) - 1 : value.length();
-							memcpy(RspAuditOrder->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(RspAuditOrder->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAuditOrder->TradingDay) - 1);
+								return false;
+							}
+							memcpy(RspAuditOrder->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::AccountId:
 						{
-							size_t len = value.length() >= sizeof(RspAuditOrder->AccountId) ? sizeof(RspAuditOrder->AccountId) - 1 : value.length();
-							memcpy(RspAuditOrder->AccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAuditOrder->AccountId))
+							{
+								WriteLog(LogLevel::Warning, "AccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAuditOrder->AccountId) - 1);
+								return false;
+							}
+							memcpy(RspAuditOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(RspAuditOrder->ExchangeId) ? sizeof(RspAuditOrder->ExchangeId) - 1 : value.length();
-							memcpy(RspAuditOrder->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAuditOrder->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAuditOrder->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(RspAuditOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(RspAuditOrder->InstrumentId) ? sizeof(RspAuditOrder->InstrumentId) - 1 : value.length();
-							memcpy(RspAuditOrder->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(RspAuditOrder->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspAuditOrder->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(RspAuditOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::OrderId:
@@ -40420,8 +42484,12 @@ bool RspAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspInfo->ErrorMsg) ? sizeof(RspInfo->ErrorMsg) - 1 : value.length();
-							memcpy(RspInfo->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspInfo->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspInfo->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspInfo->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -40609,8 +42677,12 @@ bool ReqOfferLoginPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::OfferPassword:
 						{
-							size_t len = value.length() >= sizeof(ReqOfferLogin->OfferPassword) ? sizeof(ReqOfferLogin->OfferPassword) - 1 : value.length();
-							memcpy(ReqOfferLogin->OfferPassword, value.c_str(), len);
+							if (value.length() >= sizeof(ReqOfferLogin->OfferPassword))
+							{
+								WriteLog(LogLevel::Warning, "OfferPassword Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqOfferLogin->OfferPassword) - 1);
+								return false;
+							}
+							memcpy(ReqOfferLogin->OfferPassword, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -40781,8 +42853,12 @@ bool RspOfferLoginPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspOfferLogin->ErrorMsg) ? sizeof(RspOfferLogin->ErrorMsg) - 1 : value.length();
-							memcpy(RspOfferLogin->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspOfferLogin->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspOfferLogin->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspOfferLogin->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						case Items::OfferId:
@@ -40796,8 +42872,12 @@ bool RspOfferLoginPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(RspOfferLogin->TradingDay) ? sizeof(RspOfferLogin->TradingDay) - 1 : value.length();
-							memcpy(RspOfferLogin->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(RspOfferLogin->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspOfferLogin->TradingDay) - 1);
+								return false;
+							}
+							memcpy(RspOfferLogin->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -40957,14 +43037,22 @@ bool ReqPrimaryAccountLoginPackage::FromStepStream(char* buff, int startIndex, i
 							break;
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqPrimaryAccountLogin->PrimaryAccountId) ? sizeof(ReqPrimaryAccountLogin->PrimaryAccountId) - 1 : value.length();
-							memcpy(ReqPrimaryAccountLogin->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqPrimaryAccountLogin->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqPrimaryAccountLogin->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(ReqPrimaryAccountLogin->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Password:
 						{
-							size_t len = value.length() >= sizeof(ReqPrimaryAccountLogin->Password) ? sizeof(ReqPrimaryAccountLogin->Password) - 1 : value.length();
-							memcpy(ReqPrimaryAccountLogin->Password, value.c_str(), len);
+							if (value.length() >= sizeof(ReqPrimaryAccountLogin->Password))
+							{
+								WriteLog(LogLevel::Warning, "Password Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqPrimaryAccountLogin->Password) - 1);
+								return false;
+							}
+							memcpy(ReqPrimaryAccountLogin->Password, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -41139,20 +43227,32 @@ bool RspPrimaryAccountLoginPackage::FromStepStream(char* buff, int startIndex, i
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspPrimaryAccountLogin->ErrorMsg) ? sizeof(RspPrimaryAccountLogin->ErrorMsg) - 1 : value.length();
-							memcpy(RspPrimaryAccountLogin->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspPrimaryAccountLogin->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspPrimaryAccountLogin->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspPrimaryAccountLogin->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(RspPrimaryAccountLogin->TradingDay) ? sizeof(RspPrimaryAccountLogin->TradingDay) - 1 : value.length();
-							memcpy(RspPrimaryAccountLogin->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(RspPrimaryAccountLogin->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspPrimaryAccountLogin->TradingDay) - 1);
+								return false;
+							}
+							memcpy(RspPrimaryAccountLogin->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(RspPrimaryAccountLogin->PrimaryAccountId) ? sizeof(RspPrimaryAccountLogin->PrimaryAccountId) - 1 : value.length();
-							memcpy(RspPrimaryAccountLogin->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RspPrimaryAccountLogin->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspPrimaryAccountLogin->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(RspPrimaryAccountLogin->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -41312,14 +43412,22 @@ bool ReqPrimaryAccountLogoutPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqPrimaryAccountLogout->TradingDay) ? sizeof(ReqPrimaryAccountLogout->TradingDay) - 1 : value.length();
-							memcpy(ReqPrimaryAccountLogout->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqPrimaryAccountLogout->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqPrimaryAccountLogout->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqPrimaryAccountLogout->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqPrimaryAccountLogout->PrimaryAccountId) ? sizeof(ReqPrimaryAccountLogout->PrimaryAccountId) - 1 : value.length();
-							memcpy(ReqPrimaryAccountLogout->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqPrimaryAccountLogout->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqPrimaryAccountLogout->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(ReqPrimaryAccountLogout->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -41479,14 +43587,22 @@ bool RtnPrimaryAccountLogoutPackage::FromStepStream(char* buff, int startIndex, 
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(RtnPrimaryAccountLogout->TradingDay) ? sizeof(RtnPrimaryAccountLogout->TradingDay) - 1 : value.length();
-							memcpy(RtnPrimaryAccountLogout->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(RtnPrimaryAccountLogout->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RtnPrimaryAccountLogout->TradingDay) - 1);
+								return false;
+							}
+							memcpy(RtnPrimaryAccountLogout->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(RtnPrimaryAccountLogout->PrimaryAccountId) ? sizeof(RtnPrimaryAccountLogout->PrimaryAccountId) - 1 : value.length();
-							memcpy(RtnPrimaryAccountLogout->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RtnPrimaryAccountLogout->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RtnPrimaryAccountLogout->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(RtnPrimaryAccountLogout->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -41641,8 +43757,12 @@ bool ReqPrimaryAccountInitPackage::FromStepStream(char* buff, int startIndex, in
 							break;
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqPrimaryAccountInit->PrimaryAccountId) ? sizeof(ReqPrimaryAccountInit->PrimaryAccountId) - 1 : value.length();
-							memcpy(ReqPrimaryAccountInit->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqPrimaryAccountInit->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqPrimaryAccountInit->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(ReqPrimaryAccountInit->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -41812,14 +43932,22 @@ bool RspPrimaryAccountInitPackage::FromStepStream(char* buff, int startIndex, in
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspPrimaryAccountInit->ErrorMsg) ? sizeof(RspPrimaryAccountInit->ErrorMsg) - 1 : value.length();
-							memcpy(RspPrimaryAccountInit->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspPrimaryAccountInit->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspPrimaryAccountInit->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspPrimaryAccountInit->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(RspPrimaryAccountInit->PrimaryAccountId) ? sizeof(RspPrimaryAccountInit->PrimaryAccountId) - 1 : value.length();
-							memcpy(RspPrimaryAccountInit->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RspPrimaryAccountInit->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspPrimaryAccountInit->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(RspPrimaryAccountInit->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -41974,8 +44102,12 @@ bool ReqPrimaryAccountQueryPackage::FromStepStream(char* buff, int startIndex, i
 							break;
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqPrimaryAccountQuery->PrimaryAccountId) ? sizeof(ReqPrimaryAccountQuery->PrimaryAccountId) - 1 : value.length();
-							memcpy(ReqPrimaryAccountQuery->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqPrimaryAccountQuery->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqPrimaryAccountQuery->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(ReqPrimaryAccountQuery->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -42145,14 +44277,22 @@ bool RspPrimaryAccountQueryPackage::FromStepStream(char* buff, int startIndex, i
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspPrimaryAccountQuery->ErrorMsg) ? sizeof(RspPrimaryAccountQuery->ErrorMsg) - 1 : value.length();
-							memcpy(RspPrimaryAccountQuery->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspPrimaryAccountQuery->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspPrimaryAccountQuery->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspPrimaryAccountQuery->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(RspPrimaryAccountQuery->PrimaryAccountId) ? sizeof(RspPrimaryAccountQuery->PrimaryAccountId) - 1 : value.length();
-							memcpy(RspPrimaryAccountQuery->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RspPrimaryAccountQuery->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspPrimaryAccountQuery->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(RspPrimaryAccountQuery->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -42307,8 +44447,12 @@ bool ReqQryOfferOptionInstrumentPackage::FromStepStream(char* buff, int startInd
 							break;
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqQryOfferOptionInstrument->PrimaryAccountId) ? sizeof(ReqQryOfferOptionInstrument->PrimaryAccountId) - 1 : value.length();
-							memcpy(ReqQryOfferOptionInstrument->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqQryOfferOptionInstrument->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqQryOfferOptionInstrument->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(ReqQryOfferOptionInstrument->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -42478,14 +44622,22 @@ bool RspQryOfferOptionInstrumentPackage::FromStepStream(char* buff, int startInd
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(RspQryOfferOptionInstrument->ErrorMsg) ? sizeof(RspQryOfferOptionInstrument->ErrorMsg) - 1 : value.length();
-							memcpy(RspQryOfferOptionInstrument->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(RspQryOfferOptionInstrument->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspQryOfferOptionInstrument->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(RspQryOfferOptionInstrument->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(RspQryOfferOptionInstrument->PrimaryAccountId) ? sizeof(RspQryOfferOptionInstrument->PrimaryAccountId) - 1 : value.length();
-							memcpy(RspQryOfferOptionInstrument->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(RspQryOfferOptionInstrument->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(RspQryOfferOptionInstrument->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(RspQryOfferOptionInstrument->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -42677,32 +44829,52 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(OfferOptionInstrument->TradingDay) ? sizeof(OfferOptionInstrument->TradingDay) - 1 : value.length();
-							memcpy(OfferOptionInstrument->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOptionInstrument->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOptionInstrument->TradingDay) - 1);
+								return false;
+							}
+							memcpy(OfferOptionInstrument->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(OfferOptionInstrument->ExchangeId) ? sizeof(OfferOptionInstrument->ExchangeId) - 1 : value.length();
-							memcpy(OfferOptionInstrument->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOptionInstrument->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOptionInstrument->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(OfferOptionInstrument->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(OfferOptionInstrument->InstrumentId) ? sizeof(OfferOptionInstrument->InstrumentId) - 1 : value.length();
-							memcpy(OfferOptionInstrument->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOptionInstrument->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOptionInstrument->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(OfferOptionInstrument->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeInstId:
 						{
-							size_t len = value.length() >= sizeof(OfferOptionInstrument->ExchangeInstId) ? sizeof(OfferOptionInstrument->ExchangeInstId) - 1 : value.length();
-							memcpy(OfferOptionInstrument->ExchangeInstId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOptionInstrument->ExchangeInstId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeInstId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOptionInstrument->ExchangeInstId) - 1);
+								return false;
+							}
+							memcpy(OfferOptionInstrument->ExchangeInstId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentName:
 						{
-							size_t len = value.length() >= sizeof(OfferOptionInstrument->InstrumentName) ? sizeof(OfferOptionInstrument->InstrumentName) - 1 : value.length();
-							memcpy(OfferOptionInstrument->InstrumentName, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOptionInstrument->InstrumentName))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentName Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOptionInstrument->InstrumentName) - 1);
+								return false;
+							}
+							memcpy(OfferOptionInstrument->InstrumentName, value.c_str(), value.length());
 							break;
 						}
 						case Items::VolumeMultiple:
@@ -42725,8 +44897,12 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::UnderlyingInstrumentId:
 						{
-							size_t len = value.length() >= sizeof(OfferOptionInstrument->UnderlyingInstrumentId) ? sizeof(OfferOptionInstrument->UnderlyingInstrumentId) - 1 : value.length();
-							memcpy(OfferOptionInstrument->UnderlyingInstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOptionInstrument->UnderlyingInstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "UnderlyingInstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOptionInstrument->UnderlyingInstrumentId) - 1);
+								return false;
+							}
+							memcpy(OfferOptionInstrument->UnderlyingInstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExecutePrice:
@@ -42776,8 +44952,12 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::ExpiringDate:
 						{
-							size_t len = value.length() >= sizeof(OfferOptionInstrument->ExpiringDate) ? sizeof(OfferOptionInstrument->ExpiringDate) - 1 : value.length();
-							memcpy(OfferOptionInstrument->ExpiringDate, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOptionInstrument->ExpiringDate))
+							{
+								WriteLog(LogLevel::Warning, "ExpiringDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOptionInstrument->ExpiringDate) - 1);
+								return false;
+							}
+							memcpy(OfferOptionInstrument->ExpiringDate, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -42954,26 +45134,42 @@ bool ReqOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqOfferOrder->TradingDay) ? sizeof(ReqOfferOrder->TradingDay) - 1 : value.length();
-							memcpy(ReqOfferOrder->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqOfferOrder->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqOfferOrder->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqOfferOrder->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqOfferOrder->PrimaryAccountId) ? sizeof(ReqOfferOrder->PrimaryAccountId) - 1 : value.length();
-							memcpy(ReqOfferOrder->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqOfferOrder->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqOfferOrder->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(ReqOfferOrder->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqOfferOrder->ExchangeId) ? sizeof(ReqOfferOrder->ExchangeId) - 1 : value.length();
-							memcpy(ReqOfferOrder->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqOfferOrder->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqOfferOrder->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqOfferOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(ReqOfferOrder->InstrumentId) ? sizeof(ReqOfferOrder->InstrumentId) - 1 : value.length();
-							memcpy(ReqOfferOrder->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqOfferOrder->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqOfferOrder->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(ReqOfferOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -43215,26 +45411,42 @@ bool ReqOfferCancelOrderPackage::FromStepStream(char* buff, int startIndex, int 
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(ReqOfferCancelOrder->TradingDay) ? sizeof(ReqOfferCancelOrder->TradingDay) - 1 : value.length();
-							memcpy(ReqOfferCancelOrder->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(ReqOfferCancelOrder->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqOfferCancelOrder->TradingDay) - 1);
+								return false;
+							}
+							memcpy(ReqOfferCancelOrder->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(ReqOfferCancelOrder->PrimaryAccountId) ? sizeof(ReqOfferCancelOrder->PrimaryAccountId) - 1 : value.length();
-							memcpy(ReqOfferCancelOrder->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqOfferCancelOrder->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqOfferCancelOrder->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(ReqOfferCancelOrder->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(ReqOfferCancelOrder->ExchangeId) ? sizeof(ReqOfferCancelOrder->ExchangeId) - 1 : value.length();
-							memcpy(ReqOfferCancelOrder->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqOfferCancelOrder->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqOfferCancelOrder->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(ReqOfferCancelOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(ReqOfferCancelOrder->InstrumentId) ? sizeof(ReqOfferCancelOrder->InstrumentId) - 1 : value.length();
-							memcpy(ReqOfferCancelOrder->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqOfferCancelOrder->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqOfferCancelOrder->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(ReqOfferCancelOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ProductClass:
@@ -43275,8 +45487,12 @@ bool ReqOfferCancelOrderPackage::FromStepStream(char* buff, int startIndex, int 
 						}
 						case Items::OrderSysId:
 						{
-							size_t len = value.length() >= sizeof(ReqOfferCancelOrder->OrderSysId) ? sizeof(ReqOfferCancelOrder->OrderSysId) - 1 : value.length();
-							memcpy(ReqOfferCancelOrder->OrderSysId, value.c_str(), len);
+							if (value.length() >= sizeof(ReqOfferCancelOrder->OrderSysId))
+							{
+								WriteLog(LogLevel::Warning, "OrderSysId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(ReqOfferCancelOrder->OrderSysId) - 1);
+								return false;
+							}
+							memcpy(ReqOfferCancelOrder->OrderSysId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -43486,26 +45702,42 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(OfferOrder->TradingDay) ? sizeof(OfferOrder->TradingDay) - 1 : value.length();
-							memcpy(OfferOrder->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOrder->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOrder->TradingDay) - 1);
+								return false;
+							}
+							memcpy(OfferOrder->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(OfferOrder->PrimaryAccountId) ? sizeof(OfferOrder->PrimaryAccountId) - 1 : value.length();
-							memcpy(OfferOrder->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOrder->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOrder->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(OfferOrder->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(OfferOrder->ExchangeId) ? sizeof(OfferOrder->ExchangeId) - 1 : value.length();
-							memcpy(OfferOrder->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOrder->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOrder->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(OfferOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(OfferOrder->InstrumentId) ? sizeof(OfferOrder->InstrumentId) - 1 : value.length();
-							memcpy(OfferOrder->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOrder->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOrder->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(OfferOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::OrderId:
@@ -43519,8 +45751,12 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::OrderSysId:
 						{
-							size_t len = value.length() >= sizeof(OfferOrder->OrderSysId) ? sizeof(OfferOrder->OrderSysId) - 1 : value.length();
-							memcpy(OfferOrder->OrderSysId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOrder->OrderSysId))
+							{
+								WriteLog(LogLevel::Warning, "OrderSysId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOrder->OrderSysId) - 1);
+								return false;
+							}
+							memcpy(OfferOrder->OrderSysId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Direction:
@@ -43597,32 +45833,52 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::StatusMsg:
 						{
-							size_t len = value.length() >= sizeof(OfferOrder->StatusMsg) ? sizeof(OfferOrder->StatusMsg) - 1 : value.length();
-							memcpy(OfferOrder->StatusMsg, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOrder->StatusMsg))
+							{
+								WriteLog(LogLevel::Warning, "StatusMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOrder->StatusMsg) - 1);
+								return false;
+							}
+							memcpy(OfferOrder->StatusMsg, value.c_str(), value.length());
 							break;
 						}
 						case Items::OrderDate:
 						{
-							size_t len = value.length() >= sizeof(OfferOrder->OrderDate) ? sizeof(OfferOrder->OrderDate) - 1 : value.length();
-							memcpy(OfferOrder->OrderDate, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOrder->OrderDate))
+							{
+								WriteLog(LogLevel::Warning, "OrderDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOrder->OrderDate) - 1);
+								return false;
+							}
+							memcpy(OfferOrder->OrderDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::OrderTime:
 						{
-							size_t len = value.length() >= sizeof(OfferOrder->OrderTime) ? sizeof(OfferOrder->OrderTime) - 1 : value.length();
-							memcpy(OfferOrder->OrderTime, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOrder->OrderTime))
+							{
+								WriteLog(LogLevel::Warning, "OrderTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOrder->OrderTime) - 1);
+								return false;
+							}
+							memcpy(OfferOrder->OrderTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::CancelDate:
 						{
-							size_t len = value.length() >= sizeof(OfferOrder->CancelDate) ? sizeof(OfferOrder->CancelDate) - 1 : value.length();
-							memcpy(OfferOrder->CancelDate, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOrder->CancelDate))
+							{
+								WriteLog(LogLevel::Warning, "CancelDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOrder->CancelDate) - 1);
+								return false;
+							}
+							memcpy(OfferOrder->CancelDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::CancelTime:
 						{
-							size_t len = value.length() >= sizeof(OfferOrder->CancelTime) ? sizeof(OfferOrder->CancelTime) - 1 : value.length();
-							memcpy(OfferOrder->CancelTime, value.c_str(), len);
+							if (value.length() >= sizeof(OfferOrder->CancelTime))
+							{
+								WriteLog(LogLevel::Warning, "CancelTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferOrder->CancelTime) - 1);
+								return false;
+							}
+							memcpy(OfferOrder->CancelTime, value.c_str(), value.length());
 							break;
 						}
 						case Items::IsNewOrder:
@@ -43826,26 +46082,42 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(OfferTrade->TradingDay) ? sizeof(OfferTrade->TradingDay) - 1 : value.length();
-							memcpy(OfferTrade->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(OfferTrade->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferTrade->TradingDay) - 1);
+								return false;
+							}
+							memcpy(OfferTrade->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(OfferTrade->PrimaryAccountId) ? sizeof(OfferTrade->PrimaryAccountId) - 1 : value.length();
-							memcpy(OfferTrade->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferTrade->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferTrade->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(OfferTrade->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(OfferTrade->ExchangeId) ? sizeof(OfferTrade->ExchangeId) - 1 : value.length();
-							memcpy(OfferTrade->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferTrade->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferTrade->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(OfferTrade->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(OfferTrade->InstrumentId) ? sizeof(OfferTrade->InstrumentId) - 1 : value.length();
-							memcpy(OfferTrade->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferTrade->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferTrade->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(OfferTrade->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::OrderId:
@@ -43859,14 +46131,22 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::OrderSysId:
 						{
-							size_t len = value.length() >= sizeof(OfferTrade->OrderSysId) ? sizeof(OfferTrade->OrderSysId) - 1 : value.length();
-							memcpy(OfferTrade->OrderSysId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferTrade->OrderSysId))
+							{
+								WriteLog(LogLevel::Warning, "OrderSysId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferTrade->OrderSysId) - 1);
+								return false;
+							}
+							memcpy(OfferTrade->OrderSysId, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeId:
 						{
-							size_t len = value.length() >= sizeof(OfferTrade->TradeId) ? sizeof(OfferTrade->TradeId) - 1 : value.length();
-							memcpy(OfferTrade->TradeId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferTrade->TradeId))
+							{
+								WriteLog(LogLevel::Warning, "TradeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferTrade->TradeId) - 1);
+								return false;
+							}
+							memcpy(OfferTrade->TradeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Direction:
@@ -43907,14 +46187,22 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 						}
 						case Items::TradeDate:
 						{
-							size_t len = value.length() >= sizeof(OfferTrade->TradeDate) ? sizeof(OfferTrade->TradeDate) - 1 : value.length();
-							memcpy(OfferTrade->TradeDate, value.c_str(), len);
+							if (value.length() >= sizeof(OfferTrade->TradeDate))
+							{
+								WriteLog(LogLevel::Warning, "TradeDate Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferTrade->TradeDate) - 1);
+								return false;
+							}
+							memcpy(OfferTrade->TradeDate, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradeTime:
 						{
-							size_t len = value.length() >= sizeof(OfferTrade->TradeTime) ? sizeof(OfferTrade->TradeTime) - 1 : value.length();
-							memcpy(OfferTrade->TradeTime, value.c_str(), len);
+							if (value.length() >= sizeof(OfferTrade->TradeTime))
+							{
+								WriteLog(LogLevel::Warning, "TradeTime Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferTrade->TradeTime) - 1);
+								return false;
+							}
+							memcpy(OfferTrade->TradeTime, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -44107,32 +46395,52 @@ bool RtnOfferErrorCancelOrderPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::ErrorMsg:
 						{
-							size_t len = value.length() >= sizeof(OfferErrorCancelOrder->ErrorMsg) ? sizeof(OfferErrorCancelOrder->ErrorMsg) - 1 : value.length();
-							memcpy(OfferErrorCancelOrder->ErrorMsg, value.c_str(), len);
+							if (value.length() >= sizeof(OfferErrorCancelOrder->ErrorMsg))
+							{
+								WriteLog(LogLevel::Warning, "ErrorMsg Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferErrorCancelOrder->ErrorMsg) - 1);
+								return false;
+							}
+							memcpy(OfferErrorCancelOrder->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(OfferErrorCancelOrder->TradingDay) ? sizeof(OfferErrorCancelOrder->TradingDay) - 1 : value.length();
-							memcpy(OfferErrorCancelOrder->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(OfferErrorCancelOrder->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferErrorCancelOrder->TradingDay) - 1);
+								return false;
+							}
+							memcpy(OfferErrorCancelOrder->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(OfferErrorCancelOrder->PrimaryAccountId) ? sizeof(OfferErrorCancelOrder->PrimaryAccountId) - 1 : value.length();
-							memcpy(OfferErrorCancelOrder->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferErrorCancelOrder->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferErrorCancelOrder->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(OfferErrorCancelOrder->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(OfferErrorCancelOrder->ExchangeId) ? sizeof(OfferErrorCancelOrder->ExchangeId) - 1 : value.length();
-							memcpy(OfferErrorCancelOrder->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferErrorCancelOrder->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferErrorCancelOrder->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(OfferErrorCancelOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(OfferErrorCancelOrder->InstrumentId) ? sizeof(OfferErrorCancelOrder->InstrumentId) - 1 : value.length();
-							memcpy(OfferErrorCancelOrder->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferErrorCancelOrder->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferErrorCancelOrder->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(OfferErrorCancelOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::Direction:
@@ -44164,8 +46472,12 @@ bool RtnOfferErrorCancelOrderPackage::FromStepStream(char* buff, int startIndex,
 						}
 						case Items::OrderSysId:
 						{
-							size_t len = value.length() >= sizeof(OfferErrorCancelOrder->OrderSysId) ? sizeof(OfferErrorCancelOrder->OrderSysId) - 1 : value.length();
-							memcpy(OfferErrorCancelOrder->OrderSysId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferErrorCancelOrder->OrderSysId))
+							{
+								WriteLog(LogLevel::Warning, "OrderSysId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferErrorCancelOrder->OrderSysId) - 1);
+								return false;
+							}
+							memcpy(OfferErrorCancelOrder->OrderSysId, value.c_str(), value.length());
 							break;
 						}
 						default:
@@ -44326,14 +46638,22 @@ bool RtnOfferCapitalPackage::FromStepStream(char* buff, int startIndex, int endI
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(OfferCapital->TradingDay) ? sizeof(OfferCapital->TradingDay) - 1 : value.length();
-							memcpy(OfferCapital->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(OfferCapital->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferCapital->TradingDay) - 1);
+								return false;
+							}
+							memcpy(OfferCapital->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(OfferCapital->PrimaryAccountId) ? sizeof(OfferCapital->PrimaryAccountId) - 1 : value.length();
-							memcpy(OfferCapital->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferCapital->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferCapital->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(OfferCapital->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::PreCashAsset:
@@ -44518,26 +46838,42 @@ bool RtnOfferPositionPackage::FromStepStream(char* buff, int startIndex, int end
 							break;
 						case Items::TradingDay:
 						{
-							size_t len = value.length() >= sizeof(OfferPosition->TradingDay) ? sizeof(OfferPosition->TradingDay) - 1 : value.length();
-							memcpy(OfferPosition->TradingDay, value.c_str(), len);
+							if (value.length() >= sizeof(OfferPosition->TradingDay))
+							{
+								WriteLog(LogLevel::Warning, "TradingDay Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferPosition->TradingDay) - 1);
+								return false;
+							}
+							memcpy(OfferPosition->TradingDay, value.c_str(), value.length());
 							break;
 						}
 						case Items::PrimaryAccountId:
 						{
-							size_t len = value.length() >= sizeof(OfferPosition->PrimaryAccountId) ? sizeof(OfferPosition->PrimaryAccountId) - 1 : value.length();
-							memcpy(OfferPosition->PrimaryAccountId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferPosition->PrimaryAccountId))
+							{
+								WriteLog(LogLevel::Warning, "PrimaryAccountId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferPosition->PrimaryAccountId) - 1);
+								return false;
+							}
+							memcpy(OfferPosition->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
 						case Items::ExchangeId:
 						{
-							size_t len = value.length() >= sizeof(OfferPosition->ExchangeId) ? sizeof(OfferPosition->ExchangeId) - 1 : value.length();
-							memcpy(OfferPosition->ExchangeId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferPosition->ExchangeId))
+							{
+								WriteLog(LogLevel::Warning, "ExchangeId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferPosition->ExchangeId) - 1);
+								return false;
+							}
+							memcpy(OfferPosition->ExchangeId, value.c_str(), value.length());
 							break;
 						}
 						case Items::InstrumentId:
 						{
-							size_t len = value.length() >= sizeof(OfferPosition->InstrumentId) ? sizeof(OfferPosition->InstrumentId) - 1 : value.length();
-							memcpy(OfferPosition->InstrumentId, value.c_str(), len);
+							if (value.length() >= sizeof(OfferPosition->InstrumentId))
+							{
+								WriteLog(LogLevel::Warning, "InstrumentId Out Of Range. Length:%zu, Capacity:%zu", value.length(), sizeof(OfferPosition->InstrumentId) - 1);
+								return false;
+							}
+							memcpy(OfferPosition->InstrumentId, value.c_str(), value.length());
 							break;
 						}
 						case Items::PosiDirection:

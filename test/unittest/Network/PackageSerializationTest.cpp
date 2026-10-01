@@ -8,6 +8,7 @@
 #include <Spark/Network/Protocol/ProtocolUtility.h>
 #include <gtest/gtest.h>
 
+#include <charconv>
 #include <cstdio>
 #include <cstring>
 #include <format>
@@ -707,6 +708,47 @@ bool PatchStepItemValue(std::string& frame, UInt16Type itemId, const std::string
     return false;
 }
 
+// 就地改写某个 item 的值，允许新旧不等宽。Step 文本只以 SOH 分隔、不含绝对偏移，值变宽只是把
+// 后文整体挪开；但包头的 BodyLen 与包尾 CRC 都得跟着重算，否则读侧在"版本 → 长度 → CRC"那几道
+// 就退了，走不到读字段那一步。头是定宽文本（BodyLen 恒 4 位十六进制、位置在包体之前），
+// 故改头不改位、改体不动头
+bool PatchStepItemValueWidened(std::string& frame, UInt16Type itemId, const std::string& origin, const std::string& replacement)
+{
+    const std::string key = std::format("{:04X}=", itemId);
+    const size_t valuePos = frame.find(key);
+    if (valuePos == std::string::npos || frame.compare(valuePos + key.size(), origin.size(), origin) != 0)
+    {
+        return false;
+    }
+    const std::string bodyLenKey = std::format("{:04X}=", Items::BodyLen);
+    const size_t bodyLenPos = frame.find(bodyLenKey);
+    if (bodyLenPos == std::string::npos)
+    {
+        return false;
+    }
+    const size_t bodyLenValuePos = bodyLenPos + bodyLenKey.size();
+    constexpr size_t BodyLenDigits = 4;
+    if (bodyLenValuePos + BodyLenDigits > frame.size())
+    {
+        return false;
+    }
+    unsigned int bodyLen = 0;
+    const char* const bodyLenBegin = frame.data() + bodyLenValuePos;
+    if (std::from_chars(bodyLenBegin, bodyLenBegin + BodyLenDigits, bodyLen, 16).ptr != bodyLenBegin + BodyLenDigits)
+    {
+        return false;
+    }
+    const long long growth = static_cast<long long>(replacement.size()) - static_cast<long long>(origin.size());
+    const long long widenedBodyLen = static_cast<long long>(bodyLen) + growth;
+    if (widenedBodyLen < 0 || widenedBodyLen > std::numeric_limits<UInt16Type>::max())
+    {
+        return false;
+    }
+    frame.replace(bodyLenValuePos, BodyLenDigits, std::format("{:04X}", static_cast<unsigned int>(widenedBodyLen)));
+    frame.replace(valuePos + key.size(), origin.size(), replacement);
+    return true;
+}
+
 // 值改过之后 CRC 必然失配，而读侧是"先校 CRC 再进解析"，不重算报尾就永远走不到读字段那一步
 void RefreshStepTail(char* buff, int totalLen)
 {
@@ -941,5 +983,48 @@ TEST(PackageSerializationTest, StepRoundTrip_BoolFieldRejectsNonZeroOne)
 
     Package* parsedRaw = nullptr;
     EXPECT_FALSE(ParseStepFrame(buff, totalLen, parsedRaw));
+    EXPECT_EQ(parsedRaw, nullptr);
+}
+
+TEST(PackageSerializationTest, StepRoundTrip_StringFieldLongerThanCapacityIsRejected)
+{
+    // 字符串族没有"越界数值"可用——写侧自己的缓冲就是 char[N]，它产不出超过 N-1 个字符的值，
+    // 所以只能把帧里的文本改长。边界钉在容量上：N-1 个字符（写侧能产出的最长值）必须照收，
+    // 再多一个字符必须拒。前半条是判别力所在——没有它，全拒也能"通过"
+    constexpr size_t AccountIdMaxChars = sizeof(AccountIdType) - 1;
+    const std::string maxLegalAccountId(AccountIdMaxChars, 'A');
+    const std::string overLongAccountId(AccountIdMaxChars + 1, 'A');
+
+    auto* pkg = CreateSampleCapital(AccountTypeType::Primary, 100.5);
+    char buff[MaxPackageSize] = {};
+    const int totalLen = pkg->MakePackage(ProtocolTypeType::Step, buff, MaxPackageSize);
+    EXPECT_GT(totalLen, 0);
+    pkg->Deallocate();
+
+    const std::string frame(buff, totalLen);
+    ASSERT_NE(frame.find(std::format("{:04X}=Xunmeng001", Items::AccountId)), std::string::npos);
+
+    Package* controlRaw = nullptr;
+    ASSERT_TRUE(ParseStepFrame(buff, totalLen, controlRaw)) << "对照帧都解析不了，下面的失败结论不作数";
+    EXPECT_STREQ(static_cast<RspQryCapitalPackage*>(controlRaw)->Capital->AccountId, "Xunmeng001");
+    controlRaw->Deallocate();
+
+    std::string maxLegalFrame = frame;
+    ASSERT_TRUE(PatchStepItemValueWidened(maxLegalFrame, Items::AccountId, "Xunmeng001", maxLegalAccountId));
+    std::memcpy(buff, maxLegalFrame.data(), maxLegalFrame.size());
+    const int maxLegalLen = static_cast<int>(maxLegalFrame.size());
+    RefreshStepTail(buff, maxLegalLen);
+    Package* maxLegalRaw = nullptr;
+    ASSERT_TRUE(ParseStepFrame(buff, maxLegalLen, maxLegalRaw)) << "容量内的最长值必须照收，否则拒的是长度本身而不是超长";
+    EXPECT_EQ(std::strlen(static_cast<RspQryCapitalPackage*>(maxLegalRaw)->Capital->AccountId), AccountIdMaxChars);
+    maxLegalRaw->Deallocate();
+
+    std::string overLongFrame = frame;
+    ASSERT_TRUE(PatchStepItemValueWidened(overLongFrame, Items::AccountId, "Xunmeng001", overLongAccountId));
+    std::memcpy(buff, overLongFrame.data(), overLongFrame.size());
+    const int overLongLen = static_cast<int>(overLongFrame.size());
+    RefreshStepTail(buff, overLongLen);
+    Package* parsedRaw = nullptr;
+    EXPECT_FALSE(ParseStepFrame(buff, overLongLen, parsedRaw));
     EXPECT_EQ(parsedRaw, nullptr);
 }
