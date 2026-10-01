@@ -80,13 +80,7 @@ void TcpIocpServer::OnAcceptComplete(MyOverlapped* overlapped)
     WriteLog(LogLevel::Info, "AcceptComplete: From <%s:%d>, SessionId:%lld, Socket:%lld", tcpIocpConnect->RemoteAddress, tcpIocpConnect->RemotePort,
              tcpIocpConnect->SessionId, tcpIocpConnect->SocketId);
 
-    if (!AddConnect(tcpIocpConnect))
-    {
-        ReleaseUnsubmittedIoRequest(tcpIocpConnect, overlapped);
-        // 被拒的连接不占流水线：accept 深度必须补回来，否则一次拒绝就让并发 accept 少一格。
-        PostAccept();
-        return;
-    }
+    AddConnect(tcpIocpConnect);
     PostRecv(overlapped);
     auto overlapped2 = MyOverlapped::Allocate();
     overlapped2->SetBuffer(LinearBuffer<BufferSize>::Allocate());

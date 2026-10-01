@@ -4,7 +4,6 @@
 #include <Spark/TemplateLib/Buffer/LinearBuffer.h>
 #include <Spark/Network/Io/Connect.h>
 #include <Spark/Network/Io/IoUtility.h>
-#include <atomic>
 #include <string>
 #include <chrono>
 #include <cstddef>
@@ -46,26 +45,21 @@ public:
     virtual void HandleIoEvent() = 0;
 
 protected:
-    // 会话号低位段的容量：取号式为「毫秒时间戳 × 本值 ＋ 当毫秒内序号」，序号在此处回绕。
-    // 同一 IoBase 在一个毫秒内取号超过本值即产生重复会话号，重复者被 AddConnect 拒绝。
-    static constexpr SessionIdType SessionIdSequencePerMillisecond = 100LL;
-
     virtual void DoDisConnect();
     virtual void DoSend(Connect* connect) = 0;
     virtual void DoRecv(Connect* connect) = 0;
 
-    // 受理则登记并通知订阅者、返回 true；会话号已被占用则返回 false，且不触碰 connect
-    // （不登记、不归还、不关连接）——收场由调用方按各 IO 模型自行完成。
-    virtual bool AddConnect(Connect* connect);
+    virtual void AddConnect(Connect* connect);
     virtual void RemoveConnect(Connect* connect);
-    // 归还一条未被受理的连接。与 RemoveConnect 的区别只有一点，但很关键：不触碰 connects_。
-    // 被拒连接的会话号正是在册那条的号，按号 erase 抹掉的是在册的会话。
-    void DiscardRefusedConnect(Connect* connect);
     virtual Connect* GetConnect(SessionIdType sessionId);
 
     void NotifySubscriberRecvSafely(const Connect* connect, const char* data, size_t length);
 
     SessionIdType GetSessionId();
+
+    // 会话号的唯一来源：全进程共用、只增不减，与时钟无关（时钟回拨、夏令时都影响不到它）。
+    // 声明为静态是为了让同一进程里的多个 IoBase 也各自拿到不同的号；应用线程与 IO 线程都会取号。
+    static std::atomic<SessionIdType> lastSessionId_;
 
     ServerTypeType serverType_;
     std::string addressName_;
@@ -73,8 +67,6 @@ protected:
     std::string port_;
     std::chrono::milliseconds timeOut_;
     IoSubscriber* ioSubscriber_;
-    // 应用线程与 IO 线程都会经 ConnectToServer 取号，非原子的读-改-写会让两条连接取到同一个号。
-    std::atomic<SessionIdType> lastSessionIndex_;
 
     std::map<SessionIdType, Connect*> connects_;
     std::mutex connectsMutex_;

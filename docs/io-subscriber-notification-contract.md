@@ -4,8 +4,8 @@
 以及回调抛异常时由谁承担。四个后端（Tcp Select / Tcp Epoll / Tcp Iocp / Shm）共用 `IoBase` 的登记与拆除，
 故本契约对四者一致；收包通知（`OnRecv`）与连接通知共用同一份兜底，差别只在调用点，见「收包通知」一节。
 `Protocol` 自身也是 `IoSubscriber`，它在 `OnRecv` 之后还要把包转交给 `ProtocolSubscriber::OnMessage`，
-那一层另有取包循环自己的责任，见「取包通知」一节。登记的边界另有一条：同一会话号第二次登记会怎样，
-见「重复会话号」一节。
+那一层另有取包循环自己的责任，见「取包通知」一节。登记的边界另有一条：会话号从哪来、为什么不会重，
+见「会话号从哪来、为什么不会重」一节。
 
 ## 契约
 
@@ -74,45 +74,31 @@ IOCP 一列的后果最重：IO 循环跑在 `IoThread` 上，而 `ThreadBase` �
   此前这一步会向订阅者补发一次无配对的 `OnDisConnect`（`Protocol::OnDisConnect` 查不到 `PackageReader`
   即静默略过，再到应用层就是一次「没连上却断开」的通知）。
 
-## 重复会话号：留先来的那个
+## 会话号从哪来、为什么不会重
 
-`connects_` 以会话号为键，故同一会话号第二次登记时 `insert` 不会覆盖先来的表项。此前这一步的返回值被丢弃，
-后来的连接**既不进表、也不失败**：它照常被调用方使用，而 `RemoveConnect` 按会话号抹掉的是**在册的那条**，
-在册的那条从此不在表里、也不会再被归还（池槽与套接字一并滞留到进程结束）。同样的形态在 `Protocol` 一侧
-多一个后果：那一次为重复会话号取出的 `PackageReader` 无处归还。
+会话号只有一个来源：`IoBase::GetSessionId()` 返回 `++lastSessionId_`，而 `lastSessionId_` 是 `IoBase` 的
+**静态原子量**——全进程共用、只增不减，与时钟无关。两点直接由此得到：
 
-两处现在都把这一步摆到明处：
+- **同一进程内不可能出现重复的会话号**。`GetSessionId` 不是虚函数，派生类改不掉它；计数器只增不减，
+  两条线程同时取号也拿不到同一个值（原子自增）。故「重复号」在正常路径上不可达，下面的几道防御
+  都只在「同一个 `Connect` 被登记两次」这类逻辑错下才会露出。
+- **号里不含时间**。取号式此前是 `毫秒 * 100 + (++序号) % 100`，这条路已经走到头：时间戳取自
+  `TimeUtility::GetMilliSecondTimeStamp`，返回的是 `YYYYMMDDhhmmssmmm` 的十进制打包值（约 `2.026e16`），
+  而 `long long` 上限是 `9.2234e18`，乘数最多只能到 455——想把每毫秒 100 个号加宽到 1000 会立刻溢出；
+  更要紧的是它取自**本地时间**，时钟回拨或夏令时会让这个值倒退、重复，「撞号只可能在同一毫秒内」
+  这条判断的前提也就不成立。计数器与时钟脱钩后，这两个问题一起消失。代价是排查时不能再「按号看时间」，
+  日志行本身带时间，够用。
+- **为什么是静态**：同一进程里可以有多个 `IoBase`（同一个订阅者也可以同时挂在两个 `IoBase` 上）。
+  计数器若按实例分发，两个实例会各自从 1 开始编号而互相撞号。
 
-- **`IoBase::AddConnect`** 插入未成功即记一条 `Error` 并返回 `false`：不向订阅者宣告（与该层「登记在通知之前」一致），
-  **且不触碰该连接对象**——不登记、不归还、不关连接。收场交给调用方，因为各处处境不同：
-  `TcpIocpServer::OnAcceptComplete` 这类调用点手里还攥着这笔 accept 的 `MyOverlapped`（或尚未投递的收包请求），
-  在拒绝处就地归还等于制造悬垂指针。
+保留的三道防御（现在只是防御）：
+
+- **`connects_` 不覆盖**：`IoBase::AddConnect` 用 `insert`，同一会话号第二次登记不会顶掉先来的表项；
+  此时记一条 `Error` 并返回，**不向订阅者宣告**（与该层「登记在通知之前」一致），**也不代调用方归还连接对象**
+  ——`TcpIocpServer::OnAcceptComplete` 这类调用点在登记之后还要接着用它投递接收，就地归还等于制造悬垂指针。
 - **`Protocol::OnConnect`** 遇到同一会话号已有 `PackageReader`：把新取的那个还回池、记一条 `Error` 后返回，不宣告。
-  自 `AddConnect` 改为返回 `false` 起这条已是**纯防御**——被拒的连接根本走不到通知。
-
-`AddConnect` 是模块导出虚函数，返回值由 `void` 改为 `bool` 是一次**公开 API 变更**。符号修饰不含返回类型，
-故新旧调用方必须一起重编：旧的调用方会链到新符号、静默丢弃该 `bool`。
-
-九个调用点（`TcpBase::DoAccept`、`TcpSelectClient` 两处、`TcpEpollClient`、`TcpEpollBase::HandleTcpEvent`、
-`TcpIocpClient::OnConnectComplete`、`TcpIocpServer::OnAcceptComplete`、`ShmServer::Accept`、
-`ShmClient::EstablishConfirmedConnection`）各自按本模型收场，共用一条新出口：`IoBase::DiscardRefusedConnect`
-（`protected`、非虚，只做 `Deallocate`）。它与 `RemoveConnect` 的唯一区别、也是关键区别，是**不触碰 `connects_`**。
-IOCP 的两处不用它，改用既有的 `TcpIocpBase::ReleaseUnsubmittedIoRequest`——那里除连接对象外还要一并还回
-`MyOverlapped`，且该文件的两条既有失败路径已是这个写法。
-
-**会话号本身的回绕没有改，预算至此成文**：`IoBase::GetSessionId` 按
-`毫秒 * SessionIdSequencePerMillisecond + (++序号) % SessionIdSequencePerMillisecond` 取号，低位段容量 100，
-即**每毫秒 100 个号**，同一毫秒内第 101 次取号必与在册的某个号相同。撞号只可能发生在同一毫秒内——
-若 `ts2 > ts1`，则 `100 * (ts2 - ts1) = r1 - r2 <= 99`，只能 `ts1 == ts2`。各条路自带节流：
-select / epoll 服务端一次事件循环最多 accept 5 个，IOCP 的 accept 流水线深度恒为 `backLog_`（默认 5），
-故 100/ms 在正常负载下够用。超过预算时第 101 个连接起被**拒绝并关闭**，而不再与前一个会话共用一个号——
-这是本层有意把「静默串包」换成「可见失败」。拒绝留痕于 `AddConnect` 的 `Error` 日志（带 `Sequence` 与 `Budget`
-两个字段，运维据此区分「突发超过预算」与「并发读到同一号」）。取号计数器是**原子量**：应用线程与 IO 线程
-都会经 `ConnectToServer` 取号，非原子的读-改-写能让两条连接取到完全相同的号，这条与预算无关、连接再少也能撞。
-
-`RemoveConnect` 的 `erase` 现在**按指针身份校验**后才执行（表项指向的不是本对象即不抹，该形态是逻辑错、
-记一条 `Error`），`Deallocate()` 仍在锁外无条件执行。此前「被拒的连接若由调用方改用 `RemoveConnect` 收尾，
-会按会话号抹掉在册的那条」这条已知界限至此消失——虽然拒绝分支本就不该走 `RemoveConnect`。
+- **`RemoveConnect` 按指针身份校验**：表项指向的不是本对象即不抹、记一条 `Error`；`Deallocate` 照常执行。
+  这两个状态（表里有这个号、但表里不是这个对象）只可能来自上述逻辑错。
 
 ## 实现落点
 
@@ -130,35 +116,27 @@ select / epoll 服务端一次事件循环最多 accept 5 个，IOCP 的 accept 
 `ShmClient::EstablishConfirmedConnection` 的 `catch` 一字未改（仍走 `RemoveConnect`）：此时该连接未登记、
 故不通知，而 `Deallocate` 照常执行 —— `~ShmConnect` 自会把槽位由 `Connected` 置成 `DisConnected`，
 把钥匙交回服务端，与既有的两笔撤回语义一致（见 `docs/shm-channel-and-connect-model.md` 第四节）。
-同函数新增的拒绝分支与它同路：`AddConnect` 返回 `false`（登记未成）时走 `DiscardRefusedConnect`，
-**不叠加** `SingleShmHeader::RevokeConfirmedConnection` —— 那是「构造未成」那一支的做法，此刻对象已经建成，
-撤销确认由 `~ShmConnect` 自己完成。
 
 ## 取舍：回调抛异常时连接保留
 
 `OnConnect` 抛异常的连接**不会**被拆掉：通知被投递过（异常发生在回调内部），连接照常供收发，
 拆除时也照常收到配对的 `OnDisConnect`。选它而不是「抛即拆」的理由是四个调用点的处境不同——
 三个没有 `try` 的调用点无法感知失败，若在 `AddConnect` 内部拆掉再让异常穿出，连接对象已经归还而调用方
-仍以为登记成功（`AddConnect` 如今能返回 `false`，但那只表达「会话号被占、没登记上」，回调抛异常不属这一类：
-登记本身是成功的）；而把它留在原地，订阅者仍可在配对的 `OnDisConnect` 里清理自己未完成的初始化。
+仍以为登记成功（要表达失败就得改 `AddConnect` 的签名，属公开 API 变更）；而把它留在原地，
+订阅者仍可在配对的 `OnDisConnect` 里清理自己未完成的初始化。
 
 ## 未覆盖与未决
 
 - **`OnMessage` 抛出时那一帧归 subscriber 自理**：本文只保证 `Protocol` 不再二次归还，也保证这一批里
   其后的帧照常派发；订阅者若在自己的 `OnMessage` 里抛出且未在抛出前 `Deallocate`，那一帧就漏了，
   本契约不代偿（见「取包通知」一节的理由）。
-- **重复 `RemoveConnect` 仍会二次归还连接对象**：第二次调用时该连接已不在册（或表项已指向另一对象），
-  故不再通知、`erase` 也被身份校验挡下，但 `Deallocate()` 照常执行。未验证该形态是否可达。
-- **会话号的取值式子未改，只是把「超预算」的后果讲清楚了**：`GetSessionId` 仍是
-  `毫秒 * 100 + (++序号) % 100`（见「重复会话号」一节，该节已把每毫秒 100 个号的预算成文），
-  故同一毫秒内第 101 次取号仍会与在册的号相同——这是**有意的预算**、不是缺陷，加宽序号位或改用
-  进程内单调计数均仍在待决（见台账 ❓ 区 `Q.58` 的 ① 与 ②）。「被拒的连接按号抹掉在册那条」
-  这条已知界限则已随 `erase` 的指针身份校验消失。
+- **重复 `RemoveConnect` 仍会二次归还连接对象**：第二次调用时该连接已不在册，故不再通知，
+  但 `Deallocate()` 照常执行。未验证该形态是否可达。
 - 回调抛异常后连接保留，订阅者须自负其未完成初始化的后果；本契约只保证它仍会收到配对的 `OnDisConnect`。
 
 ## 相关测试
 
-`test/unittest/Network/IoSubscriberNotificationTest.cpp` 九条，均以只含计数器的订阅者探针与
+`test/unittest/Network/IoSubscriberNotificationTest.cpp` 八条，均以只含计数器的订阅者探针与
 自造的 `IoBase` 子类钉住判据（不挂共享内存、不依赖时序）：
 
 | 用例 | 输入 | 输出 |
@@ -167,23 +145,20 @@ select / epoll 服务端一次事件循环最多 accept 5 个，IOCP 的 accept 
 | `AnOnDisConnectFailureDoesNotSkipTheTeardown` | `OnDisConnect` 抛异常 | 不传播；`OnDisConnect` 被调用 1 次；连接已出册；对象已归还 |
 | `AnOnRecvFailureIsContainedAndDoesNotSkipWhatFollows` | `OnRecv` 抛异常 | 不传播；`OnRecv` 被调用 1 次；`NotifySubscriberRecvSafely` 返回其调用方 |
 | `AnUnregisteredConnectionIsReturnedWithoutADisConnectNotification` | 对未登记的连接调 `RemoveConnect` | `OnConnect` 0 次、`OnDisConnect` 0 次；对象已归还 |
-| `ARepeatedSessionIdIsRefusedWithoutASecondConnectNotification` | 同一会话号登记两次 | `OnConnect` 被调用 1 次；登记返回 true / false；在册的是先来的那个；两个对象都未归还 |
-| `ARefusedConnectIsReturnedExactlyOnceByItsCaller` | 被拒后由调用方调 `DiscardRefusedConnect` | 被拒对象归还 1 次（不是 0 次、也不是 2 次）；在册的仍是先来的那个且未归还；`OnConnect` 1 次、`OnDisConnect` 0 次 |
-| `ARemoveOfAnotherConnectNeverErasesTheRegisteredEntry` | 拿一个同号但非本对象的连接调 `RemoveConnect` | 在册表项仍在、`OnDisConnect` 0 次；该对象照常归还 |
-| `SessionIdSequenceAdvancesByOneAndWrapsAtTheBudget` | 连续取号两轮预算 | 序号每次 +1（模预算）；时间戳域不回退；期间确实发生过回绕 |
-| `SessionIdsTakenConcurrentlyAreAllDistinct` | 4 线程栅栏对齐后各取 5 个号 | 20 个号两两不同 |
+| `ARepeatedSessionIdIsNotRegisteredAndNotNotifiedASecondTime` | 同一会话号登记两次 | `OnConnect` 被调用 1 次；在册的是先来的那个；两个对象都未归还 |
+| `ARemoveOfAnotherConnectNeverErasesTheRegisteredEntry` | 用同号的另一个对象调 `RemoveConnect` | 在册的仍是先来的那个；`OnDisConnect` 0 次；被调的那条已归还 |
+| `SessionIdAdvancesByExactlyOneEachTime` | 连取 1001 个号 | 每取一次恰好比上一个多 1 |
+| `SessionIdsTakenConcurrentlyAreAllDistinct` | 4 线程同一栅栏后各取 5 个 | 20 个号两两不同 |
 
 第 1、2、4 条经 A/B 实测：撤掉 `IoBase.cpp` 的改动重跑，前两条以「C++ exception … thrown in the test body」失败、
 第四条以 `DisConnectCount` 期望 0 实得 1 失败。第 3 条不适用这一手（它调的 `NotifySubscriberRecvSafely` 本身
-就是本批新增的，撤掉即无法编译），它的 A/B 由下面那条真后端用例承担。第 5 条同样经 A/B：撤掉
-`IoBase.cpp` 里那段拒绝重跑，它以 `ConnectCount` 期望 1 实得 2 失败（重复那条被静默宣告了第二次）。
+就是新增的，撤掉即无法编译），它的 A/B 由下面那条真后端用例承担。第 5 条同样经 A/B：撤掉 `IoBase.cpp`
+里插入失败后的那次提前返回重跑，它以 `ConnectCount` 期望 1 实得 2 失败（重复那条被静默宣告了第二次）。
 
-第 6–9 条为本批（2026-10-01）新增。第 7 条经 A/B 实测：把 `IoBase::RemoveConnect` 的 `erase` 改回按会话号
-重跑，它以「在册表项已被抹掉」失败，且**只有它**失败（同批其余 8 条仍过，说明身份校验没有外溢到别处）。
-第 6 条断言的是拒绝契约本身（被拒对象由调用方归还恰好一次、不登记、不补发通知），旧码里没有这条出口，
-做不出「撤掉一处即失败」的对照。第 8 条钉的是预算这条契约——序号每次 +1、到预算回绕、时间戳域不回退，
-改预算或改步长即失败。第 9 条**不是证明**：新码下它必然通过（20 次取号跨不出 100 的预算），
-旧码下是「撞了才红」的回归网——真正确立互不重复的是原子自增本身，它只是在场看着。
+第 7、8 条是新取号式的契约钉子：第 7 条把「每次恰好 +1」写成 1000 次循环（取号式一旦变回带取模或带时间，
+第一条断言就会红），第 8 条是并发回归网——原子自增在，它必过；若退回普通的 `++`，它是**撞到才红**，
+不保证每次复现，故不能当作「无原子也安全」的判据。两条都**不得**断言「第一个号等于 1」：计数器是全进程
+静态的，其初值取决于同进程内其它用例是否先取过号（故 `ProbeIo::NextSessionId` 只与前一个号比较）。
 
 `test/unittest/Network/ShmInitTest.cpp` 的 `AThrowingOnRecvNeitherEscapesTheIoLoopNorStopsLaterPayloads`
 在真后端上钉住同一件事：服务端订阅者只在第一次收包抛异常，客户端连发 100 个 5 字节包，

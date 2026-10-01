@@ -24,7 +24,7 @@ public:
     virtual bool ConnectToServer(const char* address) override;
     virtual bool ConnectToServer(const char* ip, unsigned short port) { return false; }
     virtual void HandleIoEvent() override;
-    virtual bool AddConnect(Connect* connect) override;
+    virtual void AddConnect(Connect* connect) override;
     virtual void RemoveConnect(Connect* connect) override;
 
 protected:

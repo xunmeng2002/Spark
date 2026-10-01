@@ -1,6 +1,5 @@
 #include <Spark/Network/Io/IoBase.h>
 #include <Spark/Network/Io/IoUtility.h>
-#include <Spark/Core/Utility/TimeUtility.h>
 #include <Spark/Core/Logger/Logger.h>
 
 #include "Io/SubscriberNotification.h"
@@ -10,8 +9,10 @@ using namespace Spark::Core;
 
 namespace Spark::Network
 {
+std::atomic<SessionIdType> IoBase::lastSessionId_{0};
+
 IoBase::IoBase(ServerTypeType serverType, const char* addressName, int milliSeconds)
-    : serverType_(serverType), addressName_(addressName), timeOut_(chrono::milliseconds(milliSeconds)), ioSubscriber_(nullptr), lastSessionIndex_(0LL)
+    : serverType_(serverType), addressName_(addressName), timeOut_(chrono::milliseconds(milliSeconds)), ioSubscriber_(nullptr)
 {
     ParseAddress(addressName_, address_, port_);
 }
@@ -69,7 +70,7 @@ void IoBase::DoDisConnect()
     }
     disConnectSessionIds_.clear();
 }
-bool IoBase::AddConnect(Connect* connect)
+void IoBase::AddConnect(Connect* connect)
 {
     bool wasNewlyRegistered = false;
     {
@@ -78,12 +79,9 @@ bool IoBase::AddConnect(Connect* connect)
     }
     if (!wasNewlyRegistered)
     {
-        const SessionIdType sequenceWithinMillisecond = connect->SessionId % SessionIdSequencePerMillisecond;
-        WriteLog(LogLevel::Error,
-                 "SessionId Already Registered, Connection Refused. SessionId:%lld, RemoteAddress:%s, RemotePort:%d, Sequence:%zu, Budget:%zu",
-                 connect->SessionId, connect->RemoteAddress, connect->RemotePort, static_cast<size_t>(sequenceWithinMillisecond),
-                 static_cast<size_t>(SessionIdSequencePerMillisecond));
-        return false;
+        WriteLog(LogLevel::Error, "SessionId Already Registered, New Connect Not Registered. SessionId:%lld, RemoteAddress:%s, RemotePort:%d",
+                 connect->SessionId, connect->RemoteAddress, connect->RemotePort);
+        return;
     }
     WriteLog(LogLevel::Info, "New Connection. SessionId:%lld, RemoteAddress:%s, RemotePort:%d", connect->SessionId, connect->RemoteAddress,
              connect->RemotePort);
@@ -92,11 +90,6 @@ bool IoBase::AddConnect(Connect* connect)
         NotifySubscriberSafely("OnConnect", connect->SessionId,
                                [&] { ioSubscriber_->OnConnect(connect->SessionId, connect->RemoteAddress, connect->RemotePort); });
     }
-    return true;
-}
-void IoBase::DiscardRefusedConnect(Connect* connect)
-{
-    connect->Deallocate();
 }
 void IoBase::RemoveConnect(Connect* connect)
 {
@@ -142,6 +135,6 @@ void IoBase::NotifySubscriberRecvSafely(const Connect* connect, const char* data
 
 SessionIdType IoBase::GetSessionId()
 {
-    return TimeUtility::GetMilliSecondTimeStamp() * SessionIdSequencePerMillisecond + (++lastSessionIndex_) % SessionIdSequencePerMillisecond;
+    return ++lastSessionId_;
 }
 }

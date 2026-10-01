@@ -162,13 +162,7 @@ bool ShmClient::EstablishConfirmedConnection(size_t connectionIndex)
     {
         confirmedConnection = ShmConnect<ShmBufferSize>::Allocate(GetSessionId(), address_.c_str(), static_cast<int>(connectionIndex), serverType_,
                                                                   shmAddr_, ConnectStatusType::Connected, maxConnectSize_);
-        if (!AddConnect(confirmedConnection))
-        {
-            // 登记未成走与 catch 分支同一路收尾（构造已成的对象负责撤销确认），
-            // 不能改用 RevokeConfirmedConnection——那是「构造未成」时才走的另一条路。
-            DiscardRefusedConnect(confirmedConnection);
-            return false;
-        }
+        AddConnect(confirmedConnection);
     }
     catch (const std::exception& connectionSetupFailure)
     {

@@ -31,17 +31,7 @@ void ShmServer::Accept()
                     {
                         ShmConnect<ShmBufferSize>* shmConnect = ShmConnect<ShmBufferSize>::Allocate(
                             GetSessionId(), address_.c_str(), i, serverType_, shmAddr_, ConnectStatusType::Accepted, maxConnectSize_);
-                        if (!AddConnect(shmConnect))
-                        {
-                            DiscardRefusedConnect(shmConnect);
-                            // 槽位 i 只被本函数短暂置成 Accepted、且从未经 DownWriteCount 告知客户端，须放回空闲：
-                            // 析构里那道 CAS 只会把它推进 DisConnected，而全仓没有认领该状态的路径——Accept 只挑
-                            // UnConnected、TryReclaimConnect 只遍历 connects_，被拒连接从未入表——不还原即永久失去该槽。
-                            SingleShmHeader::ResetChannelHeader(commonShmHeader_ + i);
-                            // 复用上面「槽位已满」的既有拒绝信号：客户端当场就能得到答复，不必干等握手超时。
-                            SingleShmHeader::StoreStatus(commonShmHeader_, ConnectStatusType::Rejected);
-                            break;
-                        }
+                        AddConnect(shmConnect);
 
                         SingleShmHeader::StoreMappedField(commonShmHeader_->DownWriteCount, i);
                         SingleShmHeader::StoreStatus(commonShmHeader_, ConnectStatusType::Accepted);

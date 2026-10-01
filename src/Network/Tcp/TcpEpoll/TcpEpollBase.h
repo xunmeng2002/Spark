@@ -22,7 +22,7 @@ public:
 protected:
     virtual void HandleTcpEvent() override;
 
-    virtual bool AddConnect(Connect* connect) override;
+    virtual void AddConnect(Connect* connect) override;
     virtual void RemoveConnect(Connect* connect) override;
 
     void AddEpollEvent(TcpConnect* connect);

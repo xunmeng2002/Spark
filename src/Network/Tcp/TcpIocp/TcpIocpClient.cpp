@@ -90,19 +90,12 @@ bool TcpIocpClient::PostConnect()
 void TcpIocpClient::OnConnectComplete(MyOverlapped* overlapped)
 {
     UnregisterInFlightConnectRequest(overlapped);
-    auto tcpIocpConnect = static_cast<TcpIocpConnect*>(overlapped->Connect);
-    // 登记必须排在投递收包之前：被拒的连接一笔收包都不该挂，否则它的字节会以撞号的
-    // 会话号回调订阅者，被拼进在册那条会话的 PackageReader。
-    if (!AddConnect(tcpIocpConnect))
-    {
-        ReleaseUnsubmittedIoRequest(tcpIocpConnect, overlapped);
-        return;
-    }
     PostRecv(overlapped);
     auto overlapped2 = MyOverlapped::Allocate();
     overlapped2->SetBuffer(LinearBuffer<BufferSize>::Allocate());
-    overlapped2->Connect = tcpIocpConnect;
+    overlapped2->Connect = overlapped->Connect;
     PostRecv(overlapped2);
+    AddConnect(overlapped->Connect);
 }
 SOCKET TcpIocpClient::PrepareConnectSocket()
 {
