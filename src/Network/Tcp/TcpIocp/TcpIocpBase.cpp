@@ -103,7 +103,7 @@ void TcpIocpBase::HandleTcpEvent()
     MyOverlapped* overlapped;
 
     auto bOK = ioCompletePort_->GetStatus(&len, &competionKey, reinterpret_cast<LPOVERLAPPED*>(&overlapped), static_cast<DWORD>(timeOut_.count()));
-    WriteLog(LogLevel::Debug, "CompletionKey:%d, Len:%d, Ret:%d.", competionKey, len, bOK);
+    WriteLog(LogLevel::Debug, "CompletionKey:%zu, Len:%zu, Ret:%d.", static_cast<size_t>(competionKey), static_cast<size_t>(len), bOK);
     if (!bOK)
     {
         auto errorId = WSAGetLastError();
@@ -113,8 +113,8 @@ void TcpIocpBase::HandleTcpEvent()
         }
         else if (errorId == ERROR_OPERATION_ABORTED)
         {
-            WriteLog(LogLevel::Info, "GetStatus Failed For CancelIoEx. errorId:%d, SessionId:%lld, CompetionKey:%d.", errorId,
-                     overlapped->Connect->SessionId, competionKey);
+            WriteLog(LogLevel::Info, "GetStatus Failed For CancelIoEx. errorId:%d, SessionId:%lld, CompetionKey:%zu.", errorId,
+                     overlapped->Connect->SessionId, static_cast<size_t>(competionKey));
             if (overlapped->EventId == IocpEvent::EventAccept || overlapped->EventId == IocpEvent::EventConnect)
             {
                 UnregisterInFlightConnectRequest(overlapped);
@@ -130,8 +130,8 @@ void TcpIocpBase::HandleTcpEvent()
         {
             if (overlapped != nullptr)
             {
-                WriteLog(LogLevel::Info, "GetStatus Failed. ErrorId:%d, SessionId:%lld, CompetionKey:%d.", errorId, overlapped->Connect->SessionId,
-                         competionKey);
+                WriteLog(LogLevel::Info, "GetStatus Failed. ErrorId:%d, SessionId:%lld, CompetionKey:%zu.", errorId, overlapped->Connect->SessionId,
+                         static_cast<size_t>(competionKey));
                 PostDisConnect(overlapped);
                 return;
             }
@@ -144,15 +144,15 @@ void TcpIocpBase::HandleTcpEvent()
     }
     if (overlapped == nullptr)
     {
-        WriteLog(LogLevel::Error, "CompetionKey:%d, OVERLAPPED is null.", competionKey);
+        WriteLog(LogLevel::Error, "CompetionKey:%zu, OVERLAPPED is null.", static_cast<size_t>(competionKey));
         return;
     }
     auto tcpConnect = overlapped->Connect;
 
     if (len == 0 && (overlapped->EventId == IocpEvent::EventSend || overlapped->EventId == IocpEvent::EventRecv))
     {
-        WriteLog(LogLevel::Warning, "CompetionKey:%d, Len is 0, EventId:%d overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu", competionKey,
-                 overlapped->EventId, overlapped, overlapped->MyBuffer, overlapped->MyBuffer->GetLength());
+        WriteLog(LogLevel::Warning, "CompetionKey:%zu, Len is 0, EventId:%d overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu",
+                 static_cast<size_t>(competionKey), overlapped->EventId, overlapped, overlapped->MyBuffer, overlapped->MyBuffer->GetLength());
         PostDisConnect(overlapped);
         return;
     }
