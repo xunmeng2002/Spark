@@ -825,6 +825,12 @@
 
 ## ❓ 原待讨论 / 待决策
 
+### Q.81
+
+- **`/wd4251` 的豁免把「SDK 只给自己人用」当作前提（2026-10-01 随 MSVC 告警级别批 `2992b7b` 登记，同批内关闭）**：`CMakeLists.txt` 对 `Core` / `Network` / `Serialization` 三个共享库 `PUBLIC /wd4251`，理由是导出类的私有 STL 成员所触发的 C4251 在**同源构建**下不咬人——DLL 与全部消费者（含测试）出自同一次构建、同一工具集，`_ITERATOR_DEBUG_LEVEL` 与 `MSVC_RUNTIME_LIBRARY` 不可能分叉。**失效条件**：出现第三方消费者，或消费者与本仓工具集版本分叉——那时 `CsvRecord` 的 `std::vector`、`IoBase` 的 `std::map` 这类成员会真的在 DLL 边界上按各自的布局实例化，失败形态是**静默的内存错乱而非崩溃**（不崩，所以不能拿「跑起来没事」当判据）。**为什么挂 target 而不是 `CMAKE_CXX_FLAGS`**：语义是「Spark 的 DLL 边界」，后续新增的静态库 / 子工程不继承。
+
+**2026-10-01 关闭**：用户裁定「目前不考虑外部使用」——豁免的前提成立，故不作为未决项保留，❓ 区那一行删除，失效条件由配置注释与 `PROGRESS.md` ✅ 区本批条目 ⑤ 承担。本条留档的作用：下个会话若因 C4251 提议改 pimpl 或加接口层，先在此确认前提是不是已经变了。
+
 ### Q.80
 
 - **`s_` / `t_` 前缀是否同样要清零（2026-10-01 `k` / `g_` 前缀批扫出；登记时未决）**：把 `k` / `g_` 两族清零之后，同一扫描口径（`include/` ＋ `src/` ＋ `test/` 的全部 `.h` / `.cpp`，正则 `\b[st]_[A-Za-z0-9_]+`）下另见第三族 **30 处 / 6 个标识符 / 4 个文件**：`src/Serialization/Encode/Encode.cpp` 的 `s_GbkConvert` 5 处与 `s_Utf8Convert` 5 处、`src/Core/Logger/Logger.cpp` 的 `s_LogLevelName` 2 处、`test/unittest/TemplateLib/ObjectPoolTest.cpp` 的 `s_Constructed` 5 处与 `s_Destroyed` 5 处、`t_LogBuffer` 8 处（`src/Core/Logger/Logger.cpp` 与 `test/TestCore/TestCore.cpp` 各占一部分，后者只是一条注释里提到该名字）。**为什么本批不动**：①该族**不在 `Q.63` 的清单里**——那条只列 `namespace Spark` / 小写访问器 / C 风格 cast / `k` / `g_` 五类，用户「一起改了」的授权范围即那五类；②`cpp-style.md` §1 只规定常量与全局变量的 PascalCase，对 `s_`（static）/ `t_`（thread_local）**无成文规定**；③台账里也没有先例裁定。**待决前要先看到的一件事**：这一族的声明处并不属于同一类，去掉前缀后各按哪条规则办并不统一——`Encode.cpp:20-21` 的 `s_GbkConvert` / `s_Utf8Convert` 与 `Logger.cpp:25` 的 `s_LogLevelName` 是**文件作用域的 `static` 全局**（按 §1 属「全局变量」，该走 PascalCase）；`Logger.cpp:30` 的 `t_LogBuffer` 是**函数内的 `thread_local` 字符数组**（按本批 ④ 的口径属局部对象，该走 camelCase）；`ObjectPoolTest.cpp:45-46` 的 `s_Constructed` / `s_Destroyed` 是 **`PoolTracked` 的类静态成员**（按成员规则办，去掉前缀即 `Constructed` / `Destroyed`）。**待决**：是否也去前缀、按什么口径去。
@@ -1285,3 +1291,4 @@
  **2026-10-01（`k` / `g_` 前缀清零批，提交 `2dd8fe9`，基线 `74f3552`）**：`Q.63` 的五类经当日重测——四类已无第一方对象（`namespace Spark` 111 个文件已是 `Spark::Xxx`、小写访问器 0 处、`length(` 全属标准库与 vendored、C 风格 cast 已在 `3e7a933` 清零），第五类 `k` / `g_` 本批清零（212 处 / 13 文件；文件作用域与函数内 `constexpr` 走 PascalCase、函数内 `const` 走 camelCase；四处撞车改名与一处死变量删除见 ✅ 区条目）；`Q.63` 随之关闭，🔄 区那条「批 3 Spark 侧剩余项」一并关闭（见归档 `R.01`），同口径扫出的第三族 `s_` / `t_` 另立 `Q.80` 待裁；✅ 区按 §8.1 滚动最旧一条（`D.77`，`5bcef94`）；提交信息首版两处处数记反，已 `--amend` 订正（树未变）；尺寸行随本笔改写。
  **2026-10-01（`s_` / `t_` 前缀清零批，提交 `9a3f56c`，基线 `e1243ff`）**：用户裁定「一起改」，判据定为「`s_` / `t_` 不是标识、按变量**声明的位置**归类」（类成员走成员命名；名字空间作用域的 `static` / `thread_local` 走全局变量命名；函数内的走局部变量命名）；30 处 / 6 个标识符 / 4 文件落地（`Encode.cpp` 10、`Logger.cpp` 9、`ObjectPoolTest.cpp` 10、`TestCore.cpp` 1——末者只是注释随声明处同步）；`Q.80` 随之关闭；**同笔订正 `Q.80` 原文的一处事实错误**（把 `Logger.cpp:30` 记作函数内的 `thread_local`，实为名字空间作用域，归档段与索引行各加订正注记）；✅ 区按 §8.1 滚动最旧一条（`D.78`，`8bb2373`）；❓ 区末条的排版（缺空行 / 多空行）一并整理；尺寸行随本笔改写。
  **2026-10-01（MSVC 告警级别批，提交 `2992b7b`，基线 `c41e8a3`）**：用户裁定「显式加 `/W3`」（在「按 target 作用域豁免 / 按头文件 pragma 豁免」之间选定前者）。`CMakeLists.txt` 的 `add_compile_options(/W3 /utf-8 /bigobj)` 写死；根因查实为 **CMP0092**（`cmake_minimum_required(VERSION 3.25)` 下为 NEW）使 CMake 不再向 `CMAKE_CXX_FLAGS` 注入默认告警级别、cl.exe 退回自身默认——**关掉 `Q.79` 的「原因未查」半**，另半「修还是批量豁免」裁定为「修 8 条、豁免 C4251 ×26」。提级代价实测：676 条告警去重后仅 34 条独立诊断。同会话另有一笔文档提交 `c41e8a3`（`Q.65` ①② 定为协议口径，只留 ③ 未决）。本批关闭 `Q.79`、缩 `Q.65`、滚动 `D.79`，并新增 ❓ 一条「`/wd4251` 的失效条件」。
+ **2026-10-01（关闭 `/wd4251` 豁免待决项）**：用户裁定「目前不考虑外部使用」——豁免的前提成立，该条自 ❓ 区删除、归档为 `Q.81`（登记与关闭同在 `2992b7b` 这一批内）。同笔订正 ✅ 区本批条目 ⑤ 的末句（原文写「失效条件另立 ❓ 条目」，条目既已关闭，改指配置注释与条目正文）。本批无滚动，指针 147 → 148。
