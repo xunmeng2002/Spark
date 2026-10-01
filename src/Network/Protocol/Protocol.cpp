@@ -163,7 +163,7 @@ void Protocol::OnRecv(SessionIdType sessionId, const char* data, size_t length)
         return;
     }
     auto packageReader = it->second;
-    packageReader->Append(data, static_cast<unsigned int>(length));
+    packageReader->Append(data, length);
     while (true)
     {
         Package* package = nullptr;

@@ -6,6 +6,8 @@
 #include <Spark/Network/Io/Connect.h>
 #include <Spark/TemplateLib/Buffer/LinearBuffer.h>
 
+#include <cstddef>
+
 namespace Spark::Network
 {
 enum class IocpEvent : int
@@ -40,7 +42,7 @@ public:
     static MyOverlapped* Allocate();
     void Deallocate();
     void SetBuffer(LinearBuffer<BufferSize>* buffer);
-    void Shift(unsigned int len);
+    void Shift(size_t len);
     void Reset();
 
     IocpEvent EventId;

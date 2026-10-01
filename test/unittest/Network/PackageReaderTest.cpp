@@ -45,9 +45,9 @@ TEST(PackageReaderTest, AppendAndReadData)
     PackageReader reader = MakeReader();
     const char testData[] = "Hello, PackageReader!";
 
-    unsigned int appended = reader.Append(const_cast<char*>(testData), static_cast<unsigned int>(strlen(testData)));
+    size_t appended = reader.Append(const_cast<char*>(testData), strlen(testData));
     EXPECT_EQ(appended, strlen(testData));
-    EXPECT_EQ(reader.Length(), static_cast<int>(strlen(testData)));
+    EXPECT_EQ(reader.Length(), strlen(testData));
 
     // Data() 应指向刚写入的数据
     EXPECT_EQ(memcmp(reader.Data(), testData, strlen(testData)), 0);
@@ -58,12 +58,12 @@ TEST(PackageReaderTest, AppendUpdatesTail)
     PackageReader reader = MakeReader();
 
     const char data1[] = "First";
-    reader.Append(const_cast<char*>(data1), static_cast<unsigned int>(strlen(data1)));
-    EXPECT_EQ(reader.Length(), static_cast<int>(strlen(data1)));
+    reader.Append(const_cast<char*>(data1), strlen(data1));
+    EXPECT_EQ(reader.Length(), strlen(data1));
 
     const char data2[] = "Second";
-    reader.Append(const_cast<char*>(data2), static_cast<unsigned int>(strlen(data2)));
-    EXPECT_EQ(reader.Length(), static_cast<int>(strlen(data1) + strlen(data2)));
+    reader.Append(const_cast<char*>(data2), strlen(data2));
+    EXPECT_EQ(reader.Length(), strlen(data1) + strlen(data2));
 
     // Tail() 应在所有数据之后
     EXPECT_EQ(reader.Tail(), reader.Data() + reader.Length());
@@ -73,7 +73,7 @@ TEST(PackageReaderTest, PopFrontRemovesData)
 {
     PackageReader reader = MakeReader();
     const char testData[] = "HelloWorld";
-    reader.Append(const_cast<char*>(testData), static_cast<unsigned int>(strlen(testData)));
+    reader.Append(const_cast<char*>(testData), strlen(testData));
 
     reader.PopFront(5); // remove "Hello"
     EXPECT_EQ(reader.Length(), 5);
@@ -84,7 +84,7 @@ TEST(PackageReaderTest, PopFrontClampsToLength)
 {
     PackageReader reader = MakeReader();
     const char testData[] = "Short";
-    reader.Append(const_cast<char*>(testData), static_cast<unsigned int>(strlen(testData)));
+    reader.Append(const_cast<char*>(testData), strlen(testData));
 
     // PopFront 超过实际长度——应 clamp 到 length_
     reader.PopFront(100);
@@ -95,9 +95,9 @@ TEST(PackageReaderTest, PopFrontAllData)
 {
     PackageReader reader = MakeReader();
     const char testData[] = "TestData";
-    reader.Append(const_cast<char*>(testData), static_cast<unsigned int>(strlen(testData)));
+    reader.Append(const_cast<char*>(testData), strlen(testData));
 
-    reader.PopFront(static_cast<unsigned int>(strlen(testData)));
+    reader.PopFront(strlen(testData));
     EXPECT_EQ(reader.Length(), 0);
     EXPECT_EQ(reader.Data(), reader.Tail());
 }
@@ -110,13 +110,13 @@ TEST(PackageReaderTest, PopFrontMovesDataToBufferStart)
     const char data1[] = "ABCDE";
     const char data2[] = "FGH";
 
-    reader.Append(const_cast<char*>(data1), static_cast<unsigned int>(strlen(data1)));
+    reader.Append(const_cast<char*>(data1), strlen(data1));
     EXPECT_EQ(reader.Data(), reader.Tail() - reader.Length());
 
     reader.PopFront(2); // remove "AB" → "CDE" moved to start
     EXPECT_EQ(memcmp(reader.Data(), "CDE", 3), 0);
 
-    reader.Append(const_cast<char*>(data2), static_cast<unsigned int>(strlen(data2)));
+    reader.Append(const_cast<char*>(data2), strlen(data2));
     // "CDE" + "FGH" = "CDEFGH"
     EXPECT_EQ(memcmp(reader.Data(), "CDEFGH", 6), 0);
 }
@@ -124,10 +124,10 @@ TEST(PackageReaderTest, PopFrontMovesDataToBufferStart)
 TEST(PackageReaderTest, TailSizeDecreasesAsDataGrows)
 {
     PackageReader reader = MakeReader();
-    unsigned int initialTailSize = reader.TailSize();
+    size_t initialTailSize = reader.TailSize();
 
     const char data[] = "SomeData";
-    int dataLen = static_cast<int>(strlen(data));
+    size_t dataLen = strlen(data);
     reader.Append(const_cast<char*>(data), dataLen);
 
     // 追加数据后 TailSize 应减少
@@ -139,12 +139,12 @@ TEST(PackageReaderTest, AppendClampsToTailSize)
     PackageReader reader = MakeReader();
 
     // 大量追加，验证不会超过尾端容量
-    unsigned int tailSize = reader.TailSize();
+    size_t tailSize = reader.TailSize();
     std::string bigData(tailSize + 100, 'X');
-    unsigned int appended = reader.Append(const_cast<char*>(bigData.data()), static_cast<unsigned int>(bigData.size()));
+    size_t appended = reader.Append(const_cast<char*>(bigData.data()), bigData.size());
     // 应该被 clamp 到 tailSize
     EXPECT_EQ(appended, tailSize);
-    EXPECT_EQ(reader.Length(), static_cast<int>(tailSize));
+    EXPECT_EQ(reader.Length(), tailSize);
 }
 
 TEST(PackageReaderTest, ResetRestoresState)
@@ -152,7 +152,7 @@ TEST(PackageReaderTest, ResetRestoresState)
     PackageReader reader = MakeReader();
 
     const char data[] = "SomeData";
-    reader.Append(const_cast<char*>(data), static_cast<unsigned int>(strlen(data)));
+    reader.Append(const_cast<char*>(data), strlen(data));
     reader.PopFront(2);
     EXPECT_GT(reader.Length(), 0);
 
@@ -167,7 +167,7 @@ TEST(PackageReaderTest, MultiplePopFrontAndVerifyData)
 
     // 多轮追加 → 弹出 → 验证数据完整性
     const char* expected = "HelloReaderTest";
-    reader.Append(const_cast<char*>(expected), static_cast<unsigned int>(strlen(expected)));
+    reader.Append(const_cast<char*>(expected), strlen(expected));
 
     reader.PopFront(5); // remove "Hello"
     EXPECT_EQ(memcmp(reader.Data(), "ReaderTest", 10), 0);

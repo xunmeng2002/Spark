@@ -46,14 +46,14 @@ void PackageReader::Reset()
     discardLength_ = 0;
 }
 
-unsigned int PackageReader::Append(const char* data, unsigned int len)
+size_t PackageReader::Append(const char* data, size_t len)
 {
     len = std::min(len, TailSize());
     memcpy(Tail(), data, len);
     length_ += len;
     return len;
 }
-void PackageReader::PopFront(unsigned int len)
+void PackageReader::PopFront(size_t len)
 {
     len = std::min(len, length_);
     length_ = length_ - len;
@@ -64,13 +64,13 @@ void PackageReader::PopFront(unsigned int len)
     data_ = buff_;
 }
 
-int PackageReader::Length()
+size_t PackageReader::Length()
 {
     return length_;
 }
-unsigned int PackageReader::TailSize()
+size_t PackageReader::TailSize()
 {
-    return unsigned((buff_ + MaxPackageSize) - (data_ + length_));
+    return static_cast<size_t>((buff_ + MaxPackageSize) - (data_ + length_));
 }
 char* PackageReader::Data()
 {
@@ -165,7 +165,7 @@ bool PackageReader::ParseXtpPackage(Package*& package)
 bool PackageReader::ParseStepPackage(Package*& package)
 {
     const std::string& anchor = StepUtility::GetPackageStartAnchor();
-    unsigned int anchorLength = unsigned(anchor.size());
+    size_t anchorLength = anchor.size();
     while (true)
     {
         AlignResult alignResult = AlignToAnchor(anchor.c_str(), anchorLength);
@@ -179,13 +179,13 @@ bool PackageReader::ParseStepPackage(Package*& package)
         }
         int headEndIndex = 0;
         ::memset(&head_, 0, sizeof(head_));
-        if (!StepUtility::HeadFromStream(data_, 0, length_, &head_, headEndIndex))
+        if (!StepUtility::HeadFromStream(data_, 0, static_cast<int>(length_), &head_, headEndIndex))
         {
             if (length_ <= StepMaxHeaderLen)
             {
                 return true;
             }
-            WriteLog(LogLevel::Warning, "Parse Head Failed. SessionId:%lld, IP:%s, BufferLen:%u", sessionId_, ipAddress_, length_);
+            WriteLog(LogLevel::Warning, "Parse Head Failed. SessionId:%lld, IP:%s, BufferLen:%zu", sessionId_, ipAddress_, length_);
             DiscardFront(1);
             continue;
         }
@@ -201,7 +201,7 @@ bool PackageReader::ParseStepPackage(Package*& package)
             continue;
         }
         int tailIndex = headEndIndex + head_.BodyLen;
-        if (length_ < unsigned(tailIndex + StepTailLen))
+        if (length_ < static_cast<size_t>(tailIndex) + StepTailLen)
         {
             return true;
         }
@@ -211,7 +211,7 @@ bool PackageReader::ParseStepPackage(Package*& package)
             DiscardFront(1);
             continue;
         }
-        auto checkSum = CalculateCrc32c(reinterpret_cast<const unsigned char*>(data_), tailIndex);
+        auto checkSum = CalculateCrc32c(reinterpret_cast<const unsigned char*>(data_), static_cast<size_t>(tailIndex));
         if (checkSum != tail_.CheckSum)
         {
             WriteLog(LogLevel::Warning, "CheckSum not Match. Tail.CheckSum:0x%08X, CalculateCrc32c:0x%08X", tail_.CheckSum, checkSum);
@@ -235,7 +235,7 @@ bool PackageReader::ParseStepPackage(Package*& package)
         memcpy(&package->Head, &head_, sizeof(HeadField));
         memcpy(&package->Tail, &tail_, sizeof(TailField));
         auto ret = package->FromStepStream(data_, headEndIndex, tailIndex);
-        PopFront(tailIndex + StepTailLen);
+        PopFront(static_cast<size_t>(tailIndex) + StepTailLen);
         if (!ret)
         {
             WriteLog(LogLevel::Warning, "FromStepStream Failed. ProtocolType:%d, PackageId:%d, BodyLen:%d", protocolType_, head_.PackageId,
@@ -249,9 +249,9 @@ bool PackageReader::ParseStepPackage(Package*& package)
     }
 }
 
-PackageReader::AlignResult PackageReader::AlignToAnchor(const char* anchor, unsigned int anchorLength)
+PackageReader::AlignResult PackageReader::AlignToAnchor(const char* anchor, size_t anchorLength)
 {
-    unsigned int offset = 0;
+    size_t offset = 0;
     if (FindBytes(data_, length_, anchor, anchorLength, offset))
     {
         if (offset > 0)
@@ -261,28 +261,28 @@ PackageReader::AlignResult PackageReader::AlignToAnchor(const char* anchor, unsi
         return AlignResult::Aligned;
     }
     //锚点可能跨收包边界，所以保留末尾不足一个锚点的字节，其余都是无意义的前缀
-    unsigned int discardLength = length_ - std::min(length_, anchorLength - 1);
+    size_t discardLength = length_ - std::min(length_, anchorLength - 1);
     if (discardLength > 0)
     {
         if (discardLength_ == 0)
         {
             //首次丢弃说明对端说的可能不是本协议，把这段字节的开头记下来便于定位
             unsigned int probe = 0;
-            ::memcpy(&probe, data_, std::min(length_, unsigned(sizeof(probe))));
-            WriteLog(LogLevel::Warning, "Package Start Not Found, Resync. SessionId:%lld, IP:%s, HeadValue:0x%08X, BufferLen:%u", sessionId_,
+            ::memcpy(&probe, data_, std::min(length_, sizeof(probe)));
+            WriteLog(LogLevel::Warning, "Package Start Not Found, Resync. SessionId:%lld, IP:%s, HeadValue:0x%08X, BufferLen:%zu", sessionId_,
                      ipAddress_, probe, length_);
         }
         DiscardFront(discardLength);
     }
-    if (discardLength_ > MaxPackageSize)
+    if (discardLength_ > static_cast<size_t>(MaxPackageSize))
     {
-        WriteLog(LogLevel::Error, "Garbage Stream Detected, DisConnect. SessionId:%lld, IP:%s, DiscardedBytes:%u", sessionId_, ipAddress_,
+        WriteLog(LogLevel::Error, "Garbage Stream Detected, DisConnect. SessionId:%lld, IP:%s, DiscardedBytes:%zu", sessionId_, ipAddress_,
                  discardLength_);
         return AlignResult::GarbageStream;
     }
     return AlignResult::NeedMoreData;
 }
-void PackageReader::DiscardFront(unsigned int len)
+void PackageReader::DiscardFront(size_t len)
 {
     len = std::min(len, length_);
     discardLength_ += len;

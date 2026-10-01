@@ -109,8 +109,8 @@ TEST(PackageSerializationTest, StepRoundTrip)
     // 4. 用 PackageReader 解析
     PackageFactory factory;
     PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
-    unsigned int appended = reader.Append(buff, totalLen);
-    EXPECT_EQ(static_cast<int>(appended), totalLen);
+    size_t appended = reader.Append(buff, totalLen);
+    EXPECT_EQ(appended, static_cast<size_t>(totalLen));
 
     Package* parsedRaw = nullptr;
     bool parseResult = reader.ParsePackage(parsedRaw);
@@ -268,7 +268,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_GarbagePrefixIsResynced)
     EXPECT_TRUE(reader.ParsePackage(parsedRaw));
     EXPECT_EQ(parsedRaw, nullptr);
 
-    EXPECT_EQ(reader.Append(buff, totalLen), static_cast<unsigned int>(totalLen));
+    EXPECT_EQ(reader.Append(buff, totalLen), static_cast<size_t>(totalLen));
     EXPECT_TRUE(reader.ParsePackage(parsedRaw));
     ASSERT_NE(parsedRaw, nullptr);
     EXPECT_EQ(parsedRaw->Head.MsgSeqNum, 1001);
@@ -314,14 +314,14 @@ TEST(PackageSerializationTest, XtpRoundTrip_MagicSplitAcrossAppend)
 
     PackageFactory factory;
     PackageReader reader(ProtocolTypeType::Xtp, &factory, SessionId, IP);
-    EXPECT_EQ(reader.Append(buff, kSplit), static_cast<unsigned int>(kSplit));
+    EXPECT_EQ(reader.Append(buff, kSplit), static_cast<size_t>(kSplit));
 
     Package* parsedRaw = nullptr;
     EXPECT_TRUE(reader.ParsePackage(parsedRaw));
     EXPECT_EQ(parsedRaw, nullptr);
-    EXPECT_EQ(reader.Length(), kSplit);
+    EXPECT_EQ(reader.Length(), static_cast<size_t>(kSplit));
 
-    EXPECT_EQ(reader.Append(buff + kSplit, totalLen - kSplit), static_cast<unsigned int>(totalLen - kSplit));
+    EXPECT_EQ(reader.Append(buff + kSplit, totalLen - kSplit), static_cast<size_t>(totalLen - kSplit));
     EXPECT_TRUE(reader.ParsePackage(parsedRaw));
     ASSERT_NE(parsedRaw, nullptr);
     EXPECT_EQ(parsedRaw->Head.MsgSeqNum, 1001);
@@ -343,7 +343,7 @@ TEST(PackageSerializationTest, StepRoundTrip_WrongVersionIsFatal)
 
     PackageFactory factory;
     PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
-    reader.Append(&frame[0], static_cast<unsigned int>(frame.size()));
+    reader.Append(&frame[0], frame.size());
 
     Package* parsedRaw = nullptr;
     EXPECT_FALSE(reader.ParsePackage(parsedRaw));
@@ -366,7 +366,7 @@ TEST(PackageSerializationTest, StepRoundTrip_GarbagePrefixIsResynced)
     EXPECT_TRUE(reader.ParsePackage(parsedRaw));
     EXPECT_EQ(parsedRaw, nullptr);
 
-    EXPECT_EQ(reader.Append(buff, totalLen), static_cast<unsigned int>(totalLen));
+    EXPECT_EQ(reader.Append(buff, totalLen), static_cast<size_t>(totalLen));
     EXPECT_TRUE(reader.ParsePackage(parsedRaw));
     ASSERT_NE(parsedRaw, nullptr);
     VerifyPackage(static_cast<NotifyComponentConnectStatusPackage*>(parsedRaw), SessionId, 1001);
@@ -410,14 +410,14 @@ TEST(PackageSerializationTest, StepRoundTrip_AnchorSplitAcrossAppend)
 
     PackageFactory factory;
     PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
-    EXPECT_EQ(reader.Append(buff, kSplit), static_cast<unsigned int>(kSplit));
+    EXPECT_EQ(reader.Append(buff, kSplit), static_cast<size_t>(kSplit));
 
     Package* parsedRaw = nullptr;
     EXPECT_TRUE(reader.ParsePackage(parsedRaw));
     EXPECT_EQ(parsedRaw, nullptr);
-    EXPECT_EQ(reader.Length(), kSplit);
+    EXPECT_EQ(reader.Length(), static_cast<size_t>(kSplit));
 
-    EXPECT_EQ(reader.Append(buff + kSplit, totalLen - kSplit), static_cast<unsigned int>(totalLen - kSplit));
+    EXPECT_EQ(reader.Append(buff + kSplit, totalLen - kSplit), static_cast<size_t>(totalLen - kSplit));
     EXPECT_TRUE(reader.ParsePackage(parsedRaw));
     ASSERT_NE(parsedRaw, nullptr);
     VerifyPackage(static_cast<NotifyComponentConnectStatusPackage*>(parsedRaw), SessionId, 1001);
@@ -756,7 +756,7 @@ TEST(PackageSerializationTest, StepRoundTrip_Int32FieldPreserved)
 
     PackageFactory factory;
     PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
-    EXPECT_EQ(static_cast<int>(reader.Append(buff, totalLen)), totalLen);
+    EXPECT_EQ(reader.Append(buff, totalLen), static_cast<size_t>(totalLen));
 
     Package* parsedRaw = nullptr;
     ASSERT_TRUE(reader.ParsePackage(parsedRaw));
@@ -805,7 +805,7 @@ TEST(PackageSerializationTest, StepRoundTrip_Int32OutOfRangeIsRejected)
 
     PackageFactory factory;
     PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
-    EXPECT_EQ(static_cast<int>(reader.Append(buff, totalLen)), totalLen);
+    EXPECT_EQ(reader.Append(buff, totalLen), static_cast<size_t>(totalLen));
 
     Package* parsedRaw = nullptr;
     EXPECT_FALSE(reader.ParsePackage(parsedRaw));
@@ -818,7 +818,7 @@ bool ParseStepFrame(char* frameData, int totalLen, Package*& parsed)
 {
     PackageFactory factory;
     PackageReader reader(ProtocolTypeType::Step, &factory, SessionId, IP);
-    if (static_cast<int>(reader.Append(frameData, totalLen)) != totalLen)
+    if (reader.Append(frameData, totalLen) != static_cast<size_t>(totalLen))
     {
         return false;
     }

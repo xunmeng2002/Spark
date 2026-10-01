@@ -4,6 +4,7 @@
 #include "Tcp/TcpIocp/TcpIocpConnect.h"
 #include "Tcp/TcpIocp/TcpIocpCompletePort.h"
 #include <chrono>
+#include <cstddef>
 #include <list>
 #include <mutex>
 
@@ -36,8 +37,8 @@ protected:
     virtual void OnAcceptComplete(MyOverlapped* overlapped) {}
     virtual void OnConnectComplete(MyOverlapped* overlapped) {}
     virtual void OnDisConnectComplete(MyOverlapped* overlapped);
-    virtual void OnSendComplete(MyOverlapped* overlapped, int bytesTransferred);
-    virtual void OnRecvComplete(MyOverlapped* overlapped, int bytesTransferred);
+    virtual void OnSendComplete(MyOverlapped* overlapped, size_t bytesTransferred);
+    virtual void OnRecvComplete(MyOverlapped* overlapped, size_t bytesTransferred);
 
     int backLog_;
     TcpIocpCompletePort* ioCompletePort_;

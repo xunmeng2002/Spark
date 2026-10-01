@@ -830,7 +830,7 @@ TEST(StepUtilityTest, CompleteHeadBodyTail)
     std::string message(headBuf, headBuf + headLen);
     message += body;
     // 校验和覆盖包头与包体，与 Package::MakePackage 的算法一致
-    auto checkSum = CalculateCrc32c(reinterpret_cast<const unsigned char*>(message.data()), static_cast<int>(message.size()));
+    auto checkSum = CalculateCrc32c(reinterpret_cast<const unsigned char*>(message.data()), message.size());
     message += MakeStepTailStream(checkSum);
 
     // 反向解析：包头

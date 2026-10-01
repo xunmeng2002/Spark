@@ -3,6 +3,8 @@
 #include <Spark/Network/Protocol/Package.h>
 #include <Spark/Network/Protocol/PackageFactoryBase.h>
 
+#include <cstddef>
+
 namespace Spark::Network
 {
 class NETWORK_EXPORTS PackageReader
@@ -14,10 +16,10 @@ public:
     void Deallocate();
     void Reset();
 
-    unsigned int Append(const char* data, unsigned int len);
-    void PopFront(unsigned int len);
-    int Length();
-    unsigned int TailSize();
+    size_t Append(const char* data, size_t len);
+    void PopFront(size_t len);
+    size_t Length();
+    size_t TailSize();
     char* Data();
     char* Tail();
     bool ParsePackage(Package*& package);
@@ -35,8 +37,8 @@ protected:
 
     char buff_[MaxPackageSize * 2];
     char* data_;
-    unsigned int length_;
-    unsigned int discardLength_;
+    size_t length_;
+    size_t discardLength_;
 
 private:
     enum class AlignResult
@@ -48,8 +50,8 @@ private:
         //丢弃的字节数超出上限，判定为垃圾流，应断开连接
         GarbageStream,
     };
-    AlignResult AlignToAnchor(const char* anchor, unsigned int anchorLength);
-    void DiscardFront(unsigned int len);
+    AlignResult AlignToAnchor(const char* anchor, size_t anchorLength);
+    void DiscardFront(size_t len);
     bool IsBodyLenWithinFrameLimit() const;
 };
 }

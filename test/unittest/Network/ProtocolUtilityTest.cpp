@@ -79,7 +79,7 @@ TEST(CalculateCrc32cTest, OnlyFirstLengthBytesCounted)
 TEST(FindBytesTest, FoundAtBeginning)
 {
     const char data[] = {'S', 'P', 'K', '2', 'x'};
-    unsigned int offset = 99;
+    size_t offset = 99;
     EXPECT_TRUE(FindBytes(data, 5, "SPK2", 4, offset));
     EXPECT_EQ(offset, 0u);
 }
@@ -87,7 +87,7 @@ TEST(FindBytesTest, FoundAtBeginning)
 TEST(FindBytesTest, FoundInMiddle)
 {
     const char data[] = {'a', 'b', 'c', 'S', 'P', 'K', '2'};
-    unsigned int offset = 99;
+    size_t offset = 99;
     EXPECT_TRUE(FindBytes(data, 7, "SPK2", 4, offset));
     EXPECT_EQ(offset, 3u);
 }
@@ -95,7 +95,7 @@ TEST(FindBytesTest, FoundInMiddle)
 TEST(FindBytesTest, NotFound)
 {
     const char data[] = {'a', 'b', 'c', 'd'};
-    unsigned int offset = 99;
+    size_t offset = 99;
     EXPECT_FALSE(FindBytes(data, 4, "SPK2", 4, offset));
     EXPECT_EQ(offset, 99u); // 未命中时不得写出参
 }
@@ -103,21 +103,21 @@ TEST(FindBytesTest, NotFound)
 TEST(FindBytesTest, PatternLongerThanData)
 {
     const char data[] = {'S', 'P', 'K'};
-    unsigned int offset = 0;
+    size_t offset = 0;
     EXPECT_FALSE(FindBytes(data, 3, "SPK2", 4, offset));
 }
 
 TEST(FindBytesTest, EmptyPatternOrEmptyData)
 {
     const char data[] = {'S', 'P', 'K', '2'};
-    unsigned int offset = 0;
+    size_t offset = 0;
     EXPECT_FALSE(FindBytes(data, 4, "SPK2", 0, offset));
     EXPECT_FALSE(FindBytes(data, 0, "SPK2", 4, offset));
 }
 
 TEST(FindBytesTest, NullBuffer)
 {
-    unsigned int offset = 0;
+    size_t offset = 0;
     EXPECT_FALSE(FindBytes(nullptr, 4, "SPK2", 4, offset));
     EXPECT_FALSE(FindBytes("SPK2", 4, nullptr, 4, offset));
 }
@@ -126,6 +126,6 @@ TEST(FindBytesTest, MagicSplitAcrossRange)
 {
     // 魔术字跨收包边界时，落在范围外的那半个不能算命中
     const char data[] = {'S', 'P', 'K', '2'};
-    unsigned int offset = 0;
+    size_t offset = 0;
     EXPECT_FALSE(FindBytes(data, 2, "SPK2", 4, offset));
 }

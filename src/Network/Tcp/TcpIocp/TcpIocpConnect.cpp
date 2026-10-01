@@ -75,7 +75,7 @@ void MyOverlapped::SetBuffer(LinearBuffer<BufferSize>* buffer)
     WsaBuffer.buf = MyBuffer->GetData();
     WsaBuffer.len = static_cast<ULONG>(MyBuffer->GetLength());
 }
-void MyOverlapped::Shift(unsigned int len)
+void MyOverlapped::Shift(size_t len)
 {
     MyBuffer->Shift(len);
     WsaBuffer.buf = MyBuffer->GetData();

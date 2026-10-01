@@ -351,16 +351,16 @@ void TcpIocpBase::OnDisConnectComplete(MyOverlapped* overlapped)
     RemoveConnect(overlapped->Connect);
     overlapped->Deallocate();
 }
-void TcpIocpBase::OnSendComplete(MyOverlapped* overlapped, int bytesTransferred)
+void TcpIocpBase::OnSendComplete(MyOverlapped* overlapped, size_t bytesTransferred)
 {
     WriteLog(LogLevel::Debug,
-             "OnSendComplete SessionId:%lld, Socket:%lld, bytesTransferred:%d, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu",
+             "OnSendComplete SessionId:%lld, Socket:%lld, bytesTransferred:%zu, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu",
              overlapped->Connect->SessionId, overlapped->Connect->SocketId, bytesTransferred, overlapped, overlapped->MyBuffer,
              overlapped->MyBuffer->GetLength());
-    if (static_cast<size_t>(bytesTransferred) < overlapped->MyBuffer->GetLength())
+    if (bytesTransferred < overlapped->MyBuffer->GetLength())
     {
         WriteLog(LogLevel::Warning,
-                 "OnSendComplete PartSended. PostSend Again. BufferLen:%zu, bytesTransferred:%d, overlapped:%p, overlapped->MyBuffer:%p",
+                 "OnSendComplete PartSended. PostSend Again. BufferLen:%zu, bytesTransferred:%zu, overlapped:%p, overlapped->MyBuffer:%p",
                  overlapped->MyBuffer->GetLength(), bytesTransferred, overlapped, overlapped->MyBuffer);
         overlapped->Shift(bytesTransferred);
         PostSend(overlapped);
@@ -386,15 +386,15 @@ void TcpIocpBase::OnSendComplete(MyOverlapped* overlapped, int bytesTransferred)
         PostSend(overlapped);
     }
 }
-void TcpIocpBase::OnRecvComplete(MyOverlapped* overlapped, int bytesTransferred)
+void TcpIocpBase::OnRecvComplete(MyOverlapped* overlapped, size_t bytesTransferred)
 {
     WriteLog(LogLevel::Debug,
-             "OnRecvComplete SessionId:%lld, Socket:%lld, bytesTransferred:%d, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu",
+             "OnRecvComplete SessionId:%lld, Socket:%lld, bytesTransferred:%zu, overlapped:%p, overlapped->MyBuffer:%p, BufferLen:%zu",
              overlapped->Connect->SessionId, overlapped->Connect->SocketId, bytesTransferred, overlapped, overlapped->MyBuffer,
              overlapped->MyBuffer->GetLength());
-    if (bytesTransferred <= 0 || !overlapped->MyBuffer->SetLength(static_cast<size_t>(bytesTransferred)))
+    if (bytesTransferred == 0 || !overlapped->MyBuffer->SetLength(bytesTransferred))
     {
-        WriteLog(LogLevel::Error, "OnRecvComplete Invalid BytesTransferred. SessionId:%lld, Socket:%lld, BytesTransferred:%d",
+        WriteLog(LogLevel::Error, "OnRecvComplete Invalid BytesTransferred. SessionId:%lld, Socket:%lld, BytesTransferred:%zu",
                  overlapped->Connect->SessionId, overlapped->Connect->SocketId, bytesTransferred);
         PostDisConnect(overlapped);
         return;
