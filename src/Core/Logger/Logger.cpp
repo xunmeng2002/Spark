@@ -22,12 +22,12 @@ constexpr unsigned int LogLineLength = 64 * 1024;
 constexpr unsigned int MaxLogFormatLength = 1024;
 constexpr unsigned int MaxLogLineContentLength = (LogLineLength - MaxLogFormatLength);
 
-static std::map<LogLevel, std::string> s_LogLevelName = {
+static std::map<LogLevel, std::string> LogLevelName = {
     {LogLevel::Ignore, "IGNORE"}, {LogLevel::Debug, "DEBUG"},       {LogLevel::Info, "INFO"},           {LogLevel::Warning, "WARNING"},
     {LogLevel::Error, "ERROR"},   {LogLevel::Critical, "CRITICAL"}, {LogLevel::Emergency, "EMERGENCY"},
 };
 
-thread_local char t_LogBuffer[LogLineLength];
+thread_local char LogBuffer[LogLineLength];
 
 Logger::Logger() : ThreadBase("Logger"), processName_(""), createLogFileTime_(), logData_(nullptr) {}
 Logger::~Logger() {}
@@ -208,23 +208,23 @@ void Logger::WriteToLog(LogLevel level, const char* file, int line, const char* 
     for (auto p = file; *p != '\0'; p++)
         if (*p == '\\' || *p == '/')
             file = p + 1;
-    unsigned len1 = std::format_to_n(t_LogBuffer, MaxLogFormatLength, "{} {} {} ", TimeUtility::GetLocalDateTimeWithMilliSecond(),
-                                     GetCurrentThreadId(), s_LogLevelName[level])
+    unsigned len1 = std::format_to_n(LogBuffer, MaxLogFormatLength, "{} {} {} ", TimeUtility::GetLocalDateTimeWithMilliSecond(), GetCurrentThreadId(),
+                                     LogLevelName[level])
                         .out -
-                    t_LogBuffer;
+                    LogBuffer;
     // vsnprintf 返回的是"本该写入"的长度（负数表示编码错误），内容被截断时该值不会随之变小，
     // 不收敛到可写区间会让下一行计算剩余空间 LogLineLength - len1 - len2 - 1 发生无符号回绕
-    int formattedContentLength = vsnprintf(t_LogBuffer + len1, MaxLogLineContentLength, format, va);
+    int formattedContentLength = vsnprintf(LogBuffer + len1, MaxLogLineContentLength, format, va);
     unsigned len2 = static_cast<unsigned>(std::clamp(formattedContentLength, 0, static_cast<int>(MaxLogLineContentLength) - 1));
-    unsigned len3 = std::format_to_n(t_LogBuffer + len1 + len2, LogLineLength - len1 - len2 - 1, "\t\t---{}:{}[{}]\n", file, line, func).out -
-                    (t_LogBuffer + len1 + len2);
+    unsigned len3 = std::format_to_n(LogBuffer + len1 + len2, LogLineLength - len1 - len2 - 1, "\t\t---{}:{}[{}]\n", file, line, func).out -
+                    (LogBuffer + len1 + len2);
     unsigned len = len1 + len2 + len3;
     std::lock_guard<std::mutex> guard(logData_->Mutex);
     if (logData_->CurrBuffer->GetWriteBufferSize() < len)
     {
         logData_->PushBuffer();
     }
-    logData_->CurrBuffer->Append(t_LogBuffer, len);
+    logData_->CurrBuffer->Append(LogBuffer, len);
     logData_->ConditionVariable.notify_one();
 }
 void Logger::WriteToConsole(LogLevel level, const char* formatStr, va_list va)

@@ -25,7 +25,7 @@ int main(int argc, const char* argv[])
 
     Invoke<AspectLogger, AspectPerformance>(CalcalateMD5, "CalcalateMD5", src.c_str(), src.length());
 
-    // 超长单行日志的边界回归：单条日志的缓冲区上限是 64KB（Logger.cpp 的 t_LogBuffer），
+    // 超长单行日志的边界回归：单条日志的缓冲区上限是 64KB（Logger.cpp 的 LogBuffer），
     // 本行按 70000 字符传入，越界写的旧行为会破坏相邻数据；紧随其后的哨兵行用于确认落盘内容完好
     string oversizedLine(70000, 'L');
     WriteLog(LogLevel::Info, "Oversized line begin:%s", oversizedLine.c_str());

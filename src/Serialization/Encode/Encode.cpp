@@ -17,31 +17,31 @@ public:
     }
 };
 
-static std::wstring_convert<codecvt_gbk> s_GbkConvert;
-static std::wstring_convert<std::codecvt_utf8<wchar_t>> s_Utf8Convert;
+static std::wstring_convert<codecvt_gbk> GbkConvert;
+static std::wstring_convert<std::codecvt_utf8<wchar_t>> Utf8Convert;
 
 std::wstring GbkToUnicode(const std::string& str)
 {
-    return s_GbkConvert.from_bytes(str);
+    return GbkConvert.from_bytes(str);
 }
 std::string UnicodeToGbk(const std::wstring& str)
 {
-    return s_GbkConvert.to_bytes(str);
+    return GbkConvert.to_bytes(str);
 }
 std::wstring Utf8ToUnicode(const std::string& str)
 {
-    return s_Utf8Convert.from_bytes(str);
+    return Utf8Convert.from_bytes(str);
 }
 std::string UnicodeToUtf8(const std::wstring& str)
 {
-    return s_Utf8Convert.to_bytes(str);
+    return Utf8Convert.to_bytes(str);
 }
 std::string GbkToUtf8(const std::string& str)
 {
-    return s_Utf8Convert.to_bytes(s_GbkConvert.from_bytes(str));
+    return Utf8Convert.to_bytes(GbkConvert.from_bytes(str));
 }
 std::string Utf8ToGbk(const std::string& str)
 {
-    return s_GbkConvert.to_bytes(s_Utf8Convert.from_bytes(str));
+    return GbkConvert.to_bytes(Utf8Convert.from_bytes(str));
 }
 }

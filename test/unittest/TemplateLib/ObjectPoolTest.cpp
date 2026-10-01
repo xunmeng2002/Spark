@@ -38,17 +38,17 @@ struct PoolPoint
 // 检测构造/析构计数的类型
 struct PoolTracked
 {
-    PoolTracked() : id(0) { s_Constructed++; }
-    PoolTracked(int i) : id(static_cast<long long>(i)) { s_Constructed++; }
-    ~PoolTracked() { s_Destroyed++; }
+    PoolTracked() : id(0) { Constructed++; }
+    PoolTracked(int i) : id(static_cast<long long>(i)) { Constructed++; }
+    ~PoolTracked() { Destroyed++; }
 
-    static std::atomic<int> s_Constructed;
-    static std::atomic<int> s_Destroyed;
+    static std::atomic<int> Constructed;
+    static std::atomic<int> Destroyed;
 
     long long id;
 };
-std::atomic<int> PoolTracked::s_Constructed{0};
-std::atomic<int> PoolTracked::s_Destroyed{0};
+std::atomic<int> PoolTracked::Constructed{0};
+std::atomic<int> PoolTracked::Destroyed{0};
 
 // ---------- Allocate ----------
 
@@ -513,8 +513,8 @@ TEST(ObjectPoolTest, TrackedType_ConstructAndDestroy)
 {
     // 重置计数（注意类型是 PoolTracked，各测试共享此静态计数）
     // 由于单例特性，前面可能有残留计数，此处只验证分配/归还增减一致
-    auto beforeConstruct = PoolTracked::s_Constructed.load();
-    auto beforeDestroy = PoolTracked::s_Destroyed.load();
+    auto beforeConstruct = PoolTracked::Constructed.load();
+    auto beforeDestroy = PoolTracked::Destroyed.load();
 
     PoolTracked* obj = ObjectPool<PoolTracked>::GetInstance().Allocate(5);
     ASSERT_NE(obj, nullptr);
@@ -524,5 +524,5 @@ TEST(ObjectPoolTest, TrackedType_ConstructAndDestroy)
 
     // Deallocate 调用了析构函数，但不释放内存（还给 pool）
     // 所以 Destroyed 增加，Constructed 不变（归还后 Allocate 通过 placement-new 重用）
-    EXPECT_GT(PoolTracked::s_Destroyed.load(), beforeDestroy);
+    EXPECT_GT(PoolTracked::Destroyed.load(), beforeDestroy);
 }
