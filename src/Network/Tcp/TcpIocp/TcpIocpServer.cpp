@@ -74,7 +74,7 @@ void TcpIocpServer::OnAcceptComplete(MyOverlapped* overlapped)
     SocketApi::GetInstance().GetAcceptExSockAddrs(overlapped->WsaBuffer.buf, 0, (sizeof(SOCKADDR_IN) + 16), (sizeof(SOCKADDR_IN) + 16),
                                                   reinterpret_cast<LPSOCKADDR*>(&localAddr), &localLen, reinterpret_cast<LPSOCKADDR*>(&remoteAddr),
                                                   &remoteLen);
-    snprintf(tcpIocpConnect->RemoteAddress, sizeof(tcpIocpConnect->RemoteAddress), inet_ntoa(remoteAddr->sin_addr));
+    inet_ntop(AF_INET, &remoteAddr->sin_addr, tcpIocpConnect->RemoteAddress, sizeof(tcpIocpConnect->RemoteAddress));
     tcpIocpConnect->RemotePort = ntohs(remoteAddr->sin_port);
 
     WriteLog(LogLevel::Info, "AcceptComplete: From <%s:%d>, SessionId:%lld, Socket:%lld", tcpIocpConnect->RemoteAddress, tcpIocpConnect->RemotePort,

@@ -179,17 +179,17 @@ long long TimeUtility::MinuteAdd(long long minuteTime, int count)
     int hourCount;
     if (minute >= 0)
     {
-        hourCount = minute / 60;
+        hourCount = static_cast<int>(minute / 60);
         minute %= 60;
     }
     else
     {
         // C++ 对负数除法向零截断，需做 floor 除法
-        hourCount = (minute - 59) / 60;
+        hourCount = static_cast<int>((minute - 59) / 60);
         minute -= hourCount * 60; // 归入 [0, 59]
     }
 
-    hourTime = HourAdd(hourTime, hourCount);
+    hourTime = HourAdd(static_cast<int>(hourTime), hourCount);
     return hourTime * 100 + minute;
 }
 
