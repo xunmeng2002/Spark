@@ -1,13 +1,16 @@
 #include <gtest/gtest.h>
+#include <Spark/Core/Logger/Logger.h>
 #include <Spark/Network/Io/IoBase.h>
 #include <Spark/Network/Io/IoFactory.h>
 #include <Spark/TemplateLib/Buffer/ShmBuffer.h>
 
 #include <chrono>
+#include <cstring>
 #include <format>
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <thread>
 
 #ifdef _WIN32
@@ -124,6 +127,23 @@ ConnectStatusType ReadShmHeaderStatus(const std::string& shmObjectName, unsigned
     return status;
 }
 
+struct ShmChannelDownCounters
+{
+    size_t WriteCount = 0;
+    size_t ReadCount = 0;
+};
+
+bool ReadShmChannelDownCounters(const std::string& shmObjectName, unsigned connectionIndex, ShmChannelDownCounters& counters)
+{
+    return VisitShmMapping(shmObjectName, sizeof(Spark::SingleShmHeader) * (connectionIndex + 1),
+                           [connectionIndex, &counters](Spark::SingleShmHeader* shmHeader)
+                           {
+                               Spark::SingleShmHeader* channelHeader = shmHeader + connectionIndex;
+                               counters.WriteCount = Spark::SingleShmHeader::LoadMappedField(channelHeader->DownWriteCount);
+                               counters.ReadCount = Spark::SingleShmHeader::LoadMappedField(channelHeader->DownReadCount);
+                           });
+}
+
 bool ShmObjectExists(const std::string& shmObjectName)
 {
     return VisitShmMapping(shmObjectName, sizeof(Spark::SingleShmHeader), [](Spark::SingleShmHeader*) {});
@@ -132,12 +152,17 @@ bool ShmObjectExists(const std::string& shmObjectName)
 class ConnectEventProbe : public IoSubscriber
 {
 public:
-    void OnConnect(SessionIdType, const char*, int) override { ++ConnectCount; }
+    void OnConnect(SessionIdType sessionId, const char*, int) override
+    {
+        ++ConnectCount;
+        PeerSessionId = sessionId;
+    }
     void OnDisConnect(SessionIdType, const char*, int) override { ++DisConnectCount; }
     void OnRecv(SessionIdType, const char*, size_t) override {}
 
     int ConnectCount = 0;
     int DisConnectCount = 0;
+    SessionIdType PeerSessionId = 0;
 };
 
 template <typename StopCondition>
@@ -152,15 +177,9 @@ template <typename StopCondition>
     return stopCondition();
 }
 
-class ThrowingRecvProbe : public IoSubscriber
+class ThrowingRecvProbe : public ConnectEventProbe
 {
 public:
-    void OnConnect(SessionIdType sessionId, const char*, int) override
-    {
-        ++ConnectCount;
-        PeerSessionId = sessionId;
-    }
-    void OnDisConnect(SessionIdType, const char*, int) override { ++DisConnectCount; }
     void OnRecv(SessionIdType, const char*, size_t length) override
     {
         ++RecvCount;
@@ -172,14 +191,22 @@ public:
     }
 
     int ThrowingRecvCount = 0;
-    int ConnectCount = 0;
-    int DisConnectCount = 0;
     int RecvCount = 0;
     size_t LastRecvLength = 0;
-    SessionIdType PeerSessionId = 0;
 };
 
 constexpr const char* DriveBudgetExhaustedMessage = "驱动预算耗尽：到点停条件仍不成立，与断言的状态不符不是一回事";
+
+constexpr const char* DroppedBufferLogSignature = "Send Peer DisConnected, Drop Buffer.";
+int CapturedDroppedBufferLogCount = 0;
+
+void CountDroppedBufferLog(Spark::Core::LogLevel, const char*, int, const char*, const char* formatStr, ...)
+{
+    if (std::strstr(formatStr, DroppedBufferLogSignature) != nullptr)
+    {
+        ++CapturedDroppedBufferLogCount;
+    }
+}
 }
 
 // ============================================================
@@ -480,4 +507,63 @@ TEST(ShmSubscriberRecvFailureTest, AThrowingOnRecvNeitherEscapesTheIoLoopNorStop
     EXPECT_EQ(serverProbe.RecvCount, ThrowingRecvPayloadCount);
     EXPECT_EQ(serverProbe.LastRecvLength, ThrowingRecvPayloadLength);
     EXPECT_EQ(serverProbe.DisConnectCount, 0);
+}
+
+// ============================================================
+// 写不出时的收口：对端已断连则丢弃剩余字节并记一条 Warning，而不是自旋等待
+// 断连由测试经映射视图改写 1 号通道头的状态扮演，两侧连接本身都是真的
+// ============================================================
+
+constexpr std::string_view DeliveredPayloadText = "Delivered";
+constexpr std::string_view DroppedPayloadText = "DroppedBytes";
+
+TEST(ShmSendTest, DropsTheRemainingBytesWhenThePeerIsDisConnected)
+{
+    const auto shmObjectName = MakeUniqueShmObjectName("SparkShmUnitTestSendDrop");
+    const auto shmAddress = ToShmAddress(shmObjectName, "3");
+    const auto server = CreateShmServer(shmAddress);
+    ASSERT_NE(server, nullptr);
+    ASSERT_TRUE(server->Init());
+    ConnectEventProbe serverProbe;
+    server->Subscribe(&serverProbe);
+
+    const auto client = CreateShmClient(shmAddress);
+    ASSERT_NE(client, nullptr);
+    ASSERT_TRUE(client->Init());
+
+    client->HandleIoEvent();
+    server->HandleIoEvent();
+    client->HandleIoEvent();
+    ASSERT_EQ(serverProbe.ConnectCount, 1);
+    ASSERT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::Connected);
+
+    Spark::LinearBuffer<BufferSize>* deliveredBuffer = server->AllocateSendBuffer();
+    ASSERT_NE(deliveredBuffer, nullptr);
+    ASSERT_EQ(deliveredBuffer->Append(DeliveredPayloadText.data(), DeliveredPayloadText.size()), DeliveredPayloadText.size());
+    server->Send(serverProbe.PeerSessionId, deliveredBuffer);
+    client->HandleIoEvent();
+
+    ShmChannelDownCounters deliveredCounters;
+    ASSERT_TRUE(ReadShmChannelDownCounters(shmObjectName, FirstChannelIndex, deliveredCounters));
+    ASSERT_EQ(deliveredCounters.WriteCount, DeliveredPayloadText.size()) << "断连前那一发没写进通道：本用例的前提不成立";
+    ASSERT_EQ(deliveredCounters.ReadCount, DeliveredPayloadText.size()) << "对端没把那一发读走：本用例的前提不成立";
+
+    ASSERT_TRUE(WriteShmHeaderStatus(shmObjectName, FirstChannelIndex, ConnectStatusType::DisConnected));
+
+    Spark::LinearBuffer<BufferSize>* droppedBuffer = server->AllocateSendBuffer();
+    ASSERT_NE(droppedBuffer, nullptr);
+    ASSERT_EQ(droppedBuffer->Append(DroppedPayloadText.data(), DroppedPayloadText.size()), DroppedPayloadText.size());
+
+    CapturedDroppedBufferLogCount = 0;
+    Spark::Core::WriteLogFunc savedWriteLogFunc = Spark::Core::Logger::GetWriteLogFunc();
+    Spark::Core::Logger::SetExternLogger(CountDroppedBufferLog);
+    server->Send(serverProbe.PeerSessionId, droppedBuffer);
+    Spark::Core::Logger::SetExternLogger(savedWriteLogFunc);
+
+    EXPECT_EQ(CapturedDroppedBufferLogCount, 1) << "对端断连时没有记下丢弃那条 Warning：丢弃分支可能被改成了静默 break";
+
+    ShmChannelDownCounters droppedCounters;
+    ASSERT_TRUE(ReadShmChannelDownCounters(shmObjectName, FirstChannelIndex, droppedCounters));
+    EXPECT_EQ(droppedCounters.WriteCount, DeliveredPayloadText.size()) << "被丢弃的字节进了通道";
+    EXPECT_EQ(droppedCounters.ReadCount, DeliveredPayloadText.size()) << "丢弃的字节对对端可见";
 }

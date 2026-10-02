@@ -224,7 +224,10 @@ Linux 的 `shm_open(O_CREAT | O_EXCL | ...)` 成功（`LinuxInit()` 里写作 `c
 
 ## 九、已知未覆盖
 
-- `ShmBase::Send` 的「通道写满」分支（写返 0 → 等 1 ms 重试 / 对端断连则丢弃）：冒烟每轮 10000 次往返也难填满 1 MiB 通道，正确性依赖 `ShmBuffer::Write` 的返 0 语义（由 `ShmBufferTest` 钉住）。
+- `ShmBase::Send` 的「通道写满」分支（写返 0 → 等 1 ms 重试 / 对端断连则丢弃）：**丢弃那一半已于 2026-10-02 有用例**
+  （`ShmSendTest.DropsTheRemainingBytesWhenThePeerIsDisConnected`，触发靠改写通道头状态而非真的填满通道；
+  逐条输入输出见 `docs/shm-channel-and-connect-model.md` 第五节）；**1 ms 重试那一半仍无用例**。两半共同依赖的
+  `ShmBuffer::Write` 返 0 语义由 `ShmBufferTest.WriteWhenFull_ReturnsZero` 钉住。
 - ~~「两端连接数不一致」：客户端那次 `ftruncate` 会截短服务端对象（第四节末）~~ **已消除（2026-09-28）**：
   客户端不再 `ftruncate`，改为与「服务端复用既有对象」同一支的 `fstat` 校验（见第四节末），
   客户端侧已不存在改变对象尺寸的操作。
