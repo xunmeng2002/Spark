@@ -1039,6 +1039,8 @@
 
 **2026-09-30 半关闭（提交 `b8960a1`；模板在 Templates 仓 `2fd7083`）**：本条登记的三族已按用户当天裁定的口径收紧——**枚举只校验整数范围**（`ParseEnum` 把 `std::underlying_type_t<T>` 递给既有的 `ParseInteger`，故 `atoi("13")` 那类静默取值与 `atoi("1.9")` 的静默截断不再出现，但**非具名的整数仍收下**）、**布尔只认 0/1**（`ParseBool`）、**双精度拒格式错与非有限值**（`ParseDouble`：`std::from_chars` + `result.ptr == last` + `std::isfinite`），失败一律记 `Warning` 并拒整包。本条末尾那句「`doubles` 还得先定「小数点个数 / 非有限值 / 有效位数」的口径」由用户当场裁定为「**收全：拒 nan / inf**」；小数位数与有效位数未加限制，写侧 `{:.6f}` 的精度上限也仍在本条登记的缺陷里、未随本批修。**另两项按原样留待决、未随本条关闭**：写侧仍会原样写出 `nan` / `inf`（后果由「静默传播」变为「自家报文自家解析失败」），以及字符串分支 584 处静默截断。三族口径、界限与实测的完整成文见 `docs/step-text-field-parsing.md`。
 
+**2026-10-02 关闭（无代码改动）**：残留三项全部了结。①② 经用户裁定**定为协议口径、不再改**——① 枚举具名值域不做校验（以成员数为界会让对端加值从「收下未知值」变成「整包拒收」，严格性反噬兼容性；上界还要跨模型按名取成员数）、② 写侧 `{:.6f}` 与 `nan` / `inf` 原样写出维持（6 位小数就是本协议 double 字段的线格式精度，改它等于改线格式，须连同 `ProtocolVersionValue` 与对端一起升），落地文档提交 `c41e8a3`、落点 `docs/step-text-field-parsing.md` 第四 / 六 / 八节。③ 字符串 584 处静默截断由 `42e0858` 改为「超容量记 `Warning` 并拒收」（用户 2026-10-01 裁定「算错」）。本条与 `Q.65` 同期登记、同批关闭。
+
 ### Q.54
 
 - **`Protocol::OnRecv` 的取包循环仍非异常安全（2026-09-30 追 `OnRecv` 兜底时发现的下游一环，待决）**：本批把 IO 层的收包通知收进兜底之后，异常不再穿出 `HandleIoEvent`，但**异常被收在哪儿决定了它还会影响什么**——`Protocol` 自身就是一个 `IoSubscriber`，而 `Protocol::OnRecv`（`src/Network/Protocol/Protocol.cpp:143`）的工作方式是「先把这一段 `Append` 进 `PackageReader`，再在 `while (true)` 里逐包 `ParsePackage` → `subscriber_->OnMessage`」，整段循环没有任何 `try`：`ProtocolSubscriber::OnMessage` 一抛，循环即经异常退出，于是 (i) 本轮正在派发的那一个包已从 reader 取出却从未交付（`OnMessage` 的形参是 `Package* ownedPackage`、由订阅者接管，故它抛出时这个包既不在 reader 里、也无人持有）；(ii) 同一段里排在它之后的字节仍留在 reader 中未被解析。**后果**：不丢字节、不乱序，但**派发时点变得依赖后续流量**——`ParsePackage` 在生产代码里只有这一个驱动点（全仓 grep 确认，无定时轮询路径），故对端若此后不再发字节，滞留的那些包就一直停在 reader 里。**待决**：是改成「逐包 `try`，抛出即记日志并继续下一包」（语义是「一个订阅者处理失败不牵连同一段里其余包」），还是「抛出即中止本段、但把未派发的包留在一个可被后续驱动的位置」；动手前须先定契约——`OnMessage` 抛出后那个包算不算已消费（它与已关闭的归档 `Q.41`「包对象归还」落在同一个形参上）。
@@ -1094,6 +1096,8 @@
 
 **半关闭（2026-09-27，提交 `a87f611`）**：①服务端独占创建失败且错误恰为「已存在」时改为打开既有对象（Windows `ERROR_FILE_EXISTS` → `OPEN_EXISTING`；Linux `EEXIST` → `shm_open(O_RDWR)`），复用前 Linux 侧以 `fstat` 校验 `st_size`（不够则拒绝）、Windows 侧靠 `MapViewOfFile` 响亮失败兜住；②`Sem` 名称的前导 `/` **未动**、仍留主文件 ❓ 区（须与 `ShmBase::LinuxInit` 的 `shm_open` 同批补）。相关约定见 `docs/shm-shared-object-lifecycle.md` 第三、四节。
 
+**2026-10-02 关闭**：① 的独占创建回退已于 `a87f611` 落地（见上）；原条另一处健壮性缺口「`Sem` 对象名 Linux 侧缺 POSIX 前导 `/`」由 `82ba3a3` 补上（`shmName_` 派生处统一加 `/`，`Sem` 名与 `shm_unlink` 因此不可能各走一条路）。对象归属（`Q.72`，提交 `167ec23`）与残留对象的处置口径（`Q.82`，交用户在仓外脚本清理）另在同批了结。
+
 ### Q.46
 
 - **本轮三批的覆盖缺口 / 死代码 / 既有格式违规（2026-09-24 登记，待决）**：①**覆盖缺口两处**：(a) `ShmBase::Send` 的「通道写满」分支（返 0 → 等 1ms 重试 / 对端断连则丢弃）**无覆盖**——冒烟每轮 10000 次往返也难填满 1 MiB 通道，正确性依赖 `ShmBuffer::Write` 的返 0 语义（已由 `ShmTestFixture.CountersReachChannelSizeExactly` 钉住）；(b) `Init()` 的 `maxConnectSize_ < 1` 门禁与未 Attach 返 0 的覆盖**已于 2026-09-24 补上**（见 ✅ 区；登记时写的两处理由均不成立）。**覆盖深度诚实说明**：四条用例钉的是**契约**（非法连接数 → `Init` 返 `false`；未 Attach → 各入口惰性），**不是门禁本身**——门禁若撤除，`abc`/`0` 两例在四档下**仍会返 `false`**（映射长度 0 会让 `CreateFileMappingA`/`mmap` 失败），差别只在「早拒、且不创建任何 OS 资源」，而该差别无法从公开 API 观测，故未强加平台相关的实现断言。②**Shm 侧两处死代码**：`ShmBase.h:44` 的 `lastSendTime_` 全仓**零引用**；`ShmBase::DoSend`（`ShmBase.cpp:172`）override 了 `IoBase` 纯虚却**从无调用点**（调用只在 Tcp 后端：`TcpEpollBase.cpp:54,94`、`TcpSelectBase.cpp:71`）——这正是本轮 `Send` 不能照抄 `TcpBase::Send`（重投 + 唤醒）的根据。**待决**：删 `lastSendTime_`（一行、无连累）；`DoSend` 的 shm 实现留作接口对齐还是连同 `IoBase` 该纯虚一起重审。
@@ -1141,6 +1145,8 @@
 ### Q.37
 
 - **`ShmBuffer` 批 A 的登记项与审查遗留（2026-09-24 登记；①⑤与⑧中-3 已同日处置，②③④随 `SingleShm` 删除消解，见各项标注）**：①`ShmBase::Send`（`ShmBase.cpp:115`）的 `while (buffer->GetLength() > 0)` 在 `Write` 返 0（缓冲满、对端不读）时**无退出分支 → 死自旋**；②`SingleShm::Send` 忽略 `Write` 返回值、只尝试一次，满时**静默丢包**，**且不调 `buffer->Deallocate()`——每次发送漏还一个池对象**（2026-09-24 复核新增，原登记漏记）。①②原为本批明确排除项：①**已于 2026-09-24 处置**（提交 `b9e4ccf`，见 ✅ 区）；②**随 `SingleShm` 删除而消解**。③`SingleShm` **无生产入口**——**2026-09-24 已裁定删除**（见 ✅ 区、归档 `Q.33`）。④可见性不一致**随删除消解**。⑤`ShmBase.cpp:60` 的 `atoi(port_.c_str())` 违 §6 的 `TryParse` 口径，同型问题已在 `int32s`/`int64s` 那批收紧、此处漏网。**已于 2026-09-24 处置**（改走 `StepUtility::ParseInteger` + `Init()` 的 `maxConnectSize_ < 1` 门禁，提交 `4f1775c`，见 ✅ 区）。⑥6 处下行转换改 `static_cast` 后，「map 里只存 `ShmConnect<ShmBufferSize>*`」**仍无断言**；若日后换 `dynamic_cast`，需先评估每轮 IO 循环的检查代价与 6 个调用点（多数不判空）的 `nullptr` 分支。⑦`s4scan --gate` 6 条候选（门禁 `exit 1`）：`LinearBuffer`/`SpscRingBuffer` 各 2 条**与本批无关**（两文件逐字节未改），`ShmBuffer` 2 条是本批**刻意与两者对称**（`static_assert` 排在首个访问标签前）；修法是把 `public:` 提前（三处各一行）或让扫描器建模——**未授权不动**。⑧审查遗留 4 条：中-3 空指针保护只做一半（`GetWriteBufferSize`/`GetReadBufferSize`/`Write`/`Read` 未判空）**——已于 2026-09-24 处置**（抽私有 `IsAttached()`、10 处统一，提交 `4f1775c`）；中-4 `MarkDisconnected` 名实不贴（返 `true` = 调用前已 `DisConnected` = 自己是最后持有者）；低-3 `index >= 1` 只有 `assert`、Release 无防护；低-5 `Q.23` 的「单写单读」前提与本批新增公开 mutator 的关系（`Status` 两端都会写、计数器会被最后一个析构者清零——设计如此，表述需对齐）。⑨**已关闭（2026-09-24）**：`ShmBufferTest.cpp:21-22` 那 2 行中文注释（gtest 对 `volatile` 的 scoped enum 会退到 `RawBytesPrinter`、其 `reinterpret_cast` 丢 `volatile` 编译失败）按 §4 已在代码外说明，用户裁定**保留**，与批 B 新增用例的 3 行一并生效。
+
+**2026-10-02 补记关闭标记**：本条拆分后所留的未决项 ⑥ 与 ⑧ 三小项已于 2026-09-27 全部处置——⑥ 以 `ShmBase::AddConnect` 的 Debug 断言落地、⑧ 中-4 改名 `MarkDisconnectedAndReportWhetherLastHolder`，提交 `d486f12`，另见 `Q.48`。当年只在本文件索引行加了「同日追记」，归档段未加关闭标记，本笔补齐（原文按「只移动不删改」保留）。
 
 ### Q.36
 
