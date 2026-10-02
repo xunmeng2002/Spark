@@ -12,9 +12,10 @@
 状态，就别拿它当发行版说明——用 `--body-file` 另给一份（写得过期的状态不入 tag 注解，或推 tag 前先
 把状态句删掉）。
 
-**令牌**：默认从环境变量 `GITEE_TOKEN` 读；环境里带不进来时用 `--token-file` 指一个只含令牌的
-文件（建议放 `out/` 下，那里被 gitignore）。令牌只放进**请求体**、不进 URL（URL 会进服务端访问
-日志），也不打印；出错回显服务端报文前会先把令牌字样抹掉。
+**令牌**：先看环境变量 `GITEE_TOKEN`，为空再看 `--token-file` 指的文件，都没给就看默认的
+`out/gitee_token.txt`（`out/*` 在 `.gitignore` 里，令牌放这儿不会被提交）。**令牌可长期复用**——
+写一次这个文件，此后发布就只是 `python tools/publish_release.py`。令牌只放进**请求体**、
+不进 URL（URL 会进服务端访问日志），也不打印；出错回显服务端报文前会先把令牌字样抹掉。
 
 **不会重复发版**：同一个 tag 已经发过发行版时 Gitee 会报错，脚本据此提示改用
 `--release-id <id>` 直接往已有发行版补传附件，而不是再建一个。
@@ -24,10 +25,10 @@
 用法（从仓根运行，`package_release` 与它同目录，靠脚本目录进 `sys.path` 导入）：
 
     python tools/publish_release.py --dry-run                 # 只打印计划，不发任何请求
-    GITEE_TOKEN=xxx python tools/publish_release.py           # 建发行版 + 传附件
-    GITEE_TOKEN=xxx python tools/publish_release.py --release-id 123456   # 只补传附件
-    GITEE_TOKEN=xxx python tools/publish_release.py --body-file out/release_body.txt   # 说明另给一份
-    python tools/publish_release.py --token-file out/gitee_token.txt
+    python tools/publish_release.py                           # 建发行版 + 传附件（令牌看环境变量或 out/gitee_token.txt）
+    python tools/publish_release.py --release-id 123456       # 只往已有发行版补传附件
+    python tools/publish_release.py --body-file out/release_body.txt        # 说明另给一份
+    GITEE_TOKEN=xxx python tools/publish_release.py --token-file out/other_token.txt
 
 退出码：
     0  发行版与附件都已就绪（或 `--dry-run` 走完）
@@ -56,6 +57,7 @@ EXIT_USAGE = 2
 
 GITEE_API_ROOT = 'https://gitee.com/api/v5'
 TOKEN_ENVIRONMENT_VARIABLE = 'GITEE_TOKEN'
+DEFAULT_TOKEN_FILE = package_release.REPO_ROOT / 'out' / 'gitee_token.txt'
 REQUEST_TIMEOUT_SECONDS = 120
 REDACTED_TOKEN_TEXT = '***'
 
@@ -217,7 +219,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument('--name', help='发行版标题，默认 `Spark <版本>`')
     parser.add_argument('--body-file', help='发行版说明的 UTF-8 文本文件，默认取 tag 注解原文（tag 注解推上去就改不动了）')
     parser.add_argument('--release-id', type=int, help='已有发行版的 id：跳过建发行版、只补传附件')
-    parser.add_argument('--token-file', help=f'只含令牌的文件（环境变量 {TOKEN_ENVIRONMENT_VARIABLE} 为空时才看它）')
+    parser.add_argument('--token-file', help=f'只含令牌的文件，默认 {DEFAULT_TOKEN_FILE}（环境变量 {TOKEN_ENVIRONMENT_VARIABLE} 优先）')
     parser.add_argument('--dry-run', action='store_true', help='只打印要发的请求与要传的文件，不发任何请求')
     return parser.parse_args()
 
@@ -245,7 +247,7 @@ def main() -> None:
             print('     令牌未读取；去掉 --dry-run 才真正发请求')
             raise SystemExit(EXIT_OK)
 
-        token = read_access_token(Path(arguments.token_file) if arguments.token_file else None)
+        token = read_access_token(Path(arguments.token_file) if arguments.token_file else DEFAULT_TOKEN_FILE)
         if arguments.release_id is None:
             release_id = create_release(owner, repo, tag, release_name, release_body, token)
             print(f'---- 发行版已建：{owner}/{repo} tag {tag}，id={release_id}')
