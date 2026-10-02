@@ -49,6 +49,8 @@ protected:
 #endif // _WIN32
 
 private:
+    static constexpr int SendBlockedWarningSeconds = 1;
+
     static constexpr unsigned MaxSharedMemoryConnectSize = (std::numeric_limits<unsigned>::max)() / (ShmBufferSize * 2);
     static constexpr size_t ConnectionZeroRegionSize = static_cast<size_t>(ShmBufferSize) * 2;
 

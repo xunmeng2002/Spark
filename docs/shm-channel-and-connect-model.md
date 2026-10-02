@@ -97,17 +97,20 @@
 | `Send` 做什么 | `PushBack` + `socketNotify_->Notify()`，**立即返回** | 在调用方线程里写通道，写不完每 1 ms 重试 |
 | 谁做搬运 | IO 线程，稍后由 `DoSend` 排空 | 调用方线程，此刻 |
 | 覆盖 `DoSend` | 是（`TcpBase`，排空发送队列） | 是（`ShmBase`，**空实现**——Shm 从不入队） |
-| 对端不消费时 | 发送队列无上界增长（吃 `LinearBuffer` 池） | 调用方线程一直等，**只有对端 `DisConnected` 才丢弃** |
+| 对端不消费时 | 发送队列无上界增长（吃 `LinearBuffer` 池） | 调用方线程一直等（连续写不出满 1 秒记一条 Warning，继续等），**只有对端 `DisConnected` 才丢弃** |
 | 缓冲上界 | 无（池多大就能堆多少） | 固定每方向 1 MiB（`ShmBufferSize`，自 2026-09-28 起全部可用） |
 
 三条后果，调用方须按后端区分假设：
 
-- **`Send` 在 Shm 上会阻塞**：对端活着但不读时，`ShmBase::Send` 的 1 ms 重试循环没有截止时间，
-  会一直转（对端断连时才丢弃并记 Warning）。照 Tcp 语义假定「`Send` 立即返回」的调用方会在 Shm 上挂住。
+- **`Send` 在 Shm 上会阻塞**：对端活着但不读时，`ShmBase::Send` 的 1 ms 重试循环**没有截止时间**——
+  **连续**写不出满 1 秒才记一条 `Send Blocked, Peer Not Reading.` Warning（一旦有进展就把这只表清零重计，
+  故「一直在写、只是慢」不会被误报成「对端不读」），然后**继续等、绝不丢弃**（用户 2026-10-02 裁定：
+  数据的准确性与完整性必要，写不完的部分原样留在待发缓冲里接着写）。照 Tcp 语义假定「`Send` 立即返回」的调用方会在 Shm 上挂住。
 - **Shm 的背压是硬的**：1 MiB 通道写满即挡住调用方，不会像 Tcp 那样把内存堆上去——这正是共享内存窗口的意义。
-- **「通道写满」这条分支只钉住了丢弃那一半**（2026-10-02）：写返 0 ＋ 对端非 `Connected` 这一支由
-  `ShmSendTest.DropsTheRemainingBytesWhenThePeerIsDisConnected` 钉住（见第五节）；写返 0 ＋ 对端仍 `Connected`
-  的 1 ms 重试那一支仍无用例（见第六节）。两半共同依赖的 `ShmBuffer::Write` 返 0 语义由 `ShmBufferTest` 钉住。
+- **「通道写满」这条分支的两半各自有用例**（2026-10-02）：写返 0 ＋ 对端非 `Connected` 这一支由
+  `ShmSendTest.DropsTheRemainingBytesWhenThePeerIsDisConnected` 钉住，写返 0 ＋ 对端仍 `Connected` 的
+  「重试而不丢弃」那一支由 `ShmSendTest.KeepsWaitingInsteadOfDroppingWhenThePeerIsSlowToRead` 钉住
+  （两者见第五节，后者的对端通道是被 32 × 64 KiB 真填满的）。两半共同依赖的 `ShmBuffer::Write` 返 0 语义由 `ShmBufferTest` 钉住。
 
 **为什么不给 Shm 也做队列**（用户 2026-09-27 裁定：维持现状，把差异写进文档）：那要给 Shm 造一个它现在没有的原语
 ——「唤醒本地 IO 线程」（Tcp 侧是 `socketNotify_`）；不造它、只靠 IO 循环轮询排空，就是给**每条消息**加上一个轮询周期的延迟。
@@ -396,8 +399,8 @@
     控制头停在 `UnConnected`、服务端 `OnDisConnect` 始终为 0、槽位头停在 `Connected`——即「孤儿槽位」本身。
 - **两条用例的等待**：失败轮的 1 秒重试是客户端既有逻辑，四档单测因此各多约 1 秒（不是新引入的等待）。
 
-第三节那条分支里**丢弃**的一半由同文件的 `ShmSendTest` 钉住。触发不靠填满通道，而是把 1 号通道头的状态改写成
-`DisConnected`（`Write` 因此返 0，与「通道满」落进同一处判据；见第六节）：
+第三节那条分支的**两半**都由同文件的 `ShmSendTest` 钉住：丢弃那一半的触发不靠填满通道，而是把 1 号通道头的状态
+改写成 `DisConnected`；重试那一半则让 1 MiB 通道真的被填满（两者的 `Write` 返 0 落进同一处判据；见第六节）：
 
 - `DropsTheRemainingBytesWhenThePeerIsDisConnected`
   - 输入：服务端与客户端各自驱动到 1 号槽位 `Connected` → 服务端 `Send` 一发 9 字节、驱动客户端把它读走
@@ -407,8 +410,20 @@
     用完即还原）；1 号通道头的两个下行计数都停在第一发的 9——被丢弃的字节一个也没进通道。
   - **判别力已实测**：把 `ShmBase::Send` 里那条 Warning 删掉（保留 `break`）⇒ 用例在日志计数那条断言上失败；
     把整个丢弃分支删掉 ⇒ 第二发以 1 ms 周期自旋，用例不再返回（`timeout 20` 实测被强杀）。
-  - 覆盖范围只到「写返 0 ＋ 对端非 `Connected`」：用例**没有**真的填满通道，「写返 0 ＋ 对端仍 `Connected` → 重试」
-    那一支仍无用例，见第六节。
+  - 覆盖范围只到「写返 0 ＋ 对端非 `Connected`」这一半：用例**没有**真的填满通道，「仍 `Connected` → 重试」
+    那一半见下一条用例。
+- `KeepsWaitingInsteadOfDroppingWhenThePeerIsSlowToRead`
+  - 输入：服务端与客户端各自驱动到 1 号槽位 `Connected` → 挂上外部日志钩子 → 起一条后台线程连发 32 帧、
+    每帧 `BufferSize`（64 KiB）共 2 MiB，远超每方向 1 MiB 的通道上界 → 主线程只按 50 ms 周期驱动客户端 IO。
+  - 输出：后台线程写满后按 1 ms 重试，**连续**写不出满 1 秒记下**恰好一条** `Send Blocked, Peer Not Reading.`；
+    客户端继续读之后 2 MiB **一字节不差**地全部送达（逐字节比对图案）、顺序也一致，后台线程把 32 帧全部写完才退出。
+    等待期主线程**不驱动客户端**（第一步的等待步是空操作），故这一秒确实是「一个字节也没被读走」。
+  - **判别力已实测**：把那条重试改成 `break`（丢弃剩余字节）⇒ 用例在「送达字节数」与「逐字节图案」两条断言上失败，
+    实测只收到 1048576 字节（恰好一个 1 MiB 窗口）、第 1048576 字节起与发送内容不一致（10143 ms 返回）；
+    把整段重试代码换回 `HEAD`（无那条 Warning）⇒ 用例在「Warning 出现」与「恰好一条」两条断言上失败
+    （7097 ms 返回）。
+  - 用例给后台线程留了退路：投递超时即先销毁客户端（对端随之 `DisConnected`，正在重试的 `Send` 转入丢弃分支），
+    故即便实现退化成死等，用例也能返回并把失败报在断言上，而不是挂住。
 
 ## 六、已知未覆盖
 
@@ -440,10 +455,10 @@
   客户端改为 `fstat` 校验后这条障碍已消除，局面理论上可在单进程内构造（同一对象、两个 `IoBase` 实例、连接数不同），
   但**用例仍未写**：被钉住的只是判据本身（`ShmBufferTest`）。`ShmClientConfirmTest` 已经把「同一对象、两个 `IoBase`
   实例」这套搭法跑通了，缺的只是让两端连接数不同这一步。
-- **`ShmBase::Send` 的「通道写满」分支只覆盖了丢弃那一半**（2026-10-02）：`ShmSendTest`（第五节）钉的是
-  「写返 0 ＋ 对端非 `Connected` → 丢弃剩余字节并记一条 Warning」，且触发方式是**改写通道头状态**、
-  没有真的填满 1 MiB 通道；「写返 0 ＋ 对端仍 `Connected` → 睡 1 ms 重试」那一支**仍无用例**——要钉它得让通道真的满着、
-  再断言「没有立刻丢弃，而是重试到对端开读」，需要后台线程加时间断言。**填没填满不影响该分支的判断**：`Write` 返 0 的
+- **`ShmBase::Send` 的「通道写满」分支两半都已覆盖**（2026-10-02）：`ShmSendTest`（第五节）两条各钉一半——
+  「写返 0 ＋ 对端非 `Connected` → 丢弃剩余字节并记一条 Warning」的触发方式是**改写通道头状态**、没有真的填满通道；
+  「写返 0 ＋ 对端仍 `Connected` → 睡 1 ms 重试、不丢弃」则由 32 × 64 KiB 真的把 1 MiB 通道填满来触发，
+  并断言「连续写不出满 1 秒记恰好一条 Warning」与「32 帧 2 MiB 一字节不差送达」。**填没填满不影响该分支的判断**：`Write` 返 0 的
   两种成因（通道满 / 对端非 `Connected`）落在同一处判据上，而「满 → 返 0」那一层由
   `ShmBufferTest.WriteWhenFull_ReturnsZero` 单独钉住。
 - **`Sem UnLock Failed.` 是既有抖动**：`Sem` 的 Windows 计数上限是 1（`CreateSemaphoreA(..., 1, 1, ...)`），

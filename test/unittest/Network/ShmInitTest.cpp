@@ -4,6 +4,7 @@
 #include <Spark/Network/Io/IoFactory.h>
 #include <Spark/TemplateLib/Buffer/ShmBuffer.h>
 
+#include <atomic>
 #include <chrono>
 #include <cstring>
 #include <format>
@@ -165,16 +166,24 @@ public:
     SessionIdType PeerSessionId = 0;
 };
 
-template <typename StopCondition>
-[[nodiscard]] bool DriveIoEventsUntil(IoBase& io, StopCondition&& stopCondition, std::chrono::milliseconds limit)
+constexpr auto WaitPollInterval = std::chrono::milliseconds(50);
+
+template <typename StepOnce, typename StopCondition>
+[[nodiscard]] bool WaitUntil(StepOnce&& stepOnce, StopCondition&& stopCondition, std::chrono::milliseconds limit)
 {
     const auto deadline = std::chrono::steady_clock::now() + limit;
     while (!stopCondition() && std::chrono::steady_clock::now() < deadline)
     {
-        io.HandleIoEvent();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        stepOnce();
+        std::this_thread::sleep_for(WaitPollInterval);
     }
     return stopCondition();
+}
+
+template <typename StopCondition>
+[[nodiscard]] bool DriveIoEventsUntil(IoBase& io, StopCondition&& stopCondition, std::chrono::milliseconds limit)
+{
+    return WaitUntil([&io] { io.HandleIoEvent(); }, stopCondition, limit);
 }
 
 class ThrowingRecvProbe : public ConnectEventProbe
@@ -195,18 +204,52 @@ public:
     size_t LastRecvLength = 0;
 };
 
+class PayloadCollectingProbe : public ConnectEventProbe
+{
+public:
+    void OnRecv(SessionIdType, const char* data, size_t length) override { ReceivedPayload.append(data, length); }
+
+    std::string ReceivedPayload;
+};
+
 constexpr const char* DriveBudgetExhaustedMessage = "驱动预算耗尽：到点停条件仍不成立，与断言的状态不符不是一回事";
 
-constexpr const char* DroppedBufferLogSignature = "Send Peer DisConnected, Drop Buffer.";
-int CapturedDroppedBufferLogCount = 0;
-
-void CountDroppedBufferLog(Spark::Core::LogLevel, const char*, int, const char*, const char* formatStr, ...)
+class ExternLogCapture
 {
-    if (std::strstr(formatStr, DroppedBufferLogSignature) != nullptr)
+public:
+    explicit ExternLogCapture(const char* logSignature) : logSignature_(logSignature)
     {
-        ++CapturedDroppedBufferLogCount;
+        ActiveCapture = this;
+        savedWriteLogFunc_ = Spark::Core::Logger::GetWriteLogFunc();
+        Spark::Core::Logger::SetExternLogger(CaptureMatchingLog);
     }
-}
+    ~ExternLogCapture()
+    {
+        Spark::Core::Logger::SetExternLogger(savedWriteLogFunc_);
+        ActiveCapture = nullptr;
+    }
+    ExternLogCapture(const ExternLogCapture&) = delete;
+    ExternLogCapture& operator=(const ExternLogCapture&) = delete;
+
+    int MatchCount() const { return matchCount_.load(); }
+
+private:
+    static void CaptureMatchingLog(Spark::Core::LogLevel, const char*, int, const char*, const char* formatStr, ...)
+    {
+        if (ActiveCapture != nullptr && std::strstr(formatStr, ActiveCapture->logSignature_) != nullptr)
+        {
+            ++ActiveCapture->matchCount_;
+        }
+    }
+
+    static ExternLogCapture* ActiveCapture;
+
+    const char* logSignature_;
+    Spark::Core::WriteLogFunc savedWriteLogFunc_;
+    std::atomic<int> matchCount_{0};
+};
+
+ExternLogCapture* ExternLogCapture::ActiveCapture = nullptr;
 }
 
 // ============================================================
@@ -516,6 +559,7 @@ TEST(ShmSubscriberRecvFailureTest, AThrowingOnRecvNeitherEscapesTheIoLoopNorStop
 
 constexpr std::string_view DeliveredPayloadText = "Delivered";
 constexpr std::string_view DroppedPayloadText = "DroppedBytes";
+constexpr const char* DroppedBufferLogSignature = "Send Peer DisConnected, Drop Buffer.";
 
 TEST(ShmSendTest, DropsTheRemainingBytesWhenThePeerIsDisConnected)
 {
@@ -554,16 +598,99 @@ TEST(ShmSendTest, DropsTheRemainingBytesWhenThePeerIsDisConnected)
     ASSERT_NE(droppedBuffer, nullptr);
     ASSERT_EQ(droppedBuffer->Append(DroppedPayloadText.data(), DroppedPayloadText.size()), DroppedPayloadText.size());
 
-    CapturedDroppedBufferLogCount = 0;
-    Spark::Core::WriteLogFunc savedWriteLogFunc = Spark::Core::Logger::GetWriteLogFunc();
-    Spark::Core::Logger::SetExternLogger(CountDroppedBufferLog);
-    server->Send(serverProbe.PeerSessionId, droppedBuffer);
-    Spark::Core::Logger::SetExternLogger(savedWriteLogFunc);
+    int droppedBufferLogCount = 0;
+    {
+        ExternLogCapture droppedBufferCapture(DroppedBufferLogSignature);
+        server->Send(serverProbe.PeerSessionId, droppedBuffer);
+        droppedBufferLogCount = droppedBufferCapture.MatchCount();
+    }
 
-    EXPECT_EQ(CapturedDroppedBufferLogCount, 1) << "对端断连时没有记下丢弃那条 Warning：丢弃分支可能被改成了静默 break";
+    EXPECT_EQ(droppedBufferLogCount, 1) << "对端断连时没有记下丢弃那条 Warning：丢弃分支可能被改成了静默 break";
 
     ShmChannelDownCounters droppedCounters;
     ASSERT_TRUE(ReadShmChannelDownCounters(shmObjectName, FirstChannelIndex, droppedCounters));
     EXPECT_EQ(droppedCounters.WriteCount, DeliveredPayloadText.size()) << "被丢弃的字节进了通道";
     EXPECT_EQ(droppedCounters.ReadCount, DeliveredPayloadText.size()) << "丢弃的字节对对端可见";
+}
+
+// ============================================================
+// 写不出但未断连时的收口：一个字节都不丢，等到对端开读再写下去；等满阈值记一条 Warning
+// 通道真的被填满（整帧 64 KiB × 32 帧 > 1 MiB 窗口），发送挂在后台线程，主线程驱动对端消费
+// ============================================================
+
+constexpr const char* BlockedSendLogSignature = "Send Blocked, Peer Not Reading.";
+constexpr size_t SendFrameLength = BufferSize;
+constexpr int SendFrameCount = 32;
+constexpr char SendFrameByteBase = 'A';
+constexpr auto BlockedSendWarningBudget = std::chrono::milliseconds(5000);
+constexpr auto SendDeliveryBudget = std::chrono::milliseconds(5000);
+
+TEST(ShmSendTest, KeepsWaitingInsteadOfDroppingWhenThePeerIsSlowToRead)
+{
+    const auto shmObjectName = MakeUniqueShmObjectName("SparkShmUnitTestSendBlocked");
+    const auto shmAddress = ToShmAddress(shmObjectName, "3");
+    const auto server = CreateShmServer(shmAddress);
+    ASSERT_NE(server, nullptr);
+    ASSERT_TRUE(server->Init());
+    ConnectEventProbe serverProbe;
+    server->Subscribe(&serverProbe);
+
+    auto client = CreateShmClient(shmAddress);
+    ASSERT_NE(client, nullptr);
+    ASSERT_TRUE(client->Init());
+    PayloadCollectingProbe clientProbe;
+    client->Subscribe(&clientProbe);
+
+    client->HandleIoEvent();
+    server->HandleIoEvent();
+    client->HandleIoEvent();
+    ASSERT_EQ(serverProbe.ConnectCount, 1);
+    ASSERT_EQ(ReadShmHeaderStatus(shmObjectName, FirstChannelIndex), ConnectStatusType::Connected);
+
+    ExternLogCapture blockedSendCapture(BlockedSendLogSignature);
+    std::atomic<int> completedFrameCount{0};
+    std::thread sender(
+        [&]
+        {
+            for (int frameIndex = 0; frameIndex < SendFrameCount; ++frameIndex)
+            {
+                Spark::LinearBuffer<BufferSize>* buffer = server->AllocateSendBuffer();
+                if (buffer == nullptr)
+                {
+                    return;
+                }
+                const std::string framePayload(SendFrameLength, static_cast<char>(SendFrameByteBase + frameIndex % 26));
+                ASSERT_EQ(buffer->Append(framePayload.data(), framePayload.size()), framePayload.size());
+                server->Send(serverProbe.PeerSessionId, buffer);
+                completedFrameCount.store(frameIndex + 1);
+            }
+        });
+
+    const bool warningAppeared = WaitUntil([] {}, [&] { return blockedSendCapture.MatchCount() > 0; }, BlockedSendWarningBudget);
+
+    const size_t expectedPayloadLength = static_cast<size_t>(SendFrameCount) * SendFrameLength;
+    const bool everythingDelivered =
+        WaitUntil([&] { client->HandleIoEvent(); }, [&] { return clientProbe.ReceivedPayload.size() >= expectedPayloadLength; }, SendDeliveryBudget);
+    if (!everythingDelivered)
+    {
+        client.reset();
+    }
+    sender.join();
+
+    EXPECT_TRUE(warningAppeared) << "通道写满且对端仍 Connected 时，等满阈值没有记下那条 Warning";
+    EXPECT_EQ(completedFrameCount.load(), SendFrameCount) << "发送线程没有把 32 帧全部写出去";
+    EXPECT_EQ(clientProbe.ReceivedPayload.size(), expectedPayloadLength) << "字节没有完整送达：写不出的部分被丢了";
+    EXPECT_EQ(blockedSendCapture.MatchCount(), 1) << "阻塞 Warning 应只在等满阈值时记一条";
+
+    size_t firstMismatchIndex = clientProbe.ReceivedPayload.size();
+    for (size_t index = 0; index < clientProbe.ReceivedPayload.size(); ++index)
+    {
+        const char expectedByte = static_cast<char>(SendFrameByteBase + ((index / SendFrameLength) % 26));
+        if (clientProbe.ReceivedPayload[index] != expectedByte)
+        {
+            firstMismatchIndex = index;
+            break;
+        }
+    }
+    EXPECT_EQ(firstMismatchIndex, expectedPayloadLength) << "第 " << firstMismatchIndex << " 字节起与发送内容不一致：字节被丢或被错序";
 }

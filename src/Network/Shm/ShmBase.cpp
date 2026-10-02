@@ -176,6 +176,9 @@ void ShmBase::Send(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer)
         buffer->Deallocate();
         return;
     }
+    bool blockedWarningWritten = false;
+    bool writeBlocked = false;
+    chrono::steady_clock::time_point blockedStartTimePoint;
     while (buffer->GetLength() > 0)
     {
         auto len = shmConnect->GetBuffer()->Write(buffer->GetData(), buffer->GetLength());
@@ -186,9 +189,21 @@ void ShmBase::Send(SessionIdType sessionId, LinearBuffer<BufferSize>* buffer)
                 WriteLog(LogLevel::Warning, "Send Peer DisConnected, Drop Buffer. SessionId:%lld, Len:%zu", sessionId, buffer->GetLength());
                 break;
             }
+            if (!writeBlocked)
+            {
+                writeBlocked = true;
+                blockedStartTimePoint = chrono::steady_clock::now();
+            }
+            if (!blockedWarningWritten && chrono::steady_clock::now() - blockedStartTimePoint >= chrono::seconds(SendBlockedWarningSeconds))
+            {
+                blockedWarningWritten = true;
+                WriteLog(LogLevel::Warning, "Send Blocked, Peer Not Reading. SessionId:%lld, Len:%zu, WaitedSecond:%d", sessionId,
+                         buffer->GetLength(), SendBlockedWarningSeconds);
+            }
             this_thread::sleep_for(chrono::milliseconds(1));
             continue;
         }
+        writeBlocked = false;
         buffer->Shift(len);
         if (serverType_ == ServerTypeType::Server)
         {
