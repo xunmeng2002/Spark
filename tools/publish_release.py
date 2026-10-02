@@ -16,10 +16,11 @@
 用 `--body-file` 另给一份（会过期的状态不入 tag 注解，或推 tag 前先把状态句删掉）。
 
 **令牌**：先看环境变量（Gitee `GITEE_TOKEN`、GitHub `GITHUB_TOKEN`），为空再看 `--gitee-token-file` /
-`--github-token-file` 指的文件，都没给就看默认的 `out/gitee_token.txt` / `out/github_token.txt`
-（`out/*` 在 `.gitignore` 里，令牌放这儿不会被提交）。**令牌可长期复用**——写一次这两个文件，
-此后发布就只是 `python tools/publish_release.py`。令牌只放进请求体或请求头、**不进 URL**（URL 会进
-服务端访问日志），也不打印；出错回显服务端报文前会先把令牌字样抹掉。
+`--github-token-file` 指的文件，都没给就看默认的 `../Resource/GiteeToken.txt` / `../Resource/GithubToken.txt`
+——与本仓**同级**的 `Resource/` 目录，`D:\Gitee` 下各项目共用一份，不必每个仓各放一个（该目录自己有
+`.gitignore` 把这两个文件排除在外）。**令牌可长期复用**——写一次这两个文件，此后发布就只是
+`python tools/publish_release.py`。令牌只放进请求体或请求头、**不进 URL**（URL 会进服务端访问日志），
+也不打印；出错回显服务端报文前会先把令牌字样抹掉。
 
 **不会重复发版**：同一个 tag 已经发过发行版时平台会报错，脚本据此提示改用 `--release-id <id>`
 直接往已有发行版补传附件，而不是再建一个。
@@ -66,6 +67,7 @@ GITHUB_HOST_NAME = 'github'
 USER_AGENT = 'Spark-tools-publish_release'
 REQUEST_TIMEOUT_SECONDS = 120
 REDACTED_TOKEN_TEXT = '***'
+SHARED_TOKEN_DIRECTORY = package_release.REPO_ROOT.parent / 'Resource'
 
 
 class PublishError(Exception):
@@ -205,8 +207,8 @@ class GiteeHost(ReleaseHost):
     api_root = 'https://gitee.com/api/v5'
     upload_root = 'https://gitee.com/api/v5'
     token_environment_variable = 'GITEE_TOKEN'
-    default_token_file = package_release.REPO_ROOT / 'out' / 'gitee_token.txt'
-    token_page_hint = '在 Gitee「设置 → 私人令牌」生成，勾 projects 权限'
+    default_token_file = SHARED_TOKEN_DIRECTORY / 'GiteeToken.txt'
+    token_page_hint = '在 Gitee「设置 → 私人令牌」生成，令牌类型选仓库级、仓库范围选全部仓库，勾 projects 权限'
 
     def create_release(self, tag: str, release_name: str, release_body: str, token: str) -> int:
         created = post_json(
@@ -240,8 +242,9 @@ class GithubHost(ReleaseHost):
     api_root = 'https://api.github.com'
     upload_root = 'https://uploads.github.com'
     token_environment_variable = 'GITHUB_TOKEN'
-    default_token_file = package_release.REPO_ROOT / 'out' / 'github_token.txt'
-    token_page_hint = '在 GitHub「Settings → Developer settings → Personal access tokens」生成，勾 repo 权限'
+    default_token_file = SHARED_TOKEN_DIRECTORY / 'GithubToken.txt'
+    token_page_hint = ('在 GitHub「Settings → Developer settings → Personal access tokens → Fine-grained tokens」'
+                       '生成，仓库范围选 All repositories，权限给 Contents: Read and write')
 
     def request_headers(self, token: str, content_type: str) -> dict[str, str]:
         return {
