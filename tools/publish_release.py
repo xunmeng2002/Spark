@@ -85,12 +85,23 @@ def run_git(arguments: list[str]) -> str:
     return completed.stdout.strip()
 
 
-def repository_slug_from_origin() -> tuple[str, str]:
-    remote_url = run_git(['remote', 'get-url', 'origin'])
-    path_text = remote_url.split(':', 1)[-1] if remote_url.startswith('git@') else remote_url.split('://', 1)[-1]
-    pieces = [piece for piece in path_text.replace(':', '/').split('/') if piece]
-    if len(pieces) < 3:
-        raise usage_error(f'从 origin 地址 {remote_url} 解析不出 owner/repo，请用 --owner / --repo 明确给出')
+def remote_slug(remote_name: str) -> tuple[str, str]:
+    """把 remote 地址拆成 (owner, repo)。认三种写法：`https://host/owner/repo.git`、
+    `git@host:owner/repo.git`（scp 形式，host 在 `@` 与 `:` 之间）、`ssh://git@host[:port]/owner/repo.git`；
+    本机路径之类认不出的写法一律报错，不猜。"""
+    remote_url = run_git(['remote', 'get-url', remote_name])
+    if '://' in remote_url:
+        path_text = remote_url.split('://', 1)[1].split('/', 1)[-1]
+    elif '@' in remote_url and ':' in remote_url.split('@', 1)[1]:
+        path_text = remote_url.split('@', 1)[1].split(':', 1)[1]
+    else:
+        path_text = ''
+    pieces = [piece for piece in path_text.split('/') if piece]
+    if len(pieces) < 2:
+        raise usage_error(
+            f'从 {remote_name} 的地址 {remote_url} 解析不出 owner/repo（只认 https://host/owner/repo 与 '
+            f'git@host:owner/repo 两种写法），请用 --owner / --repo 明确给出'
+        )
     return pieces[-2], pieces[-1][:-len('.git')] if pieces[-1].endswith('.git') else pieces[-1]
 
 
@@ -227,7 +238,7 @@ def parse_arguments() -> argparse.Namespace:
 def main() -> None:
     arguments = parse_arguments()
     try:
-        default_owner, default_repo = repository_slug_from_origin()
+        default_owner, default_repo = remote_slug('origin')
         owner = arguments.owner or default_owner
         repo = arguments.repo or default_repo
         version = package_release.read_release_version()
