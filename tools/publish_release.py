@@ -8,6 +8,9 @@
 
 `{owner}/{repo}` 默认从 `git remote get-url origin` 解析，不用手填。发行版说明默认取该 tag 的
 注解原文——tag 说明里已经写明了包内容与验证结论，两处共用一份文本，免得各写一遍再对不上。
+**但 tag 一旦推上去，其注解就改不动了**（改它要 force-push）；注解里若写了「未推送」这类**会过期**的
+状态，就别拿它当发行版说明——用 `--body-file` 另给一份（写得过期的状态不入 tag 注解，或推 tag 前先
+把状态句删掉）。
 
 **令牌**：默认从环境变量 `GITEE_TOKEN` 读；环境里带不进来时用 `--token-file` 指一个只含令牌的
 文件（建议放 `out/` 下，那里被 gitignore）。令牌只放进**请求体**、不进 URL（URL 会进服务端访问
@@ -23,6 +26,7 @@
     python tools/publish_release.py --dry-run                 # 只打印计划，不发任何请求
     GITEE_TOKEN=xxx python tools/publish_release.py           # 建发行版 + 传附件
     GITEE_TOKEN=xxx python tools/publish_release.py --release-id 123456   # 只补传附件
+    GITEE_TOKEN=xxx python tools/publish_release.py --body-file out/release_body.txt   # 说明另给一份
     python tools/publish_release.py --token-file out/gitee_token.txt
 
 退出码：
@@ -107,6 +111,15 @@ def release_tag_of(version: str) -> str:
 
 def read_release_note(tag: str) -> str:
     return run_git(['tag', '-l', '--format=%(contents)', tag])
+
+
+def read_release_body(body_file: Path | None, tag: str) -> str:
+    """发行版说明：`body_file` 给了就用它（UTF-8 文本），否则取 `tag` 的注解原文。"""
+    if body_file is None:
+        return read_release_note(tag)
+    if not body_file.is_file():
+        raise usage_error(f'--body-file 指的 {body_file} 不存在')
+    return body_file.read_text(encoding='utf-8').strip()
 
 
 def ensure_tag_on_remote(tag: str) -> None:
@@ -202,6 +215,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument('--repo', help='仓库路径，默认从 origin 解析')
     parser.add_argument('--tag', help='要挂的 tag，默认按 CMakeLists 的版本推成 v<版本>')
     parser.add_argument('--name', help='发行版标题，默认 `Spark <版本>`')
+    parser.add_argument('--body-file', help='发行版说明的 UTF-8 文本文件，默认取 tag 注解原文（tag 注解推上去就改不动了）')
     parser.add_argument('--release-id', type=int, help='已有发行版的 id：跳过建发行版、只补传附件')
     parser.add_argument('--token-file', help=f'只含令牌的文件（环境变量 {TOKEN_ENVIRONMENT_VARIABLE} 为空时才看它）')
     parser.add_argument('--dry-run', action='store_true', help='只打印要发的请求与要传的文件，不发任何请求')
@@ -219,18 +233,21 @@ def main() -> None:
         release_name = arguments.name or f'Spark {version}'
         package_files = collect_package_files(version)
         ensure_tag_on_remote(tag)
+        release_body = read_release_body(Path(arguments.body_file) if arguments.body_file else None, tag)
 
         if arguments.dry_run:
+            body_source = arguments.body_file or f'tag {tag} 的注解原文'
             print(f'---- 干跑：仓库 {owner}/{repo}、tag {tag}、发行版名 {release_name}')
             print('     会先建发行版' if arguments.release_id is None else f'     会用已有发行版 id={arguments.release_id}')
+            print(f'     说明取自 {body_source}（{len(release_body.encode("utf-8"))} 字节，未打印内容）')
             for package_file in package_files:
                 print(f'     会传附件 {package_file.name}（{package_file.stat().st_size / 1024:.1f} KB）')
-            print('     令牌与说明文本未打印；去掉 --dry-run 才真正发请求')
+            print('     令牌未读取；去掉 --dry-run 才真正发请求')
             raise SystemExit(EXIT_OK)
 
         token = read_access_token(Path(arguments.token_file) if arguments.token_file else None)
         if arguments.release_id is None:
-            release_id = create_release(owner, repo, tag, release_name, read_release_note(tag), token)
+            release_id = create_release(owner, repo, tag, release_name, release_body, token)
             print(f'---- 发行版已建：{owner}/{repo} tag {tag}，id={release_id}')
         else:
             release_id = arguments.release_id
