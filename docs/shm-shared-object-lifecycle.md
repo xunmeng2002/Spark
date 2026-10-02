@@ -206,10 +206,15 @@ Linux 的 `shm_open(O_CREAT | O_EXCL | ...)` 成功（`LinuxInit()` 里写作 `c
 （该测量取自加入 `Init_RejectsReusedShmObjectWithForeignMappingLayoutVersion` 之前，当时只有这两条走那道校验。
 新用例走的是**同一条**校验，故预期同步变红，但**未复测**——复测需要临时短路掉一道布局校验，属高风险改动，未擅自做。）
 
-**归属那两条断言的判别力落在 Linux 档（未实测，欠到四档补跑时复验）**：2026-10-02 做过一次 A/B——把 `ShmBase`
+**归属那两条断言的判别力落在 Linux 档（2026-10-02 四档补跑时已复验）**：2026-10-02 做过一次 A/B——把 `ShmBase`
 换回 `HEAD`、两个测试文件保留，重建后**MSVC Debug 档两条断言照旧通过**。原因即第六节记的那条：Windows 上旧代码的
 `DeleteFileA` 被创建者持有的 `file_` 句柄挡成共享冲突，本来也删不掉，故该档对这条断言不具判别力；
-有判别力的是 Linux 档（`shm_unlink` 不看他人映射）。真正「Windows 上也会被删掉」的场景是**残留对象没有活持有者**
+有判别力的是 Linux 档（`shm_unlink` 不看他人映射）。**同日的四档补跑里把 Linux 那半也做了**：把 Linux 侧析构判据
+改回旧口径（`serverType_ == ServerTypeType::Server`）重建 WSL GCC Debug，`Init_RejectsReusedShmObjectWithForeignMappingLayoutVersion`
+与 `Init_LeavesTheObjectAloneWhenTheConnectSizeIsRejected` **恰好这两条变红**，红在 `ShmInitTest.cpp:344` 与 `:359`
+的 `ShmObjectExists` 断言上——旧口径真的摘掉了对端的活对象；同族另两条（`...SmallerThanNeeded` /
+`...WithForeignMappingMagic`）不受影响，还原后 WSL GCC Debug 全绿（498 PASSED）。故这两条断言的能力面查清了：
+**Linux 档有判别力、Windows 档没有**。真正「Windows 上也会被删掉」的场景是**残留对象没有活持有者**
 那一支（创建者已被强杀 / 上一版构建留下的同名文件），本仓**没有为它写用例**——要造出这个局面得绕开 `ShmBase`
 手工建文件 + 建映射 + 打戳再关掉全部句柄，成本不合算；该支的处置见第九节。
 
