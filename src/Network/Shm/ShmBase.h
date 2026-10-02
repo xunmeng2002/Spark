@@ -62,5 +62,6 @@ private:
     unsigned GetSharedMemoryMappingSize() const;
 
     bool reusedExistingShmObject_;
+    bool createdShmObjectInThisInit_;
 };
 }

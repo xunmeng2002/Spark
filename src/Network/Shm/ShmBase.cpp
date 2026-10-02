@@ -33,7 +33,8 @@ HANDLE OpenShmFile(const string& shmName, unsigned long createDisposition)
 namespace Spark::Network
 {
 ShmBase::ShmBase(ServerTypeType serverType, const char* shmName, int milliSeconds)
-    : IoBase(serverType, shmName, milliSeconds), commonShmHeader_(nullptr), shmAddr_(nullptr), reusedExistingShmObject_(false)
+    : IoBase(serverType, shmName, milliSeconds), commonShmHeader_(nullptr), shmAddr_(nullptr), reusedExistingShmObject_(false),
+      createdShmObjectInThisInit_(false)
 {
 #ifdef _WIN32
     file_ = nullptr;
@@ -75,7 +76,7 @@ ShmBase::~ShmBase()
         CloseHandle(file_);
         file_ = nullptr;
     }
-    if (serverType_ == ServerTypeType::Server)
+    if (createdShmObjectInThisInit_)
     {
         DeleteFileA(shmName_.c_str());
     }
@@ -86,7 +87,7 @@ ShmBase::~ShmBase()
         perror("munmap");
         WriteLog(LogLevel::Warning, "munmap Failed. ErrNo:%d", errno);
     }
-    if (serverType_ == ServerTypeType::Server)
+    if (createdShmObjectInThisInit_)
     {
         if (shm_unlink(shmName_.c_str()) < 0)
         {
@@ -257,6 +258,10 @@ bool ShmBase::WindowsInit()
             }
             reusedExistingShmObject_ = true;
         }
+        else
+        {
+            createdShmObjectInThisInit_ = true;
+        }
         fileMap_ = CreateFileMappingA(file_, NULL, PAGE_READWRITE, 0, GetSharedMemoryMappingSize(), shmName_.c_str());
     }
     else
@@ -285,6 +290,7 @@ bool ShmBase::LinuxInit()
     const int openFlags = creatingShmObject ? (O_CREAT | O_EXCL | O_RDWR) : O_RDWR;
     int fd = shm_open(shmName_.c_str(), openFlags, 0666);
     reusedExistingShmObject_ = !creatingShmObject;
+    createdShmObjectInThisInit_ = creatingShmObject && fd >= 0;
     if (fd < 0 && creatingShmObject && errno == EEXIST)
     {
         WriteLog(LogLevel::Warning, "Shm Object Exists, Reuse It. Address:%s", shmName_.c_str());

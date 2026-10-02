@@ -71,6 +71,8 @@
   为真时 `Init()` 调 `IsReusedMappingLayoutCompatible()`，不符即记 Warning（`Shm Object Mapping Layout Mismatch.`，
   打印实读的 Magic/版本与期望值）并返回 `false`。客户端恒为真；服务端只在「创建失败因已存在 → 改打开」那一支为真，
   自己新建时**不校验**（那一刻戳是自己刚写的，校验只会白跑）。
+- 与它并列的另一个标志 `createdShmObjectInThisInit_` 标出相反的事实——「本次 `Init()` 亲手创建了这个对象」。
+  它不参与复用校验，只被析构读，用来定夺退出时该不该删对象（第六节）。
 - 因此**改布局必须同时递增 `ShmMappingLayoutVersion`**，否则旧对象会通过校验、被按新布局读。
   字段总长由 `ShmBuffer.h` 与 `ShmBufferTest` 的 `static_assert(sizeof(SingleShmHeader) == 8 + 6 * sizeof(size_t))` 钉住，
   另有一条 `alignof(SingleShmHeader) == alignof(size_t)` 钉住对齐——`size_t` 计数器必须自然对齐，`std::atomic_ref` 才成立。
@@ -104,15 +106,40 @@ POSIX 规定：`mmap` 成功之后 `close(fd)` 不影响映射的有效性（映
 除泄漏本身之外，它还改变对象的生命周期 —— **描述符是引用**，未关的描述符会让 `shm_unlink` 只是摘掉名字、对象活到进程退出；
 现在关掉之后，析构路径的 `shm_unlink` 才真的把对象销毁。本次一并补齐了 `fstat` / `ftruncate` / `mmap` 三个失败出口的 `close(fd)`。
 
-## 六、销毁时点，以及一条已知缺口
+## 六、销毁时点与对象归属
 
-服务端对象由**服务端进程的析构函数**销毁：Windows 走 `UnmapViewOfFile` + `CloseHandle` + `DeleteFileA`，Linux 走 `munmap` + `shm_unlink`；
-客户端只解映射、不删对象（以 `serverType_` 区分）。信号量先于共享内存释放。
+服务端对象由**创建它的那个进程的析构函数**销毁：Windows 走 `UnmapViewOfFile` + `CloseHandle` + `DeleteFileA`，Linux 走 `munmap` + `shm_unlink`；
+客户端只解映射、不删对象。信号量先于共享内存释放。
 
-**缺口**：析构里的「删除对象」以 `serverType_ == Server` 为唯一判据，不看本次 `Init()` 是否真的创建/复用了对象。
-若 `Init()` 因尺寸超限、或 Linux 上因「复用对象偏小」而失败，这个服务端对象**并不属于本进程**，析构却仍会 `shm_unlink` / `DeleteFileA` 掉它 ——
-跨进程场景下会把别人的对象摘掉。测试里表现为 `shm_unlink: No such file or directory` 之类的噪音（自己那一份已被前一个对象删过）。
-该缺口未修，登记在 `PROGRESS.md` 的 ❓ 区。
+**契约（2026-10-02 定）：只有「本次 `Init()` 亲手创建了这个对象」的那个实例，析构才有权删除它。**
+判据由 `ShmBase::createdShmObjectInThisInit_` 承载，只在两处置真：Windows 的 `CreateFileA(..., CREATE_NEW, ...)` 成功、
+Linux 的 `shm_open(O_CREAT | O_EXCL | ...)` 成功（`LinuxInit()` 里写作 `creatingShmObject && fd >= 0`）。
+复用他人的对象一律不置真——**复用成功也不置真**，因为那个对象仍然不是本进程创建的。
+
+改动前这条判据是 `serverType_ == ServerTypeType::Server`，即「我是服务端」就等于「我是属主」。这是错的：`Init()`
+完全可以在创建对象**之前或之后**失败——连接数被门禁拒掉、信号量 `Init()` 失败、Linux 上复用对象偏小、
+复用对象的映射布局与本次构建不符——这些情形下那个对象**并不属于本进程**，析构却仍会 `shm_unlink` / `DeleteFileA` 掉它。
+
+两平台上这条缺陷的**可观测性并不一样**，值得记下：
+
+- **Linux 上它真的会摘掉别人的对象**：`shm_unlink` 只摘名字，不看还有谁把对象映射着或持着描述符，故对一个仍活着的对端，
+  对象名会当场消失（该对端已有的映射继续有效，但新的 `shm_open` 一律失败）。
+- **Windows 上它多半打不中**：`ShmBase` 的服务端在整条生命周期里持着 `file_` 句柄，而该句柄未带 `FILE_SHARE_DELETE`，
+  于是别人进程里的 `DeleteFileA` 一律以共享冲突失败（且不打日志）。真正会被删掉的是**没有活持有者的残留文件**
+  （创建者被强杀、或上一版构建留下的同名文件）——那在旧代码里是「顺手自愈」。
+
+因此本改动同时**移除了两处顺手自愈**，务必知悉：
+
+1. **不兼容的残留对象不再被自动清掉**：残留对象的 Magic / 布局版本与本次构建不符时，改动前是「服务端 `Init()` 失败 →
+   析构删掉它 → 下一次就好」，改动后它一直留着，每次 `Init()` 都失败到人工清理为止。
+2. **兼容的残留对象从此常驻**：复用成功的那一侧不再在退出时删掉别人的对象，故一个「创建者已退出」的同名对象会被后续
+   每一轮复用并一直保留；Linux 上它按映射长度占着 `/dev/shm`（冒烟用的 4 连接对象是 8 MiB）。
+
+第 1 条已在 `PROGRESS.md` 的 ❓ 区登记为待决（是否需要一个显式的「接管并重建」动作）；第 2 条是契约的直接推论——
+同一名字的对象不再因为「谁先跑完」而时有时无。
+
+**冒烟里删对象这件事根本不会发生**：`out/subscriber_smoke.py` 用 `terminate()` 收尾（Windows 上是 `TerminateProcess`），
+两端进程的析构不跑，故 `TestShm` 每轮都留在仓根（8 MiB，已 gitignore）。「起轮前先 `rm -f TestShm`」这条纪律与本节无关，照旧。
 
 同处另更正一处日志文案：`munmap` 失败的分支此前打的是 `perror("shm_unlink")`，现改为 `perror("munmap")`（纯文案，行为未变）。
 
@@ -158,6 +185,13 @@ POSIX 规定：`mmap` 成功之后 `close(fd)` 不影响映射的有效性（映
     `ShmMappingLayoutVersion + 1`（**Magic 保持正确，只有版本不符**），再让第二个服务端复用。
   - 输出：第二个 `false`。上一条钉 `MappingMagic`、这一条钉 `MappingLayoutVersion`，各自覆盖自描述的一半：
     光有 Magic 对不足以放行，版本不符同样要拒——这正是头字段加宽（版本 1→2）后必须挡住的场景。
+  - **同一条另钉对象归属**（2026-10-02）：把复用失败的那个服务端关进一个作用域、作用域结束后断言对象**仍存在**
+    （`ShmObjectExists`）——它复用的是别人建的对象，析构无权删（第六节）。用例的其余部分一字未动。
+- `Init_LeavesTheObjectAloneWhenTheConnectSizeIsRejected`（对象归属，2026-10-02 新增）
+  - 输入：服务端在 `shm://…:1` 上建好对象；第二个服务端用**同一个对象名**、连接数写成 `abc`
+    （`ParseInteger` 失败置 0，被 `IsConnectSizeAllowed()` 在触碰任何 OS 资源**之前**拒掉），建完即销毁。
+  - 输出：第二个 `Init() == false`；对象仍在。这是第六节契约在「连创建那一步都没走到」这一支上的判据——
+    与上一条的分工：上一条钉「复用了但没用成」，这一条钉「压根没碰」。
 - `Init_AcceptsStampedShmObjectForAClient`（正向对照）
   - 输入：服务端建好并打戳，再让客户端打开同一对象。
   - 输出：`true`。证明校验不会把正常对象误判成外来布局。
@@ -171,7 +205,17 @@ POSIX 规定：`mmap` 成功之后 `close(fd)` 不影响映射的有效性（映
 （该测量取自加入 `Init_RejectsReusedShmObjectWithForeignMappingLayoutVersion` 之前，当时只有这两条走那道校验。
 新用例走的是**同一条**校验，故预期同步变红，但**未复测**——复测需要临时短路掉一道布局校验，属高风险改动，未擅自做。）
 
-用例的地址都带时间戳（`MakeUniqueShmName` / `MakeUniqueShmObjectName`），同一进程内先后运行不会互相干扰；清理依赖析构顺序（先声明的后析构：第二个对象先 `unlink`，第一个对象的后析构收尾）。
+**归属那两条断言的判别力落在 Linux 档（未实测，欠到四档补跑时复验）**：2026-10-02 做过一次 A/B——把 `ShmBase`
+换回 `HEAD`、两个测试文件保留，重建后**MSVC Debug 档两条断言照旧通过**。原因即第六节记的那条：Windows 上旧代码的
+`DeleteFileA` 被创建者持有的 `file_` 句柄挡成共享冲突，本来也删不掉，故该档对这条断言不具判别力；
+有判别力的是 Linux 档（`shm_unlink` 不看他人映射）。真正「Windows 上也会被删掉」的场景是**残留对象没有活持有者**
+那一支（创建者已被强杀 / 上一版构建留下的同名文件），本仓**没有为它写用例**——要造出这个局面得绕开 `ShmBase`
+手工建文件 + 建映射 + 打戳再关掉全部句柄，成本不合算；该支的处置见第九节。
+
+用例的地址都带时间戳（`MakeUniqueShmName` / `MakeUniqueShmObjectName`），同一进程内先后运行不会互相干扰；
+**清理只由创建者承担**（第六节契约）：一个用例里先声明的那个对象才是创建者，后声明的都是复用方，
+故「先声明的后析构、由它收尾」。改动前是「第二个对象先 `unlink`、第一个对象的 `unlink` 扑空」，
+那正是旧缺口在测试里留下的 `shm_unlink: No such file or directory` 噪音，现已随之消失。
 
 同文件另有一组 `ShmConnectLifecycleTest`（`ReclaimsConnectWhosePeerNeverAttached` /
 `ReclaimsConnectWhosePeerNeverConfirmedAndResetsTheControlHeader`）：钉的是**服务端侧连接回收**，属连接生命周期而非对象生命周期，
@@ -191,7 +235,12 @@ POSIX 规定：`mmap` 成功之后 `close(fd)` 不影响映射的有效性（映
   窗口长度随连接数（映射长度）增长，单进程冒烟与四档单测均未复现；要彻底消除须把「打戳」挪到 `memset` 之外或改用
   「未打戳视为新建中、短暂重试」的判据，未做。
 - Windows 侧「复用对象尺寸不足」没有独立用例：该平台的判据是 `MapViewOfFile` 自己失败，故不存在可撤的代码分支。
-- `Init()` 失败后析构仍删除对象（第六节缺口）。
+- **不兼容的残留对象没有恢复动作**（2026-10-02）：第六节契约落地后，一个与本次构建布局不符、**且创建者已退出**的
+  残留对象会让每次 `Init()` 都失败，直到人工删除它（Windows 删文件、Linux `shm_unlink` 或清理 `/dev/shm`）。
+  旧代码里这一支是「析构顺手删掉」的副作用，本改动连同副作用一并去掉。是否要一个显式的「接管并重建」动作
+  （例如只在确认无人持有时才删），登记在 `PROGRESS.md` 的 ❓ 区，**未决**。
+- **「残留文件无活持有者」这一支在 Windows 上也没有用例**：它是 Windows 上唯一能真正触发旧缺陷的局面
+  （见第八节的 A/B 结果），但造局面的成本同上，未做。
 - ~~`ShmBase::DoSend`（override 了 `IoBase` 纯虚）在 Shm 后端**没有调用点**~~ **已处置（2026-09-28）**：
   该 override 保留为**空实现**（2026-09-27 曾删除，并把 `IoBase::DoSend` 降为非纯虚；用户 2026-09-28 判该降级
   损伤了 `IoBase` 接口，遂反转、恢复纯虚）。Shm 的同步写穿与 Tcp 的异步排队之别，

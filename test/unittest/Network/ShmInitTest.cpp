@@ -124,6 +124,11 @@ ConnectStatusType ReadShmHeaderStatus(const std::string& shmObjectName, unsigned
     return status;
 }
 
+bool ShmObjectExists(const std::string& shmObjectName)
+{
+    return VisitShmMapping(shmObjectName, sizeof(Spark::SingleShmHeader), [](Spark::SingleShmHeader*) {});
+}
+
 class ConnectEventProbe : public IoSubscriber
 {
 public:
@@ -261,9 +266,27 @@ TEST(ShmInitTest, Init_RejectsReusedShmObjectWithForeignMappingLayoutVersion)
     ASSERT_TRUE(leftoverOwner->Init());
     ASSERT_TRUE(WriteShmMappingLayoutVersion(shmObjectName, Spark::ShmMappingLayoutVersion + 1));
 
-    const auto secondOwner = CreateShmServer(shmAddress);
-    ASSERT_NE(secondOwner, nullptr);
-    EXPECT_FALSE(secondOwner->Init());
+    {
+        const auto secondOwner = CreateShmServer(shmAddress);
+        ASSERT_NE(secondOwner, nullptr);
+        EXPECT_FALSE(secondOwner->Init());
+    }
+    EXPECT_TRUE(ShmObjectExists(shmObjectName));
+}
+
+TEST(ShmInitTest, Init_LeavesTheObjectAloneWhenTheConnectSizeIsRejected)
+{
+    const auto shmObjectName = MakeUniqueShmObjectName("SparkShmUnitTestGateRejectedOwner");
+    const auto owner = CreateShmServer(ToShmAddress(shmObjectName, "1"));
+    ASSERT_NE(owner, nullptr);
+    ASSERT_TRUE(owner->Init());
+
+    {
+        const auto rejectedOwner = CreateShmServer(ToShmAddress(shmObjectName, "abc"));
+        ASSERT_NE(rejectedOwner, nullptr);
+        EXPECT_FALSE(rejectedOwner->Init());
+    }
+    EXPECT_TRUE(ShmObjectExists(shmObjectName));
 }
 
 TEST(ShmInitTest, Init_AcceptsStampedShmObjectForAClient)
