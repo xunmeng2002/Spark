@@ -1,5 +1,5 @@
 [submodule "submodules/CMakeCommon"]
 	path = submodules/CMakeCommon
-	url = https://gitee.com/xunmeng200/CMakeCommon.git
+	url = git@gitee.com:xunmeng2002/CMakeCommon.git
 	branch = master
 	
