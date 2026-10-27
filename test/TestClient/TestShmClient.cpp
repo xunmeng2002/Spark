@@ -4,6 +4,7 @@
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/Network/Network.h>
 
+using namespace Spark;
 using namespace Spark::Core;
 using namespace Spark::Network;
 

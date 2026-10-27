@@ -21,6 +21,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #endif
+using namespace Spark;
 using namespace Spark::Network;
 
 namespace

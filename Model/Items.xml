@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<items>
+	<item name="Magic" id="0x0000" type="Int32" desc="魔术字tag = 0，值为文本SPK2"/>
+	<item name="PackageId" id="0x0001" type="UInt16" desc="报文类别,报文唯一编号tag = 3固定长度5位"/>
+	<item name="BodyLen" id="0x0002" type="UInt16" desc="报文长度tag = 2固定长度5位"/>
+	<item name="MessageChain" id="0x0003" type="Bool" desc="报文链标记tag = 4固定长度1位"/>
+	<item name="MsgSeqNum" id="0x0004" type="Int32" desc="请求编号tag = 5固定长度10位"/>
+	<item name="CheckSum" id="0x0005" type="Int32" desc="校验和tag = 6固定长度8位"/>
+	<item name="FieldStart" id="0x0006" type="Int32" desc="域代码，标志着域开始"/>
+	<item name="FieldEnd" id="0x0007" type="Int32" desc="域结束标志"/>
+	<item name="Version" id="0x0008" type="UInt16" desc="协议版本tag = 8"/>
+</items>

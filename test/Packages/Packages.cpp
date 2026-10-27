@@ -1,6 +1,6 @@
-﻿// 本文件由 ../Templates/Cpp/Protocol/Packages/Packages.cpp.tpl 生成；请勿手改，改动请改模板后重跑 pumpall.py
+// 本文件由 ../Templates/Cpp/Protocol/Packages/Packages.cpp.tpl 生成；请勿手改，改动请改模板后重跑 pumpall.py
 #include "Packages.h"
-#include <Spark/Network/Protocol/Items.h>
+#include "ProtocolItems.h"
 #include <Spark/Network/Protocol/StepUtility.h>
 #include <Spark/Core/Logger/Logger.h>
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
@@ -12,7 +12,7 @@ using namespace Spark;
 using namespace Spark::Core;
 using namespace Spark::Network;
 
-namespace Spark::Packages
+namespace Spark::Test::Packages
 {
 thread_local char DataStringBuffer[10240];
 
@@ -70,11 +70,11 @@ int NotifyComponentConnectStatusPackage::ToStepStream(char* buff, int size) cons
 	StepWriteCursor cursor(buff, size);
 	if (NotifyComponentConnectStatus != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, NotifyComponentConnectStatusField::FieldId);
-		StepUtility::WriteString(cursor, Items::SessionId, NotifyComponentConnectStatus->SessionId);
-		StepUtility::WriteString(cursor, Items::Component, static_cast<int>(NotifyComponentConnectStatus->Component));
-		StepUtility::WriteString(cursor, Items::IsConnected, NotifyComponentConnectStatus->IsConnected);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, NotifyComponentConnectStatusField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, NotifyComponentConnectStatusField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::SessionId, NotifyComponentConnectStatus->SessionId);
+		StepUtility::WriteString(cursor, ProtocolItems::Component, static_cast<int>(NotifyComponentConnectStatus->Component));
+		StepUtility::WriteString(cursor, ProtocolItems::IsConnected, NotifyComponentConnectStatus->IsConnected);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, NotifyComponentConnectStatusField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -107,10 +107,10 @@ bool NotifyComponentConnectStatusPackage::FromStepStream(char* buff, int startIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::SessionId:
+						case ProtocolItems::SessionId:
 						{
 							if (!StepUtility::ParseInteger(value, NotifyComponentConnectStatus->SessionId))
 							{
@@ -119,7 +119,7 @@ bool NotifyComponentConnectStatusPackage::FromStepStream(char* buff, int startIn
 							}
 							break;
 						}
-						case Items::Component:
+						case ProtocolItems::Component:
 						{
 							if (!StepUtility::ParseEnum(value, NotifyComponentConnectStatus->Component))
 							{
@@ -128,7 +128,7 @@ bool NotifyComponentConnectStatusPackage::FromStepStream(char* buff, int startIn
 							}
 							break;
 						}
-						case Items::IsConnected:
+						case ProtocolItems::IsConnected:
 						{
 							if (!StepUtility::ParseBool(value, NotifyComponentConnectStatus->IsConnected))
 							{
@@ -245,18 +245,18 @@ int ReqAccountLoginPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAccountLogin != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAccountLoginField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAccountLoginField::FieldId);
 		if (strlen(ReqAccountLogin->AccountId) >= sizeof(ReqAccountLogin->AccountId))
 		{
 			ReqAccountLogin->AccountId[sizeof(ReqAccountLogin->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqAccountLogin->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqAccountLogin->AccountId);
 		if (strlen(ReqAccountLogin->Password) >= sizeof(ReqAccountLogin->Password))
 		{
 			ReqAccountLogin->Password[sizeof(ReqAccountLogin->Password) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::Password, ReqAccountLogin->Password);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAccountLoginField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::Password, ReqAccountLogin->Password);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAccountLoginField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -289,10 +289,10 @@ bool ReqAccountLoginPackage::FromStepStream(char* buff, int startIndex, int endI
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqAccountLogin->AccountId))
 							{
@@ -302,7 +302,7 @@ bool ReqAccountLoginPackage::FromStepStream(char* buff, int startIndex, int endI
 							memcpy(ReqAccountLogin->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Password:
+						case ProtocolItems::Password:
 						{
 							if (value.length() >= sizeof(ReqAccountLogin->Password))
 							{
@@ -425,35 +425,35 @@ int RspAccountLoginPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAccountLogin != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAccountLoginField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAccountLoginField::FieldId);
 		if (strlen(RspAccountLogin->AccountId) >= sizeof(RspAccountLogin->AccountId))
 		{
 			RspAccountLogin->AccountId[sizeof(RspAccountLogin->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, RspAccountLogin->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, RspAccountLogin->AccountId);
 		if (strlen(RspAccountLogin->LoginDate) >= sizeof(RspAccountLogin->LoginDate))
 		{
 			RspAccountLogin->LoginDate[sizeof(RspAccountLogin->LoginDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::LoginDate, RspAccountLogin->LoginDate);
+		StepUtility::WriteString(cursor, ProtocolItems::LoginDate, RspAccountLogin->LoginDate);
 		if (strlen(RspAccountLogin->LoginTime) >= sizeof(RspAccountLogin->LoginTime))
 		{
 			RspAccountLogin->LoginTime[sizeof(RspAccountLogin->LoginTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::LoginTime, RspAccountLogin->LoginTime);
-		StepUtility::WriteString(cursor, Items::SessionId, RspAccountLogin->SessionId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAccountLoginField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::LoginTime, RspAccountLogin->LoginTime);
+		StepUtility::WriteString(cursor, ProtocolItems::SessionId, RspAccountLogin->SessionId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAccountLoginField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -486,10 +486,10 @@ bool RspAccountLoginPackage::FromStepStream(char* buff, int startIndex, int endI
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(RspAccountLogin->AccountId))
 							{
@@ -499,7 +499,7 @@ bool RspAccountLoginPackage::FromStepStream(char* buff, int startIndex, int endI
 							memcpy(RspAccountLogin->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::LoginDate:
+						case ProtocolItems::LoginDate:
 						{
 							if (value.length() >= sizeof(RspAccountLogin->LoginDate))
 							{
@@ -509,7 +509,7 @@ bool RspAccountLoginPackage::FromStepStream(char* buff, int startIndex, int endI
 							memcpy(RspAccountLogin->LoginDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::LoginTime:
+						case ProtocolItems::LoginTime:
 						{
 							if (value.length() >= sizeof(RspAccountLogin->LoginTime))
 							{
@@ -519,7 +519,7 @@ bool RspAccountLoginPackage::FromStepStream(char* buff, int startIndex, int endI
 							memcpy(RspAccountLogin->LoginTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::SessionId:
+						case ProtocolItems::SessionId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAccountLogin->SessionId))
 							{
@@ -555,10 +555,10 @@ bool RspAccountLoginPackage::FromStepStream(char* buff, int startIndex, int endI
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -567,7 +567,7 @@ bool RspAccountLoginPackage::FromStepStream(char* buff, int startIndex, int endI
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -708,13 +708,13 @@ int ReqAccountLogoutPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAccountLogout != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAccountLogoutField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAccountLogoutField::FieldId);
 		if (strlen(ReqAccountLogout->AccountId) >= sizeof(ReqAccountLogout->AccountId))
 		{
 			ReqAccountLogout->AccountId[sizeof(ReqAccountLogout->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqAccountLogout->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAccountLogoutField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqAccountLogout->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAccountLogoutField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -747,10 +747,10 @@ bool ReqAccountLogoutPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqAccountLogout->AccountId))
 							{
@@ -873,24 +873,24 @@ int RspAccountLogoutPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAccountLogout != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAccountLogoutField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAccountLogoutField::FieldId);
 		if (strlen(RspAccountLogout->AccountId) >= sizeof(RspAccountLogout->AccountId))
 		{
 			RspAccountLogout->AccountId[sizeof(RspAccountLogout->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, RspAccountLogout->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAccountLogoutField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, RspAccountLogout->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAccountLogoutField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -923,10 +923,10 @@ bool RspAccountLogoutPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(RspAccountLogout->AccountId))
 							{
@@ -963,10 +963,10 @@ bool RspAccountLogoutPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -975,7 +975,7 @@ bool RspAccountLogoutPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -1116,13 +1116,13 @@ int ReqQryAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryAccount != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryAccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryAccountField::FieldId);
 		if (strlen(ReqQryAccount->AccountId) >= sizeof(ReqQryAccount->AccountId))
 		{
 			ReqQryAccount->AccountId[sizeof(ReqQryAccount->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqQryAccount->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryAccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqQryAccount->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryAccountField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -1155,10 +1155,10 @@ bool ReqQryAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqQryAccount->AccountId))
 							{
@@ -1281,29 +1281,29 @@ int RspQryAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Account != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, AccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, AccountField::FieldId);
 		if (strlen(Account->AccountId) >= sizeof(Account->AccountId))
 		{
 			Account->AccountId[sizeof(Account->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, Account->AccountId);
-		StepUtility::WriteString(cursor, Items::AccountType, static_cast<int>(Account->AccountType));
-		StepUtility::WriteString(cursor, Items::AccountStatus, static_cast<int>(Account->AccountStatus));
-		StepUtility::WriteString(cursor, Items::TradeGroupId, Account->TradeGroupId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, Account->RiskGroupId);
-		StepUtility::WriteString(cursor, Items::CommissionGroupId, Account->CommissionGroupId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, AccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, Account->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountType, static_cast<int>(Account->AccountType));
+		StepUtility::WriteString(cursor, ProtocolItems::AccountStatus, static_cast<int>(Account->AccountStatus));
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, Account->TradeGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, Account->RiskGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::CommissionGroupId, Account->CommissionGroupId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, AccountField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -1336,10 +1336,10 @@ bool RspQryAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(Account->AccountId))
 							{
@@ -1349,7 +1349,7 @@ bool RspQryAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(Account->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountType:
+						case ProtocolItems::AccountType:
 						{
 							if (!StepUtility::ParseEnum(value, Account->AccountType))
 							{
@@ -1358,7 +1358,7 @@ bool RspQryAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::AccountStatus:
+						case ProtocolItems::AccountStatus:
 						{
 							if (!StepUtility::ParseEnum(value, Account->AccountStatus))
 							{
@@ -1367,7 +1367,7 @@ bool RspQryAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, Account->TradeGroupId))
 							{
@@ -1376,7 +1376,7 @@ bool RspQryAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, Account->RiskGroupId))
 							{
@@ -1385,7 +1385,7 @@ bool RspQryAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::CommissionGroupId:
+						case ProtocolItems::CommissionGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, Account->CommissionGroupId))
 							{
@@ -1421,10 +1421,10 @@ bool RspQryAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -1433,7 +1433,7 @@ bool RspQryAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -1574,13 +1574,13 @@ int ReqQryHolderAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryHolderAccount != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryHolderAccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryHolderAccountField::FieldId);
 		if (strlen(ReqQryHolderAccount->AccountId) >= sizeof(ReqQryHolderAccount->AccountId))
 		{
 			ReqQryHolderAccount->AccountId[sizeof(ReqQryHolderAccount->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqQryHolderAccount->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryHolderAccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqQryHolderAccount->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryHolderAccountField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -1613,10 +1613,10 @@ bool ReqQryHolderAccountPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqQryHolderAccount->AccountId))
 							{
@@ -1739,30 +1739,30 @@ int RspQryHolderAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (HolderAccount != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, HolderAccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, HolderAccountField::FieldId);
 		if (strlen(HolderAccount->ExchangeId) >= sizeof(HolderAccount->ExchangeId))
 		{
 			HolderAccount->ExchangeId[sizeof(HolderAccount->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, HolderAccount->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, HolderAccount->ExchangeId);
 		if (strlen(HolderAccount->HolderAccountId) >= sizeof(HolderAccount->HolderAccountId))
 		{
 			HolderAccount->HolderAccountId[sizeof(HolderAccount->HolderAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::HolderAccountId, HolderAccount->HolderAccountId);
-		StepUtility::WriteString(cursor, Items::PrimaryFlag, HolderAccount->PrimaryFlag);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, HolderAccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::HolderAccountId, HolderAccount->HolderAccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryFlag, HolderAccount->PrimaryFlag);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, HolderAccountField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -1795,10 +1795,10 @@ bool RspQryHolderAccountPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(HolderAccount->ExchangeId))
 							{
@@ -1808,7 +1808,7 @@ bool RspQryHolderAccountPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(HolderAccount->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::HolderAccountId:
+						case ProtocolItems::HolderAccountId:
 						{
 							if (value.length() >= sizeof(HolderAccount->HolderAccountId))
 							{
@@ -1818,7 +1818,7 @@ bool RspQryHolderAccountPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(HolderAccount->HolderAccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryFlag:
+						case ProtocolItems::PrimaryFlag:
 						{
 							if (!StepUtility::ParseBool(value, HolderAccount->PrimaryFlag))
 							{
@@ -1854,10 +1854,10 @@ bool RspQryHolderAccountPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -1866,7 +1866,7 @@ bool RspQryHolderAccountPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -2007,13 +2007,13 @@ int ReqQryCapitalPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryCapital != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryCapitalField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryCapitalField::FieldId);
 		if (strlen(ReqQryCapital->AccountId) >= sizeof(ReqQryCapital->AccountId))
 		{
 			ReqQryCapital->AccountId[sizeof(ReqQryCapital->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqQryCapital->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryCapitalField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqQryCapital->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryCapitalField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -2046,10 +2046,10 @@ bool ReqQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqQryCapital->AccountId))
 							{
@@ -2172,51 +2172,51 @@ int RspQryCapitalPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Capital != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, CapitalField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, CapitalField::FieldId);
 		if (strlen(Capital->TradingDay) >= sizeof(Capital->TradingDay))
 		{
 			Capital->TradingDay[sizeof(Capital->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, Capital->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, Capital->TradingDay);
 		if (strlen(Capital->AccountId) >= sizeof(Capital->AccountId))
 		{
 			Capital->AccountId[sizeof(Capital->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, Capital->AccountId);
-		StepUtility::WriteString(cursor, Items::AccountType, static_cast<int>(Capital->AccountType));
-		StepUtility::WriteString(cursor, Items::Asset, Capital->Asset);
-		StepUtility::WriteString(cursor, Items::PreAsset, Capital->PreAsset);
-		StepUtility::WriteString(cursor, Items::CashAsset, Capital->CashAsset);
-		StepUtility::WriteString(cursor, Items::PreCashAsset, Capital->PreCashAsset);
-		StepUtility::WriteString(cursor, Items::Available, Capital->Available);
-		StepUtility::WriteString(cursor, Items::CashIn, Capital->CashIn);
-		StepUtility::WriteString(cursor, Items::CashOut, Capital->CashOut);
-		StepUtility::WriteString(cursor, Items::Margin, Capital->Margin);
-		StepUtility::WriteString(cursor, Items::Commission, Capital->Commission);
-		StepUtility::WriteString(cursor, Items::StampTax, Capital->StampTax);
-		StepUtility::WriteString(cursor, Items::TransferFee, Capital->TransferFee);
-		StepUtility::WriteString(cursor, Items::FrozenCash, Capital->FrozenCash);
-		StepUtility::WriteString(cursor, Items::FrozenMargin, Capital->FrozenMargin);
-		StepUtility::WriteString(cursor, Items::FrozenCommission, Capital->FrozenCommission);
-		StepUtility::WriteString(cursor, Items::FrozenStampTax, Capital->FrozenStampTax);
-		StepUtility::WriteString(cursor, Items::FrozenTransferFee, Capital->FrozenTransferFee);
-		StepUtility::WriteString(cursor, Items::MarketValue, Capital->MarketValue);
-		StepUtility::WriteString(cursor, Items::TotalProfit, Capital->TotalProfit);
-		StepUtility::WriteString(cursor, Items::TodayProfit, Capital->TodayProfit);
-		StepUtility::WriteString(cursor, Items::Deposit, Capital->Deposit);
-		StepUtility::WriteString(cursor, Items::Withdraw, Capital->Withdraw);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, CapitalField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, Capital->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountType, static_cast<int>(Capital->AccountType));
+		StepUtility::WriteString(cursor, ProtocolItems::Asset, Capital->Asset);
+		StepUtility::WriteString(cursor, ProtocolItems::PreAsset, Capital->PreAsset);
+		StepUtility::WriteString(cursor, ProtocolItems::CashAsset, Capital->CashAsset);
+		StepUtility::WriteString(cursor, ProtocolItems::PreCashAsset, Capital->PreCashAsset);
+		StepUtility::WriteString(cursor, ProtocolItems::Available, Capital->Available);
+		StepUtility::WriteString(cursor, ProtocolItems::CashIn, Capital->CashIn);
+		StepUtility::WriteString(cursor, ProtocolItems::CashOut, Capital->CashOut);
+		StepUtility::WriteString(cursor, ProtocolItems::Margin, Capital->Margin);
+		StepUtility::WriteString(cursor, ProtocolItems::Commission, Capital->Commission);
+		StepUtility::WriteString(cursor, ProtocolItems::StampTax, Capital->StampTax);
+		StepUtility::WriteString(cursor, ProtocolItems::TransferFee, Capital->TransferFee);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenCash, Capital->FrozenCash);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenMargin, Capital->FrozenMargin);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenCommission, Capital->FrozenCommission);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenStampTax, Capital->FrozenStampTax);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenTransferFee, Capital->FrozenTransferFee);
+		StepUtility::WriteString(cursor, ProtocolItems::MarketValue, Capital->MarketValue);
+		StepUtility::WriteString(cursor, ProtocolItems::TotalProfit, Capital->TotalProfit);
+		StepUtility::WriteString(cursor, ProtocolItems::TodayProfit, Capital->TodayProfit);
+		StepUtility::WriteString(cursor, ProtocolItems::Deposit, Capital->Deposit);
+		StepUtility::WriteString(cursor, ProtocolItems::Withdraw, Capital->Withdraw);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, CapitalField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -2249,10 +2249,10 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(Capital->TradingDay))
 							{
@@ -2262,7 +2262,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(Capital->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(Capital->AccountId))
 							{
@@ -2272,7 +2272,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(Capital->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountType:
+						case ProtocolItems::AccountType:
 						{
 							if (!StepUtility::ParseEnum(value, Capital->AccountType))
 							{
@@ -2281,7 +2281,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::Asset:
+						case ProtocolItems::Asset:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->Asset))
 							{
@@ -2290,7 +2290,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::PreAsset:
+						case ProtocolItems::PreAsset:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->PreAsset))
 							{
@@ -2299,7 +2299,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::CashAsset:
+						case ProtocolItems::CashAsset:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->CashAsset))
 							{
@@ -2308,7 +2308,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::PreCashAsset:
+						case ProtocolItems::PreCashAsset:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->PreCashAsset))
 							{
@@ -2317,7 +2317,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::Available:
+						case ProtocolItems::Available:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->Available))
 							{
@@ -2326,7 +2326,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::CashIn:
+						case ProtocolItems::CashIn:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->CashIn))
 							{
@@ -2335,7 +2335,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::CashOut:
+						case ProtocolItems::CashOut:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->CashOut))
 							{
@@ -2344,7 +2344,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::Margin:
+						case ProtocolItems::Margin:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->Margin))
 							{
@@ -2353,7 +2353,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::Commission:
+						case ProtocolItems::Commission:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->Commission))
 							{
@@ -2362,7 +2362,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::StampTax:
+						case ProtocolItems::StampTax:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->StampTax))
 							{
@@ -2371,7 +2371,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::TransferFee:
+						case ProtocolItems::TransferFee:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->TransferFee))
 							{
@@ -2380,7 +2380,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::FrozenCash:
+						case ProtocolItems::FrozenCash:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->FrozenCash))
 							{
@@ -2389,7 +2389,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::FrozenMargin:
+						case ProtocolItems::FrozenMargin:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->FrozenMargin))
 							{
@@ -2398,7 +2398,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::FrozenCommission:
+						case ProtocolItems::FrozenCommission:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->FrozenCommission))
 							{
@@ -2407,7 +2407,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::FrozenStampTax:
+						case ProtocolItems::FrozenStampTax:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->FrozenStampTax))
 							{
@@ -2416,7 +2416,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::FrozenTransferFee:
+						case ProtocolItems::FrozenTransferFee:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->FrozenTransferFee))
 							{
@@ -2425,7 +2425,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::MarketValue:
+						case ProtocolItems::MarketValue:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->MarketValue))
 							{
@@ -2434,7 +2434,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::TotalProfit:
+						case ProtocolItems::TotalProfit:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->TotalProfit))
 							{
@@ -2443,7 +2443,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::TodayProfit:
+						case ProtocolItems::TodayProfit:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->TodayProfit))
 							{
@@ -2452,7 +2452,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::Deposit:
+						case ProtocolItems::Deposit:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->Deposit))
 							{
@@ -2461,7 +2461,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::Withdraw:
+						case ProtocolItems::Withdraw:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->Withdraw))
 							{
@@ -2497,10 +2497,10 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -2509,7 +2509,7 @@ bool RspQryCapitalPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -2650,13 +2650,13 @@ int ReqQryPositionPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryPosition != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryPositionField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryPositionField::FieldId);
 		if (strlen(ReqQryPosition->AccountId) >= sizeof(ReqQryPosition->AccountId))
 		{
 			ReqQryPosition->AccountId[sizeof(ReqQryPosition->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqQryPosition->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryPositionField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqQryPosition->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryPositionField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -2689,10 +2689,10 @@ bool ReqQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqQryPosition->AccountId))
 							{
@@ -2815,61 +2815,61 @@ int RspQryPositionPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Position != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, PositionField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, PositionField::FieldId);
 		if (strlen(Position->TradingDay) >= sizeof(Position->TradingDay))
 		{
 			Position->TradingDay[sizeof(Position->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, Position->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, Position->TradingDay);
 		if (strlen(Position->AccountId) >= sizeof(Position->AccountId))
 		{
 			Position->AccountId[sizeof(Position->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, Position->AccountId);
-		StepUtility::WriteString(cursor, Items::AccountType, static_cast<int>(Position->AccountType));
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, Position->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountType, static_cast<int>(Position->AccountType));
 		if (strlen(Position->ExchangeId) >= sizeof(Position->ExchangeId))
 		{
 			Position->ExchangeId[sizeof(Position->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, Position->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, Position->ExchangeId);
 		if (strlen(Position->InstrumentId) >= sizeof(Position->InstrumentId))
 		{
 			Position->InstrumentId[sizeof(Position->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, Position->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(Position->ProductClass));
-		StepUtility::WriteString(cursor, Items::PosiDirection, static_cast<int>(Position->PosiDirection));
-		StepUtility::WriteString(cursor, Items::TotalPosition, Position->TotalPosition);
-		StepUtility::WriteString(cursor, Items::PositionFrozen, Position->PositionFrozen);
-		StepUtility::WriteString(cursor, Items::TodayPosition, Position->TodayPosition);
-		StepUtility::WriteString(cursor, Items::TotalCostPrice, Position->TotalCostPrice);
-		StepUtility::WriteString(cursor, Items::TodayCostPrice, Position->TodayCostPrice);
-		StepUtility::WriteString(cursor, Items::CashIn, Position->CashIn);
-		StepUtility::WriteString(cursor, Items::CashOut, Position->CashOut);
-		StepUtility::WriteString(cursor, Items::Margin, Position->Margin);
-		StepUtility::WriteString(cursor, Items::Commission, Position->Commission);
-		StepUtility::WriteString(cursor, Items::StampTax, Position->StampTax);
-		StepUtility::WriteString(cursor, Items::TransferFee, Position->TransferFee);
-		StepUtility::WriteString(cursor, Items::MarketValue, Position->MarketValue);
-		StepUtility::WriteString(cursor, Items::VolumeMultiple, Position->VolumeMultiple);
-		StepUtility::WriteString(cursor, Items::TotalCost, Position->TotalCost);
-		StepUtility::WriteString(cursor, Items::TodayCost, Position->TodayCost);
-		StepUtility::WriteString(cursor, Items::TotalProfit, Position->TotalProfit);
-		StepUtility::WriteString(cursor, Items::TodayProfit, Position->TodayProfit);
-		StepUtility::WriteString(cursor, Items::LastPrice, Position->LastPrice);
-		StepUtility::WriteString(cursor, Items::PrePrice, Position->PrePrice);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, PositionField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, Position->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(Position->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::PosiDirection, static_cast<int>(Position->PosiDirection));
+		StepUtility::WriteString(cursor, ProtocolItems::TotalPosition, Position->TotalPosition);
+		StepUtility::WriteString(cursor, ProtocolItems::PositionFrozen, Position->PositionFrozen);
+		StepUtility::WriteString(cursor, ProtocolItems::TodayPosition, Position->TodayPosition);
+		StepUtility::WriteString(cursor, ProtocolItems::TotalCostPrice, Position->TotalCostPrice);
+		StepUtility::WriteString(cursor, ProtocolItems::TodayCostPrice, Position->TodayCostPrice);
+		StepUtility::WriteString(cursor, ProtocolItems::CashIn, Position->CashIn);
+		StepUtility::WriteString(cursor, ProtocolItems::CashOut, Position->CashOut);
+		StepUtility::WriteString(cursor, ProtocolItems::Margin, Position->Margin);
+		StepUtility::WriteString(cursor, ProtocolItems::Commission, Position->Commission);
+		StepUtility::WriteString(cursor, ProtocolItems::StampTax, Position->StampTax);
+		StepUtility::WriteString(cursor, ProtocolItems::TransferFee, Position->TransferFee);
+		StepUtility::WriteString(cursor, ProtocolItems::MarketValue, Position->MarketValue);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeMultiple, Position->VolumeMultiple);
+		StepUtility::WriteString(cursor, ProtocolItems::TotalCost, Position->TotalCost);
+		StepUtility::WriteString(cursor, ProtocolItems::TodayCost, Position->TodayCost);
+		StepUtility::WriteString(cursor, ProtocolItems::TotalProfit, Position->TotalProfit);
+		StepUtility::WriteString(cursor, ProtocolItems::TodayProfit, Position->TodayProfit);
+		StepUtility::WriteString(cursor, ProtocolItems::LastPrice, Position->LastPrice);
+		StepUtility::WriteString(cursor, ProtocolItems::PrePrice, Position->PrePrice);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, PositionField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -2902,10 +2902,10 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(Position->TradingDay))
 							{
@@ -2915,7 +2915,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(Position->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(Position->AccountId))
 							{
@@ -2925,7 +2925,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(Position->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountType:
+						case ProtocolItems::AccountType:
 						{
 							if (!StepUtility::ParseEnum(value, Position->AccountType))
 							{
@@ -2934,7 +2934,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(Position->ExchangeId))
 							{
@@ -2944,7 +2944,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(Position->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(Position->InstrumentId))
 							{
@@ -2954,7 +2954,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(Position->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, Position->ProductClass))
 							{
@@ -2963,7 +2963,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::PosiDirection:
+						case ProtocolItems::PosiDirection:
 						{
 							if (!StepUtility::ParseEnum(value, Position->PosiDirection))
 							{
@@ -2972,7 +2972,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::TotalPosition:
+						case ProtocolItems::TotalPosition:
 						{
 							if (!StepUtility::ParseInteger(value, Position->TotalPosition))
 							{
@@ -2981,7 +2981,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::PositionFrozen:
+						case ProtocolItems::PositionFrozen:
 						{
 							if (!StepUtility::ParseInteger(value, Position->PositionFrozen))
 							{
@@ -2990,7 +2990,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::TodayPosition:
+						case ProtocolItems::TodayPosition:
 						{
 							if (!StepUtility::ParseInteger(value, Position->TodayPosition))
 							{
@@ -2999,7 +2999,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::TotalCostPrice:
+						case ProtocolItems::TotalCostPrice:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TotalCostPrice))
 							{
@@ -3008,7 +3008,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::TodayCostPrice:
+						case ProtocolItems::TodayCostPrice:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TodayCostPrice))
 							{
@@ -3017,7 +3017,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::CashIn:
+						case ProtocolItems::CashIn:
 						{
 							if (!StepUtility::ParseDouble(value, Position->CashIn))
 							{
@@ -3026,7 +3026,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::CashOut:
+						case ProtocolItems::CashOut:
 						{
 							if (!StepUtility::ParseDouble(value, Position->CashOut))
 							{
@@ -3035,7 +3035,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::Margin:
+						case ProtocolItems::Margin:
 						{
 							if (!StepUtility::ParseDouble(value, Position->Margin))
 							{
@@ -3044,7 +3044,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::Commission:
+						case ProtocolItems::Commission:
 						{
 							if (!StepUtility::ParseDouble(value, Position->Commission))
 							{
@@ -3053,7 +3053,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::StampTax:
+						case ProtocolItems::StampTax:
 						{
 							if (!StepUtility::ParseDouble(value, Position->StampTax))
 							{
@@ -3062,7 +3062,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::TransferFee:
+						case ProtocolItems::TransferFee:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TransferFee))
 							{
@@ -3071,7 +3071,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::MarketValue:
+						case ProtocolItems::MarketValue:
 						{
 							if (!StepUtility::ParseDouble(value, Position->MarketValue))
 							{
@@ -3080,7 +3080,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::VolumeMultiple:
+						case ProtocolItems::VolumeMultiple:
 						{
 							if (!StepUtility::ParseInteger(value, Position->VolumeMultiple))
 							{
@@ -3089,7 +3089,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::TotalCost:
+						case ProtocolItems::TotalCost:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TotalCost))
 							{
@@ -3098,7 +3098,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::TodayCost:
+						case ProtocolItems::TodayCost:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TodayCost))
 							{
@@ -3107,7 +3107,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::TotalProfit:
+						case ProtocolItems::TotalProfit:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TotalProfit))
 							{
@@ -3116,7 +3116,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::TodayProfit:
+						case ProtocolItems::TodayProfit:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TodayProfit))
 							{
@@ -3125,7 +3125,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::LastPrice:
+						case ProtocolItems::LastPrice:
 						{
 							if (!StepUtility::ParseDouble(value, Position->LastPrice))
 							{
@@ -3134,7 +3134,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::PrePrice:
+						case ProtocolItems::PrePrice:
 						{
 							if (!StepUtility::ParseDouble(value, Position->PrePrice))
 							{
@@ -3170,10 +3170,10 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -3182,7 +3182,7 @@ bool RspQryPositionPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -3323,13 +3323,13 @@ int ReqQryOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryOrder != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryOrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryOrderField::FieldId);
 		if (strlen(ReqQryOrder->AccountId) >= sizeof(ReqQryOrder->AccountId))
 		{
 			ReqQryOrder->AccountId[sizeof(ReqQryOrder->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqQryOrder->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryOrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqQryOrder->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryOrderField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -3362,10 +3362,10 @@ bool ReqQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqQryOrder->AccountId))
 							{
@@ -3488,88 +3488,88 @@ int RspQryOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Order != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, OrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, OrderField::FieldId);
 		if (strlen(Order->TradingDay) >= sizeof(Order->TradingDay))
 		{
 			Order->TradingDay[sizeof(Order->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, Order->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, Order->TradingDay);
 		if (strlen(Order->AccountId) >= sizeof(Order->AccountId))
 		{
 			Order->AccountId[sizeof(Order->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, Order->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, Order->AccountId);
 		if (strlen(Order->ExchangeId) >= sizeof(Order->ExchangeId))
 		{
 			Order->ExchangeId[sizeof(Order->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, Order->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, Order->ExchangeId);
 		if (strlen(Order->InstrumentId) >= sizeof(Order->InstrumentId))
 		{
 			Order->InstrumentId[sizeof(Order->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, Order->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(Order->ProductClass));
-		StepUtility::WriteString(cursor, Items::OrderId, Order->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, Order->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(Order->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, Order->OrderId);
 		if (strlen(Order->OrderSysId) >= sizeof(Order->OrderSysId))
 		{
 			Order->OrderSysId[sizeof(Order->OrderSysId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderSysId, Order->OrderSysId);
-		StepUtility::WriteString(cursor, Items::Direction, static_cast<int>(Order->Direction));
-		StepUtility::WriteString(cursor, Items::OffsetFlag, static_cast<int>(Order->OffsetFlag));
-		StepUtility::WriteString(cursor, Items::OrderPriceType, static_cast<int>(Order->OrderPriceType));
-		StepUtility::WriteString(cursor, Items::Price, Order->Price);
-		StepUtility::WriteString(cursor, Items::Volume, Order->Volume);
-		StepUtility::WriteString(cursor, Items::VolumeTotal, Order->VolumeTotal);
-		StepUtility::WriteString(cursor, Items::VolumeTraded, Order->VolumeTraded);
-		StepUtility::WriteString(cursor, Items::VolumeMultiple, Order->VolumeMultiple);
-		StepUtility::WriteString(cursor, Items::OrderStatus, static_cast<int>(Order->OrderStatus));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderSysId, Order->OrderSysId);
+		StepUtility::WriteString(cursor, ProtocolItems::Direction, static_cast<int>(Order->Direction));
+		StepUtility::WriteString(cursor, ProtocolItems::OffsetFlag, static_cast<int>(Order->OffsetFlag));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderPriceType, static_cast<int>(Order->OrderPriceType));
+		StepUtility::WriteString(cursor, ProtocolItems::Price, Order->Price);
+		StepUtility::WriteString(cursor, ProtocolItems::Volume, Order->Volume);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeTotal, Order->VolumeTotal);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeTraded, Order->VolumeTraded);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeMultiple, Order->VolumeMultiple);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderStatus, static_cast<int>(Order->OrderStatus));
 		if (strlen(Order->StatusMsg) >= sizeof(Order->StatusMsg))
 		{
 			Order->StatusMsg[sizeof(Order->StatusMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::StatusMsg, Order->StatusMsg);
+		StepUtility::WriteString(cursor, ProtocolItems::StatusMsg, Order->StatusMsg);
 		if (strlen(Order->OrderDate) >= sizeof(Order->OrderDate))
 		{
 			Order->OrderDate[sizeof(Order->OrderDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderDate, Order->OrderDate);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderDate, Order->OrderDate);
 		if (strlen(Order->OrderTime) >= sizeof(Order->OrderTime))
 		{
 			Order->OrderTime[sizeof(Order->OrderTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderTime, Order->OrderTime);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderTime, Order->OrderTime);
 		if (strlen(Order->CancelDate) >= sizeof(Order->CancelDate))
 		{
 			Order->CancelDate[sizeof(Order->CancelDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::CancelDate, Order->CancelDate);
+		StepUtility::WriteString(cursor, ProtocolItems::CancelDate, Order->CancelDate);
 		if (strlen(Order->CancelTime) >= sizeof(Order->CancelTime))
 		{
 			Order->CancelTime[sizeof(Order->CancelTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::CancelTime, Order->CancelTime);
-		StepUtility::WriteString(cursor, Items::SessionId, Order->SessionId);
-		StepUtility::WriteString(cursor, Items::ClientOrderId, Order->ClientOrderId);
-		StepUtility::WriteString(cursor, Items::RequestId, Order->RequestId);
-		StepUtility::WriteString(cursor, Items::FrozenCash, Order->FrozenCash);
-		StepUtility::WriteString(cursor, Items::FrozenMargin, Order->FrozenMargin);
-		StepUtility::WriteString(cursor, Items::FrozenCommission, Order->FrozenCommission);
-		StepUtility::WriteString(cursor, Items::FrozenStampTax, Order->FrozenStampTax);
-		StepUtility::WriteString(cursor, Items::FrozenTransferFee, Order->FrozenTransferFee);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, OrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::CancelTime, Order->CancelTime);
+		StepUtility::WriteString(cursor, ProtocolItems::SessionId, Order->SessionId);
+		StepUtility::WriteString(cursor, ProtocolItems::ClientOrderId, Order->ClientOrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::RequestId, Order->RequestId);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenCash, Order->FrozenCash);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenMargin, Order->FrozenMargin);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenCommission, Order->FrozenCommission);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenStampTax, Order->FrozenStampTax);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenTransferFee, Order->FrozenTransferFee);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, OrderField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -3602,10 +3602,10 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(Order->TradingDay))
 							{
@@ -3615,7 +3615,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Order->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(Order->AccountId))
 							{
@@ -3625,7 +3625,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Order->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(Order->ExchangeId))
 							{
@@ -3635,7 +3635,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Order->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(Order->InstrumentId))
 							{
@@ -3645,7 +3645,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Order->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, Order->ProductClass))
 							{
@@ -3654,7 +3654,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->OrderId))
 							{
@@ -3663,7 +3663,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::OrderSysId:
+						case ProtocolItems::OrderSysId:
 						{
 							if (value.length() >= sizeof(Order->OrderSysId))
 							{
@@ -3673,7 +3673,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Order->OrderSysId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Direction:
+						case ProtocolItems::Direction:
 						{
 							if (!StepUtility::ParseEnum(value, Order->Direction))
 							{
@@ -3682,7 +3682,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::OffsetFlag:
+						case ProtocolItems::OffsetFlag:
 						{
 							if (!StepUtility::ParseEnum(value, Order->OffsetFlag))
 							{
@@ -3691,7 +3691,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::OrderPriceType:
+						case ProtocolItems::OrderPriceType:
 						{
 							if (!StepUtility::ParseEnum(value, Order->OrderPriceType))
 							{
@@ -3700,7 +3700,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::Price:
+						case ProtocolItems::Price:
 						{
 							if (!StepUtility::ParseDouble(value, Order->Price))
 							{
@@ -3709,7 +3709,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::Volume:
+						case ProtocolItems::Volume:
 						{
 							if (!StepUtility::ParseInteger(value, Order->Volume))
 							{
@@ -3718,7 +3718,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::VolumeTotal:
+						case ProtocolItems::VolumeTotal:
 						{
 							if (!StepUtility::ParseInteger(value, Order->VolumeTotal))
 							{
@@ -3727,7 +3727,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::VolumeTraded:
+						case ProtocolItems::VolumeTraded:
 						{
 							if (!StepUtility::ParseInteger(value, Order->VolumeTraded))
 							{
@@ -3736,7 +3736,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::VolumeMultiple:
+						case ProtocolItems::VolumeMultiple:
 						{
 							if (!StepUtility::ParseInteger(value, Order->VolumeMultiple))
 							{
@@ -3745,7 +3745,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::OrderStatus:
+						case ProtocolItems::OrderStatus:
 						{
 							if (!StepUtility::ParseEnum(value, Order->OrderStatus))
 							{
@@ -3754,7 +3754,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::StatusMsg:
+						case ProtocolItems::StatusMsg:
 						{
 							if (value.length() >= sizeof(Order->StatusMsg))
 							{
@@ -3764,7 +3764,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Order->StatusMsg, value.c_str(), value.length());
 							break;
 						}
-						case Items::OrderDate:
+						case ProtocolItems::OrderDate:
 						{
 							if (value.length() >= sizeof(Order->OrderDate))
 							{
@@ -3774,7 +3774,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Order->OrderDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::OrderTime:
+						case ProtocolItems::OrderTime:
 						{
 							if (value.length() >= sizeof(Order->OrderTime))
 							{
@@ -3784,7 +3784,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Order->OrderTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::CancelDate:
+						case ProtocolItems::CancelDate:
 						{
 							if (value.length() >= sizeof(Order->CancelDate))
 							{
@@ -3794,7 +3794,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Order->CancelDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::CancelTime:
+						case ProtocolItems::CancelTime:
 						{
 							if (value.length() >= sizeof(Order->CancelTime))
 							{
@@ -3804,7 +3804,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Order->CancelTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::SessionId:
+						case ProtocolItems::SessionId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->SessionId))
 							{
@@ -3813,7 +3813,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::ClientOrderId:
+						case ProtocolItems::ClientOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->ClientOrderId))
 							{
@@ -3822,7 +3822,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::RequestId:
+						case ProtocolItems::RequestId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->RequestId))
 							{
@@ -3831,7 +3831,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::FrozenCash:
+						case ProtocolItems::FrozenCash:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenCash))
 							{
@@ -3840,7 +3840,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::FrozenMargin:
+						case ProtocolItems::FrozenMargin:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenMargin))
 							{
@@ -3849,7 +3849,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::FrozenCommission:
+						case ProtocolItems::FrozenCommission:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenCommission))
 							{
@@ -3858,7 +3858,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::FrozenStampTax:
+						case ProtocolItems::FrozenStampTax:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenStampTax))
 							{
@@ -3867,7 +3867,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::FrozenTransferFee:
+						case ProtocolItems::FrozenTransferFee:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenTransferFee))
 							{
@@ -3903,10 +3903,10 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -3915,7 +3915,7 @@ bool RspQryOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -4056,13 +4056,13 @@ int ReqQryTradePackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryTrade != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryTradeField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryTradeField::FieldId);
 		if (strlen(ReqQryTrade->AccountId) >= sizeof(ReqQryTrade->AccountId))
 		{
 			ReqQryTrade->AccountId[sizeof(ReqQryTrade->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqQryTrade->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryTradeField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqQryTrade->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryTradeField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -4095,10 +4095,10 @@ bool ReqQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqQryTrade->AccountId))
 							{
@@ -4221,70 +4221,70 @@ int RspQryTradePackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Trade != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, TradeField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, TradeField::FieldId);
 		if (strlen(Trade->TradingDay) >= sizeof(Trade->TradingDay))
 		{
 			Trade->TradingDay[sizeof(Trade->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, Trade->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, Trade->TradingDay);
 		if (strlen(Trade->AccountId) >= sizeof(Trade->AccountId))
 		{
 			Trade->AccountId[sizeof(Trade->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, Trade->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, Trade->AccountId);
 		if (strlen(Trade->ExchangeId) >= sizeof(Trade->ExchangeId))
 		{
 			Trade->ExchangeId[sizeof(Trade->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, Trade->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, Trade->ExchangeId);
 		if (strlen(Trade->InstrumentId) >= sizeof(Trade->InstrumentId))
 		{
 			Trade->InstrumentId[sizeof(Trade->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, Trade->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(Trade->ProductClass));
-		StepUtility::WriteString(cursor, Items::OrderId, Trade->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, Trade->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(Trade->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, Trade->OrderId);
 		if (strlen(Trade->OrderSysId) >= sizeof(Trade->OrderSysId))
 		{
 			Trade->OrderSysId[sizeof(Trade->OrderSysId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderSysId, Trade->OrderSysId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderSysId, Trade->OrderSysId);
 		if (strlen(Trade->TradeId) >= sizeof(Trade->TradeId))
 		{
 			Trade->TradeId[sizeof(Trade->TradeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradeId, Trade->TradeId);
-		StepUtility::WriteString(cursor, Items::Direction, static_cast<int>(Trade->Direction));
-		StepUtility::WriteString(cursor, Items::OffsetFlag, static_cast<int>(Trade->OffsetFlag));
-		StepUtility::WriteString(cursor, Items::Price, Trade->Price);
-		StepUtility::WriteString(cursor, Items::Volume, Trade->Volume);
-		StepUtility::WriteString(cursor, Items::VolumeMultiple, Trade->VolumeMultiple);
-		StepUtility::WriteString(cursor, Items::TradeAmount, Trade->TradeAmount);
-		StepUtility::WriteString(cursor, Items::Commission, Trade->Commission);
-		StepUtility::WriteString(cursor, Items::StampTax, Trade->StampTax);
-		StepUtility::WriteString(cursor, Items::TransferFee, Trade->TransferFee);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeId, Trade->TradeId);
+		StepUtility::WriteString(cursor, ProtocolItems::Direction, static_cast<int>(Trade->Direction));
+		StepUtility::WriteString(cursor, ProtocolItems::OffsetFlag, static_cast<int>(Trade->OffsetFlag));
+		StepUtility::WriteString(cursor, ProtocolItems::Price, Trade->Price);
+		StepUtility::WriteString(cursor, ProtocolItems::Volume, Trade->Volume);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeMultiple, Trade->VolumeMultiple);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeAmount, Trade->TradeAmount);
+		StepUtility::WriteString(cursor, ProtocolItems::Commission, Trade->Commission);
+		StepUtility::WriteString(cursor, ProtocolItems::StampTax, Trade->StampTax);
+		StepUtility::WriteString(cursor, ProtocolItems::TransferFee, Trade->TransferFee);
 		if (strlen(Trade->TradeDate) >= sizeof(Trade->TradeDate))
 		{
 			Trade->TradeDate[sizeof(Trade->TradeDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradeDate, Trade->TradeDate);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeDate, Trade->TradeDate);
 		if (strlen(Trade->TradeTime) >= sizeof(Trade->TradeTime))
 		{
 			Trade->TradeTime[sizeof(Trade->TradeTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradeTime, Trade->TradeTime);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, TradeField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeTime, Trade->TradeTime);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, TradeField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -4317,10 +4317,10 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(Trade->TradingDay))
 							{
@@ -4330,7 +4330,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Trade->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(Trade->AccountId))
 							{
@@ -4340,7 +4340,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Trade->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(Trade->ExchangeId))
 							{
@@ -4350,7 +4350,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Trade->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(Trade->InstrumentId))
 							{
@@ -4360,7 +4360,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Trade->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, Trade->ProductClass))
 							{
@@ -4369,7 +4369,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, Trade->OrderId))
 							{
@@ -4378,7 +4378,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::OrderSysId:
+						case ProtocolItems::OrderSysId:
 						{
 							if (value.length() >= sizeof(Trade->OrderSysId))
 							{
@@ -4388,7 +4388,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Trade->OrderSysId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeId:
+						case ProtocolItems::TradeId:
 						{
 							if (value.length() >= sizeof(Trade->TradeId))
 							{
@@ -4398,7 +4398,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Trade->TradeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Direction:
+						case ProtocolItems::Direction:
 						{
 							if (!StepUtility::ParseEnum(value, Trade->Direction))
 							{
@@ -4407,7 +4407,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::OffsetFlag:
+						case ProtocolItems::OffsetFlag:
 						{
 							if (!StepUtility::ParseEnum(value, Trade->OffsetFlag))
 							{
@@ -4416,7 +4416,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::Price:
+						case ProtocolItems::Price:
 						{
 							if (!StepUtility::ParseDouble(value, Trade->Price))
 							{
@@ -4425,7 +4425,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::Volume:
+						case ProtocolItems::Volume:
 						{
 							if (!StepUtility::ParseInteger(value, Trade->Volume))
 							{
@@ -4434,7 +4434,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::VolumeMultiple:
+						case ProtocolItems::VolumeMultiple:
 						{
 							if (!StepUtility::ParseInteger(value, Trade->VolumeMultiple))
 							{
@@ -4443,7 +4443,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::TradeAmount:
+						case ProtocolItems::TradeAmount:
 						{
 							if (!StepUtility::ParseDouble(value, Trade->TradeAmount))
 							{
@@ -4452,7 +4452,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::Commission:
+						case ProtocolItems::Commission:
 						{
 							if (!StepUtility::ParseDouble(value, Trade->Commission))
 							{
@@ -4461,7 +4461,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::StampTax:
+						case ProtocolItems::StampTax:
 						{
 							if (!StepUtility::ParseDouble(value, Trade->StampTax))
 							{
@@ -4470,7 +4470,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::TransferFee:
+						case ProtocolItems::TransferFee:
 						{
 							if (!StepUtility::ParseDouble(value, Trade->TransferFee))
 							{
@@ -4479,7 +4479,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::TradeDate:
+						case ProtocolItems::TradeDate:
 						{
 							if (value.length() >= sizeof(Trade->TradeDate))
 							{
@@ -4489,7 +4489,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Trade->TradeDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeTime:
+						case ProtocolItems::TradeTime:
 						{
 							if (value.length() >= sizeof(Trade->TradeTime))
 							{
@@ -4526,10 +4526,10 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -4538,7 +4538,7 @@ bool RspQryTradePackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -4679,18 +4679,18 @@ int ReqQryInstrumentPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryInstrument != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryInstrumentField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryInstrumentField::FieldId);
 		if (strlen(ReqQryInstrument->ExchangeId) >= sizeof(ReqQryInstrument->ExchangeId))
 		{
 			ReqQryInstrument->ExchangeId[sizeof(ReqQryInstrument->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqQryInstrument->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqQryInstrument->ExchangeId);
 		if (strlen(ReqQryInstrument->InstrumentId) >= sizeof(ReqQryInstrument->InstrumentId))
 		{
 			ReqQryInstrument->InstrumentId[sizeof(ReqQryInstrument->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, ReqQryInstrument->InstrumentId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryInstrumentField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, ReqQryInstrument->InstrumentId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryInstrumentField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -4723,10 +4723,10 @@ bool ReqQryInstrumentPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqQryInstrument->ExchangeId))
 							{
@@ -4736,7 +4736,7 @@ bool ReqQryInstrumentPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqQryInstrument->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(ReqQryInstrument->InstrumentId))
 							{
@@ -4859,41 +4859,41 @@ int RspQryInstrumentPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Instrument != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, InstrumentField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, InstrumentField::FieldId);
 		if (strlen(Instrument->ExchangeId) >= sizeof(Instrument->ExchangeId))
 		{
 			Instrument->ExchangeId[sizeof(Instrument->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, Instrument->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, Instrument->ExchangeId);
 		if (strlen(Instrument->InstrumentId) >= sizeof(Instrument->InstrumentId))
 		{
 			Instrument->InstrumentId[sizeof(Instrument->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, Instrument->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, Instrument->InstrumentId);
 		if (strlen(Instrument->ExchangeInstId) >= sizeof(Instrument->ExchangeInstId))
 		{
 			Instrument->ExchangeInstId[sizeof(Instrument->ExchangeInstId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeInstId, Instrument->ExchangeInstId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeInstId, Instrument->ExchangeInstId);
 		if (strlen(Instrument->InstrumentName) >= sizeof(Instrument->InstrumentName))
 		{
 			Instrument->InstrumentName[sizeof(Instrument->InstrumentName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentName, Instrument->InstrumentName);
-		StepUtility::WriteString(cursor, Items::VolumeMultiple, Instrument->VolumeMultiple);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(Instrument->ProductClass));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, InstrumentField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentName, Instrument->InstrumentName);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeMultiple, Instrument->VolumeMultiple);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(Instrument->ProductClass));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, InstrumentField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -4926,10 +4926,10 @@ bool RspQryInstrumentPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(Instrument->ExchangeId))
 							{
@@ -4939,7 +4939,7 @@ bool RspQryInstrumentPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(Instrument->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(Instrument->InstrumentId))
 							{
@@ -4949,7 +4949,7 @@ bool RspQryInstrumentPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(Instrument->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeInstId:
+						case ProtocolItems::ExchangeInstId:
 						{
 							if (value.length() >= sizeof(Instrument->ExchangeInstId))
 							{
@@ -4959,7 +4959,7 @@ bool RspQryInstrumentPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(Instrument->ExchangeInstId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentName:
+						case ProtocolItems::InstrumentName:
 						{
 							if (value.length() >= sizeof(Instrument->InstrumentName))
 							{
@@ -4969,7 +4969,7 @@ bool RspQryInstrumentPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(Instrument->InstrumentName, value.c_str(), value.length());
 							break;
 						}
-						case Items::VolumeMultiple:
+						case ProtocolItems::VolumeMultiple:
 						{
 							if (!StepUtility::ParseInteger(value, Instrument->VolumeMultiple))
 							{
@@ -4978,7 +4978,7 @@ bool RspQryInstrumentPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, Instrument->ProductClass))
 							{
@@ -5014,10 +5014,10 @@ bool RspQryInstrumentPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -5026,7 +5026,7 @@ bool RspQryInstrumentPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -5167,18 +5167,18 @@ int ReqQryOptionInstrumentPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryOptionInstrument != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryOptionInstrumentField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryOptionInstrumentField::FieldId);
 		if (strlen(ReqQryOptionInstrument->ExchangeId) >= sizeof(ReqQryOptionInstrument->ExchangeId))
 		{
 			ReqQryOptionInstrument->ExchangeId[sizeof(ReqQryOptionInstrument->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqQryOptionInstrument->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqQryOptionInstrument->ExchangeId);
 		if (strlen(ReqQryOptionInstrument->InstrumentId) >= sizeof(ReqQryOptionInstrument->InstrumentId))
 		{
 			ReqQryOptionInstrument->InstrumentId[sizeof(ReqQryOptionInstrument->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, ReqQryOptionInstrument->InstrumentId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryOptionInstrumentField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, ReqQryOptionInstrument->InstrumentId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryOptionInstrumentField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -5211,10 +5211,10 @@ bool ReqQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqQryOptionInstrument->ExchangeId))
 							{
@@ -5224,7 +5224,7 @@ bool ReqQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(ReqQryOptionInstrument->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(ReqQryOptionInstrument->InstrumentId))
 							{
@@ -5347,56 +5347,56 @@ int RspQryOptionInstrumentPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (OptionInstrument != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, OptionInstrumentField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, OptionInstrumentField::FieldId);
 		if (strlen(OptionInstrument->ExchangeId) >= sizeof(OptionInstrument->ExchangeId))
 		{
 			OptionInstrument->ExchangeId[sizeof(OptionInstrument->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, OptionInstrument->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, OptionInstrument->ExchangeId);
 		if (strlen(OptionInstrument->InstrumentId) >= sizeof(OptionInstrument->InstrumentId))
 		{
 			OptionInstrument->InstrumentId[sizeof(OptionInstrument->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, OptionInstrument->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, OptionInstrument->InstrumentId);
 		if (strlen(OptionInstrument->ExchangeInstId) >= sizeof(OptionInstrument->ExchangeInstId))
 		{
 			OptionInstrument->ExchangeInstId[sizeof(OptionInstrument->ExchangeInstId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeInstId, OptionInstrument->ExchangeInstId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeInstId, OptionInstrument->ExchangeInstId);
 		if (strlen(OptionInstrument->InstrumentName) >= sizeof(OptionInstrument->InstrumentName))
 		{
 			OptionInstrument->InstrumentName[sizeof(OptionInstrument->InstrumentName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentName, OptionInstrument->InstrumentName);
-		StepUtility::WriteString(cursor, Items::VolumeMultiple, OptionInstrument->VolumeMultiple);
-		StepUtility::WriteString(cursor, Items::OptionType, static_cast<int>(OptionInstrument->OptionType));
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentName, OptionInstrument->InstrumentName);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeMultiple, OptionInstrument->VolumeMultiple);
+		StepUtility::WriteString(cursor, ProtocolItems::OptionType, static_cast<int>(OptionInstrument->OptionType));
 		if (strlen(OptionInstrument->UnderlyingInstrumentId) >= sizeof(OptionInstrument->UnderlyingInstrumentId))
 		{
 			OptionInstrument->UnderlyingInstrumentId[sizeof(OptionInstrument->UnderlyingInstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UnderlyingInstrumentId, OptionInstrument->UnderlyingInstrumentId);
-		StepUtility::WriteString(cursor, Items::ExecutePrice, OptionInstrument->ExecutePrice);
-		StepUtility::WriteString(cursor, Items::UnitMargin, OptionInstrument->UnitMargin);
-		StepUtility::WriteString(cursor, Items::PriceTick, OptionInstrument->PriceTick);
-		StepUtility::WriteString(cursor, Items::MaxLimitOrderVolume, OptionInstrument->MaxLimitOrderVolume);
-		StepUtility::WriteString(cursor, Items::MaxMarketOrderVolume, OptionInstrument->MaxMarketOrderVolume);
+		StepUtility::WriteString(cursor, ProtocolItems::UnderlyingInstrumentId, OptionInstrument->UnderlyingInstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExecutePrice, OptionInstrument->ExecutePrice);
+		StepUtility::WriteString(cursor, ProtocolItems::UnitMargin, OptionInstrument->UnitMargin);
+		StepUtility::WriteString(cursor, ProtocolItems::PriceTick, OptionInstrument->PriceTick);
+		StepUtility::WriteString(cursor, ProtocolItems::MaxLimitOrderVolume, OptionInstrument->MaxLimitOrderVolume);
+		StepUtility::WriteString(cursor, ProtocolItems::MaxMarketOrderVolume, OptionInstrument->MaxMarketOrderVolume);
 		if (strlen(OptionInstrument->ExpiringDate) >= sizeof(OptionInstrument->ExpiringDate))
 		{
 			OptionInstrument->ExpiringDate[sizeof(OptionInstrument->ExpiringDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExpiringDate, OptionInstrument->ExpiringDate);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, OptionInstrumentField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExpiringDate, OptionInstrument->ExpiringDate);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, OptionInstrumentField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -5429,10 +5429,10 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(OptionInstrument->ExchangeId))
 							{
@@ -5442,7 +5442,7 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(OptionInstrument->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(OptionInstrument->InstrumentId))
 							{
@@ -5452,7 +5452,7 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(OptionInstrument->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeInstId:
+						case ProtocolItems::ExchangeInstId:
 						{
 							if (value.length() >= sizeof(OptionInstrument->ExchangeInstId))
 							{
@@ -5462,7 +5462,7 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(OptionInstrument->ExchangeInstId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentName:
+						case ProtocolItems::InstrumentName:
 						{
 							if (value.length() >= sizeof(OptionInstrument->InstrumentName))
 							{
@@ -5472,7 +5472,7 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(OptionInstrument->InstrumentName, value.c_str(), value.length());
 							break;
 						}
-						case Items::VolumeMultiple:
+						case ProtocolItems::VolumeMultiple:
 						{
 							if (!StepUtility::ParseInteger(value, OptionInstrument->VolumeMultiple))
 							{
@@ -5481,7 +5481,7 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::OptionType:
+						case ProtocolItems::OptionType:
 						{
 							if (!StepUtility::ParseEnum(value, OptionInstrument->OptionType))
 							{
@@ -5490,7 +5490,7 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::UnderlyingInstrumentId:
+						case ProtocolItems::UnderlyingInstrumentId:
 						{
 							if (value.length() >= sizeof(OptionInstrument->UnderlyingInstrumentId))
 							{
@@ -5500,7 +5500,7 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(OptionInstrument->UnderlyingInstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExecutePrice:
+						case ProtocolItems::ExecutePrice:
 						{
 							if (!StepUtility::ParseDouble(value, OptionInstrument->ExecutePrice))
 							{
@@ -5509,7 +5509,7 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::UnitMargin:
+						case ProtocolItems::UnitMargin:
 						{
 							if (!StepUtility::ParseDouble(value, OptionInstrument->UnitMargin))
 							{
@@ -5518,7 +5518,7 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::PriceTick:
+						case ProtocolItems::PriceTick:
 						{
 							if (!StepUtility::ParseDouble(value, OptionInstrument->PriceTick))
 							{
@@ -5527,7 +5527,7 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::MaxLimitOrderVolume:
+						case ProtocolItems::MaxLimitOrderVolume:
 						{
 							if (!StepUtility::ParseInteger(value, OptionInstrument->MaxLimitOrderVolume))
 							{
@@ -5536,7 +5536,7 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::MaxMarketOrderVolume:
+						case ProtocolItems::MaxMarketOrderVolume:
 						{
 							if (!StepUtility::ParseInteger(value, OptionInstrument->MaxMarketOrderVolume))
 							{
@@ -5545,7 +5545,7 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::ExpiringDate:
+						case ProtocolItems::ExpiringDate:
 						{
 							if (value.length() >= sizeof(OptionInstrument->ExpiringDate))
 							{
@@ -5582,10 +5582,10 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -5594,7 +5594,7 @@ bool RspQryOptionInstrumentPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -5735,19 +5735,19 @@ int ReqQryCommissionRatePackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryCommissionRate != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryCommissionRateField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryCommissionRateField::FieldId);
 		if (strlen(ReqQryCommissionRate->AccountId) >= sizeof(ReqQryCommissionRate->AccountId))
 		{
 			ReqQryCommissionRate->AccountId[sizeof(ReqQryCommissionRate->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqQryCommissionRate->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqQryCommissionRate->AccountId);
 		if (strlen(ReqQryCommissionRate->ExchangeId) >= sizeof(ReqQryCommissionRate->ExchangeId))
 		{
 			ReqQryCommissionRate->ExchangeId[sizeof(ReqQryCommissionRate->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqQryCommissionRate->ExchangeId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(ReqQryCommissionRate->ProductClass));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryCommissionRateField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqQryCommissionRate->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(ReqQryCommissionRate->ProductClass));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryCommissionRateField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -5780,10 +5780,10 @@ bool ReqQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqQryCommissionRate->AccountId))
 							{
@@ -5793,7 +5793,7 @@ bool ReqQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqQryCommissionRate->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqQryCommissionRate->ExchangeId))
 							{
@@ -5803,7 +5803,7 @@ bool ReqQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqQryCommissionRate->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, ReqQryCommissionRate->ProductClass))
 							{
@@ -5925,36 +5925,36 @@ int RspQryCommissionRatePackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (CommissionRate != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, CommissionRateField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, CommissionRateField::FieldId);
 		if (strlen(CommissionRate->AccountId) >= sizeof(CommissionRate->AccountId))
 		{
 			CommissionRate->AccountId[sizeof(CommissionRate->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, CommissionRate->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, CommissionRate->AccountId);
 		if (strlen(CommissionRate->ExchangeId) >= sizeof(CommissionRate->ExchangeId))
 		{
 			CommissionRate->ExchangeId[sizeof(CommissionRate->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, CommissionRate->ExchangeId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(CommissionRate->ProductClass));
-		StepUtility::WriteString(cursor, Items::OpenByMoney, CommissionRate->OpenByMoney);
-		StepUtility::WriteString(cursor, Items::CloseByMoney, CommissionRate->CloseByMoney);
-		StepUtility::WriteString(cursor, Items::OpenByVolume, CommissionRate->OpenByVolume);
-		StepUtility::WriteString(cursor, Items::CloseByVolume, CommissionRate->CloseByVolume);
-		StepUtility::WriteString(cursor, Items::MinCommission, CommissionRate->MinCommission);
-		StepUtility::WriteString(cursor, Items::MaxCommission, CommissionRate->MaxCommission);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, CommissionRateField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, CommissionRate->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(CommissionRate->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::OpenByMoney, CommissionRate->OpenByMoney);
+		StepUtility::WriteString(cursor, ProtocolItems::CloseByMoney, CommissionRate->CloseByMoney);
+		StepUtility::WriteString(cursor, ProtocolItems::OpenByVolume, CommissionRate->OpenByVolume);
+		StepUtility::WriteString(cursor, ProtocolItems::CloseByVolume, CommissionRate->CloseByVolume);
+		StepUtility::WriteString(cursor, ProtocolItems::MinCommission, CommissionRate->MinCommission);
+		StepUtility::WriteString(cursor, ProtocolItems::MaxCommission, CommissionRate->MaxCommission);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, CommissionRateField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -5987,10 +5987,10 @@ bool RspQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(CommissionRate->AccountId))
 							{
@@ -6000,7 +6000,7 @@ bool RspQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(CommissionRate->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(CommissionRate->ExchangeId))
 							{
@@ -6010,7 +6010,7 @@ bool RspQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(CommissionRate->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, CommissionRate->ProductClass))
 							{
@@ -6019,7 +6019,7 @@ bool RspQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::OpenByMoney:
+						case ProtocolItems::OpenByMoney:
 						{
 							if (!StepUtility::ParseDouble(value, CommissionRate->OpenByMoney))
 							{
@@ -6028,7 +6028,7 @@ bool RspQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::CloseByMoney:
+						case ProtocolItems::CloseByMoney:
 						{
 							if (!StepUtility::ParseDouble(value, CommissionRate->CloseByMoney))
 							{
@@ -6037,7 +6037,7 @@ bool RspQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::OpenByVolume:
+						case ProtocolItems::OpenByVolume:
 						{
 							if (!StepUtility::ParseDouble(value, CommissionRate->OpenByVolume))
 							{
@@ -6046,7 +6046,7 @@ bool RspQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::CloseByVolume:
+						case ProtocolItems::CloseByVolume:
 						{
 							if (!StepUtility::ParseDouble(value, CommissionRate->CloseByVolume))
 							{
@@ -6055,7 +6055,7 @@ bool RspQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::MinCommission:
+						case ProtocolItems::MinCommission:
 						{
 							if (!StepUtility::ParseDouble(value, CommissionRate->MinCommission))
 							{
@@ -6064,7 +6064,7 @@ bool RspQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::MaxCommission:
+						case ProtocolItems::MaxCommission:
 						{
 							if (!StepUtility::ParseDouble(value, CommissionRate->MaxCommission))
 							{
@@ -6100,10 +6100,10 @@ bool RspQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -6112,7 +6112,7 @@ bool RspQryCommissionRatePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -6253,13 +6253,13 @@ int ReqQryMoneyTransferPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryMoneyTransfer != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryMoneyTransferField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryMoneyTransferField::FieldId);
 		if (strlen(ReqQryMoneyTransfer->AccountId) >= sizeof(ReqQryMoneyTransfer->AccountId))
 		{
 			ReqQryMoneyTransfer->AccountId[sizeof(ReqQryMoneyTransfer->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqQryMoneyTransfer->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryMoneyTransferField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqQryMoneyTransfer->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryMoneyTransferField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -6292,10 +6292,10 @@ bool ReqQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqQryMoneyTransfer->AccountId))
 							{
@@ -6418,53 +6418,53 @@ int RspQryMoneyTransferPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (MoneyTransfer != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, MoneyTransferField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, MoneyTransferField::FieldId);
 		if (strlen(MoneyTransfer->TradingDay) >= sizeof(MoneyTransfer->TradingDay))
 		{
 			MoneyTransfer->TradingDay[sizeof(MoneyTransfer->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, MoneyTransfer->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, MoneyTransfer->TradingDay);
 		if (strlen(MoneyTransfer->AccountId) >= sizeof(MoneyTransfer->AccountId))
 		{
 			MoneyTransfer->AccountId[sizeof(MoneyTransfer->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, MoneyTransfer->AccountId);
-		StepUtility::WriteString(cursor, Items::MoneyTransferId, MoneyTransfer->MoneyTransferId);
-		StepUtility::WriteString(cursor, Items::AccountType, static_cast<int>(MoneyTransfer->AccountType));
-		StepUtility::WriteString(cursor, Items::TransferDirection, static_cast<int>(MoneyTransfer->TransferDirection));
-		StepUtility::WriteString(cursor, Items::TransferAmount, MoneyTransfer->TransferAmount);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, MoneyTransfer->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::MoneyTransferId, MoneyTransfer->MoneyTransferId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountType, static_cast<int>(MoneyTransfer->AccountType));
+		StepUtility::WriteString(cursor, ProtocolItems::TransferDirection, static_cast<int>(MoneyTransfer->TransferDirection));
+		StepUtility::WriteString(cursor, ProtocolItems::TransferAmount, MoneyTransfer->TransferAmount);
 		if (strlen(MoneyTransfer->InfoMessage) >= sizeof(MoneyTransfer->InfoMessage))
 		{
 			MoneyTransfer->InfoMessage[sizeof(MoneyTransfer->InfoMessage) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InfoMessage, MoneyTransfer->InfoMessage);
+		StepUtility::WriteString(cursor, ProtocolItems::InfoMessage, MoneyTransfer->InfoMessage);
 		if (strlen(MoneyTransfer->UserId) >= sizeof(MoneyTransfer->UserId))
 		{
 			MoneyTransfer->UserId[sizeof(MoneyTransfer->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, MoneyTransfer->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, MoneyTransfer->UserId);
 		if (strlen(MoneyTransfer->TransferDate) >= sizeof(MoneyTransfer->TransferDate))
 		{
 			MoneyTransfer->TransferDate[sizeof(MoneyTransfer->TransferDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TransferDate, MoneyTransfer->TransferDate);
+		StepUtility::WriteString(cursor, ProtocolItems::TransferDate, MoneyTransfer->TransferDate);
 		if (strlen(MoneyTransfer->TransferTime) >= sizeof(MoneyTransfer->TransferTime))
 		{
 			MoneyTransfer->TransferTime[sizeof(MoneyTransfer->TransferTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TransferTime, MoneyTransfer->TransferTime);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, MoneyTransferField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::TransferTime, MoneyTransfer->TransferTime);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, MoneyTransferField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -6497,10 +6497,10 @@ bool RspQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(MoneyTransfer->TradingDay))
 							{
@@ -6510,7 +6510,7 @@ bool RspQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(MoneyTransfer->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(MoneyTransfer->AccountId))
 							{
@@ -6520,7 +6520,7 @@ bool RspQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(MoneyTransfer->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::MoneyTransferId:
+						case ProtocolItems::MoneyTransferId:
 						{
 							if (!StepUtility::ParseInteger(value, MoneyTransfer->MoneyTransferId))
 							{
@@ -6529,7 +6529,7 @@ bool RspQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::AccountType:
+						case ProtocolItems::AccountType:
 						{
 							if (!StepUtility::ParseEnum(value, MoneyTransfer->AccountType))
 							{
@@ -6538,7 +6538,7 @@ bool RspQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::TransferDirection:
+						case ProtocolItems::TransferDirection:
 						{
 							if (!StepUtility::ParseEnum(value, MoneyTransfer->TransferDirection))
 							{
@@ -6547,7 +6547,7 @@ bool RspQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::TransferAmount:
+						case ProtocolItems::TransferAmount:
 						{
 							if (!StepUtility::ParseDouble(value, MoneyTransfer->TransferAmount))
 							{
@@ -6556,7 +6556,7 @@ bool RspQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::InfoMessage:
+						case ProtocolItems::InfoMessage:
 						{
 							if (value.length() >= sizeof(MoneyTransfer->InfoMessage))
 							{
@@ -6566,7 +6566,7 @@ bool RspQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(MoneyTransfer->InfoMessage, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(MoneyTransfer->UserId))
 							{
@@ -6576,7 +6576,7 @@ bool RspQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(MoneyTransfer->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TransferDate:
+						case ProtocolItems::TransferDate:
 						{
 							if (value.length() >= sizeof(MoneyTransfer->TransferDate))
 							{
@@ -6586,7 +6586,7 @@ bool RspQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(MoneyTransfer->TransferDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::TransferTime:
+						case ProtocolItems::TransferTime:
 						{
 							if (value.length() >= sizeof(MoneyTransfer->TransferTime))
 							{
@@ -6623,10 +6623,10 @@ bool RspQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -6635,7 +6635,7 @@ bool RspQryMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -6776,29 +6776,29 @@ int ReqInsertOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqInsertOrder != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqInsertOrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqInsertOrderField::FieldId);
 		if (strlen(ReqInsertOrder->AccountId) >= sizeof(ReqInsertOrder->AccountId))
 		{
 			ReqInsertOrder->AccountId[sizeof(ReqInsertOrder->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqInsertOrder->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqInsertOrder->AccountId);
 		if (strlen(ReqInsertOrder->ExchangeId) >= sizeof(ReqInsertOrder->ExchangeId))
 		{
 			ReqInsertOrder->ExchangeId[sizeof(ReqInsertOrder->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqInsertOrder->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqInsertOrder->ExchangeId);
 		if (strlen(ReqInsertOrder->InstrumentId) >= sizeof(ReqInsertOrder->InstrumentId))
 		{
 			ReqInsertOrder->InstrumentId[sizeof(ReqInsertOrder->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, ReqInsertOrder->InstrumentId);
-		StepUtility::WriteString(cursor, Items::Direction, static_cast<int>(ReqInsertOrder->Direction));
-		StepUtility::WriteString(cursor, Items::OffsetFlag, static_cast<int>(ReqInsertOrder->OffsetFlag));
-		StepUtility::WriteString(cursor, Items::OrderPriceType, static_cast<int>(ReqInsertOrder->OrderPriceType));
-		StepUtility::WriteString(cursor, Items::Price, ReqInsertOrder->Price);
-		StepUtility::WriteString(cursor, Items::Volume, ReqInsertOrder->Volume);
-		StepUtility::WriteString(cursor, Items::ClientOrderId, ReqInsertOrder->ClientOrderId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqInsertOrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, ReqInsertOrder->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::Direction, static_cast<int>(ReqInsertOrder->Direction));
+		StepUtility::WriteString(cursor, ProtocolItems::OffsetFlag, static_cast<int>(ReqInsertOrder->OffsetFlag));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderPriceType, static_cast<int>(ReqInsertOrder->OrderPriceType));
+		StepUtility::WriteString(cursor, ProtocolItems::Price, ReqInsertOrder->Price);
+		StepUtility::WriteString(cursor, ProtocolItems::Volume, ReqInsertOrder->Volume);
+		StepUtility::WriteString(cursor, ProtocolItems::ClientOrderId, ReqInsertOrder->ClientOrderId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqInsertOrderField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -6831,10 +6831,10 @@ bool ReqInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqInsertOrder->AccountId))
 							{
@@ -6844,7 +6844,7 @@ bool ReqInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(ReqInsertOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqInsertOrder->ExchangeId))
 							{
@@ -6854,7 +6854,7 @@ bool ReqInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(ReqInsertOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(ReqInsertOrder->InstrumentId))
 							{
@@ -6864,7 +6864,7 @@ bool ReqInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(ReqInsertOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Direction:
+						case ProtocolItems::Direction:
 						{
 							if (!StepUtility::ParseEnum(value, ReqInsertOrder->Direction))
 							{
@@ -6873,7 +6873,7 @@ bool ReqInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::OffsetFlag:
+						case ProtocolItems::OffsetFlag:
 						{
 							if (!StepUtility::ParseEnum(value, ReqInsertOrder->OffsetFlag))
 							{
@@ -6882,7 +6882,7 @@ bool ReqInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::OrderPriceType:
+						case ProtocolItems::OrderPriceType:
 						{
 							if (!StepUtility::ParseEnum(value, ReqInsertOrder->OrderPriceType))
 							{
@@ -6891,7 +6891,7 @@ bool ReqInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::Price:
+						case ProtocolItems::Price:
 						{
 							if (!StepUtility::ParseDouble(value, ReqInsertOrder->Price))
 							{
@@ -6900,7 +6900,7 @@ bool ReqInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::Volume:
+						case ProtocolItems::Volume:
 						{
 							if (!StepUtility::ParseInteger(value, ReqInsertOrder->Volume))
 							{
@@ -6909,7 +6909,7 @@ bool ReqInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::ClientOrderId:
+						case ProtocolItems::ClientOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqInsertOrder->ClientOrderId))
 							{
@@ -7031,88 +7031,88 @@ int RspInsertOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Order != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, OrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, OrderField::FieldId);
 		if (strlen(Order->TradingDay) >= sizeof(Order->TradingDay))
 		{
 			Order->TradingDay[sizeof(Order->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, Order->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, Order->TradingDay);
 		if (strlen(Order->AccountId) >= sizeof(Order->AccountId))
 		{
 			Order->AccountId[sizeof(Order->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, Order->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, Order->AccountId);
 		if (strlen(Order->ExchangeId) >= sizeof(Order->ExchangeId))
 		{
 			Order->ExchangeId[sizeof(Order->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, Order->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, Order->ExchangeId);
 		if (strlen(Order->InstrumentId) >= sizeof(Order->InstrumentId))
 		{
 			Order->InstrumentId[sizeof(Order->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, Order->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(Order->ProductClass));
-		StepUtility::WriteString(cursor, Items::OrderId, Order->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, Order->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(Order->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, Order->OrderId);
 		if (strlen(Order->OrderSysId) >= sizeof(Order->OrderSysId))
 		{
 			Order->OrderSysId[sizeof(Order->OrderSysId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderSysId, Order->OrderSysId);
-		StepUtility::WriteString(cursor, Items::Direction, static_cast<int>(Order->Direction));
-		StepUtility::WriteString(cursor, Items::OffsetFlag, static_cast<int>(Order->OffsetFlag));
-		StepUtility::WriteString(cursor, Items::OrderPriceType, static_cast<int>(Order->OrderPriceType));
-		StepUtility::WriteString(cursor, Items::Price, Order->Price);
-		StepUtility::WriteString(cursor, Items::Volume, Order->Volume);
-		StepUtility::WriteString(cursor, Items::VolumeTotal, Order->VolumeTotal);
-		StepUtility::WriteString(cursor, Items::VolumeTraded, Order->VolumeTraded);
-		StepUtility::WriteString(cursor, Items::VolumeMultiple, Order->VolumeMultiple);
-		StepUtility::WriteString(cursor, Items::OrderStatus, static_cast<int>(Order->OrderStatus));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderSysId, Order->OrderSysId);
+		StepUtility::WriteString(cursor, ProtocolItems::Direction, static_cast<int>(Order->Direction));
+		StepUtility::WriteString(cursor, ProtocolItems::OffsetFlag, static_cast<int>(Order->OffsetFlag));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderPriceType, static_cast<int>(Order->OrderPriceType));
+		StepUtility::WriteString(cursor, ProtocolItems::Price, Order->Price);
+		StepUtility::WriteString(cursor, ProtocolItems::Volume, Order->Volume);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeTotal, Order->VolumeTotal);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeTraded, Order->VolumeTraded);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeMultiple, Order->VolumeMultiple);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderStatus, static_cast<int>(Order->OrderStatus));
 		if (strlen(Order->StatusMsg) >= sizeof(Order->StatusMsg))
 		{
 			Order->StatusMsg[sizeof(Order->StatusMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::StatusMsg, Order->StatusMsg);
+		StepUtility::WriteString(cursor, ProtocolItems::StatusMsg, Order->StatusMsg);
 		if (strlen(Order->OrderDate) >= sizeof(Order->OrderDate))
 		{
 			Order->OrderDate[sizeof(Order->OrderDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderDate, Order->OrderDate);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderDate, Order->OrderDate);
 		if (strlen(Order->OrderTime) >= sizeof(Order->OrderTime))
 		{
 			Order->OrderTime[sizeof(Order->OrderTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderTime, Order->OrderTime);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderTime, Order->OrderTime);
 		if (strlen(Order->CancelDate) >= sizeof(Order->CancelDate))
 		{
 			Order->CancelDate[sizeof(Order->CancelDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::CancelDate, Order->CancelDate);
+		StepUtility::WriteString(cursor, ProtocolItems::CancelDate, Order->CancelDate);
 		if (strlen(Order->CancelTime) >= sizeof(Order->CancelTime))
 		{
 			Order->CancelTime[sizeof(Order->CancelTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::CancelTime, Order->CancelTime);
-		StepUtility::WriteString(cursor, Items::SessionId, Order->SessionId);
-		StepUtility::WriteString(cursor, Items::ClientOrderId, Order->ClientOrderId);
-		StepUtility::WriteString(cursor, Items::RequestId, Order->RequestId);
-		StepUtility::WriteString(cursor, Items::FrozenCash, Order->FrozenCash);
-		StepUtility::WriteString(cursor, Items::FrozenMargin, Order->FrozenMargin);
-		StepUtility::WriteString(cursor, Items::FrozenCommission, Order->FrozenCommission);
-		StepUtility::WriteString(cursor, Items::FrozenStampTax, Order->FrozenStampTax);
-		StepUtility::WriteString(cursor, Items::FrozenTransferFee, Order->FrozenTransferFee);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, OrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::CancelTime, Order->CancelTime);
+		StepUtility::WriteString(cursor, ProtocolItems::SessionId, Order->SessionId);
+		StepUtility::WriteString(cursor, ProtocolItems::ClientOrderId, Order->ClientOrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::RequestId, Order->RequestId);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenCash, Order->FrozenCash);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenMargin, Order->FrozenMargin);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenCommission, Order->FrozenCommission);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenStampTax, Order->FrozenStampTax);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenTransferFee, Order->FrozenTransferFee);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, OrderField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -7145,10 +7145,10 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(Order->TradingDay))
 							{
@@ -7158,7 +7158,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(Order->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(Order->AccountId))
 							{
@@ -7168,7 +7168,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(Order->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(Order->ExchangeId))
 							{
@@ -7178,7 +7178,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(Order->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(Order->InstrumentId))
 							{
@@ -7188,7 +7188,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(Order->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, Order->ProductClass))
 							{
@@ -7197,7 +7197,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->OrderId))
 							{
@@ -7206,7 +7206,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::OrderSysId:
+						case ProtocolItems::OrderSysId:
 						{
 							if (value.length() >= sizeof(Order->OrderSysId))
 							{
@@ -7216,7 +7216,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(Order->OrderSysId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Direction:
+						case ProtocolItems::Direction:
 						{
 							if (!StepUtility::ParseEnum(value, Order->Direction))
 							{
@@ -7225,7 +7225,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::OffsetFlag:
+						case ProtocolItems::OffsetFlag:
 						{
 							if (!StepUtility::ParseEnum(value, Order->OffsetFlag))
 							{
@@ -7234,7 +7234,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::OrderPriceType:
+						case ProtocolItems::OrderPriceType:
 						{
 							if (!StepUtility::ParseEnum(value, Order->OrderPriceType))
 							{
@@ -7243,7 +7243,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::Price:
+						case ProtocolItems::Price:
 						{
 							if (!StepUtility::ParseDouble(value, Order->Price))
 							{
@@ -7252,7 +7252,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::Volume:
+						case ProtocolItems::Volume:
 						{
 							if (!StepUtility::ParseInteger(value, Order->Volume))
 							{
@@ -7261,7 +7261,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::VolumeTotal:
+						case ProtocolItems::VolumeTotal:
 						{
 							if (!StepUtility::ParseInteger(value, Order->VolumeTotal))
 							{
@@ -7270,7 +7270,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::VolumeTraded:
+						case ProtocolItems::VolumeTraded:
 						{
 							if (!StepUtility::ParseInteger(value, Order->VolumeTraded))
 							{
@@ -7279,7 +7279,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::VolumeMultiple:
+						case ProtocolItems::VolumeMultiple:
 						{
 							if (!StepUtility::ParseInteger(value, Order->VolumeMultiple))
 							{
@@ -7288,7 +7288,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::OrderStatus:
+						case ProtocolItems::OrderStatus:
 						{
 							if (!StepUtility::ParseEnum(value, Order->OrderStatus))
 							{
@@ -7297,7 +7297,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::StatusMsg:
+						case ProtocolItems::StatusMsg:
 						{
 							if (value.length() >= sizeof(Order->StatusMsg))
 							{
@@ -7307,7 +7307,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(Order->StatusMsg, value.c_str(), value.length());
 							break;
 						}
-						case Items::OrderDate:
+						case ProtocolItems::OrderDate:
 						{
 							if (value.length() >= sizeof(Order->OrderDate))
 							{
@@ -7317,7 +7317,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(Order->OrderDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::OrderTime:
+						case ProtocolItems::OrderTime:
 						{
 							if (value.length() >= sizeof(Order->OrderTime))
 							{
@@ -7327,7 +7327,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(Order->OrderTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::CancelDate:
+						case ProtocolItems::CancelDate:
 						{
 							if (value.length() >= sizeof(Order->CancelDate))
 							{
@@ -7337,7 +7337,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(Order->CancelDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::CancelTime:
+						case ProtocolItems::CancelTime:
 						{
 							if (value.length() >= sizeof(Order->CancelTime))
 							{
@@ -7347,7 +7347,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(Order->CancelTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::SessionId:
+						case ProtocolItems::SessionId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->SessionId))
 							{
@@ -7356,7 +7356,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::ClientOrderId:
+						case ProtocolItems::ClientOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->ClientOrderId))
 							{
@@ -7365,7 +7365,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::RequestId:
+						case ProtocolItems::RequestId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->RequestId))
 							{
@@ -7374,7 +7374,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::FrozenCash:
+						case ProtocolItems::FrozenCash:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenCash))
 							{
@@ -7383,7 +7383,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::FrozenMargin:
+						case ProtocolItems::FrozenMargin:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenMargin))
 							{
@@ -7392,7 +7392,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::FrozenCommission:
+						case ProtocolItems::FrozenCommission:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenCommission))
 							{
@@ -7401,7 +7401,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::FrozenStampTax:
+						case ProtocolItems::FrozenStampTax:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenStampTax))
 							{
@@ -7410,7 +7410,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::FrozenTransferFee:
+						case ProtocolItems::FrozenTransferFee:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenTransferFee))
 							{
@@ -7446,10 +7446,10 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -7458,7 +7458,7 @@ bool RspInsertOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -7599,31 +7599,31 @@ int ReqCancelOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqCancelOrder != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqCancelOrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqCancelOrderField::FieldId);
 		if (strlen(ReqCancelOrder->AccountId) >= sizeof(ReqCancelOrder->AccountId))
 		{
 			ReqCancelOrder->AccountId[sizeof(ReqCancelOrder->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqCancelOrder->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqCancelOrder->AccountId);
 		if (strlen(ReqCancelOrder->ExchangeId) >= sizeof(ReqCancelOrder->ExchangeId))
 		{
 			ReqCancelOrder->ExchangeId[sizeof(ReqCancelOrder->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqCancelOrder->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqCancelOrder->ExchangeId);
 		if (strlen(ReqCancelOrder->InstrumentId) >= sizeof(ReqCancelOrder->InstrumentId))
 		{
 			ReqCancelOrder->InstrumentId[sizeof(ReqCancelOrder->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, ReqCancelOrder->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ClientCancelOrderId, ReqCancelOrder->ClientCancelOrderId);
-		StepUtility::WriteString(cursor, Items::OrderId, ReqCancelOrder->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, ReqCancelOrder->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ClientCancelOrderId, ReqCancelOrder->ClientCancelOrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, ReqCancelOrder->OrderId);
 		if (strlen(ReqCancelOrder->OrderSysId) >= sizeof(ReqCancelOrder->OrderSysId))
 		{
 			ReqCancelOrder->OrderSysId[sizeof(ReqCancelOrder->OrderSysId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderSysId, ReqCancelOrder->OrderSysId);
-		StepUtility::WriteString(cursor, Items::ClientOrderId, ReqCancelOrder->ClientOrderId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqCancelOrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderSysId, ReqCancelOrder->OrderSysId);
+		StepUtility::WriteString(cursor, ProtocolItems::ClientOrderId, ReqCancelOrder->ClientOrderId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqCancelOrderField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -7656,10 +7656,10 @@ bool ReqCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqCancelOrder->AccountId))
 							{
@@ -7669,7 +7669,7 @@ bool ReqCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(ReqCancelOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqCancelOrder->ExchangeId))
 							{
@@ -7679,7 +7679,7 @@ bool ReqCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(ReqCancelOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(ReqCancelOrder->InstrumentId))
 							{
@@ -7689,7 +7689,7 @@ bool ReqCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(ReqCancelOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ClientCancelOrderId:
+						case ProtocolItems::ClientCancelOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqCancelOrder->ClientCancelOrderId))
 							{
@@ -7698,7 +7698,7 @@ bool ReqCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqCancelOrder->OrderId))
 							{
@@ -7707,7 +7707,7 @@ bool ReqCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::OrderSysId:
+						case ProtocolItems::OrderSysId:
 						{
 							if (value.length() >= sizeof(ReqCancelOrder->OrderSysId))
 							{
@@ -7717,7 +7717,7 @@ bool ReqCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(ReqCancelOrder->OrderSysId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ClientOrderId:
+						case ProtocolItems::ClientOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqCancelOrder->ClientOrderId))
 							{
@@ -7839,42 +7839,42 @@ int RspCancelOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (CancelOrder != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, CancelOrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, CancelOrderField::FieldId);
 		if (strlen(CancelOrder->AccountId) >= sizeof(CancelOrder->AccountId))
 		{
 			CancelOrder->AccountId[sizeof(CancelOrder->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, CancelOrder->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, CancelOrder->AccountId);
 		if (strlen(CancelOrder->ExchangeId) >= sizeof(CancelOrder->ExchangeId))
 		{
 			CancelOrder->ExchangeId[sizeof(CancelOrder->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, CancelOrder->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, CancelOrder->ExchangeId);
 		if (strlen(CancelOrder->InstrumentId) >= sizeof(CancelOrder->InstrumentId))
 		{
 			CancelOrder->InstrumentId[sizeof(CancelOrder->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, CancelOrder->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ClientCancelOrderId, CancelOrder->ClientCancelOrderId);
-		StepUtility::WriteString(cursor, Items::OrderId, CancelOrder->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, CancelOrder->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ClientCancelOrderId, CancelOrder->ClientCancelOrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, CancelOrder->OrderId);
 		if (strlen(CancelOrder->OrderSysId) >= sizeof(CancelOrder->OrderSysId))
 		{
 			CancelOrder->OrderSysId[sizeof(CancelOrder->OrderSysId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderSysId, CancelOrder->OrderSysId);
-		StepUtility::WriteString(cursor, Items::ClientOrderId, CancelOrder->ClientOrderId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, CancelOrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderSysId, CancelOrder->OrderSysId);
+		StepUtility::WriteString(cursor, ProtocolItems::ClientOrderId, CancelOrder->ClientOrderId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, CancelOrderField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -7907,10 +7907,10 @@ bool RspCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(CancelOrder->AccountId))
 							{
@@ -7920,7 +7920,7 @@ bool RspCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(CancelOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(CancelOrder->ExchangeId))
 							{
@@ -7930,7 +7930,7 @@ bool RspCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(CancelOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(CancelOrder->InstrumentId))
 							{
@@ -7940,7 +7940,7 @@ bool RspCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(CancelOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ClientCancelOrderId:
+						case ProtocolItems::ClientCancelOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, CancelOrder->ClientCancelOrderId))
 							{
@@ -7949,7 +7949,7 @@ bool RspCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, CancelOrder->OrderId))
 							{
@@ -7958,7 +7958,7 @@ bool RspCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::OrderSysId:
+						case ProtocolItems::OrderSysId:
 						{
 							if (value.length() >= sizeof(CancelOrder->OrderSysId))
 							{
@@ -7968,7 +7968,7 @@ bool RspCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(CancelOrder->OrderSysId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ClientOrderId:
+						case ProtocolItems::ClientOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, CancelOrder->ClientOrderId))
 							{
@@ -8004,10 +8004,10 @@ bool RspCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -8016,7 +8016,7 @@ bool RspCancelOrderPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -8157,77 +8157,77 @@ int RtnOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Order != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, OrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, OrderField::FieldId);
 		if (strlen(Order->TradingDay) >= sizeof(Order->TradingDay))
 		{
 			Order->TradingDay[sizeof(Order->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, Order->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, Order->TradingDay);
 		if (strlen(Order->AccountId) >= sizeof(Order->AccountId))
 		{
 			Order->AccountId[sizeof(Order->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, Order->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, Order->AccountId);
 		if (strlen(Order->ExchangeId) >= sizeof(Order->ExchangeId))
 		{
 			Order->ExchangeId[sizeof(Order->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, Order->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, Order->ExchangeId);
 		if (strlen(Order->InstrumentId) >= sizeof(Order->InstrumentId))
 		{
 			Order->InstrumentId[sizeof(Order->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, Order->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(Order->ProductClass));
-		StepUtility::WriteString(cursor, Items::OrderId, Order->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, Order->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(Order->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, Order->OrderId);
 		if (strlen(Order->OrderSysId) >= sizeof(Order->OrderSysId))
 		{
 			Order->OrderSysId[sizeof(Order->OrderSysId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderSysId, Order->OrderSysId);
-		StepUtility::WriteString(cursor, Items::Direction, static_cast<int>(Order->Direction));
-		StepUtility::WriteString(cursor, Items::OffsetFlag, static_cast<int>(Order->OffsetFlag));
-		StepUtility::WriteString(cursor, Items::OrderPriceType, static_cast<int>(Order->OrderPriceType));
-		StepUtility::WriteString(cursor, Items::Price, Order->Price);
-		StepUtility::WriteString(cursor, Items::Volume, Order->Volume);
-		StepUtility::WriteString(cursor, Items::VolumeTotal, Order->VolumeTotal);
-		StepUtility::WriteString(cursor, Items::VolumeTraded, Order->VolumeTraded);
-		StepUtility::WriteString(cursor, Items::VolumeMultiple, Order->VolumeMultiple);
-		StepUtility::WriteString(cursor, Items::OrderStatus, static_cast<int>(Order->OrderStatus));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderSysId, Order->OrderSysId);
+		StepUtility::WriteString(cursor, ProtocolItems::Direction, static_cast<int>(Order->Direction));
+		StepUtility::WriteString(cursor, ProtocolItems::OffsetFlag, static_cast<int>(Order->OffsetFlag));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderPriceType, static_cast<int>(Order->OrderPriceType));
+		StepUtility::WriteString(cursor, ProtocolItems::Price, Order->Price);
+		StepUtility::WriteString(cursor, ProtocolItems::Volume, Order->Volume);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeTotal, Order->VolumeTotal);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeTraded, Order->VolumeTraded);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeMultiple, Order->VolumeMultiple);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderStatus, static_cast<int>(Order->OrderStatus));
 		if (strlen(Order->StatusMsg) >= sizeof(Order->StatusMsg))
 		{
 			Order->StatusMsg[sizeof(Order->StatusMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::StatusMsg, Order->StatusMsg);
+		StepUtility::WriteString(cursor, ProtocolItems::StatusMsg, Order->StatusMsg);
 		if (strlen(Order->OrderDate) >= sizeof(Order->OrderDate))
 		{
 			Order->OrderDate[sizeof(Order->OrderDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderDate, Order->OrderDate);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderDate, Order->OrderDate);
 		if (strlen(Order->OrderTime) >= sizeof(Order->OrderTime))
 		{
 			Order->OrderTime[sizeof(Order->OrderTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderTime, Order->OrderTime);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderTime, Order->OrderTime);
 		if (strlen(Order->CancelDate) >= sizeof(Order->CancelDate))
 		{
 			Order->CancelDate[sizeof(Order->CancelDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::CancelDate, Order->CancelDate);
+		StepUtility::WriteString(cursor, ProtocolItems::CancelDate, Order->CancelDate);
 		if (strlen(Order->CancelTime) >= sizeof(Order->CancelTime))
 		{
 			Order->CancelTime[sizeof(Order->CancelTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::CancelTime, Order->CancelTime);
-		StepUtility::WriteString(cursor, Items::SessionId, Order->SessionId);
-		StepUtility::WriteString(cursor, Items::ClientOrderId, Order->ClientOrderId);
-		StepUtility::WriteString(cursor, Items::RequestId, Order->RequestId);
-		StepUtility::WriteString(cursor, Items::FrozenCash, Order->FrozenCash);
-		StepUtility::WriteString(cursor, Items::FrozenMargin, Order->FrozenMargin);
-		StepUtility::WriteString(cursor, Items::FrozenCommission, Order->FrozenCommission);
-		StepUtility::WriteString(cursor, Items::FrozenStampTax, Order->FrozenStampTax);
-		StepUtility::WriteString(cursor, Items::FrozenTransferFee, Order->FrozenTransferFee);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, OrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::CancelTime, Order->CancelTime);
+		StepUtility::WriteString(cursor, ProtocolItems::SessionId, Order->SessionId);
+		StepUtility::WriteString(cursor, ProtocolItems::ClientOrderId, Order->ClientOrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::RequestId, Order->RequestId);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenCash, Order->FrozenCash);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenMargin, Order->FrozenMargin);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenCommission, Order->FrozenCommission);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenStampTax, Order->FrozenStampTax);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenTransferFee, Order->FrozenTransferFee);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, OrderField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -8260,10 +8260,10 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(Order->TradingDay))
 							{
@@ -8273,7 +8273,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Order->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(Order->AccountId))
 							{
@@ -8283,7 +8283,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Order->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(Order->ExchangeId))
 							{
@@ -8293,7 +8293,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Order->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(Order->InstrumentId))
 							{
@@ -8303,7 +8303,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Order->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, Order->ProductClass))
 							{
@@ -8312,7 +8312,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->OrderId))
 							{
@@ -8321,7 +8321,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::OrderSysId:
+						case ProtocolItems::OrderSysId:
 						{
 							if (value.length() >= sizeof(Order->OrderSysId))
 							{
@@ -8331,7 +8331,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Order->OrderSysId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Direction:
+						case ProtocolItems::Direction:
 						{
 							if (!StepUtility::ParseEnum(value, Order->Direction))
 							{
@@ -8340,7 +8340,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::OffsetFlag:
+						case ProtocolItems::OffsetFlag:
 						{
 							if (!StepUtility::ParseEnum(value, Order->OffsetFlag))
 							{
@@ -8349,7 +8349,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::OrderPriceType:
+						case ProtocolItems::OrderPriceType:
 						{
 							if (!StepUtility::ParseEnum(value, Order->OrderPriceType))
 							{
@@ -8358,7 +8358,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::Price:
+						case ProtocolItems::Price:
 						{
 							if (!StepUtility::ParseDouble(value, Order->Price))
 							{
@@ -8367,7 +8367,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::Volume:
+						case ProtocolItems::Volume:
 						{
 							if (!StepUtility::ParseInteger(value, Order->Volume))
 							{
@@ -8376,7 +8376,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::VolumeTotal:
+						case ProtocolItems::VolumeTotal:
 						{
 							if (!StepUtility::ParseInteger(value, Order->VolumeTotal))
 							{
@@ -8385,7 +8385,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::VolumeTraded:
+						case ProtocolItems::VolumeTraded:
 						{
 							if (!StepUtility::ParseInteger(value, Order->VolumeTraded))
 							{
@@ -8394,7 +8394,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::VolumeMultiple:
+						case ProtocolItems::VolumeMultiple:
 						{
 							if (!StepUtility::ParseInteger(value, Order->VolumeMultiple))
 							{
@@ -8403,7 +8403,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::OrderStatus:
+						case ProtocolItems::OrderStatus:
 						{
 							if (!StepUtility::ParseEnum(value, Order->OrderStatus))
 							{
@@ -8412,7 +8412,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::StatusMsg:
+						case ProtocolItems::StatusMsg:
 						{
 							if (value.length() >= sizeof(Order->StatusMsg))
 							{
@@ -8422,7 +8422,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Order->StatusMsg, value.c_str(), value.length());
 							break;
 						}
-						case Items::OrderDate:
+						case ProtocolItems::OrderDate:
 						{
 							if (value.length() >= sizeof(Order->OrderDate))
 							{
@@ -8432,7 +8432,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Order->OrderDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::OrderTime:
+						case ProtocolItems::OrderTime:
 						{
 							if (value.length() >= sizeof(Order->OrderTime))
 							{
@@ -8442,7 +8442,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Order->OrderTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::CancelDate:
+						case ProtocolItems::CancelDate:
 						{
 							if (value.length() >= sizeof(Order->CancelDate))
 							{
@@ -8452,7 +8452,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Order->CancelDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::CancelTime:
+						case ProtocolItems::CancelTime:
 						{
 							if (value.length() >= sizeof(Order->CancelTime))
 							{
@@ -8462,7 +8462,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Order->CancelTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::SessionId:
+						case ProtocolItems::SessionId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->SessionId))
 							{
@@ -8471,7 +8471,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::ClientOrderId:
+						case ProtocolItems::ClientOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->ClientOrderId))
 							{
@@ -8480,7 +8480,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::RequestId:
+						case ProtocolItems::RequestId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->RequestId))
 							{
@@ -8489,7 +8489,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::FrozenCash:
+						case ProtocolItems::FrozenCash:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenCash))
 							{
@@ -8498,7 +8498,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::FrozenMargin:
+						case ProtocolItems::FrozenMargin:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenMargin))
 							{
@@ -8507,7 +8507,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::FrozenCommission:
+						case ProtocolItems::FrozenCommission:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenCommission))
 							{
@@ -8516,7 +8516,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::FrozenStampTax:
+						case ProtocolItems::FrozenStampTax:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenStampTax))
 							{
@@ -8525,7 +8525,7 @@ bool RtnOrderPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::FrozenTransferFee:
+						case ProtocolItems::FrozenTransferFee:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenTransferFee))
 							{
@@ -8642,59 +8642,59 @@ int RtnTradePackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Trade != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, TradeField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, TradeField::FieldId);
 		if (strlen(Trade->TradingDay) >= sizeof(Trade->TradingDay))
 		{
 			Trade->TradingDay[sizeof(Trade->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, Trade->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, Trade->TradingDay);
 		if (strlen(Trade->AccountId) >= sizeof(Trade->AccountId))
 		{
 			Trade->AccountId[sizeof(Trade->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, Trade->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, Trade->AccountId);
 		if (strlen(Trade->ExchangeId) >= sizeof(Trade->ExchangeId))
 		{
 			Trade->ExchangeId[sizeof(Trade->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, Trade->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, Trade->ExchangeId);
 		if (strlen(Trade->InstrumentId) >= sizeof(Trade->InstrumentId))
 		{
 			Trade->InstrumentId[sizeof(Trade->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, Trade->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(Trade->ProductClass));
-		StepUtility::WriteString(cursor, Items::OrderId, Trade->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, Trade->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(Trade->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, Trade->OrderId);
 		if (strlen(Trade->OrderSysId) >= sizeof(Trade->OrderSysId))
 		{
 			Trade->OrderSysId[sizeof(Trade->OrderSysId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderSysId, Trade->OrderSysId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderSysId, Trade->OrderSysId);
 		if (strlen(Trade->TradeId) >= sizeof(Trade->TradeId))
 		{
 			Trade->TradeId[sizeof(Trade->TradeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradeId, Trade->TradeId);
-		StepUtility::WriteString(cursor, Items::Direction, static_cast<int>(Trade->Direction));
-		StepUtility::WriteString(cursor, Items::OffsetFlag, static_cast<int>(Trade->OffsetFlag));
-		StepUtility::WriteString(cursor, Items::Price, Trade->Price);
-		StepUtility::WriteString(cursor, Items::Volume, Trade->Volume);
-		StepUtility::WriteString(cursor, Items::VolumeMultiple, Trade->VolumeMultiple);
-		StepUtility::WriteString(cursor, Items::TradeAmount, Trade->TradeAmount);
-		StepUtility::WriteString(cursor, Items::Commission, Trade->Commission);
-		StepUtility::WriteString(cursor, Items::StampTax, Trade->StampTax);
-		StepUtility::WriteString(cursor, Items::TransferFee, Trade->TransferFee);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeId, Trade->TradeId);
+		StepUtility::WriteString(cursor, ProtocolItems::Direction, static_cast<int>(Trade->Direction));
+		StepUtility::WriteString(cursor, ProtocolItems::OffsetFlag, static_cast<int>(Trade->OffsetFlag));
+		StepUtility::WriteString(cursor, ProtocolItems::Price, Trade->Price);
+		StepUtility::WriteString(cursor, ProtocolItems::Volume, Trade->Volume);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeMultiple, Trade->VolumeMultiple);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeAmount, Trade->TradeAmount);
+		StepUtility::WriteString(cursor, ProtocolItems::Commission, Trade->Commission);
+		StepUtility::WriteString(cursor, ProtocolItems::StampTax, Trade->StampTax);
+		StepUtility::WriteString(cursor, ProtocolItems::TransferFee, Trade->TransferFee);
 		if (strlen(Trade->TradeDate) >= sizeof(Trade->TradeDate))
 		{
 			Trade->TradeDate[sizeof(Trade->TradeDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradeDate, Trade->TradeDate);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeDate, Trade->TradeDate);
 		if (strlen(Trade->TradeTime) >= sizeof(Trade->TradeTime))
 		{
 			Trade->TradeTime[sizeof(Trade->TradeTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradeTime, Trade->TradeTime);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, TradeField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeTime, Trade->TradeTime);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, TradeField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -8727,10 +8727,10 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(Trade->TradingDay))
 							{
@@ -8740,7 +8740,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Trade->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(Trade->AccountId))
 							{
@@ -8750,7 +8750,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Trade->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(Trade->ExchangeId))
 							{
@@ -8760,7 +8760,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Trade->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(Trade->InstrumentId))
 							{
@@ -8770,7 +8770,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Trade->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, Trade->ProductClass))
 							{
@@ -8779,7 +8779,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, Trade->OrderId))
 							{
@@ -8788,7 +8788,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::OrderSysId:
+						case ProtocolItems::OrderSysId:
 						{
 							if (value.length() >= sizeof(Trade->OrderSysId))
 							{
@@ -8798,7 +8798,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Trade->OrderSysId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeId:
+						case ProtocolItems::TradeId:
 						{
 							if (value.length() >= sizeof(Trade->TradeId))
 							{
@@ -8808,7 +8808,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Trade->TradeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Direction:
+						case ProtocolItems::Direction:
 						{
 							if (!StepUtility::ParseEnum(value, Trade->Direction))
 							{
@@ -8817,7 +8817,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::OffsetFlag:
+						case ProtocolItems::OffsetFlag:
 						{
 							if (!StepUtility::ParseEnum(value, Trade->OffsetFlag))
 							{
@@ -8826,7 +8826,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::Price:
+						case ProtocolItems::Price:
 						{
 							if (!StepUtility::ParseDouble(value, Trade->Price))
 							{
@@ -8835,7 +8835,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::Volume:
+						case ProtocolItems::Volume:
 						{
 							if (!StepUtility::ParseInteger(value, Trade->Volume))
 							{
@@ -8844,7 +8844,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::VolumeMultiple:
+						case ProtocolItems::VolumeMultiple:
 						{
 							if (!StepUtility::ParseInteger(value, Trade->VolumeMultiple))
 							{
@@ -8853,7 +8853,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::TradeAmount:
+						case ProtocolItems::TradeAmount:
 						{
 							if (!StepUtility::ParseDouble(value, Trade->TradeAmount))
 							{
@@ -8862,7 +8862,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::Commission:
+						case ProtocolItems::Commission:
 						{
 							if (!StepUtility::ParseDouble(value, Trade->Commission))
 							{
@@ -8871,7 +8871,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::StampTax:
+						case ProtocolItems::StampTax:
 						{
 							if (!StepUtility::ParseDouble(value, Trade->StampTax))
 							{
@@ -8880,7 +8880,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::TransferFee:
+						case ProtocolItems::TransferFee:
 						{
 							if (!StepUtility::ParseDouble(value, Trade->TransferFee))
 							{
@@ -8889,7 +8889,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::TradeDate:
+						case ProtocolItems::TradeDate:
 						{
 							if (value.length() >= sizeof(Trade->TradeDate))
 							{
@@ -8899,7 +8899,7 @@ bool RtnTradePackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Trade->TradeDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeTime:
+						case ProtocolItems::TradeTime:
 						{
 							if (value.length() >= sizeof(Trade->TradeTime))
 							{
@@ -9017,42 +9017,42 @@ int RtnMoneyTransferPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (MoneyTransfer != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, MoneyTransferField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, MoneyTransferField::FieldId);
 		if (strlen(MoneyTransfer->TradingDay) >= sizeof(MoneyTransfer->TradingDay))
 		{
 			MoneyTransfer->TradingDay[sizeof(MoneyTransfer->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, MoneyTransfer->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, MoneyTransfer->TradingDay);
 		if (strlen(MoneyTransfer->AccountId) >= sizeof(MoneyTransfer->AccountId))
 		{
 			MoneyTransfer->AccountId[sizeof(MoneyTransfer->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, MoneyTransfer->AccountId);
-		StepUtility::WriteString(cursor, Items::MoneyTransferId, MoneyTransfer->MoneyTransferId);
-		StepUtility::WriteString(cursor, Items::AccountType, static_cast<int>(MoneyTransfer->AccountType));
-		StepUtility::WriteString(cursor, Items::TransferDirection, static_cast<int>(MoneyTransfer->TransferDirection));
-		StepUtility::WriteString(cursor, Items::TransferAmount, MoneyTransfer->TransferAmount);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, MoneyTransfer->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::MoneyTransferId, MoneyTransfer->MoneyTransferId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountType, static_cast<int>(MoneyTransfer->AccountType));
+		StepUtility::WriteString(cursor, ProtocolItems::TransferDirection, static_cast<int>(MoneyTransfer->TransferDirection));
+		StepUtility::WriteString(cursor, ProtocolItems::TransferAmount, MoneyTransfer->TransferAmount);
 		if (strlen(MoneyTransfer->InfoMessage) >= sizeof(MoneyTransfer->InfoMessage))
 		{
 			MoneyTransfer->InfoMessage[sizeof(MoneyTransfer->InfoMessage) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InfoMessage, MoneyTransfer->InfoMessage);
+		StepUtility::WriteString(cursor, ProtocolItems::InfoMessage, MoneyTransfer->InfoMessage);
 		if (strlen(MoneyTransfer->UserId) >= sizeof(MoneyTransfer->UserId))
 		{
 			MoneyTransfer->UserId[sizeof(MoneyTransfer->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, MoneyTransfer->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, MoneyTransfer->UserId);
 		if (strlen(MoneyTransfer->TransferDate) >= sizeof(MoneyTransfer->TransferDate))
 		{
 			MoneyTransfer->TransferDate[sizeof(MoneyTransfer->TransferDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TransferDate, MoneyTransfer->TransferDate);
+		StepUtility::WriteString(cursor, ProtocolItems::TransferDate, MoneyTransfer->TransferDate);
 		if (strlen(MoneyTransfer->TransferTime) >= sizeof(MoneyTransfer->TransferTime))
 		{
 			MoneyTransfer->TransferTime[sizeof(MoneyTransfer->TransferTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TransferTime, MoneyTransfer->TransferTime);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, MoneyTransferField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::TransferTime, MoneyTransfer->TransferTime);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, MoneyTransferField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -9085,10 +9085,10 @@ bool RtnMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(MoneyTransfer->TradingDay))
 							{
@@ -9098,7 +9098,7 @@ bool RtnMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(MoneyTransfer->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(MoneyTransfer->AccountId))
 							{
@@ -9108,7 +9108,7 @@ bool RtnMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(MoneyTransfer->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::MoneyTransferId:
+						case ProtocolItems::MoneyTransferId:
 						{
 							if (!StepUtility::ParseInteger(value, MoneyTransfer->MoneyTransferId))
 							{
@@ -9117,7 +9117,7 @@ bool RtnMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::AccountType:
+						case ProtocolItems::AccountType:
 						{
 							if (!StepUtility::ParseEnum(value, MoneyTransfer->AccountType))
 							{
@@ -9126,7 +9126,7 @@ bool RtnMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::TransferDirection:
+						case ProtocolItems::TransferDirection:
 						{
 							if (!StepUtility::ParseEnum(value, MoneyTransfer->TransferDirection))
 							{
@@ -9135,7 +9135,7 @@ bool RtnMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::TransferAmount:
+						case ProtocolItems::TransferAmount:
 						{
 							if (!StepUtility::ParseDouble(value, MoneyTransfer->TransferAmount))
 							{
@@ -9144,7 +9144,7 @@ bool RtnMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::InfoMessage:
+						case ProtocolItems::InfoMessage:
 						{
 							if (value.length() >= sizeof(MoneyTransfer->InfoMessage))
 							{
@@ -9154,7 +9154,7 @@ bool RtnMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(MoneyTransfer->InfoMessage, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(MoneyTransfer->UserId))
 							{
@@ -9164,7 +9164,7 @@ bool RtnMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(MoneyTransfer->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TransferDate:
+						case ProtocolItems::TransferDate:
 						{
 							if (value.length() >= sizeof(MoneyTransfer->TransferDate))
 							{
@@ -9174,7 +9174,7 @@ bool RtnMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(MoneyTransfer->TransferDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::TransferTime:
+						case ProtocolItems::TransferTime:
 						{
 							if (value.length() >= sizeof(MoneyTransfer->TransferTime))
 							{
@@ -9292,19 +9292,19 @@ int RtnAccountLogoutPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (AccountLogout != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, AccountLogoutField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, AccountLogoutField::FieldId);
 		if (strlen(AccountLogout->AccountId) >= sizeof(AccountLogout->AccountId))
 		{
 			AccountLogout->AccountId[sizeof(AccountLogout->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, AccountLogout->AccountId);
-		StepUtility::WriteString(cursor, Items::ErrorId, AccountLogout->ErrorId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, AccountLogout->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, AccountLogout->ErrorId);
 		if (strlen(AccountLogout->ErrorMsg) >= sizeof(AccountLogout->ErrorMsg))
 		{
 			AccountLogout->ErrorMsg[sizeof(AccountLogout->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, AccountLogout->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, AccountLogoutField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, AccountLogout->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, AccountLogoutField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -9337,10 +9337,10 @@ bool RtnAccountLogoutPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(AccountLogout->AccountId))
 							{
@@ -9350,7 +9350,7 @@ bool RtnAccountLogoutPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(AccountLogout->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, AccountLogout->ErrorId))
 							{
@@ -9359,7 +9359,7 @@ bool RtnAccountLogoutPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(AccountLogout->ErrorMsg))
 							{
@@ -9477,18 +9477,18 @@ int ReqRiskUserLoginPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRiskUserLogin != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRiskUserLoginField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRiskUserLoginField::FieldId);
 		if (strlen(ReqRiskUserLogin->UserId) >= sizeof(ReqRiskUserLogin->UserId))
 		{
 			ReqRiskUserLogin->UserId[sizeof(ReqRiskUserLogin->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqRiskUserLogin->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqRiskUserLogin->UserId);
 		if (strlen(ReqRiskUserLogin->Password) >= sizeof(ReqRiskUserLogin->Password))
 		{
 			ReqRiskUserLogin->Password[sizeof(ReqRiskUserLogin->Password) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::Password, ReqRiskUserLogin->Password);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRiskUserLoginField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::Password, ReqRiskUserLogin->Password);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRiskUserLoginField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -9521,10 +9521,10 @@ bool ReqRiskUserLoginPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqRiskUserLogin->UserId))
 							{
@@ -9534,7 +9534,7 @@ bool ReqRiskUserLoginPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqRiskUserLogin->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Password:
+						case ProtocolItems::Password:
 						{
 							if (value.length() >= sizeof(ReqRiskUserLogin->Password))
 							{
@@ -9657,36 +9657,36 @@ int RspRiskUserLoginPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspRiskUserLogin != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspRiskUserLoginField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspRiskUserLoginField::FieldId);
 		if (strlen(RspRiskUserLogin->UserId) >= sizeof(RspRiskUserLogin->UserId))
 		{
 			RspRiskUserLogin->UserId[sizeof(RspRiskUserLogin->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, RspRiskUserLogin->UserId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, RspRiskUserLogin->RiskGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, RspRiskUserLogin->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, RspRiskUserLogin->RiskGroupId);
 		if (strlen(RspRiskUserLogin->LoginDate) >= sizeof(RspRiskUserLogin->LoginDate))
 		{
 			RspRiskUserLogin->LoginDate[sizeof(RspRiskUserLogin->LoginDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::LoginDate, RspRiskUserLogin->LoginDate);
+		StepUtility::WriteString(cursor, ProtocolItems::LoginDate, RspRiskUserLogin->LoginDate);
 		if (strlen(RspRiskUserLogin->LoginTime) >= sizeof(RspRiskUserLogin->LoginTime))
 		{
 			RspRiskUserLogin->LoginTime[sizeof(RspRiskUserLogin->LoginTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::LoginTime, RspRiskUserLogin->LoginTime);
-		StepUtility::WriteString(cursor, Items::SessionId, RspRiskUserLogin->SessionId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspRiskUserLoginField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::LoginTime, RspRiskUserLogin->LoginTime);
+		StepUtility::WriteString(cursor, ProtocolItems::SessionId, RspRiskUserLogin->SessionId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspRiskUserLoginField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -9719,10 +9719,10 @@ bool RspRiskUserLoginPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(RspRiskUserLogin->UserId))
 							{
@@ -9732,7 +9732,7 @@ bool RspRiskUserLoginPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(RspRiskUserLogin->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, RspRiskUserLogin->RiskGroupId))
 							{
@@ -9741,7 +9741,7 @@ bool RspRiskUserLoginPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::LoginDate:
+						case ProtocolItems::LoginDate:
 						{
 							if (value.length() >= sizeof(RspRiskUserLogin->LoginDate))
 							{
@@ -9751,7 +9751,7 @@ bool RspRiskUserLoginPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(RspRiskUserLogin->LoginDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::LoginTime:
+						case ProtocolItems::LoginTime:
 						{
 							if (value.length() >= sizeof(RspRiskUserLogin->LoginTime))
 							{
@@ -9761,7 +9761,7 @@ bool RspRiskUserLoginPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(RspRiskUserLogin->LoginTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::SessionId:
+						case ProtocolItems::SessionId:
 						{
 							if (!StepUtility::ParseInteger(value, RspRiskUserLogin->SessionId))
 							{
@@ -9797,10 +9797,10 @@ bool RspRiskUserLoginPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -9809,7 +9809,7 @@ bool RspRiskUserLoginPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -9950,13 +9950,13 @@ int ReqRiskUserLogoutPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRiskUserLogout != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRiskUserLogoutField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRiskUserLogoutField::FieldId);
 		if (strlen(ReqRiskUserLogout->UserId) >= sizeof(ReqRiskUserLogout->UserId))
 		{
 			ReqRiskUserLogout->UserId[sizeof(ReqRiskUserLogout->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqRiskUserLogout->UserId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRiskUserLogoutField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqRiskUserLogout->UserId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRiskUserLogoutField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -9989,10 +9989,10 @@ bool ReqRiskUserLogoutPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqRiskUserLogout->UserId))
 							{
@@ -10115,24 +10115,24 @@ int RspRiskUserLogoutPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspRiskUserLogout != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspRiskUserLogoutField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspRiskUserLogoutField::FieldId);
 		if (strlen(RspRiskUserLogout->UserId) >= sizeof(RspRiskUserLogout->UserId))
 		{
 			RspRiskUserLogout->UserId[sizeof(RspRiskUserLogout->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, RspRiskUserLogout->UserId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspRiskUserLogoutField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, RspRiskUserLogout->UserId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspRiskUserLogoutField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -10165,10 +10165,10 @@ bool RspRiskUserLogoutPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(RspRiskUserLogout->UserId))
 							{
@@ -10205,10 +10205,10 @@ bool RspRiskUserLogoutPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -10217,7 +10217,7 @@ bool RspRiskUserLogoutPackage::FromStepStream(char* buff, int startIndex, int en
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -10358,19 +10358,19 @@ int RtnRiskUserLogoutPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RiskUserLogout != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RiskUserLogoutField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RiskUserLogoutField::FieldId);
 		if (strlen(RiskUserLogout->UserId) >= sizeof(RiskUserLogout->UserId))
 		{
 			RiskUserLogout->UserId[sizeof(RiskUserLogout->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, RiskUserLogout->UserId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RiskUserLogout->ErrorId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, RiskUserLogout->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RiskUserLogout->ErrorId);
 		if (strlen(RiskUserLogout->ErrorMsg) >= sizeof(RiskUserLogout->ErrorMsg))
 		{
 			RiskUserLogout->ErrorMsg[sizeof(RiskUserLogout->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RiskUserLogout->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RiskUserLogoutField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RiskUserLogout->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RiskUserLogoutField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -10403,10 +10403,10 @@ bool RtnRiskUserLogoutPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(RiskUserLogout->UserId))
 							{
@@ -10416,7 +10416,7 @@ bool RtnRiskUserLogoutPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(RiskUserLogout->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RiskUserLogout->ErrorId))
 							{
@@ -10425,7 +10425,7 @@ bool RtnRiskUserLogoutPackage::FromStepStream(char* buff, int startIndex, int en
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RiskUserLogout->ErrorMsg))
 							{
@@ -10543,18 +10543,18 @@ int RtnAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Account != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, AccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, AccountField::FieldId);
 		if (strlen(Account->AccountId) >= sizeof(Account->AccountId))
 		{
 			Account->AccountId[sizeof(Account->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, Account->AccountId);
-		StepUtility::WriteString(cursor, Items::AccountType, static_cast<int>(Account->AccountType));
-		StepUtility::WriteString(cursor, Items::AccountStatus, static_cast<int>(Account->AccountStatus));
-		StepUtility::WriteString(cursor, Items::TradeGroupId, Account->TradeGroupId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, Account->RiskGroupId);
-		StepUtility::WriteString(cursor, Items::CommissionGroupId, Account->CommissionGroupId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, AccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, Account->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountType, static_cast<int>(Account->AccountType));
+		StepUtility::WriteString(cursor, ProtocolItems::AccountStatus, static_cast<int>(Account->AccountStatus));
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, Account->TradeGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, Account->RiskGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::CommissionGroupId, Account->CommissionGroupId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, AccountField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -10587,10 +10587,10 @@ bool RtnAccountPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(Account->AccountId))
 							{
@@ -10600,7 +10600,7 @@ bool RtnAccountPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(Account->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountType:
+						case ProtocolItems::AccountType:
 						{
 							if (!StepUtility::ParseEnum(value, Account->AccountType))
 							{
@@ -10609,7 +10609,7 @@ bool RtnAccountPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::AccountStatus:
+						case ProtocolItems::AccountStatus:
 						{
 							if (!StepUtility::ParseEnum(value, Account->AccountStatus))
 							{
@@ -10618,7 +10618,7 @@ bool RtnAccountPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, Account->TradeGroupId))
 							{
@@ -10627,7 +10627,7 @@ bool RtnAccountPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, Account->RiskGroupId))
 							{
@@ -10636,7 +10636,7 @@ bool RtnAccountPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::CommissionGroupId:
+						case ProtocolItems::CommissionGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, Account->CommissionGroupId))
 							{
@@ -10753,13 +10753,13 @@ int RtnAccountDeletePackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (AccountDelete != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, AccountDeleteField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, AccountDeleteField::FieldId);
 		if (strlen(AccountDelete->AccountId) >= sizeof(AccountDelete->AccountId))
 		{
 			AccountDelete->AccountId[sizeof(AccountDelete->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, AccountDelete->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, AccountDeleteField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, AccountDelete->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, AccountDeleteField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -10792,10 +10792,10 @@ bool RtnAccountDeletePackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(AccountDelete->AccountId))
 							{
@@ -10913,50 +10913,50 @@ int RtnPositionPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Position != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, PositionField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, PositionField::FieldId);
 		if (strlen(Position->TradingDay) >= sizeof(Position->TradingDay))
 		{
 			Position->TradingDay[sizeof(Position->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, Position->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, Position->TradingDay);
 		if (strlen(Position->AccountId) >= sizeof(Position->AccountId))
 		{
 			Position->AccountId[sizeof(Position->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, Position->AccountId);
-		StepUtility::WriteString(cursor, Items::AccountType, static_cast<int>(Position->AccountType));
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, Position->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountType, static_cast<int>(Position->AccountType));
 		if (strlen(Position->ExchangeId) >= sizeof(Position->ExchangeId))
 		{
 			Position->ExchangeId[sizeof(Position->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, Position->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, Position->ExchangeId);
 		if (strlen(Position->InstrumentId) >= sizeof(Position->InstrumentId))
 		{
 			Position->InstrumentId[sizeof(Position->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, Position->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(Position->ProductClass));
-		StepUtility::WriteString(cursor, Items::PosiDirection, static_cast<int>(Position->PosiDirection));
-		StepUtility::WriteString(cursor, Items::TotalPosition, Position->TotalPosition);
-		StepUtility::WriteString(cursor, Items::PositionFrozen, Position->PositionFrozen);
-		StepUtility::WriteString(cursor, Items::TodayPosition, Position->TodayPosition);
-		StepUtility::WriteString(cursor, Items::TotalCostPrice, Position->TotalCostPrice);
-		StepUtility::WriteString(cursor, Items::TodayCostPrice, Position->TodayCostPrice);
-		StepUtility::WriteString(cursor, Items::CashIn, Position->CashIn);
-		StepUtility::WriteString(cursor, Items::CashOut, Position->CashOut);
-		StepUtility::WriteString(cursor, Items::Margin, Position->Margin);
-		StepUtility::WriteString(cursor, Items::Commission, Position->Commission);
-		StepUtility::WriteString(cursor, Items::StampTax, Position->StampTax);
-		StepUtility::WriteString(cursor, Items::TransferFee, Position->TransferFee);
-		StepUtility::WriteString(cursor, Items::MarketValue, Position->MarketValue);
-		StepUtility::WriteString(cursor, Items::VolumeMultiple, Position->VolumeMultiple);
-		StepUtility::WriteString(cursor, Items::TotalCost, Position->TotalCost);
-		StepUtility::WriteString(cursor, Items::TodayCost, Position->TodayCost);
-		StepUtility::WriteString(cursor, Items::TotalProfit, Position->TotalProfit);
-		StepUtility::WriteString(cursor, Items::TodayProfit, Position->TodayProfit);
-		StepUtility::WriteString(cursor, Items::LastPrice, Position->LastPrice);
-		StepUtility::WriteString(cursor, Items::PrePrice, Position->PrePrice);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, PositionField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, Position->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(Position->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::PosiDirection, static_cast<int>(Position->PosiDirection));
+		StepUtility::WriteString(cursor, ProtocolItems::TotalPosition, Position->TotalPosition);
+		StepUtility::WriteString(cursor, ProtocolItems::PositionFrozen, Position->PositionFrozen);
+		StepUtility::WriteString(cursor, ProtocolItems::TodayPosition, Position->TodayPosition);
+		StepUtility::WriteString(cursor, ProtocolItems::TotalCostPrice, Position->TotalCostPrice);
+		StepUtility::WriteString(cursor, ProtocolItems::TodayCostPrice, Position->TodayCostPrice);
+		StepUtility::WriteString(cursor, ProtocolItems::CashIn, Position->CashIn);
+		StepUtility::WriteString(cursor, ProtocolItems::CashOut, Position->CashOut);
+		StepUtility::WriteString(cursor, ProtocolItems::Margin, Position->Margin);
+		StepUtility::WriteString(cursor, ProtocolItems::Commission, Position->Commission);
+		StepUtility::WriteString(cursor, ProtocolItems::StampTax, Position->StampTax);
+		StepUtility::WriteString(cursor, ProtocolItems::TransferFee, Position->TransferFee);
+		StepUtility::WriteString(cursor, ProtocolItems::MarketValue, Position->MarketValue);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeMultiple, Position->VolumeMultiple);
+		StepUtility::WriteString(cursor, ProtocolItems::TotalCost, Position->TotalCost);
+		StepUtility::WriteString(cursor, ProtocolItems::TodayCost, Position->TodayCost);
+		StepUtility::WriteString(cursor, ProtocolItems::TotalProfit, Position->TotalProfit);
+		StepUtility::WriteString(cursor, ProtocolItems::TodayProfit, Position->TodayProfit);
+		StepUtility::WriteString(cursor, ProtocolItems::LastPrice, Position->LastPrice);
+		StepUtility::WriteString(cursor, ProtocolItems::PrePrice, Position->PrePrice);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, PositionField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -10989,10 +10989,10 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(Position->TradingDay))
 							{
@@ -11002,7 +11002,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Position->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(Position->AccountId))
 							{
@@ -11012,7 +11012,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Position->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountType:
+						case ProtocolItems::AccountType:
 						{
 							if (!StepUtility::ParseEnum(value, Position->AccountType))
 							{
@@ -11021,7 +11021,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(Position->ExchangeId))
 							{
@@ -11031,7 +11031,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Position->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(Position->InstrumentId))
 							{
@@ -11041,7 +11041,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							memcpy(Position->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, Position->ProductClass))
 							{
@@ -11050,7 +11050,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::PosiDirection:
+						case ProtocolItems::PosiDirection:
 						{
 							if (!StepUtility::ParseEnum(value, Position->PosiDirection))
 							{
@@ -11059,7 +11059,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::TotalPosition:
+						case ProtocolItems::TotalPosition:
 						{
 							if (!StepUtility::ParseInteger(value, Position->TotalPosition))
 							{
@@ -11068,7 +11068,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::PositionFrozen:
+						case ProtocolItems::PositionFrozen:
 						{
 							if (!StepUtility::ParseInteger(value, Position->PositionFrozen))
 							{
@@ -11077,7 +11077,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::TodayPosition:
+						case ProtocolItems::TodayPosition:
 						{
 							if (!StepUtility::ParseInteger(value, Position->TodayPosition))
 							{
@@ -11086,7 +11086,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::TotalCostPrice:
+						case ProtocolItems::TotalCostPrice:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TotalCostPrice))
 							{
@@ -11095,7 +11095,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::TodayCostPrice:
+						case ProtocolItems::TodayCostPrice:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TodayCostPrice))
 							{
@@ -11104,7 +11104,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::CashIn:
+						case ProtocolItems::CashIn:
 						{
 							if (!StepUtility::ParseDouble(value, Position->CashIn))
 							{
@@ -11113,7 +11113,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::CashOut:
+						case ProtocolItems::CashOut:
 						{
 							if (!StepUtility::ParseDouble(value, Position->CashOut))
 							{
@@ -11122,7 +11122,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::Margin:
+						case ProtocolItems::Margin:
 						{
 							if (!StepUtility::ParseDouble(value, Position->Margin))
 							{
@@ -11131,7 +11131,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::Commission:
+						case ProtocolItems::Commission:
 						{
 							if (!StepUtility::ParseDouble(value, Position->Commission))
 							{
@@ -11140,7 +11140,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::StampTax:
+						case ProtocolItems::StampTax:
 						{
 							if (!StepUtility::ParseDouble(value, Position->StampTax))
 							{
@@ -11149,7 +11149,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::TransferFee:
+						case ProtocolItems::TransferFee:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TransferFee))
 							{
@@ -11158,7 +11158,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::MarketValue:
+						case ProtocolItems::MarketValue:
 						{
 							if (!StepUtility::ParseDouble(value, Position->MarketValue))
 							{
@@ -11167,7 +11167,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::VolumeMultiple:
+						case ProtocolItems::VolumeMultiple:
 						{
 							if (!StepUtility::ParseInteger(value, Position->VolumeMultiple))
 							{
@@ -11176,7 +11176,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::TotalCost:
+						case ProtocolItems::TotalCost:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TotalCost))
 							{
@@ -11185,7 +11185,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::TodayCost:
+						case ProtocolItems::TodayCost:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TodayCost))
 							{
@@ -11194,7 +11194,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::TotalProfit:
+						case ProtocolItems::TotalProfit:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TotalProfit))
 							{
@@ -11203,7 +11203,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::TodayProfit:
+						case ProtocolItems::TodayProfit:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TodayProfit))
 							{
@@ -11212,7 +11212,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::LastPrice:
+						case ProtocolItems::LastPrice:
 						{
 							if (!StepUtility::ParseDouble(value, Position->LastPrice))
 							{
@@ -11221,7 +11221,7 @@ bool RtnPositionPackage::FromStepStream(char* buff, int startIndex, int endIndex
 							}
 							break;
 						}
-						case Items::PrePrice:
+						case ProtocolItems::PrePrice:
 						{
 							if (!StepUtility::ParseDouble(value, Position->PrePrice))
 							{
@@ -11338,15 +11338,15 @@ int RtnAccountRiskPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (AccountRisk != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, AccountRiskField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, AccountRiskField::FieldId);
 		if (strlen(AccountRisk->AccountId) >= sizeof(AccountRisk->AccountId))
 		{
 			AccountRisk->AccountId[sizeof(AccountRisk->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, AccountRisk->AccountId);
-		StepUtility::WriteString(cursor, Items::RiskId, AccountRisk->RiskId);
-		StepUtility::WriteString(cursor, Items::RiskStatus, static_cast<int>(AccountRisk->RiskStatus));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, AccountRiskField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, AccountRisk->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, AccountRisk->RiskId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskStatus, static_cast<int>(AccountRisk->RiskStatus));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, AccountRiskField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -11379,10 +11379,10 @@ bool RtnAccountRiskPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(AccountRisk->AccountId))
 							{
@@ -11392,7 +11392,7 @@ bool RtnAccountRiskPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(AccountRisk->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, AccountRisk->RiskId))
 							{
@@ -11401,7 +11401,7 @@ bool RtnAccountRiskPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::RiskStatus:
+						case ProtocolItems::RiskStatus:
 						{
 							if (!StepUtility::ParseEnum(value, AccountRisk->RiskStatus))
 							{
@@ -11518,14 +11518,14 @@ int RtnAccountRiskDeletePackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (AccountRiskDelete != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, AccountRiskDeleteField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, AccountRiskDeleteField::FieldId);
 		if (strlen(AccountRiskDelete->AccountId) >= sizeof(AccountRiskDelete->AccountId))
 		{
 			AccountRiskDelete->AccountId[sizeof(AccountRiskDelete->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, AccountRiskDelete->AccountId);
-		StepUtility::WriteString(cursor, Items::RiskId, AccountRiskDelete->RiskId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, AccountRiskDeleteField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, AccountRiskDelete->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, AccountRiskDelete->RiskId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, AccountRiskDeleteField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -11558,10 +11558,10 @@ bool RtnAccountRiskDeletePackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(AccountRiskDelete->AccountId))
 							{
@@ -11571,7 +11571,7 @@ bool RtnAccountRiskDeletePackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(AccountRiskDelete->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, AccountRiskDelete->RiskId))
 							{
@@ -11688,31 +11688,31 @@ int RtnAccountRiskNotifyPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (AccountRiskNotify != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, AccountRiskNotifyField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, AccountRiskNotifyField::FieldId);
 		if (strlen(AccountRiskNotify->NotifyDate) >= sizeof(AccountRiskNotify->NotifyDate))
 		{
 			AccountRiskNotify->NotifyDate[sizeof(AccountRiskNotify->NotifyDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::NotifyDate, AccountRiskNotify->NotifyDate);
+		StepUtility::WriteString(cursor, ProtocolItems::NotifyDate, AccountRiskNotify->NotifyDate);
 		if (strlen(AccountRiskNotify->NotifyTime) >= sizeof(AccountRiskNotify->NotifyTime))
 		{
 			AccountRiskNotify->NotifyTime[sizeof(AccountRiskNotify->NotifyTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::NotifyTime, AccountRiskNotify->NotifyTime);
+		StepUtility::WriteString(cursor, ProtocolItems::NotifyTime, AccountRiskNotify->NotifyTime);
 		if (strlen(AccountRiskNotify->AccountId) >= sizeof(AccountRiskNotify->AccountId))
 		{
 			AccountRiskNotify->AccountId[sizeof(AccountRiskNotify->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, AccountRiskNotify->AccountId);
-		StepUtility::WriteString(cursor, Items::RiskId, AccountRiskNotify->RiskId);
-		StepUtility::WriteString(cursor, Items::RiskRuleId, AccountRiskNotify->RiskRuleId);
-		StepUtility::WriteString(cursor, Items::RiskStatus, static_cast<int>(AccountRiskNotify->RiskStatus));
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, AccountRiskNotify->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, AccountRiskNotify->RiskId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskRuleId, AccountRiskNotify->RiskRuleId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskStatus, static_cast<int>(AccountRiskNotify->RiskStatus));
 		if (strlen(AccountRiskNotify->RiskMessage) >= sizeof(AccountRiskNotify->RiskMessage))
 		{
 			AccountRiskNotify->RiskMessage[sizeof(AccountRiskNotify->RiskMessage) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::RiskMessage, AccountRiskNotify->RiskMessage);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, AccountRiskNotifyField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskMessage, AccountRiskNotify->RiskMessage);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, AccountRiskNotifyField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -11745,10 +11745,10 @@ bool RtnAccountRiskNotifyPackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::NotifyDate:
+						case ProtocolItems::NotifyDate:
 						{
 							if (value.length() >= sizeof(AccountRiskNotify->NotifyDate))
 							{
@@ -11758,7 +11758,7 @@ bool RtnAccountRiskNotifyPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(AccountRiskNotify->NotifyDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::NotifyTime:
+						case ProtocolItems::NotifyTime:
 						{
 							if (value.length() >= sizeof(AccountRiskNotify->NotifyTime))
 							{
@@ -11768,7 +11768,7 @@ bool RtnAccountRiskNotifyPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(AccountRiskNotify->NotifyTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(AccountRiskNotify->AccountId))
 							{
@@ -11778,7 +11778,7 @@ bool RtnAccountRiskNotifyPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(AccountRiskNotify->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, AccountRiskNotify->RiskId))
 							{
@@ -11787,7 +11787,7 @@ bool RtnAccountRiskNotifyPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::RiskRuleId:
+						case ProtocolItems::RiskRuleId:
 						{
 							if (!StepUtility::ParseInteger(value, AccountRiskNotify->RiskRuleId))
 							{
@@ -11796,7 +11796,7 @@ bool RtnAccountRiskNotifyPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::RiskStatus:
+						case ProtocolItems::RiskStatus:
 						{
 							if (!StepUtility::ParseEnum(value, AccountRiskNotify->RiskStatus))
 							{
@@ -11805,7 +11805,7 @@ bool RtnAccountRiskNotifyPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::RiskMessage:
+						case ProtocolItems::RiskMessage:
 						{
 							if (value.length() >= sizeof(AccountRiskNotify->RiskMessage))
 							{
@@ -11923,13 +11923,13 @@ int ReqQryRiskGroupAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryRiskGroupAccount != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryRiskGroupAccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryRiskGroupAccountField::FieldId);
 		if (strlen(ReqQryRiskGroupAccount->UserId) >= sizeof(ReqQryRiskGroupAccount->UserId))
 		{
 			ReqQryRiskGroupAccount->UserId[sizeof(ReqQryRiskGroupAccount->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqQryRiskGroupAccount->UserId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryRiskGroupAccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqQryRiskGroupAccount->UserId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryRiskGroupAccountField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -11962,10 +11962,10 @@ bool ReqQryRiskGroupAccountPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqQryRiskGroupAccount->UserId))
 							{
@@ -12088,29 +12088,29 @@ int RspQryRiskGroupAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Account != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, AccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, AccountField::FieldId);
 		if (strlen(Account->AccountId) >= sizeof(Account->AccountId))
 		{
 			Account->AccountId[sizeof(Account->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, Account->AccountId);
-		StepUtility::WriteString(cursor, Items::AccountType, static_cast<int>(Account->AccountType));
-		StepUtility::WriteString(cursor, Items::AccountStatus, static_cast<int>(Account->AccountStatus));
-		StepUtility::WriteString(cursor, Items::TradeGroupId, Account->TradeGroupId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, Account->RiskGroupId);
-		StepUtility::WriteString(cursor, Items::CommissionGroupId, Account->CommissionGroupId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, AccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, Account->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountType, static_cast<int>(Account->AccountType));
+		StepUtility::WriteString(cursor, ProtocolItems::AccountStatus, static_cast<int>(Account->AccountStatus));
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, Account->TradeGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, Account->RiskGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::CommissionGroupId, Account->CommissionGroupId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, AccountField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -12143,10 +12143,10 @@ bool RspQryRiskGroupAccountPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(Account->AccountId))
 							{
@@ -12156,7 +12156,7 @@ bool RspQryRiskGroupAccountPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(Account->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountType:
+						case ProtocolItems::AccountType:
 						{
 							if (!StepUtility::ParseEnum(value, Account->AccountType))
 							{
@@ -12165,7 +12165,7 @@ bool RspQryRiskGroupAccountPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::AccountStatus:
+						case ProtocolItems::AccountStatus:
 						{
 							if (!StepUtility::ParseEnum(value, Account->AccountStatus))
 							{
@@ -12174,7 +12174,7 @@ bool RspQryRiskGroupAccountPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, Account->TradeGroupId))
 							{
@@ -12183,7 +12183,7 @@ bool RspQryRiskGroupAccountPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, Account->RiskGroupId))
 							{
@@ -12192,7 +12192,7 @@ bool RspQryRiskGroupAccountPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::CommissionGroupId:
+						case ProtocolItems::CommissionGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, Account->CommissionGroupId))
 							{
@@ -12228,10 +12228,10 @@ bool RspQryRiskGroupAccountPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -12240,7 +12240,7 @@ bool RspQryRiskGroupAccountPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -12381,18 +12381,18 @@ int ReqQryRiskGroupCapitalPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryRiskGroupCapital != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryRiskGroupCapitalField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryRiskGroupCapitalField::FieldId);
 		if (strlen(ReqQryRiskGroupCapital->UserId) >= sizeof(ReqQryRiskGroupCapital->UserId))
 		{
 			ReqQryRiskGroupCapital->UserId[sizeof(ReqQryRiskGroupCapital->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqQryRiskGroupCapital->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqQryRiskGroupCapital->UserId);
 		if (strlen(ReqQryRiskGroupCapital->AccountId) >= sizeof(ReqQryRiskGroupCapital->AccountId))
 		{
 			ReqQryRiskGroupCapital->AccountId[sizeof(ReqQryRiskGroupCapital->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqQryRiskGroupCapital->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryRiskGroupCapitalField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqQryRiskGroupCapital->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryRiskGroupCapitalField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -12425,10 +12425,10 @@ bool ReqQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqQryRiskGroupCapital->UserId))
 							{
@@ -12438,7 +12438,7 @@ bool ReqQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(ReqQryRiskGroupCapital->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqQryRiskGroupCapital->AccountId))
 							{
@@ -12561,51 +12561,51 @@ int RspQryRiskGroupCapitalPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Capital != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, CapitalField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, CapitalField::FieldId);
 		if (strlen(Capital->TradingDay) >= sizeof(Capital->TradingDay))
 		{
 			Capital->TradingDay[sizeof(Capital->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, Capital->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, Capital->TradingDay);
 		if (strlen(Capital->AccountId) >= sizeof(Capital->AccountId))
 		{
 			Capital->AccountId[sizeof(Capital->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, Capital->AccountId);
-		StepUtility::WriteString(cursor, Items::AccountType, static_cast<int>(Capital->AccountType));
-		StepUtility::WriteString(cursor, Items::Asset, Capital->Asset);
-		StepUtility::WriteString(cursor, Items::PreAsset, Capital->PreAsset);
-		StepUtility::WriteString(cursor, Items::CashAsset, Capital->CashAsset);
-		StepUtility::WriteString(cursor, Items::PreCashAsset, Capital->PreCashAsset);
-		StepUtility::WriteString(cursor, Items::Available, Capital->Available);
-		StepUtility::WriteString(cursor, Items::CashIn, Capital->CashIn);
-		StepUtility::WriteString(cursor, Items::CashOut, Capital->CashOut);
-		StepUtility::WriteString(cursor, Items::Margin, Capital->Margin);
-		StepUtility::WriteString(cursor, Items::Commission, Capital->Commission);
-		StepUtility::WriteString(cursor, Items::StampTax, Capital->StampTax);
-		StepUtility::WriteString(cursor, Items::TransferFee, Capital->TransferFee);
-		StepUtility::WriteString(cursor, Items::FrozenCash, Capital->FrozenCash);
-		StepUtility::WriteString(cursor, Items::FrozenMargin, Capital->FrozenMargin);
-		StepUtility::WriteString(cursor, Items::FrozenCommission, Capital->FrozenCommission);
-		StepUtility::WriteString(cursor, Items::FrozenStampTax, Capital->FrozenStampTax);
-		StepUtility::WriteString(cursor, Items::FrozenTransferFee, Capital->FrozenTransferFee);
-		StepUtility::WriteString(cursor, Items::MarketValue, Capital->MarketValue);
-		StepUtility::WriteString(cursor, Items::TotalProfit, Capital->TotalProfit);
-		StepUtility::WriteString(cursor, Items::TodayProfit, Capital->TodayProfit);
-		StepUtility::WriteString(cursor, Items::Deposit, Capital->Deposit);
-		StepUtility::WriteString(cursor, Items::Withdraw, Capital->Withdraw);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, CapitalField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, Capital->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountType, static_cast<int>(Capital->AccountType));
+		StepUtility::WriteString(cursor, ProtocolItems::Asset, Capital->Asset);
+		StepUtility::WriteString(cursor, ProtocolItems::PreAsset, Capital->PreAsset);
+		StepUtility::WriteString(cursor, ProtocolItems::CashAsset, Capital->CashAsset);
+		StepUtility::WriteString(cursor, ProtocolItems::PreCashAsset, Capital->PreCashAsset);
+		StepUtility::WriteString(cursor, ProtocolItems::Available, Capital->Available);
+		StepUtility::WriteString(cursor, ProtocolItems::CashIn, Capital->CashIn);
+		StepUtility::WriteString(cursor, ProtocolItems::CashOut, Capital->CashOut);
+		StepUtility::WriteString(cursor, ProtocolItems::Margin, Capital->Margin);
+		StepUtility::WriteString(cursor, ProtocolItems::Commission, Capital->Commission);
+		StepUtility::WriteString(cursor, ProtocolItems::StampTax, Capital->StampTax);
+		StepUtility::WriteString(cursor, ProtocolItems::TransferFee, Capital->TransferFee);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenCash, Capital->FrozenCash);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenMargin, Capital->FrozenMargin);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenCommission, Capital->FrozenCommission);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenStampTax, Capital->FrozenStampTax);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenTransferFee, Capital->FrozenTransferFee);
+		StepUtility::WriteString(cursor, ProtocolItems::MarketValue, Capital->MarketValue);
+		StepUtility::WriteString(cursor, ProtocolItems::TotalProfit, Capital->TotalProfit);
+		StepUtility::WriteString(cursor, ProtocolItems::TodayProfit, Capital->TodayProfit);
+		StepUtility::WriteString(cursor, ProtocolItems::Deposit, Capital->Deposit);
+		StepUtility::WriteString(cursor, ProtocolItems::Withdraw, Capital->Withdraw);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, CapitalField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -12638,10 +12638,10 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(Capital->TradingDay))
 							{
@@ -12651,7 +12651,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(Capital->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(Capital->AccountId))
 							{
@@ -12661,7 +12661,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(Capital->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountType:
+						case ProtocolItems::AccountType:
 						{
 							if (!StepUtility::ParseEnum(value, Capital->AccountType))
 							{
@@ -12670,7 +12670,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::Asset:
+						case ProtocolItems::Asset:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->Asset))
 							{
@@ -12679,7 +12679,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::PreAsset:
+						case ProtocolItems::PreAsset:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->PreAsset))
 							{
@@ -12688,7 +12688,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::CashAsset:
+						case ProtocolItems::CashAsset:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->CashAsset))
 							{
@@ -12697,7 +12697,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::PreCashAsset:
+						case ProtocolItems::PreCashAsset:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->PreCashAsset))
 							{
@@ -12706,7 +12706,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::Available:
+						case ProtocolItems::Available:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->Available))
 							{
@@ -12715,7 +12715,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::CashIn:
+						case ProtocolItems::CashIn:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->CashIn))
 							{
@@ -12724,7 +12724,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::CashOut:
+						case ProtocolItems::CashOut:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->CashOut))
 							{
@@ -12733,7 +12733,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::Margin:
+						case ProtocolItems::Margin:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->Margin))
 							{
@@ -12742,7 +12742,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::Commission:
+						case ProtocolItems::Commission:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->Commission))
 							{
@@ -12751,7 +12751,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::StampTax:
+						case ProtocolItems::StampTax:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->StampTax))
 							{
@@ -12760,7 +12760,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::TransferFee:
+						case ProtocolItems::TransferFee:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->TransferFee))
 							{
@@ -12769,7 +12769,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::FrozenCash:
+						case ProtocolItems::FrozenCash:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->FrozenCash))
 							{
@@ -12778,7 +12778,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::FrozenMargin:
+						case ProtocolItems::FrozenMargin:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->FrozenMargin))
 							{
@@ -12787,7 +12787,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::FrozenCommission:
+						case ProtocolItems::FrozenCommission:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->FrozenCommission))
 							{
@@ -12796,7 +12796,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::FrozenStampTax:
+						case ProtocolItems::FrozenStampTax:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->FrozenStampTax))
 							{
@@ -12805,7 +12805,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::FrozenTransferFee:
+						case ProtocolItems::FrozenTransferFee:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->FrozenTransferFee))
 							{
@@ -12814,7 +12814,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::MarketValue:
+						case ProtocolItems::MarketValue:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->MarketValue))
 							{
@@ -12823,7 +12823,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::TotalProfit:
+						case ProtocolItems::TotalProfit:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->TotalProfit))
 							{
@@ -12832,7 +12832,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::TodayProfit:
+						case ProtocolItems::TodayProfit:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->TodayProfit))
 							{
@@ -12841,7 +12841,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::Deposit:
+						case ProtocolItems::Deposit:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->Deposit))
 							{
@@ -12850,7 +12850,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::Withdraw:
+						case ProtocolItems::Withdraw:
 						{
 							if (!StepUtility::ParseDouble(value, Capital->Withdraw))
 							{
@@ -12886,10 +12886,10 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -12898,7 +12898,7 @@ bool RspQryRiskGroupCapitalPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -13039,18 +13039,18 @@ int ReqQryRiskGroupPositionPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryRiskGroupPosition != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryRiskGroupPositionField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryRiskGroupPositionField::FieldId);
 		if (strlen(ReqQryRiskGroupPosition->UserId) >= sizeof(ReqQryRiskGroupPosition->UserId))
 		{
 			ReqQryRiskGroupPosition->UserId[sizeof(ReqQryRiskGroupPosition->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqQryRiskGroupPosition->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqQryRiskGroupPosition->UserId);
 		if (strlen(ReqQryRiskGroupPosition->AccountId) >= sizeof(ReqQryRiskGroupPosition->AccountId))
 		{
 			ReqQryRiskGroupPosition->AccountId[sizeof(ReqQryRiskGroupPosition->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqQryRiskGroupPosition->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryRiskGroupPositionField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqQryRiskGroupPosition->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryRiskGroupPositionField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -13083,10 +13083,10 @@ bool ReqQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqQryRiskGroupPosition->UserId))
 							{
@@ -13096,7 +13096,7 @@ bool ReqQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqQryRiskGroupPosition->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqQryRiskGroupPosition->AccountId))
 							{
@@ -13219,61 +13219,61 @@ int RspQryRiskGroupPositionPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Position != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, PositionField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, PositionField::FieldId);
 		if (strlen(Position->TradingDay) >= sizeof(Position->TradingDay))
 		{
 			Position->TradingDay[sizeof(Position->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, Position->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, Position->TradingDay);
 		if (strlen(Position->AccountId) >= sizeof(Position->AccountId))
 		{
 			Position->AccountId[sizeof(Position->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, Position->AccountId);
-		StepUtility::WriteString(cursor, Items::AccountType, static_cast<int>(Position->AccountType));
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, Position->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountType, static_cast<int>(Position->AccountType));
 		if (strlen(Position->ExchangeId) >= sizeof(Position->ExchangeId))
 		{
 			Position->ExchangeId[sizeof(Position->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, Position->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, Position->ExchangeId);
 		if (strlen(Position->InstrumentId) >= sizeof(Position->InstrumentId))
 		{
 			Position->InstrumentId[sizeof(Position->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, Position->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(Position->ProductClass));
-		StepUtility::WriteString(cursor, Items::PosiDirection, static_cast<int>(Position->PosiDirection));
-		StepUtility::WriteString(cursor, Items::TotalPosition, Position->TotalPosition);
-		StepUtility::WriteString(cursor, Items::PositionFrozen, Position->PositionFrozen);
-		StepUtility::WriteString(cursor, Items::TodayPosition, Position->TodayPosition);
-		StepUtility::WriteString(cursor, Items::TotalCostPrice, Position->TotalCostPrice);
-		StepUtility::WriteString(cursor, Items::TodayCostPrice, Position->TodayCostPrice);
-		StepUtility::WriteString(cursor, Items::CashIn, Position->CashIn);
-		StepUtility::WriteString(cursor, Items::CashOut, Position->CashOut);
-		StepUtility::WriteString(cursor, Items::Margin, Position->Margin);
-		StepUtility::WriteString(cursor, Items::Commission, Position->Commission);
-		StepUtility::WriteString(cursor, Items::StampTax, Position->StampTax);
-		StepUtility::WriteString(cursor, Items::TransferFee, Position->TransferFee);
-		StepUtility::WriteString(cursor, Items::MarketValue, Position->MarketValue);
-		StepUtility::WriteString(cursor, Items::VolumeMultiple, Position->VolumeMultiple);
-		StepUtility::WriteString(cursor, Items::TotalCost, Position->TotalCost);
-		StepUtility::WriteString(cursor, Items::TodayCost, Position->TodayCost);
-		StepUtility::WriteString(cursor, Items::TotalProfit, Position->TotalProfit);
-		StepUtility::WriteString(cursor, Items::TodayProfit, Position->TodayProfit);
-		StepUtility::WriteString(cursor, Items::LastPrice, Position->LastPrice);
-		StepUtility::WriteString(cursor, Items::PrePrice, Position->PrePrice);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, PositionField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, Position->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(Position->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::PosiDirection, static_cast<int>(Position->PosiDirection));
+		StepUtility::WriteString(cursor, ProtocolItems::TotalPosition, Position->TotalPosition);
+		StepUtility::WriteString(cursor, ProtocolItems::PositionFrozen, Position->PositionFrozen);
+		StepUtility::WriteString(cursor, ProtocolItems::TodayPosition, Position->TodayPosition);
+		StepUtility::WriteString(cursor, ProtocolItems::TotalCostPrice, Position->TotalCostPrice);
+		StepUtility::WriteString(cursor, ProtocolItems::TodayCostPrice, Position->TodayCostPrice);
+		StepUtility::WriteString(cursor, ProtocolItems::CashIn, Position->CashIn);
+		StepUtility::WriteString(cursor, ProtocolItems::CashOut, Position->CashOut);
+		StepUtility::WriteString(cursor, ProtocolItems::Margin, Position->Margin);
+		StepUtility::WriteString(cursor, ProtocolItems::Commission, Position->Commission);
+		StepUtility::WriteString(cursor, ProtocolItems::StampTax, Position->StampTax);
+		StepUtility::WriteString(cursor, ProtocolItems::TransferFee, Position->TransferFee);
+		StepUtility::WriteString(cursor, ProtocolItems::MarketValue, Position->MarketValue);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeMultiple, Position->VolumeMultiple);
+		StepUtility::WriteString(cursor, ProtocolItems::TotalCost, Position->TotalCost);
+		StepUtility::WriteString(cursor, ProtocolItems::TodayCost, Position->TodayCost);
+		StepUtility::WriteString(cursor, ProtocolItems::TotalProfit, Position->TotalProfit);
+		StepUtility::WriteString(cursor, ProtocolItems::TodayProfit, Position->TodayProfit);
+		StepUtility::WriteString(cursor, ProtocolItems::LastPrice, Position->LastPrice);
+		StepUtility::WriteString(cursor, ProtocolItems::PrePrice, Position->PrePrice);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, PositionField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -13306,10 +13306,10 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(Position->TradingDay))
 							{
@@ -13319,7 +13319,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(Position->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(Position->AccountId))
 							{
@@ -13329,7 +13329,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(Position->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountType:
+						case ProtocolItems::AccountType:
 						{
 							if (!StepUtility::ParseEnum(value, Position->AccountType))
 							{
@@ -13338,7 +13338,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(Position->ExchangeId))
 							{
@@ -13348,7 +13348,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(Position->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(Position->InstrumentId))
 							{
@@ -13358,7 +13358,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(Position->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, Position->ProductClass))
 							{
@@ -13367,7 +13367,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::PosiDirection:
+						case ProtocolItems::PosiDirection:
 						{
 							if (!StepUtility::ParseEnum(value, Position->PosiDirection))
 							{
@@ -13376,7 +13376,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::TotalPosition:
+						case ProtocolItems::TotalPosition:
 						{
 							if (!StepUtility::ParseInteger(value, Position->TotalPosition))
 							{
@@ -13385,7 +13385,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::PositionFrozen:
+						case ProtocolItems::PositionFrozen:
 						{
 							if (!StepUtility::ParseInteger(value, Position->PositionFrozen))
 							{
@@ -13394,7 +13394,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::TodayPosition:
+						case ProtocolItems::TodayPosition:
 						{
 							if (!StepUtility::ParseInteger(value, Position->TodayPosition))
 							{
@@ -13403,7 +13403,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::TotalCostPrice:
+						case ProtocolItems::TotalCostPrice:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TotalCostPrice))
 							{
@@ -13412,7 +13412,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::TodayCostPrice:
+						case ProtocolItems::TodayCostPrice:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TodayCostPrice))
 							{
@@ -13421,7 +13421,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::CashIn:
+						case ProtocolItems::CashIn:
 						{
 							if (!StepUtility::ParseDouble(value, Position->CashIn))
 							{
@@ -13430,7 +13430,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::CashOut:
+						case ProtocolItems::CashOut:
 						{
 							if (!StepUtility::ParseDouble(value, Position->CashOut))
 							{
@@ -13439,7 +13439,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::Margin:
+						case ProtocolItems::Margin:
 						{
 							if (!StepUtility::ParseDouble(value, Position->Margin))
 							{
@@ -13448,7 +13448,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::Commission:
+						case ProtocolItems::Commission:
 						{
 							if (!StepUtility::ParseDouble(value, Position->Commission))
 							{
@@ -13457,7 +13457,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::StampTax:
+						case ProtocolItems::StampTax:
 						{
 							if (!StepUtility::ParseDouble(value, Position->StampTax))
 							{
@@ -13466,7 +13466,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::TransferFee:
+						case ProtocolItems::TransferFee:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TransferFee))
 							{
@@ -13475,7 +13475,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::MarketValue:
+						case ProtocolItems::MarketValue:
 						{
 							if (!StepUtility::ParseDouble(value, Position->MarketValue))
 							{
@@ -13484,7 +13484,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::VolumeMultiple:
+						case ProtocolItems::VolumeMultiple:
 						{
 							if (!StepUtility::ParseInteger(value, Position->VolumeMultiple))
 							{
@@ -13493,7 +13493,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::TotalCost:
+						case ProtocolItems::TotalCost:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TotalCost))
 							{
@@ -13502,7 +13502,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::TodayCost:
+						case ProtocolItems::TodayCost:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TodayCost))
 							{
@@ -13511,7 +13511,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::TotalProfit:
+						case ProtocolItems::TotalProfit:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TotalProfit))
 							{
@@ -13520,7 +13520,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::TodayProfit:
+						case ProtocolItems::TodayProfit:
 						{
 							if (!StepUtility::ParseDouble(value, Position->TodayProfit))
 							{
@@ -13529,7 +13529,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::LastPrice:
+						case ProtocolItems::LastPrice:
 						{
 							if (!StepUtility::ParseDouble(value, Position->LastPrice))
 							{
@@ -13538,7 +13538,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::PrePrice:
+						case ProtocolItems::PrePrice:
 						{
 							if (!StepUtility::ParseDouble(value, Position->PrePrice))
 							{
@@ -13574,10 +13574,10 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -13586,7 +13586,7 @@ bool RspQryRiskGroupPositionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -13727,18 +13727,18 @@ int ReqQryRiskGroupOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryRiskGroupOrder != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryRiskGroupOrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryRiskGroupOrderField::FieldId);
 		if (strlen(ReqQryRiskGroupOrder->UserId) >= sizeof(ReqQryRiskGroupOrder->UserId))
 		{
 			ReqQryRiskGroupOrder->UserId[sizeof(ReqQryRiskGroupOrder->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqQryRiskGroupOrder->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqQryRiskGroupOrder->UserId);
 		if (strlen(ReqQryRiskGroupOrder->AccountId) >= sizeof(ReqQryRiskGroupOrder->AccountId))
 		{
 			ReqQryRiskGroupOrder->AccountId[sizeof(ReqQryRiskGroupOrder->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqQryRiskGroupOrder->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryRiskGroupOrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqQryRiskGroupOrder->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryRiskGroupOrderField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -13771,10 +13771,10 @@ bool ReqQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqQryRiskGroupOrder->UserId))
 							{
@@ -13784,7 +13784,7 @@ bool ReqQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqQryRiskGroupOrder->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqQryRiskGroupOrder->AccountId))
 							{
@@ -13907,88 +13907,88 @@ int RspQryRiskGroupOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Order != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, OrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, OrderField::FieldId);
 		if (strlen(Order->TradingDay) >= sizeof(Order->TradingDay))
 		{
 			Order->TradingDay[sizeof(Order->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, Order->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, Order->TradingDay);
 		if (strlen(Order->AccountId) >= sizeof(Order->AccountId))
 		{
 			Order->AccountId[sizeof(Order->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, Order->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, Order->AccountId);
 		if (strlen(Order->ExchangeId) >= sizeof(Order->ExchangeId))
 		{
 			Order->ExchangeId[sizeof(Order->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, Order->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, Order->ExchangeId);
 		if (strlen(Order->InstrumentId) >= sizeof(Order->InstrumentId))
 		{
 			Order->InstrumentId[sizeof(Order->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, Order->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(Order->ProductClass));
-		StepUtility::WriteString(cursor, Items::OrderId, Order->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, Order->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(Order->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, Order->OrderId);
 		if (strlen(Order->OrderSysId) >= sizeof(Order->OrderSysId))
 		{
 			Order->OrderSysId[sizeof(Order->OrderSysId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderSysId, Order->OrderSysId);
-		StepUtility::WriteString(cursor, Items::Direction, static_cast<int>(Order->Direction));
-		StepUtility::WriteString(cursor, Items::OffsetFlag, static_cast<int>(Order->OffsetFlag));
-		StepUtility::WriteString(cursor, Items::OrderPriceType, static_cast<int>(Order->OrderPriceType));
-		StepUtility::WriteString(cursor, Items::Price, Order->Price);
-		StepUtility::WriteString(cursor, Items::Volume, Order->Volume);
-		StepUtility::WriteString(cursor, Items::VolumeTotal, Order->VolumeTotal);
-		StepUtility::WriteString(cursor, Items::VolumeTraded, Order->VolumeTraded);
-		StepUtility::WriteString(cursor, Items::VolumeMultiple, Order->VolumeMultiple);
-		StepUtility::WriteString(cursor, Items::OrderStatus, static_cast<int>(Order->OrderStatus));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderSysId, Order->OrderSysId);
+		StepUtility::WriteString(cursor, ProtocolItems::Direction, static_cast<int>(Order->Direction));
+		StepUtility::WriteString(cursor, ProtocolItems::OffsetFlag, static_cast<int>(Order->OffsetFlag));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderPriceType, static_cast<int>(Order->OrderPriceType));
+		StepUtility::WriteString(cursor, ProtocolItems::Price, Order->Price);
+		StepUtility::WriteString(cursor, ProtocolItems::Volume, Order->Volume);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeTotal, Order->VolumeTotal);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeTraded, Order->VolumeTraded);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeMultiple, Order->VolumeMultiple);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderStatus, static_cast<int>(Order->OrderStatus));
 		if (strlen(Order->StatusMsg) >= sizeof(Order->StatusMsg))
 		{
 			Order->StatusMsg[sizeof(Order->StatusMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::StatusMsg, Order->StatusMsg);
+		StepUtility::WriteString(cursor, ProtocolItems::StatusMsg, Order->StatusMsg);
 		if (strlen(Order->OrderDate) >= sizeof(Order->OrderDate))
 		{
 			Order->OrderDate[sizeof(Order->OrderDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderDate, Order->OrderDate);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderDate, Order->OrderDate);
 		if (strlen(Order->OrderTime) >= sizeof(Order->OrderTime))
 		{
 			Order->OrderTime[sizeof(Order->OrderTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderTime, Order->OrderTime);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderTime, Order->OrderTime);
 		if (strlen(Order->CancelDate) >= sizeof(Order->CancelDate))
 		{
 			Order->CancelDate[sizeof(Order->CancelDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::CancelDate, Order->CancelDate);
+		StepUtility::WriteString(cursor, ProtocolItems::CancelDate, Order->CancelDate);
 		if (strlen(Order->CancelTime) >= sizeof(Order->CancelTime))
 		{
 			Order->CancelTime[sizeof(Order->CancelTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::CancelTime, Order->CancelTime);
-		StepUtility::WriteString(cursor, Items::SessionId, Order->SessionId);
-		StepUtility::WriteString(cursor, Items::ClientOrderId, Order->ClientOrderId);
-		StepUtility::WriteString(cursor, Items::RequestId, Order->RequestId);
-		StepUtility::WriteString(cursor, Items::FrozenCash, Order->FrozenCash);
-		StepUtility::WriteString(cursor, Items::FrozenMargin, Order->FrozenMargin);
-		StepUtility::WriteString(cursor, Items::FrozenCommission, Order->FrozenCommission);
-		StepUtility::WriteString(cursor, Items::FrozenStampTax, Order->FrozenStampTax);
-		StepUtility::WriteString(cursor, Items::FrozenTransferFee, Order->FrozenTransferFee);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, OrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::CancelTime, Order->CancelTime);
+		StepUtility::WriteString(cursor, ProtocolItems::SessionId, Order->SessionId);
+		StepUtility::WriteString(cursor, ProtocolItems::ClientOrderId, Order->ClientOrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::RequestId, Order->RequestId);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenCash, Order->FrozenCash);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenMargin, Order->FrozenMargin);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenCommission, Order->FrozenCommission);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenStampTax, Order->FrozenStampTax);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenTransferFee, Order->FrozenTransferFee);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, OrderField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -14021,10 +14021,10 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(Order->TradingDay))
 							{
@@ -14034,7 +14034,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Order->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(Order->AccountId))
 							{
@@ -14044,7 +14044,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Order->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(Order->ExchangeId))
 							{
@@ -14054,7 +14054,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Order->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(Order->InstrumentId))
 							{
@@ -14064,7 +14064,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Order->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, Order->ProductClass))
 							{
@@ -14073,7 +14073,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->OrderId))
 							{
@@ -14082,7 +14082,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::OrderSysId:
+						case ProtocolItems::OrderSysId:
 						{
 							if (value.length() >= sizeof(Order->OrderSysId))
 							{
@@ -14092,7 +14092,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Order->OrderSysId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Direction:
+						case ProtocolItems::Direction:
 						{
 							if (!StepUtility::ParseEnum(value, Order->Direction))
 							{
@@ -14101,7 +14101,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::OffsetFlag:
+						case ProtocolItems::OffsetFlag:
 						{
 							if (!StepUtility::ParseEnum(value, Order->OffsetFlag))
 							{
@@ -14110,7 +14110,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::OrderPriceType:
+						case ProtocolItems::OrderPriceType:
 						{
 							if (!StepUtility::ParseEnum(value, Order->OrderPriceType))
 							{
@@ -14119,7 +14119,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::Price:
+						case ProtocolItems::Price:
 						{
 							if (!StepUtility::ParseDouble(value, Order->Price))
 							{
@@ -14128,7 +14128,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::Volume:
+						case ProtocolItems::Volume:
 						{
 							if (!StepUtility::ParseInteger(value, Order->Volume))
 							{
@@ -14137,7 +14137,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::VolumeTotal:
+						case ProtocolItems::VolumeTotal:
 						{
 							if (!StepUtility::ParseInteger(value, Order->VolumeTotal))
 							{
@@ -14146,7 +14146,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::VolumeTraded:
+						case ProtocolItems::VolumeTraded:
 						{
 							if (!StepUtility::ParseInteger(value, Order->VolumeTraded))
 							{
@@ -14155,7 +14155,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::VolumeMultiple:
+						case ProtocolItems::VolumeMultiple:
 						{
 							if (!StepUtility::ParseInteger(value, Order->VolumeMultiple))
 							{
@@ -14164,7 +14164,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::OrderStatus:
+						case ProtocolItems::OrderStatus:
 						{
 							if (!StepUtility::ParseEnum(value, Order->OrderStatus))
 							{
@@ -14173,7 +14173,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::StatusMsg:
+						case ProtocolItems::StatusMsg:
 						{
 							if (value.length() >= sizeof(Order->StatusMsg))
 							{
@@ -14183,7 +14183,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Order->StatusMsg, value.c_str(), value.length());
 							break;
 						}
-						case Items::OrderDate:
+						case ProtocolItems::OrderDate:
 						{
 							if (value.length() >= sizeof(Order->OrderDate))
 							{
@@ -14193,7 +14193,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Order->OrderDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::OrderTime:
+						case ProtocolItems::OrderTime:
 						{
 							if (value.length() >= sizeof(Order->OrderTime))
 							{
@@ -14203,7 +14203,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Order->OrderTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::CancelDate:
+						case ProtocolItems::CancelDate:
 						{
 							if (value.length() >= sizeof(Order->CancelDate))
 							{
@@ -14213,7 +14213,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Order->CancelDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::CancelTime:
+						case ProtocolItems::CancelTime:
 						{
 							if (value.length() >= sizeof(Order->CancelTime))
 							{
@@ -14223,7 +14223,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Order->CancelTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::SessionId:
+						case ProtocolItems::SessionId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->SessionId))
 							{
@@ -14232,7 +14232,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::ClientOrderId:
+						case ProtocolItems::ClientOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->ClientOrderId))
 							{
@@ -14241,7 +14241,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::RequestId:
+						case ProtocolItems::RequestId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->RequestId))
 							{
@@ -14250,7 +14250,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::FrozenCash:
+						case ProtocolItems::FrozenCash:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenCash))
 							{
@@ -14259,7 +14259,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::FrozenMargin:
+						case ProtocolItems::FrozenMargin:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenMargin))
 							{
@@ -14268,7 +14268,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::FrozenCommission:
+						case ProtocolItems::FrozenCommission:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenCommission))
 							{
@@ -14277,7 +14277,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::FrozenStampTax:
+						case ProtocolItems::FrozenStampTax:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenStampTax))
 							{
@@ -14286,7 +14286,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::FrozenTransferFee:
+						case ProtocolItems::FrozenTransferFee:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenTransferFee))
 							{
@@ -14322,10 +14322,10 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -14334,7 +14334,7 @@ bool RspQryRiskGroupOrderPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -14475,18 +14475,18 @@ int ReqQryRiskGroupTradePackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryRiskGroupTrade != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryRiskGroupTradeField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryRiskGroupTradeField::FieldId);
 		if (strlen(ReqQryRiskGroupTrade->UserId) >= sizeof(ReqQryRiskGroupTrade->UserId))
 		{
 			ReqQryRiskGroupTrade->UserId[sizeof(ReqQryRiskGroupTrade->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqQryRiskGroupTrade->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqQryRiskGroupTrade->UserId);
 		if (strlen(ReqQryRiskGroupTrade->AccountId) >= sizeof(ReqQryRiskGroupTrade->AccountId))
 		{
 			ReqQryRiskGroupTrade->AccountId[sizeof(ReqQryRiskGroupTrade->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqQryRiskGroupTrade->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryRiskGroupTradeField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqQryRiskGroupTrade->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryRiskGroupTradeField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -14519,10 +14519,10 @@ bool ReqQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqQryRiskGroupTrade->UserId))
 							{
@@ -14532,7 +14532,7 @@ bool ReqQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqQryRiskGroupTrade->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqQryRiskGroupTrade->AccountId))
 							{
@@ -14655,70 +14655,70 @@ int RspQryRiskGroupTradePackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Trade != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, TradeField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, TradeField::FieldId);
 		if (strlen(Trade->TradingDay) >= sizeof(Trade->TradingDay))
 		{
 			Trade->TradingDay[sizeof(Trade->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, Trade->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, Trade->TradingDay);
 		if (strlen(Trade->AccountId) >= sizeof(Trade->AccountId))
 		{
 			Trade->AccountId[sizeof(Trade->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, Trade->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, Trade->AccountId);
 		if (strlen(Trade->ExchangeId) >= sizeof(Trade->ExchangeId))
 		{
 			Trade->ExchangeId[sizeof(Trade->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, Trade->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, Trade->ExchangeId);
 		if (strlen(Trade->InstrumentId) >= sizeof(Trade->InstrumentId))
 		{
 			Trade->InstrumentId[sizeof(Trade->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, Trade->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(Trade->ProductClass));
-		StepUtility::WriteString(cursor, Items::OrderId, Trade->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, Trade->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(Trade->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, Trade->OrderId);
 		if (strlen(Trade->OrderSysId) >= sizeof(Trade->OrderSysId))
 		{
 			Trade->OrderSysId[sizeof(Trade->OrderSysId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderSysId, Trade->OrderSysId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderSysId, Trade->OrderSysId);
 		if (strlen(Trade->TradeId) >= sizeof(Trade->TradeId))
 		{
 			Trade->TradeId[sizeof(Trade->TradeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradeId, Trade->TradeId);
-		StepUtility::WriteString(cursor, Items::Direction, static_cast<int>(Trade->Direction));
-		StepUtility::WriteString(cursor, Items::OffsetFlag, static_cast<int>(Trade->OffsetFlag));
-		StepUtility::WriteString(cursor, Items::Price, Trade->Price);
-		StepUtility::WriteString(cursor, Items::Volume, Trade->Volume);
-		StepUtility::WriteString(cursor, Items::VolumeMultiple, Trade->VolumeMultiple);
-		StepUtility::WriteString(cursor, Items::TradeAmount, Trade->TradeAmount);
-		StepUtility::WriteString(cursor, Items::Commission, Trade->Commission);
-		StepUtility::WriteString(cursor, Items::StampTax, Trade->StampTax);
-		StepUtility::WriteString(cursor, Items::TransferFee, Trade->TransferFee);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeId, Trade->TradeId);
+		StepUtility::WriteString(cursor, ProtocolItems::Direction, static_cast<int>(Trade->Direction));
+		StepUtility::WriteString(cursor, ProtocolItems::OffsetFlag, static_cast<int>(Trade->OffsetFlag));
+		StepUtility::WriteString(cursor, ProtocolItems::Price, Trade->Price);
+		StepUtility::WriteString(cursor, ProtocolItems::Volume, Trade->Volume);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeMultiple, Trade->VolumeMultiple);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeAmount, Trade->TradeAmount);
+		StepUtility::WriteString(cursor, ProtocolItems::Commission, Trade->Commission);
+		StepUtility::WriteString(cursor, ProtocolItems::StampTax, Trade->StampTax);
+		StepUtility::WriteString(cursor, ProtocolItems::TransferFee, Trade->TransferFee);
 		if (strlen(Trade->TradeDate) >= sizeof(Trade->TradeDate))
 		{
 			Trade->TradeDate[sizeof(Trade->TradeDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradeDate, Trade->TradeDate);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeDate, Trade->TradeDate);
 		if (strlen(Trade->TradeTime) >= sizeof(Trade->TradeTime))
 		{
 			Trade->TradeTime[sizeof(Trade->TradeTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradeTime, Trade->TradeTime);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, TradeField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeTime, Trade->TradeTime);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, TradeField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -14751,10 +14751,10 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(Trade->TradingDay))
 							{
@@ -14764,7 +14764,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Trade->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(Trade->AccountId))
 							{
@@ -14774,7 +14774,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Trade->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(Trade->ExchangeId))
 							{
@@ -14784,7 +14784,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Trade->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(Trade->InstrumentId))
 							{
@@ -14794,7 +14794,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Trade->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, Trade->ProductClass))
 							{
@@ -14803,7 +14803,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, Trade->OrderId))
 							{
@@ -14812,7 +14812,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::OrderSysId:
+						case ProtocolItems::OrderSysId:
 						{
 							if (value.length() >= sizeof(Trade->OrderSysId))
 							{
@@ -14822,7 +14822,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Trade->OrderSysId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeId:
+						case ProtocolItems::TradeId:
 						{
 							if (value.length() >= sizeof(Trade->TradeId))
 							{
@@ -14832,7 +14832,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Trade->TradeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Direction:
+						case ProtocolItems::Direction:
 						{
 							if (!StepUtility::ParseEnum(value, Trade->Direction))
 							{
@@ -14841,7 +14841,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::OffsetFlag:
+						case ProtocolItems::OffsetFlag:
 						{
 							if (!StepUtility::ParseEnum(value, Trade->OffsetFlag))
 							{
@@ -14850,7 +14850,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::Price:
+						case ProtocolItems::Price:
 						{
 							if (!StepUtility::ParseDouble(value, Trade->Price))
 							{
@@ -14859,7 +14859,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::Volume:
+						case ProtocolItems::Volume:
 						{
 							if (!StepUtility::ParseInteger(value, Trade->Volume))
 							{
@@ -14868,7 +14868,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::VolumeMultiple:
+						case ProtocolItems::VolumeMultiple:
 						{
 							if (!StepUtility::ParseInteger(value, Trade->VolumeMultiple))
 							{
@@ -14877,7 +14877,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::TradeAmount:
+						case ProtocolItems::TradeAmount:
 						{
 							if (!StepUtility::ParseDouble(value, Trade->TradeAmount))
 							{
@@ -14886,7 +14886,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::Commission:
+						case ProtocolItems::Commission:
 						{
 							if (!StepUtility::ParseDouble(value, Trade->Commission))
 							{
@@ -14895,7 +14895,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::StampTax:
+						case ProtocolItems::StampTax:
 						{
 							if (!StepUtility::ParseDouble(value, Trade->StampTax))
 							{
@@ -14904,7 +14904,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::TransferFee:
+						case ProtocolItems::TransferFee:
 						{
 							if (!StepUtility::ParseDouble(value, Trade->TransferFee))
 							{
@@ -14913,7 +14913,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::TradeDate:
+						case ProtocolItems::TradeDate:
 						{
 							if (value.length() >= sizeof(Trade->TradeDate))
 							{
@@ -14923,7 +14923,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(Trade->TradeDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeTime:
+						case ProtocolItems::TradeTime:
 						{
 							if (value.length() >= sizeof(Trade->TradeTime))
 							{
@@ -14960,10 +14960,10 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -14972,7 +14972,7 @@ bool RspQryRiskGroupTradePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -15113,18 +15113,18 @@ int ReqQryRiskGroupAccountRiskPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryRiskGroupAccountRisk != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryRiskGroupAccountRiskField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryRiskGroupAccountRiskField::FieldId);
 		if (strlen(ReqQryRiskGroupAccountRisk->UserId) >= sizeof(ReqQryRiskGroupAccountRisk->UserId))
 		{
 			ReqQryRiskGroupAccountRisk->UserId[sizeof(ReqQryRiskGroupAccountRisk->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqQryRiskGroupAccountRisk->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqQryRiskGroupAccountRisk->UserId);
 		if (strlen(ReqQryRiskGroupAccountRisk->AccountId) >= sizeof(ReqQryRiskGroupAccountRisk->AccountId))
 		{
 			ReqQryRiskGroupAccountRisk->AccountId[sizeof(ReqQryRiskGroupAccountRisk->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqQryRiskGroupAccountRisk->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryRiskGroupAccountRiskField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqQryRiskGroupAccountRisk->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryRiskGroupAccountRiskField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -15157,10 +15157,10 @@ bool ReqQryRiskGroupAccountRiskPackage::FromStepStream(char* buff, int startInde
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqQryRiskGroupAccountRisk->UserId))
 							{
@@ -15170,7 +15170,7 @@ bool ReqQryRiskGroupAccountRiskPackage::FromStepStream(char* buff, int startInde
 							memcpy(ReqQryRiskGroupAccountRisk->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqQryRiskGroupAccountRisk->AccountId))
 							{
@@ -15293,26 +15293,26 @@ int RspQryRiskGroupAccountRiskPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (AccountRisk != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, AccountRiskField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, AccountRiskField::FieldId);
 		if (strlen(AccountRisk->AccountId) >= sizeof(AccountRisk->AccountId))
 		{
 			AccountRisk->AccountId[sizeof(AccountRisk->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, AccountRisk->AccountId);
-		StepUtility::WriteString(cursor, Items::RiskId, AccountRisk->RiskId);
-		StepUtility::WriteString(cursor, Items::RiskStatus, static_cast<int>(AccountRisk->RiskStatus));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, AccountRiskField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, AccountRisk->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, AccountRisk->RiskId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskStatus, static_cast<int>(AccountRisk->RiskStatus));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, AccountRiskField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -15345,10 +15345,10 @@ bool RspQryRiskGroupAccountRiskPackage::FromStepStream(char* buff, int startInde
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(AccountRisk->AccountId))
 							{
@@ -15358,7 +15358,7 @@ bool RspQryRiskGroupAccountRiskPackage::FromStepStream(char* buff, int startInde
 							memcpy(AccountRisk->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, AccountRisk->RiskId))
 							{
@@ -15367,7 +15367,7 @@ bool RspQryRiskGroupAccountRiskPackage::FromStepStream(char* buff, int startInde
 							}
 							break;
 						}
-						case Items::RiskStatus:
+						case ProtocolItems::RiskStatus:
 						{
 							if (!StepUtility::ParseEnum(value, AccountRisk->RiskStatus))
 							{
@@ -15403,10 +15403,10 @@ bool RspQryRiskGroupAccountRiskPackage::FromStepStream(char* buff, int startInde
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -15415,7 +15415,7 @@ bool RspQryRiskGroupAccountRiskPackage::FromStepStream(char* buff, int startInde
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -15556,18 +15556,18 @@ int ReqQryRiskGroupAccountRiskNotifyPackage::ToStepStream(char* buff, int size) 
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryRiskGroupAccountRiskNotify != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryRiskGroupAccountRiskNotifyField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryRiskGroupAccountRiskNotifyField::FieldId);
 		if (strlen(ReqQryRiskGroupAccountRiskNotify->UserId) >= sizeof(ReqQryRiskGroupAccountRiskNotify->UserId))
 		{
 			ReqQryRiskGroupAccountRiskNotify->UserId[sizeof(ReqQryRiskGroupAccountRiskNotify->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqQryRiskGroupAccountRiskNotify->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqQryRiskGroupAccountRiskNotify->UserId);
 		if (strlen(ReqQryRiskGroupAccountRiskNotify->AccountId) >= sizeof(ReqQryRiskGroupAccountRiskNotify->AccountId))
 		{
 			ReqQryRiskGroupAccountRiskNotify->AccountId[sizeof(ReqQryRiskGroupAccountRiskNotify->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqQryRiskGroupAccountRiskNotify->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryRiskGroupAccountRiskNotifyField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqQryRiskGroupAccountRiskNotify->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryRiskGroupAccountRiskNotifyField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -15600,10 +15600,10 @@ bool ReqQryRiskGroupAccountRiskNotifyPackage::FromStepStream(char* buff, int sta
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqQryRiskGroupAccountRiskNotify->UserId))
 							{
@@ -15613,7 +15613,7 @@ bool ReqQryRiskGroupAccountRiskNotifyPackage::FromStepStream(char* buff, int sta
 							memcpy(ReqQryRiskGroupAccountRiskNotify->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqQryRiskGroupAccountRiskNotify->AccountId))
 							{
@@ -15736,42 +15736,42 @@ int RspQryRiskGroupAccountRiskNotifyPackage::ToStepStream(char* buff, int size) 
 	StepWriteCursor cursor(buff, size);
 	if (AccountRiskNotify != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, AccountRiskNotifyField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, AccountRiskNotifyField::FieldId);
 		if (strlen(AccountRiskNotify->NotifyDate) >= sizeof(AccountRiskNotify->NotifyDate))
 		{
 			AccountRiskNotify->NotifyDate[sizeof(AccountRiskNotify->NotifyDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::NotifyDate, AccountRiskNotify->NotifyDate);
+		StepUtility::WriteString(cursor, ProtocolItems::NotifyDate, AccountRiskNotify->NotifyDate);
 		if (strlen(AccountRiskNotify->NotifyTime) >= sizeof(AccountRiskNotify->NotifyTime))
 		{
 			AccountRiskNotify->NotifyTime[sizeof(AccountRiskNotify->NotifyTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::NotifyTime, AccountRiskNotify->NotifyTime);
+		StepUtility::WriteString(cursor, ProtocolItems::NotifyTime, AccountRiskNotify->NotifyTime);
 		if (strlen(AccountRiskNotify->AccountId) >= sizeof(AccountRiskNotify->AccountId))
 		{
 			AccountRiskNotify->AccountId[sizeof(AccountRiskNotify->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, AccountRiskNotify->AccountId);
-		StepUtility::WriteString(cursor, Items::RiskId, AccountRiskNotify->RiskId);
-		StepUtility::WriteString(cursor, Items::RiskRuleId, AccountRiskNotify->RiskRuleId);
-		StepUtility::WriteString(cursor, Items::RiskStatus, static_cast<int>(AccountRiskNotify->RiskStatus));
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, AccountRiskNotify->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, AccountRiskNotify->RiskId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskRuleId, AccountRiskNotify->RiskRuleId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskStatus, static_cast<int>(AccountRiskNotify->RiskStatus));
 		if (strlen(AccountRiskNotify->RiskMessage) >= sizeof(AccountRiskNotify->RiskMessage))
 		{
 			AccountRiskNotify->RiskMessage[sizeof(AccountRiskNotify->RiskMessage) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::RiskMessage, AccountRiskNotify->RiskMessage);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, AccountRiskNotifyField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskMessage, AccountRiskNotify->RiskMessage);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, AccountRiskNotifyField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -15804,10 +15804,10 @@ bool RspQryRiskGroupAccountRiskNotifyPackage::FromStepStream(char* buff, int sta
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::NotifyDate:
+						case ProtocolItems::NotifyDate:
 						{
 							if (value.length() >= sizeof(AccountRiskNotify->NotifyDate))
 							{
@@ -15817,7 +15817,7 @@ bool RspQryRiskGroupAccountRiskNotifyPackage::FromStepStream(char* buff, int sta
 							memcpy(AccountRiskNotify->NotifyDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::NotifyTime:
+						case ProtocolItems::NotifyTime:
 						{
 							if (value.length() >= sizeof(AccountRiskNotify->NotifyTime))
 							{
@@ -15827,7 +15827,7 @@ bool RspQryRiskGroupAccountRiskNotifyPackage::FromStepStream(char* buff, int sta
 							memcpy(AccountRiskNotify->NotifyTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(AccountRiskNotify->AccountId))
 							{
@@ -15837,7 +15837,7 @@ bool RspQryRiskGroupAccountRiskNotifyPackage::FromStepStream(char* buff, int sta
 							memcpy(AccountRiskNotify->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, AccountRiskNotify->RiskId))
 							{
@@ -15846,7 +15846,7 @@ bool RspQryRiskGroupAccountRiskNotifyPackage::FromStepStream(char* buff, int sta
 							}
 							break;
 						}
-						case Items::RiskRuleId:
+						case ProtocolItems::RiskRuleId:
 						{
 							if (!StepUtility::ParseInteger(value, AccountRiskNotify->RiskRuleId))
 							{
@@ -15855,7 +15855,7 @@ bool RspQryRiskGroupAccountRiskNotifyPackage::FromStepStream(char* buff, int sta
 							}
 							break;
 						}
-						case Items::RiskStatus:
+						case ProtocolItems::RiskStatus:
 						{
 							if (!StepUtility::ParseEnum(value, AccountRiskNotify->RiskStatus))
 							{
@@ -15864,7 +15864,7 @@ bool RspQryRiskGroupAccountRiskNotifyPackage::FromStepStream(char* buff, int sta
 							}
 							break;
 						}
-						case Items::RiskMessage:
+						case ProtocolItems::RiskMessage:
 						{
 							if (value.length() >= sizeof(AccountRiskNotify->RiskMessage))
 							{
@@ -15901,10 +15901,10 @@ bool RspQryRiskGroupAccountRiskNotifyPackage::FromStepStream(char* buff, int sta
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -15913,7 +15913,7 @@ bool RspQryRiskGroupAccountRiskNotifyPackage::FromStepStream(char* buff, int sta
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -16054,35 +16054,35 @@ int ReqRiskInsertOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRiskInsertOrder != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRiskInsertOrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRiskInsertOrderField::FieldId);
 		if (strlen(ReqRiskInsertOrder->UserId) >= sizeof(ReqRiskInsertOrder->UserId))
 		{
 			ReqRiskInsertOrder->UserId[sizeof(ReqRiskInsertOrder->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqRiskInsertOrder->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqRiskInsertOrder->UserId);
 		if (strlen(ReqRiskInsertOrder->AccountId) >= sizeof(ReqRiskInsertOrder->AccountId))
 		{
 			ReqRiskInsertOrder->AccountId[sizeof(ReqRiskInsertOrder->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqRiskInsertOrder->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqRiskInsertOrder->AccountId);
 		if (strlen(ReqRiskInsertOrder->ExchangeId) >= sizeof(ReqRiskInsertOrder->ExchangeId))
 		{
 			ReqRiskInsertOrder->ExchangeId[sizeof(ReqRiskInsertOrder->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqRiskInsertOrder->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqRiskInsertOrder->ExchangeId);
 		if (strlen(ReqRiskInsertOrder->InstrumentId) >= sizeof(ReqRiskInsertOrder->InstrumentId))
 		{
 			ReqRiskInsertOrder->InstrumentId[sizeof(ReqRiskInsertOrder->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, ReqRiskInsertOrder->InstrumentId);
-		StepUtility::WriteString(cursor, Items::Direction, static_cast<int>(ReqRiskInsertOrder->Direction));
-		StepUtility::WriteString(cursor, Items::OffsetFlag, static_cast<int>(ReqRiskInsertOrder->OffsetFlag));
-		StepUtility::WriteString(cursor, Items::OrderPriceType, static_cast<int>(ReqRiskInsertOrder->OrderPriceType));
-		StepUtility::WriteString(cursor, Items::Price, ReqRiskInsertOrder->Price);
-		StepUtility::WriteString(cursor, Items::Volume, ReqRiskInsertOrder->Volume);
-		StepUtility::WriteString(cursor, Items::ClientOrderId, ReqRiskInsertOrder->ClientOrderId);
-		StepUtility::WriteString(cursor, Items::IsForceClose, ReqRiskInsertOrder->IsForceClose);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRiskInsertOrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, ReqRiskInsertOrder->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::Direction, static_cast<int>(ReqRiskInsertOrder->Direction));
+		StepUtility::WriteString(cursor, ProtocolItems::OffsetFlag, static_cast<int>(ReqRiskInsertOrder->OffsetFlag));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderPriceType, static_cast<int>(ReqRiskInsertOrder->OrderPriceType));
+		StepUtility::WriteString(cursor, ProtocolItems::Price, ReqRiskInsertOrder->Price);
+		StepUtility::WriteString(cursor, ProtocolItems::Volume, ReqRiskInsertOrder->Volume);
+		StepUtility::WriteString(cursor, ProtocolItems::ClientOrderId, ReqRiskInsertOrder->ClientOrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::IsForceClose, ReqRiskInsertOrder->IsForceClose);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRiskInsertOrderField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -16115,10 +16115,10 @@ bool ReqRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqRiskInsertOrder->UserId))
 							{
@@ -16128,7 +16128,7 @@ bool ReqRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqRiskInsertOrder->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqRiskInsertOrder->AccountId))
 							{
@@ -16138,7 +16138,7 @@ bool ReqRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqRiskInsertOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqRiskInsertOrder->ExchangeId))
 							{
@@ -16148,7 +16148,7 @@ bool ReqRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqRiskInsertOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(ReqRiskInsertOrder->InstrumentId))
 							{
@@ -16158,7 +16158,7 @@ bool ReqRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqRiskInsertOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Direction:
+						case ProtocolItems::Direction:
 						{
 							if (!StepUtility::ParseEnum(value, ReqRiskInsertOrder->Direction))
 							{
@@ -16167,7 +16167,7 @@ bool ReqRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::OffsetFlag:
+						case ProtocolItems::OffsetFlag:
 						{
 							if (!StepUtility::ParseEnum(value, ReqRiskInsertOrder->OffsetFlag))
 							{
@@ -16176,7 +16176,7 @@ bool ReqRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::OrderPriceType:
+						case ProtocolItems::OrderPriceType:
 						{
 							if (!StepUtility::ParseEnum(value, ReqRiskInsertOrder->OrderPriceType))
 							{
@@ -16185,7 +16185,7 @@ bool ReqRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::Price:
+						case ProtocolItems::Price:
 						{
 							if (!StepUtility::ParseDouble(value, ReqRiskInsertOrder->Price))
 							{
@@ -16194,7 +16194,7 @@ bool ReqRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::Volume:
+						case ProtocolItems::Volume:
 						{
 							if (!StepUtility::ParseInteger(value, ReqRiskInsertOrder->Volume))
 							{
@@ -16203,7 +16203,7 @@ bool ReqRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::ClientOrderId:
+						case ProtocolItems::ClientOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqRiskInsertOrder->ClientOrderId))
 							{
@@ -16212,7 +16212,7 @@ bool ReqRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::IsForceClose:
+						case ProtocolItems::IsForceClose:
 						{
 							if (!StepUtility::ParseBool(value, ReqRiskInsertOrder->IsForceClose))
 							{
@@ -16334,88 +16334,88 @@ int RspRiskInsertOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (Order != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, OrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, OrderField::FieldId);
 		if (strlen(Order->TradingDay) >= sizeof(Order->TradingDay))
 		{
 			Order->TradingDay[sizeof(Order->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, Order->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, Order->TradingDay);
 		if (strlen(Order->AccountId) >= sizeof(Order->AccountId))
 		{
 			Order->AccountId[sizeof(Order->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, Order->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, Order->AccountId);
 		if (strlen(Order->ExchangeId) >= sizeof(Order->ExchangeId))
 		{
 			Order->ExchangeId[sizeof(Order->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, Order->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, Order->ExchangeId);
 		if (strlen(Order->InstrumentId) >= sizeof(Order->InstrumentId))
 		{
 			Order->InstrumentId[sizeof(Order->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, Order->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(Order->ProductClass));
-		StepUtility::WriteString(cursor, Items::OrderId, Order->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, Order->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(Order->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, Order->OrderId);
 		if (strlen(Order->OrderSysId) >= sizeof(Order->OrderSysId))
 		{
 			Order->OrderSysId[sizeof(Order->OrderSysId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderSysId, Order->OrderSysId);
-		StepUtility::WriteString(cursor, Items::Direction, static_cast<int>(Order->Direction));
-		StepUtility::WriteString(cursor, Items::OffsetFlag, static_cast<int>(Order->OffsetFlag));
-		StepUtility::WriteString(cursor, Items::OrderPriceType, static_cast<int>(Order->OrderPriceType));
-		StepUtility::WriteString(cursor, Items::Price, Order->Price);
-		StepUtility::WriteString(cursor, Items::Volume, Order->Volume);
-		StepUtility::WriteString(cursor, Items::VolumeTotal, Order->VolumeTotal);
-		StepUtility::WriteString(cursor, Items::VolumeTraded, Order->VolumeTraded);
-		StepUtility::WriteString(cursor, Items::VolumeMultiple, Order->VolumeMultiple);
-		StepUtility::WriteString(cursor, Items::OrderStatus, static_cast<int>(Order->OrderStatus));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderSysId, Order->OrderSysId);
+		StepUtility::WriteString(cursor, ProtocolItems::Direction, static_cast<int>(Order->Direction));
+		StepUtility::WriteString(cursor, ProtocolItems::OffsetFlag, static_cast<int>(Order->OffsetFlag));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderPriceType, static_cast<int>(Order->OrderPriceType));
+		StepUtility::WriteString(cursor, ProtocolItems::Price, Order->Price);
+		StepUtility::WriteString(cursor, ProtocolItems::Volume, Order->Volume);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeTotal, Order->VolumeTotal);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeTraded, Order->VolumeTraded);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeMultiple, Order->VolumeMultiple);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderStatus, static_cast<int>(Order->OrderStatus));
 		if (strlen(Order->StatusMsg) >= sizeof(Order->StatusMsg))
 		{
 			Order->StatusMsg[sizeof(Order->StatusMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::StatusMsg, Order->StatusMsg);
+		StepUtility::WriteString(cursor, ProtocolItems::StatusMsg, Order->StatusMsg);
 		if (strlen(Order->OrderDate) >= sizeof(Order->OrderDate))
 		{
 			Order->OrderDate[sizeof(Order->OrderDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderDate, Order->OrderDate);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderDate, Order->OrderDate);
 		if (strlen(Order->OrderTime) >= sizeof(Order->OrderTime))
 		{
 			Order->OrderTime[sizeof(Order->OrderTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderTime, Order->OrderTime);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderTime, Order->OrderTime);
 		if (strlen(Order->CancelDate) >= sizeof(Order->CancelDate))
 		{
 			Order->CancelDate[sizeof(Order->CancelDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::CancelDate, Order->CancelDate);
+		StepUtility::WriteString(cursor, ProtocolItems::CancelDate, Order->CancelDate);
 		if (strlen(Order->CancelTime) >= sizeof(Order->CancelTime))
 		{
 			Order->CancelTime[sizeof(Order->CancelTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::CancelTime, Order->CancelTime);
-		StepUtility::WriteString(cursor, Items::SessionId, Order->SessionId);
-		StepUtility::WriteString(cursor, Items::ClientOrderId, Order->ClientOrderId);
-		StepUtility::WriteString(cursor, Items::RequestId, Order->RequestId);
-		StepUtility::WriteString(cursor, Items::FrozenCash, Order->FrozenCash);
-		StepUtility::WriteString(cursor, Items::FrozenMargin, Order->FrozenMargin);
-		StepUtility::WriteString(cursor, Items::FrozenCommission, Order->FrozenCommission);
-		StepUtility::WriteString(cursor, Items::FrozenStampTax, Order->FrozenStampTax);
-		StepUtility::WriteString(cursor, Items::FrozenTransferFee, Order->FrozenTransferFee);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, OrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::CancelTime, Order->CancelTime);
+		StepUtility::WriteString(cursor, ProtocolItems::SessionId, Order->SessionId);
+		StepUtility::WriteString(cursor, ProtocolItems::ClientOrderId, Order->ClientOrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::RequestId, Order->RequestId);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenCash, Order->FrozenCash);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenMargin, Order->FrozenMargin);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenCommission, Order->FrozenCommission);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenStampTax, Order->FrozenStampTax);
+		StepUtility::WriteString(cursor, ProtocolItems::FrozenTransferFee, Order->FrozenTransferFee);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, OrderField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -16448,10 +16448,10 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(Order->TradingDay))
 							{
@@ -16461,7 +16461,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(Order->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(Order->AccountId))
 							{
@@ -16471,7 +16471,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(Order->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(Order->ExchangeId))
 							{
@@ -16481,7 +16481,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(Order->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(Order->InstrumentId))
 							{
@@ -16491,7 +16491,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(Order->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, Order->ProductClass))
 							{
@@ -16500,7 +16500,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->OrderId))
 							{
@@ -16509,7 +16509,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::OrderSysId:
+						case ProtocolItems::OrderSysId:
 						{
 							if (value.length() >= sizeof(Order->OrderSysId))
 							{
@@ -16519,7 +16519,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(Order->OrderSysId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Direction:
+						case ProtocolItems::Direction:
 						{
 							if (!StepUtility::ParseEnum(value, Order->Direction))
 							{
@@ -16528,7 +16528,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::OffsetFlag:
+						case ProtocolItems::OffsetFlag:
 						{
 							if (!StepUtility::ParseEnum(value, Order->OffsetFlag))
 							{
@@ -16537,7 +16537,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::OrderPriceType:
+						case ProtocolItems::OrderPriceType:
 						{
 							if (!StepUtility::ParseEnum(value, Order->OrderPriceType))
 							{
@@ -16546,7 +16546,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::Price:
+						case ProtocolItems::Price:
 						{
 							if (!StepUtility::ParseDouble(value, Order->Price))
 							{
@@ -16555,7 +16555,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::Volume:
+						case ProtocolItems::Volume:
 						{
 							if (!StepUtility::ParseInteger(value, Order->Volume))
 							{
@@ -16564,7 +16564,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::VolumeTotal:
+						case ProtocolItems::VolumeTotal:
 						{
 							if (!StepUtility::ParseInteger(value, Order->VolumeTotal))
 							{
@@ -16573,7 +16573,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::VolumeTraded:
+						case ProtocolItems::VolumeTraded:
 						{
 							if (!StepUtility::ParseInteger(value, Order->VolumeTraded))
 							{
@@ -16582,7 +16582,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::VolumeMultiple:
+						case ProtocolItems::VolumeMultiple:
 						{
 							if (!StepUtility::ParseInteger(value, Order->VolumeMultiple))
 							{
@@ -16591,7 +16591,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::OrderStatus:
+						case ProtocolItems::OrderStatus:
 						{
 							if (!StepUtility::ParseEnum(value, Order->OrderStatus))
 							{
@@ -16600,7 +16600,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::StatusMsg:
+						case ProtocolItems::StatusMsg:
 						{
 							if (value.length() >= sizeof(Order->StatusMsg))
 							{
@@ -16610,7 +16610,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(Order->StatusMsg, value.c_str(), value.length());
 							break;
 						}
-						case Items::OrderDate:
+						case ProtocolItems::OrderDate:
 						{
 							if (value.length() >= sizeof(Order->OrderDate))
 							{
@@ -16620,7 +16620,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(Order->OrderDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::OrderTime:
+						case ProtocolItems::OrderTime:
 						{
 							if (value.length() >= sizeof(Order->OrderTime))
 							{
@@ -16630,7 +16630,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(Order->OrderTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::CancelDate:
+						case ProtocolItems::CancelDate:
 						{
 							if (value.length() >= sizeof(Order->CancelDate))
 							{
@@ -16640,7 +16640,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(Order->CancelDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::CancelTime:
+						case ProtocolItems::CancelTime:
 						{
 							if (value.length() >= sizeof(Order->CancelTime))
 							{
@@ -16650,7 +16650,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(Order->CancelTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::SessionId:
+						case ProtocolItems::SessionId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->SessionId))
 							{
@@ -16659,7 +16659,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::ClientOrderId:
+						case ProtocolItems::ClientOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->ClientOrderId))
 							{
@@ -16668,7 +16668,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::RequestId:
+						case ProtocolItems::RequestId:
 						{
 							if (!StepUtility::ParseInteger(value, Order->RequestId))
 							{
@@ -16677,7 +16677,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::FrozenCash:
+						case ProtocolItems::FrozenCash:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenCash))
 							{
@@ -16686,7 +16686,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::FrozenMargin:
+						case ProtocolItems::FrozenMargin:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenMargin))
 							{
@@ -16695,7 +16695,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::FrozenCommission:
+						case ProtocolItems::FrozenCommission:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenCommission))
 							{
@@ -16704,7 +16704,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::FrozenStampTax:
+						case ProtocolItems::FrozenStampTax:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenStampTax))
 							{
@@ -16713,7 +16713,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::FrozenTransferFee:
+						case ProtocolItems::FrozenTransferFee:
 						{
 							if (!StepUtility::ParseDouble(value, Order->FrozenTransferFee))
 							{
@@ -16749,10 +16749,10 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -16761,7 +16761,7 @@ bool RspRiskInsertOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -16902,36 +16902,36 @@ int ReqRiskCancelOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRiskCancelOrder != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRiskCancelOrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRiskCancelOrderField::FieldId);
 		if (strlen(ReqRiskCancelOrder->UserId) >= sizeof(ReqRiskCancelOrder->UserId))
 		{
 			ReqRiskCancelOrder->UserId[sizeof(ReqRiskCancelOrder->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqRiskCancelOrder->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqRiskCancelOrder->UserId);
 		if (strlen(ReqRiskCancelOrder->AccountId) >= sizeof(ReqRiskCancelOrder->AccountId))
 		{
 			ReqRiskCancelOrder->AccountId[sizeof(ReqRiskCancelOrder->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqRiskCancelOrder->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqRiskCancelOrder->AccountId);
 		if (strlen(ReqRiskCancelOrder->ExchangeId) >= sizeof(ReqRiskCancelOrder->ExchangeId))
 		{
 			ReqRiskCancelOrder->ExchangeId[sizeof(ReqRiskCancelOrder->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqRiskCancelOrder->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqRiskCancelOrder->ExchangeId);
 		if (strlen(ReqRiskCancelOrder->InstrumentId) >= sizeof(ReqRiskCancelOrder->InstrumentId))
 		{
 			ReqRiskCancelOrder->InstrumentId[sizeof(ReqRiskCancelOrder->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, ReqRiskCancelOrder->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ClientCancelOrderId, ReqRiskCancelOrder->ClientCancelOrderId);
-		StepUtility::WriteString(cursor, Items::OrderId, ReqRiskCancelOrder->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, ReqRiskCancelOrder->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ClientCancelOrderId, ReqRiskCancelOrder->ClientCancelOrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, ReqRiskCancelOrder->OrderId);
 		if (strlen(ReqRiskCancelOrder->OrderSysId) >= sizeof(ReqRiskCancelOrder->OrderSysId))
 		{
 			ReqRiskCancelOrder->OrderSysId[sizeof(ReqRiskCancelOrder->OrderSysId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderSysId, ReqRiskCancelOrder->OrderSysId);
-		StepUtility::WriteString(cursor, Items::ClientOrderId, ReqRiskCancelOrder->ClientOrderId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRiskCancelOrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderSysId, ReqRiskCancelOrder->OrderSysId);
+		StepUtility::WriteString(cursor, ProtocolItems::ClientOrderId, ReqRiskCancelOrder->ClientOrderId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRiskCancelOrderField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -16964,10 +16964,10 @@ bool ReqRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqRiskCancelOrder->UserId))
 							{
@@ -16977,7 +16977,7 @@ bool ReqRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqRiskCancelOrder->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqRiskCancelOrder->AccountId))
 							{
@@ -16987,7 +16987,7 @@ bool ReqRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqRiskCancelOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqRiskCancelOrder->ExchangeId))
 							{
@@ -16997,7 +16997,7 @@ bool ReqRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqRiskCancelOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(ReqRiskCancelOrder->InstrumentId))
 							{
@@ -17007,7 +17007,7 @@ bool ReqRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqRiskCancelOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ClientCancelOrderId:
+						case ProtocolItems::ClientCancelOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqRiskCancelOrder->ClientCancelOrderId))
 							{
@@ -17016,7 +17016,7 @@ bool ReqRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqRiskCancelOrder->OrderId))
 							{
@@ -17025,7 +17025,7 @@ bool ReqRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::OrderSysId:
+						case ProtocolItems::OrderSysId:
 						{
 							if (value.length() >= sizeof(ReqRiskCancelOrder->OrderSysId))
 							{
@@ -17035,7 +17035,7 @@ bool ReqRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqRiskCancelOrder->OrderSysId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ClientOrderId:
+						case ProtocolItems::ClientOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqRiskCancelOrder->ClientOrderId))
 							{
@@ -17157,42 +17157,42 @@ int RspRiskCancelOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (CancelOrder != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, CancelOrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, CancelOrderField::FieldId);
 		if (strlen(CancelOrder->AccountId) >= sizeof(CancelOrder->AccountId))
 		{
 			CancelOrder->AccountId[sizeof(CancelOrder->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, CancelOrder->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, CancelOrder->AccountId);
 		if (strlen(CancelOrder->ExchangeId) >= sizeof(CancelOrder->ExchangeId))
 		{
 			CancelOrder->ExchangeId[sizeof(CancelOrder->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, CancelOrder->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, CancelOrder->ExchangeId);
 		if (strlen(CancelOrder->InstrumentId) >= sizeof(CancelOrder->InstrumentId))
 		{
 			CancelOrder->InstrumentId[sizeof(CancelOrder->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, CancelOrder->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ClientCancelOrderId, CancelOrder->ClientCancelOrderId);
-		StepUtility::WriteString(cursor, Items::OrderId, CancelOrder->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, CancelOrder->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ClientCancelOrderId, CancelOrder->ClientCancelOrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, CancelOrder->OrderId);
 		if (strlen(CancelOrder->OrderSysId) >= sizeof(CancelOrder->OrderSysId))
 		{
 			CancelOrder->OrderSysId[sizeof(CancelOrder->OrderSysId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderSysId, CancelOrder->OrderSysId);
-		StepUtility::WriteString(cursor, Items::ClientOrderId, CancelOrder->ClientOrderId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, CancelOrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderSysId, CancelOrder->OrderSysId);
+		StepUtility::WriteString(cursor, ProtocolItems::ClientOrderId, CancelOrder->ClientOrderId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, CancelOrderField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -17225,10 +17225,10 @@ bool RspRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(CancelOrder->AccountId))
 							{
@@ -17238,7 +17238,7 @@ bool RspRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(CancelOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(CancelOrder->ExchangeId))
 							{
@@ -17248,7 +17248,7 @@ bool RspRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(CancelOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(CancelOrder->InstrumentId))
 							{
@@ -17258,7 +17258,7 @@ bool RspRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(CancelOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ClientCancelOrderId:
+						case ProtocolItems::ClientCancelOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, CancelOrder->ClientCancelOrderId))
 							{
@@ -17267,7 +17267,7 @@ bool RspRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, CancelOrder->OrderId))
 							{
@@ -17276,7 +17276,7 @@ bool RspRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::OrderSysId:
+						case ProtocolItems::OrderSysId:
 						{
 							if (value.length() >= sizeof(CancelOrder->OrderSysId))
 							{
@@ -17286,7 +17286,7 @@ bool RspRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(CancelOrder->OrderSysId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ClientOrderId:
+						case ProtocolItems::ClientOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, CancelOrder->ClientOrderId))
 							{
@@ -17322,10 +17322,10 @@ bool RspRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -17334,7 +17334,7 @@ bool RspRiskCancelOrderPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -17475,18 +17475,18 @@ int ReqMdUserLoginPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqMdUserLogin != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqMdUserLoginField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqMdUserLoginField::FieldId);
 		if (strlen(ReqMdUserLogin->MdUserId) >= sizeof(ReqMdUserLogin->MdUserId))
 		{
 			ReqMdUserLogin->MdUserId[sizeof(ReqMdUserLogin->MdUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::MdUserId, ReqMdUserLogin->MdUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::MdUserId, ReqMdUserLogin->MdUserId);
 		if (strlen(ReqMdUserLogin->Password) >= sizeof(ReqMdUserLogin->Password))
 		{
 			ReqMdUserLogin->Password[sizeof(ReqMdUserLogin->Password) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::Password, ReqMdUserLogin->Password);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqMdUserLoginField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::Password, ReqMdUserLogin->Password);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqMdUserLoginField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -17519,10 +17519,10 @@ bool ReqMdUserLoginPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::MdUserId:
+						case ProtocolItems::MdUserId:
 						{
 							if (value.length() >= sizeof(ReqMdUserLogin->MdUserId))
 							{
@@ -17532,7 +17532,7 @@ bool ReqMdUserLoginPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(ReqMdUserLogin->MdUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Password:
+						case ProtocolItems::Password:
 						{
 							if (value.length() >= sizeof(ReqMdUserLogin->Password))
 							{
@@ -17655,35 +17655,35 @@ int RspMdUserLoginPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspMdUserLogin != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspMdUserLoginField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspMdUserLoginField::FieldId);
 		if (strlen(RspMdUserLogin->MdUserId) >= sizeof(RspMdUserLogin->MdUserId))
 		{
 			RspMdUserLogin->MdUserId[sizeof(RspMdUserLogin->MdUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::MdUserId, RspMdUserLogin->MdUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::MdUserId, RspMdUserLogin->MdUserId);
 		if (strlen(RspMdUserLogin->LoginDate) >= sizeof(RspMdUserLogin->LoginDate))
 		{
 			RspMdUserLogin->LoginDate[sizeof(RspMdUserLogin->LoginDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::LoginDate, RspMdUserLogin->LoginDate);
+		StepUtility::WriteString(cursor, ProtocolItems::LoginDate, RspMdUserLogin->LoginDate);
 		if (strlen(RspMdUserLogin->LoginTime) >= sizeof(RspMdUserLogin->LoginTime))
 		{
 			RspMdUserLogin->LoginTime[sizeof(RspMdUserLogin->LoginTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::LoginTime, RspMdUserLogin->LoginTime);
-		StepUtility::WriteString(cursor, Items::SessionId, RspMdUserLogin->SessionId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspMdUserLoginField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::LoginTime, RspMdUserLogin->LoginTime);
+		StepUtility::WriteString(cursor, ProtocolItems::SessionId, RspMdUserLogin->SessionId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspMdUserLoginField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -17716,10 +17716,10 @@ bool RspMdUserLoginPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::MdUserId:
+						case ProtocolItems::MdUserId:
 						{
 							if (value.length() >= sizeof(RspMdUserLogin->MdUserId))
 							{
@@ -17729,7 +17729,7 @@ bool RspMdUserLoginPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(RspMdUserLogin->MdUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::LoginDate:
+						case ProtocolItems::LoginDate:
 						{
 							if (value.length() >= sizeof(RspMdUserLogin->LoginDate))
 							{
@@ -17739,7 +17739,7 @@ bool RspMdUserLoginPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(RspMdUserLogin->LoginDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::LoginTime:
+						case ProtocolItems::LoginTime:
 						{
 							if (value.length() >= sizeof(RspMdUserLogin->LoginTime))
 							{
@@ -17749,7 +17749,7 @@ bool RspMdUserLoginPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(RspMdUserLogin->LoginTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::SessionId:
+						case ProtocolItems::SessionId:
 						{
 							if (!StepUtility::ParseInteger(value, RspMdUserLogin->SessionId))
 							{
@@ -17785,10 +17785,10 @@ bool RspMdUserLoginPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -17797,7 +17797,7 @@ bool RspMdUserLoginPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -17938,13 +17938,13 @@ int ReqMdUserLogoutPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqMdUserLogout != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqMdUserLogoutField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqMdUserLogoutField::FieldId);
 		if (strlen(ReqMdUserLogout->MdUserId) >= sizeof(ReqMdUserLogout->MdUserId))
 		{
 			ReqMdUserLogout->MdUserId[sizeof(ReqMdUserLogout->MdUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::MdUserId, ReqMdUserLogout->MdUserId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqMdUserLogoutField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::MdUserId, ReqMdUserLogout->MdUserId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqMdUserLogoutField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -17977,10 +17977,10 @@ bool ReqMdUserLogoutPackage::FromStepStream(char* buff, int startIndex, int endI
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::MdUserId:
+						case ProtocolItems::MdUserId:
 						{
 							if (value.length() >= sizeof(ReqMdUserLogout->MdUserId))
 							{
@@ -18103,24 +18103,24 @@ int RspMdUserLogoutPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspMdUserLogout != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspMdUserLogoutField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspMdUserLogoutField::FieldId);
 		if (strlen(RspMdUserLogout->MdUserId) >= sizeof(RspMdUserLogout->MdUserId))
 		{
 			RspMdUserLogout->MdUserId[sizeof(RspMdUserLogout->MdUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::MdUserId, RspMdUserLogout->MdUserId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspMdUserLogoutField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::MdUserId, RspMdUserLogout->MdUserId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspMdUserLogoutField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -18153,10 +18153,10 @@ bool RspMdUserLogoutPackage::FromStepStream(char* buff, int startIndex, int endI
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::MdUserId:
+						case ProtocolItems::MdUserId:
 						{
 							if (value.length() >= sizeof(RspMdUserLogout->MdUserId))
 							{
@@ -18193,10 +18193,10 @@ bool RspMdUserLogoutPackage::FromStepStream(char* buff, int startIndex, int endI
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -18205,7 +18205,7 @@ bool RspMdUserLogoutPackage::FromStepStream(char* buff, int startIndex, int endI
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -18346,18 +18346,18 @@ int ReqMdInitPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqMdInit != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqMdInitField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqMdInitField::FieldId);
 		if (strlen(ReqMdInit->ExchangeId) >= sizeof(ReqMdInit->ExchangeId))
 		{
 			ReqMdInit->ExchangeId[sizeof(ReqMdInit->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqMdInit->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqMdInit->ExchangeId);
 		if (strlen(ReqMdInit->TradingDay) >= sizeof(ReqMdInit->TradingDay))
 		{
 			ReqMdInit->TradingDay[sizeof(ReqMdInit->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqMdInit->TradingDay);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqMdInitField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqMdInit->TradingDay);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqMdInitField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -18390,10 +18390,10 @@ bool ReqMdInitPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqMdInit->ExchangeId))
 							{
@@ -18403,7 +18403,7 @@ bool ReqMdInitPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(ReqMdInit->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqMdInit->TradingDay))
 							{
@@ -18526,29 +18526,29 @@ int RspMdInitPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspMdInit != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspMdInitField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspMdInitField::FieldId);
 		if (strlen(RspMdInit->ExchangeId) >= sizeof(RspMdInit->ExchangeId))
 		{
 			RspMdInit->ExchangeId[sizeof(RspMdInit->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, RspMdInit->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, RspMdInit->ExchangeId);
 		if (strlen(RspMdInit->TradingDay) >= sizeof(RspMdInit->TradingDay))
 		{
 			RspMdInit->TradingDay[sizeof(RspMdInit->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, RspMdInit->TradingDay);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspMdInitField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, RspMdInit->TradingDay);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspMdInitField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -18581,10 +18581,10 @@ bool RspMdInitPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(RspMdInit->ExchangeId))
 							{
@@ -18594,7 +18594,7 @@ bool RspMdInitPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(RspMdInit->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(RspMdInit->TradingDay))
 							{
@@ -18631,10 +18631,10 @@ bool RspMdInitPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -18643,7 +18643,7 @@ bool RspMdInitPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -18784,18 +18784,18 @@ int ReqSubscribeMdPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqSubscribeMd != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqSubscribeMdField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqSubscribeMdField::FieldId);
 		if (strlen(ReqSubscribeMd->ExchangeId) >= sizeof(ReqSubscribeMd->ExchangeId))
 		{
 			ReqSubscribeMd->ExchangeId[sizeof(ReqSubscribeMd->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqSubscribeMd->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqSubscribeMd->ExchangeId);
 		if (strlen(ReqSubscribeMd->InstrumentId) >= sizeof(ReqSubscribeMd->InstrumentId))
 		{
 			ReqSubscribeMd->InstrumentId[sizeof(ReqSubscribeMd->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, ReqSubscribeMd->InstrumentId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqSubscribeMdField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, ReqSubscribeMd->InstrumentId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqSubscribeMdField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -18828,10 +18828,10 @@ bool ReqSubscribeMdPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqSubscribeMd->ExchangeId))
 							{
@@ -18841,7 +18841,7 @@ bool ReqSubscribeMdPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(ReqSubscribeMd->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(ReqSubscribeMd->InstrumentId))
 							{
@@ -18964,29 +18964,29 @@ int RspSubscribeMdPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspSubscribeMd != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspSubscribeMdField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspSubscribeMdField::FieldId);
 		if (strlen(RspSubscribeMd->ExchangeId) >= sizeof(RspSubscribeMd->ExchangeId))
 		{
 			RspSubscribeMd->ExchangeId[sizeof(RspSubscribeMd->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, RspSubscribeMd->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, RspSubscribeMd->ExchangeId);
 		if (strlen(RspSubscribeMd->InstrumentId) >= sizeof(RspSubscribeMd->InstrumentId))
 		{
 			RspSubscribeMd->InstrumentId[sizeof(RspSubscribeMd->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, RspSubscribeMd->InstrumentId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspSubscribeMdField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, RspSubscribeMd->InstrumentId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspSubscribeMdField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -19019,10 +19019,10 @@ bool RspSubscribeMdPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(RspSubscribeMd->ExchangeId))
 							{
@@ -19032,7 +19032,7 @@ bool RspSubscribeMdPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(RspSubscribeMd->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(RspSubscribeMd->InstrumentId))
 							{
@@ -19069,10 +19069,10 @@ bool RspSubscribeMdPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -19081,7 +19081,7 @@ bool RspSubscribeMdPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -19222,30 +19222,30 @@ int RtnShortMdPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ShortMd != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ShortMdField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ShortMdField::FieldId);
 		if (strlen(ShortMd->TradingDay) >= sizeof(ShortMd->TradingDay))
 		{
 			ShortMd->TradingDay[sizeof(ShortMd->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ShortMd->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ShortMd->TradingDay);
 		if (strlen(ShortMd->ExchangeId) >= sizeof(ShortMd->ExchangeId))
 		{
 			ShortMd->ExchangeId[sizeof(ShortMd->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ShortMd->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ShortMd->ExchangeId);
 		if (strlen(ShortMd->InstrumentId) >= sizeof(ShortMd->InstrumentId))
 		{
 			ShortMd->InstrumentId[sizeof(ShortMd->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, ShortMd->InstrumentId);
-		StepUtility::WriteString(cursor, Items::LastPrice, ShortMd->LastPrice);
-		StepUtility::WriteString(cursor, Items::ClosePrice, ShortMd->ClosePrice);
-		StepUtility::WriteString(cursor, Items::PreClosePrice, ShortMd->PreClosePrice);
-		StepUtility::WriteString(cursor, Items::SettlementPrice, ShortMd->SettlementPrice);
-		StepUtility::WriteString(cursor, Items::PreSettlementPrice, ShortMd->PreSettlementPrice);
-		StepUtility::WriteString(cursor, Items::UpperLimitPrice, ShortMd->UpperLimitPrice);
-		StepUtility::WriteString(cursor, Items::LowerLimitPrice, ShortMd->LowerLimitPrice);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ShortMdField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, ShortMd->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::LastPrice, ShortMd->LastPrice);
+		StepUtility::WriteString(cursor, ProtocolItems::ClosePrice, ShortMd->ClosePrice);
+		StepUtility::WriteString(cursor, ProtocolItems::PreClosePrice, ShortMd->PreClosePrice);
+		StepUtility::WriteString(cursor, ProtocolItems::SettlementPrice, ShortMd->SettlementPrice);
+		StepUtility::WriteString(cursor, ProtocolItems::PreSettlementPrice, ShortMd->PreSettlementPrice);
+		StepUtility::WriteString(cursor, ProtocolItems::UpperLimitPrice, ShortMd->UpperLimitPrice);
+		StepUtility::WriteString(cursor, ProtocolItems::LowerLimitPrice, ShortMd->LowerLimitPrice);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ShortMdField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -19278,10 +19278,10 @@ bool RtnShortMdPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ShortMd->TradingDay))
 							{
@@ -19291,7 +19291,7 @@ bool RtnShortMdPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(ShortMd->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ShortMd->ExchangeId))
 							{
@@ -19301,7 +19301,7 @@ bool RtnShortMdPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(ShortMd->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(ShortMd->InstrumentId))
 							{
@@ -19311,7 +19311,7 @@ bool RtnShortMdPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							memcpy(ShortMd->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::LastPrice:
+						case ProtocolItems::LastPrice:
 						{
 							if (!StepUtility::ParseDouble(value, ShortMd->LastPrice))
 							{
@@ -19320,7 +19320,7 @@ bool RtnShortMdPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::ClosePrice:
+						case ProtocolItems::ClosePrice:
 						{
 							if (!StepUtility::ParseDouble(value, ShortMd->ClosePrice))
 							{
@@ -19329,7 +19329,7 @@ bool RtnShortMdPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::PreClosePrice:
+						case ProtocolItems::PreClosePrice:
 						{
 							if (!StepUtility::ParseDouble(value, ShortMd->PreClosePrice))
 							{
@@ -19338,7 +19338,7 @@ bool RtnShortMdPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::SettlementPrice:
+						case ProtocolItems::SettlementPrice:
 						{
 							if (!StepUtility::ParseDouble(value, ShortMd->SettlementPrice))
 							{
@@ -19347,7 +19347,7 @@ bool RtnShortMdPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::PreSettlementPrice:
+						case ProtocolItems::PreSettlementPrice:
 						{
 							if (!StepUtility::ParseDouble(value, ShortMd->PreSettlementPrice))
 							{
@@ -19356,7 +19356,7 @@ bool RtnShortMdPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::UpperLimitPrice:
+						case ProtocolItems::UpperLimitPrice:
 						{
 							if (!StepUtility::ParseDouble(value, ShortMd->UpperLimitPrice))
 							{
@@ -19365,7 +19365,7 @@ bool RtnShortMdPackage::FromStepStream(char* buff, int startIndex, int endIndex)
 							}
 							break;
 						}
-						case Items::LowerLimitPrice:
+						case ProtocolItems::LowerLimitPrice:
 						{
 							if (!StepUtility::ParseDouble(value, ShortMd->LowerLimitPrice))
 							{
@@ -19482,19 +19482,19 @@ int RtnExchangeStatusPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RtnExchangeStatus != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RtnExchangeStatusField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RtnExchangeStatusField::FieldId);
 		if (strlen(RtnExchangeStatus->ExchangeId) >= sizeof(RtnExchangeStatus->ExchangeId))
 		{
 			RtnExchangeStatus->ExchangeId[sizeof(RtnExchangeStatus->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, RtnExchangeStatus->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, RtnExchangeStatus->ExchangeId);
 		if (strlen(RtnExchangeStatus->ExchangeDate) >= sizeof(RtnExchangeStatus->ExchangeDate))
 		{
 			RtnExchangeStatus->ExchangeDate[sizeof(RtnExchangeStatus->ExchangeDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeDate, RtnExchangeStatus->ExchangeDate);
-		StepUtility::WriteString(cursor, Items::ExchangeStatus, static_cast<int>(RtnExchangeStatus->ExchangeStatus));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RtnExchangeStatusField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeDate, RtnExchangeStatus->ExchangeDate);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeStatus, static_cast<int>(RtnExchangeStatus->ExchangeStatus));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RtnExchangeStatusField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -19527,10 +19527,10 @@ bool RtnExchangeStatusPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(RtnExchangeStatus->ExchangeId))
 							{
@@ -19540,7 +19540,7 @@ bool RtnExchangeStatusPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(RtnExchangeStatus->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeDate:
+						case ProtocolItems::ExchangeDate:
 						{
 							if (value.length() >= sizeof(RtnExchangeStatus->ExchangeDate))
 							{
@@ -19550,7 +19550,7 @@ bool RtnExchangeStatusPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(RtnExchangeStatus->ExchangeDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeStatus:
+						case ProtocolItems::ExchangeStatus:
 						{
 							if (!StepUtility::ParseEnum(value, RtnExchangeStatus->ExchangeStatus))
 							{
@@ -19667,18 +19667,18 @@ int RtnMdInitCompletedPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (MdInitCompleted != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, MdInitCompletedField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, MdInitCompletedField::FieldId);
 		if (strlen(MdInitCompleted->ExchangeId) >= sizeof(MdInitCompleted->ExchangeId))
 		{
 			MdInitCompleted->ExchangeId[sizeof(MdInitCompleted->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, MdInitCompleted->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, MdInitCompleted->ExchangeId);
 		if (strlen(MdInitCompleted->TradingDay) >= sizeof(MdInitCompleted->TradingDay))
 		{
 			MdInitCompleted->TradingDay[sizeof(MdInitCompleted->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, MdInitCompleted->TradingDay);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, MdInitCompletedField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, MdInitCompleted->TradingDay);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, MdInitCompletedField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -19711,10 +19711,10 @@ bool RtnMdInitCompletedPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(MdInitCompleted->ExchangeId))
 							{
@@ -19724,7 +19724,7 @@ bool RtnMdInitCompletedPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(MdInitCompleted->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(MdInitCompleted->TradingDay))
 							{
@@ -19842,18 +19842,18 @@ int ReqAdminUserLoginPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAdminUserLogin != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAdminUserLoginField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAdminUserLoginField::FieldId);
 		if (strlen(ReqAdminUserLogin->AdminUserId) >= sizeof(ReqAdminUserLogin->AdminUserId))
 		{
 			ReqAdminUserLogin->AdminUserId[sizeof(ReqAdminUserLogin->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAdminUserLogin->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAdminUserLogin->AdminUserId);
 		if (strlen(ReqAdminUserLogin->Password) >= sizeof(ReqAdminUserLogin->Password))
 		{
 			ReqAdminUserLogin->Password[sizeof(ReqAdminUserLogin->Password) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::Password, ReqAdminUserLogin->Password);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAdminUserLoginField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::Password, ReqAdminUserLogin->Password);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAdminUserLoginField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -19886,10 +19886,10 @@ bool ReqAdminUserLoginPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAdminUserLogin->AdminUserId))
 							{
@@ -19899,7 +19899,7 @@ bool ReqAdminUserLoginPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(ReqAdminUserLogin->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Password:
+						case ProtocolItems::Password:
 						{
 							if (value.length() >= sizeof(ReqAdminUserLogin->Password))
 							{
@@ -20022,35 +20022,35 @@ int RspAdminUserLoginPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAdminUserLogin != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAdminUserLoginField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAdminUserLoginField::FieldId);
 		if (strlen(RspAdminUserLogin->AdminUserId) >= sizeof(RspAdminUserLogin->AdminUserId))
 		{
 			RspAdminUserLogin->AdminUserId[sizeof(RspAdminUserLogin->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAdminUserLogin->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAdminUserLogin->AdminUserId);
 		if (strlen(RspAdminUserLogin->LoginDate) >= sizeof(RspAdminUserLogin->LoginDate))
 		{
 			RspAdminUserLogin->LoginDate[sizeof(RspAdminUserLogin->LoginDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::LoginDate, RspAdminUserLogin->LoginDate);
+		StepUtility::WriteString(cursor, ProtocolItems::LoginDate, RspAdminUserLogin->LoginDate);
 		if (strlen(RspAdminUserLogin->LoginTime) >= sizeof(RspAdminUserLogin->LoginTime))
 		{
 			RspAdminUserLogin->LoginTime[sizeof(RspAdminUserLogin->LoginTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::LoginTime, RspAdminUserLogin->LoginTime);
-		StepUtility::WriteString(cursor, Items::SessionId, RspAdminUserLogin->SessionId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAdminUserLoginField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::LoginTime, RspAdminUserLogin->LoginTime);
+		StepUtility::WriteString(cursor, ProtocolItems::SessionId, RspAdminUserLogin->SessionId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAdminUserLoginField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -20083,10 +20083,10 @@ bool RspAdminUserLoginPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAdminUserLogin->AdminUserId))
 							{
@@ -20096,7 +20096,7 @@ bool RspAdminUserLoginPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(RspAdminUserLogin->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::LoginDate:
+						case ProtocolItems::LoginDate:
 						{
 							if (value.length() >= sizeof(RspAdminUserLogin->LoginDate))
 							{
@@ -20106,7 +20106,7 @@ bool RspAdminUserLoginPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(RspAdminUserLogin->LoginDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::LoginTime:
+						case ProtocolItems::LoginTime:
 						{
 							if (value.length() >= sizeof(RspAdminUserLogin->LoginTime))
 							{
@@ -20116,7 +20116,7 @@ bool RspAdminUserLoginPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(RspAdminUserLogin->LoginTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::SessionId:
+						case ProtocolItems::SessionId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAdminUserLogin->SessionId))
 							{
@@ -20152,10 +20152,10 @@ bool RspAdminUserLoginPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -20164,7 +20164,7 @@ bool RspAdminUserLoginPackage::FromStepStream(char* buff, int startIndex, int en
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -20305,13 +20305,13 @@ int ReqAdminUserLogoutPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAdminUserLogout != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAdminUserLogoutField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAdminUserLogoutField::FieldId);
 		if (strlen(ReqAdminUserLogout->AdminUserId) >= sizeof(ReqAdminUserLogout->AdminUserId))
 		{
 			ReqAdminUserLogout->AdminUserId[sizeof(ReqAdminUserLogout->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAdminUserLogout->AdminUserId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAdminUserLogoutField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAdminUserLogout->AdminUserId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAdminUserLogoutField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -20344,10 +20344,10 @@ bool ReqAdminUserLogoutPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAdminUserLogout->AdminUserId))
 							{
@@ -20470,24 +20470,24 @@ int RspAdminUserLogoutPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAdminUserLogout != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAdminUserLogoutField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAdminUserLogoutField::FieldId);
 		if (strlen(RspAdminUserLogout->AdminUserId) >= sizeof(RspAdminUserLogout->AdminUserId))
 		{
 			RspAdminUserLogout->AdminUserId[sizeof(RspAdminUserLogout->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAdminUserLogout->AdminUserId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAdminUserLogoutField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAdminUserLogout->AdminUserId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAdminUserLogoutField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -20520,10 +20520,10 @@ bool RspAdminUserLogoutPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAdminUserLogout->AdminUserId))
 							{
@@ -20560,10 +20560,10 @@ bool RspAdminUserLogoutPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -20572,7 +20572,7 @@ bool RspAdminUserLogoutPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -20713,19 +20713,19 @@ int RtnAdminUserLogoutPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (AdminUserLogout != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, AdminUserLogoutField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, AdminUserLogoutField::FieldId);
 		if (strlen(AdminUserLogout->UserId) >= sizeof(AdminUserLogout->UserId))
 		{
 			AdminUserLogout->UserId[sizeof(AdminUserLogout->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, AdminUserLogout->UserId);
-		StepUtility::WriteString(cursor, Items::ErrorId, AdminUserLogout->ErrorId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, AdminUserLogout->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, AdminUserLogout->ErrorId);
 		if (strlen(AdminUserLogout->ErrorMsg) >= sizeof(AdminUserLogout->ErrorMsg))
 		{
 			AdminUserLogout->ErrorMsg[sizeof(AdminUserLogout->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, AdminUserLogout->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, AdminUserLogoutField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, AdminUserLogout->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, AdminUserLogoutField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -20758,10 +20758,10 @@ bool RtnAdminUserLogoutPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(AdminUserLogout->UserId))
 							{
@@ -20771,7 +20771,7 @@ bool RtnAdminUserLogoutPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(AdminUserLogout->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, AdminUserLogout->ErrorId))
 							{
@@ -20780,7 +20780,7 @@ bool RtnAdminUserLogoutPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(AdminUserLogout->ErrorMsg))
 							{
@@ -20898,29 +20898,29 @@ int ReqAddRiskUserPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddRiskUser != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddRiskUserField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddRiskUserField::FieldId);
 		if (strlen(ReqAddRiskUser->AdminUserId) >= sizeof(ReqAddRiskUser->AdminUserId))
 		{
 			ReqAddRiskUser->AdminUserId[sizeof(ReqAddRiskUser->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddRiskUser->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddRiskUser->AdminUserId);
 		if (strlen(ReqAddRiskUser->UserId) >= sizeof(ReqAddRiskUser->UserId))
 		{
 			ReqAddRiskUser->UserId[sizeof(ReqAddRiskUser->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqAddRiskUser->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqAddRiskUser->UserId);
 		if (strlen(ReqAddRiskUser->UserName) >= sizeof(ReqAddRiskUser->UserName))
 		{
 			ReqAddRiskUser->UserName[sizeof(ReqAddRiskUser->UserName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserName, ReqAddRiskUser->UserName);
+		StepUtility::WriteString(cursor, ProtocolItems::UserName, ReqAddRiskUser->UserName);
 		if (strlen(ReqAddRiskUser->Password) >= sizeof(ReqAddRiskUser->Password))
 		{
 			ReqAddRiskUser->Password[sizeof(ReqAddRiskUser->Password) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::Password, ReqAddRiskUser->Password);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, ReqAddRiskUser->RiskGroupId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddRiskUserField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::Password, ReqAddRiskUser->Password);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, ReqAddRiskUser->RiskGroupId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddRiskUserField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -20953,10 +20953,10 @@ bool ReqAddRiskUserPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddRiskUser->AdminUserId))
 							{
@@ -20966,7 +20966,7 @@ bool ReqAddRiskUserPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(ReqAddRiskUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqAddRiskUser->UserId))
 							{
@@ -20976,7 +20976,7 @@ bool ReqAddRiskUserPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(ReqAddRiskUser->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserName:
+						case ProtocolItems::UserName:
 						{
 							if (value.length() >= sizeof(ReqAddRiskUser->UserName))
 							{
@@ -20986,7 +20986,7 @@ bool ReqAddRiskUserPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(ReqAddRiskUser->UserName, value.c_str(), value.length());
 							break;
 						}
-						case Items::Password:
+						case ProtocolItems::Password:
 						{
 							if (value.length() >= sizeof(ReqAddRiskUser->Password))
 							{
@@ -20996,7 +20996,7 @@ bool ReqAddRiskUserPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(ReqAddRiskUser->Password, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddRiskUser->RiskGroupId))
 							{
@@ -21118,29 +21118,29 @@ int RspAddRiskUserPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddRiskUser != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddRiskUserField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddRiskUserField::FieldId);
 		if (strlen(RspAddRiskUser->AdminUserId) >= sizeof(RspAddRiskUser->AdminUserId))
 		{
 			RspAddRiskUser->AdminUserId[sizeof(RspAddRiskUser->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddRiskUser->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddRiskUser->AdminUserId);
 		if (strlen(RspAddRiskUser->UserId) >= sizeof(RspAddRiskUser->UserId))
 		{
 			RspAddRiskUser->UserId[sizeof(RspAddRiskUser->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, RspAddRiskUser->UserId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddRiskUserField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, RspAddRiskUser->UserId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddRiskUserField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -21173,10 +21173,10 @@ bool RspAddRiskUserPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddRiskUser->AdminUserId))
 							{
@@ -21186,7 +21186,7 @@ bool RspAddRiskUserPackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(RspAddRiskUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(RspAddRiskUser->UserId))
 							{
@@ -21223,10 +21223,10 @@ bool RspAddRiskUserPackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -21235,7 +21235,7 @@ bool RspAddRiskUserPackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -21376,29 +21376,29 @@ int ReqUpdateRiskUserPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqUpdateRiskUser != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqUpdateRiskUserField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqUpdateRiskUserField::FieldId);
 		if (strlen(ReqUpdateRiskUser->AdminUserId) >= sizeof(ReqUpdateRiskUser->AdminUserId))
 		{
 			ReqUpdateRiskUser->AdminUserId[sizeof(ReqUpdateRiskUser->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqUpdateRiskUser->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqUpdateRiskUser->AdminUserId);
 		if (strlen(ReqUpdateRiskUser->UserId) >= sizeof(ReqUpdateRiskUser->UserId))
 		{
 			ReqUpdateRiskUser->UserId[sizeof(ReqUpdateRiskUser->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqUpdateRiskUser->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqUpdateRiskUser->UserId);
 		if (strlen(ReqUpdateRiskUser->UserName) >= sizeof(ReqUpdateRiskUser->UserName))
 		{
 			ReqUpdateRiskUser->UserName[sizeof(ReqUpdateRiskUser->UserName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserName, ReqUpdateRiskUser->UserName);
+		StepUtility::WriteString(cursor, ProtocolItems::UserName, ReqUpdateRiskUser->UserName);
 		if (strlen(ReqUpdateRiskUser->Password) >= sizeof(ReqUpdateRiskUser->Password))
 		{
 			ReqUpdateRiskUser->Password[sizeof(ReqUpdateRiskUser->Password) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::Password, ReqUpdateRiskUser->Password);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, ReqUpdateRiskUser->RiskGroupId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqUpdateRiskUserField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::Password, ReqUpdateRiskUser->Password);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, ReqUpdateRiskUser->RiskGroupId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqUpdateRiskUserField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -21431,10 +21431,10 @@ bool ReqUpdateRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqUpdateRiskUser->AdminUserId))
 							{
@@ -21444,7 +21444,7 @@ bool ReqUpdateRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(ReqUpdateRiskUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqUpdateRiskUser->UserId))
 							{
@@ -21454,7 +21454,7 @@ bool ReqUpdateRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(ReqUpdateRiskUser->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserName:
+						case ProtocolItems::UserName:
 						{
 							if (value.length() >= sizeof(ReqUpdateRiskUser->UserName))
 							{
@@ -21464,7 +21464,7 @@ bool ReqUpdateRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(ReqUpdateRiskUser->UserName, value.c_str(), value.length());
 							break;
 						}
-						case Items::Password:
+						case ProtocolItems::Password:
 						{
 							if (value.length() >= sizeof(ReqUpdateRiskUser->Password))
 							{
@@ -21474,7 +21474,7 @@ bool ReqUpdateRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(ReqUpdateRiskUser->Password, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqUpdateRiskUser->RiskGroupId))
 							{
@@ -21596,29 +21596,29 @@ int RspUpdateRiskUserPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspUpdateRiskUser != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspUpdateRiskUserField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspUpdateRiskUserField::FieldId);
 		if (strlen(RspUpdateRiskUser->AdminUserId) >= sizeof(RspUpdateRiskUser->AdminUserId))
 		{
 			RspUpdateRiskUser->AdminUserId[sizeof(RspUpdateRiskUser->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspUpdateRiskUser->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspUpdateRiskUser->AdminUserId);
 		if (strlen(RspUpdateRiskUser->UserId) >= sizeof(RspUpdateRiskUser->UserId))
 		{
 			RspUpdateRiskUser->UserId[sizeof(RspUpdateRiskUser->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, RspUpdateRiskUser->UserId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspUpdateRiskUserField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, RspUpdateRiskUser->UserId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspUpdateRiskUserField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -21651,10 +21651,10 @@ bool RspUpdateRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspUpdateRiskUser->AdminUserId))
 							{
@@ -21664,7 +21664,7 @@ bool RspUpdateRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(RspUpdateRiskUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(RspUpdateRiskUser->UserId))
 							{
@@ -21701,10 +21701,10 @@ bool RspUpdateRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -21713,7 +21713,7 @@ bool RspUpdateRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -21854,18 +21854,18 @@ int ReqRemoveRiskUserPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRemoveRiskUser != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRemoveRiskUserField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRemoveRiskUserField::FieldId);
 		if (strlen(ReqRemoveRiskUser->AdminUserId) >= sizeof(ReqRemoveRiskUser->AdminUserId))
 		{
 			ReqRemoveRiskUser->AdminUserId[sizeof(ReqRemoveRiskUser->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqRemoveRiskUser->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqRemoveRiskUser->AdminUserId);
 		if (strlen(ReqRemoveRiskUser->UserId) >= sizeof(ReqRemoveRiskUser->UserId))
 		{
 			ReqRemoveRiskUser->UserId[sizeof(ReqRemoveRiskUser->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqRemoveRiskUser->UserId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRemoveRiskUserField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqRemoveRiskUser->UserId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRemoveRiskUserField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -21898,10 +21898,10 @@ bool ReqRemoveRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqRemoveRiskUser->AdminUserId))
 							{
@@ -21911,7 +21911,7 @@ bool ReqRemoveRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(ReqRemoveRiskUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqRemoveRiskUser->UserId))
 							{
@@ -22034,29 +22034,29 @@ int RspRemoveRiskUserPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspRemoveRiskUser != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspRemoveRiskUserField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspRemoveRiskUserField::FieldId);
 		if (strlen(RspRemoveRiskUser->AdminUserId) >= sizeof(RspRemoveRiskUser->AdminUserId))
 		{
 			RspRemoveRiskUser->AdminUserId[sizeof(RspRemoveRiskUser->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspRemoveRiskUser->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspRemoveRiskUser->AdminUserId);
 		if (strlen(RspRemoveRiskUser->UserId) >= sizeof(RspRemoveRiskUser->UserId))
 		{
 			RspRemoveRiskUser->UserId[sizeof(RspRemoveRiskUser->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, RspRemoveRiskUser->UserId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspRemoveRiskUserField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, RspRemoveRiskUser->UserId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspRemoveRiskUserField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -22089,10 +22089,10 @@ bool RspRemoveRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspRemoveRiskUser->AdminUserId))
 							{
@@ -22102,7 +22102,7 @@ bool RspRemoveRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(RspRemoveRiskUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(RspRemoveRiskUser->UserId))
 							{
@@ -22139,10 +22139,10 @@ bool RspRemoveRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -22151,7 +22151,7 @@ bool RspRemoveRiskUserPackage::FromStepStream(char* buff, int startIndex, int en
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -22292,28 +22292,28 @@ int ReqAddAdminUserPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddAdminUser != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddAdminUserField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddAdminUserField::FieldId);
 		if (strlen(ReqAddAdminUser->AdminUserId) >= sizeof(ReqAddAdminUser->AdminUserId))
 		{
 			ReqAddAdminUser->AdminUserId[sizeof(ReqAddAdminUser->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddAdminUser->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddAdminUser->AdminUserId);
 		if (strlen(ReqAddAdminUser->UserId) >= sizeof(ReqAddAdminUser->UserId))
 		{
 			ReqAddAdminUser->UserId[sizeof(ReqAddAdminUser->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqAddAdminUser->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqAddAdminUser->UserId);
 		if (strlen(ReqAddAdminUser->UserName) >= sizeof(ReqAddAdminUser->UserName))
 		{
 			ReqAddAdminUser->UserName[sizeof(ReqAddAdminUser->UserName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserName, ReqAddAdminUser->UserName);
+		StepUtility::WriteString(cursor, ProtocolItems::UserName, ReqAddAdminUser->UserName);
 		if (strlen(ReqAddAdminUser->Password) >= sizeof(ReqAddAdminUser->Password))
 		{
 			ReqAddAdminUser->Password[sizeof(ReqAddAdminUser->Password) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::Password, ReqAddAdminUser->Password);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddAdminUserField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::Password, ReqAddAdminUser->Password);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddAdminUserField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -22346,10 +22346,10 @@ bool ReqAddAdminUserPackage::FromStepStream(char* buff, int startIndex, int endI
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddAdminUser->AdminUserId))
 							{
@@ -22359,7 +22359,7 @@ bool ReqAddAdminUserPackage::FromStepStream(char* buff, int startIndex, int endI
 							memcpy(ReqAddAdminUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqAddAdminUser->UserId))
 							{
@@ -22369,7 +22369,7 @@ bool ReqAddAdminUserPackage::FromStepStream(char* buff, int startIndex, int endI
 							memcpy(ReqAddAdminUser->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserName:
+						case ProtocolItems::UserName:
 						{
 							if (value.length() >= sizeof(ReqAddAdminUser->UserName))
 							{
@@ -22379,7 +22379,7 @@ bool ReqAddAdminUserPackage::FromStepStream(char* buff, int startIndex, int endI
 							memcpy(ReqAddAdminUser->UserName, value.c_str(), value.length());
 							break;
 						}
-						case Items::Password:
+						case ProtocolItems::Password:
 						{
 							if (value.length() >= sizeof(ReqAddAdminUser->Password))
 							{
@@ -22502,29 +22502,29 @@ int RspAddAdminUserPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddAdminUser != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddAdminUserField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddAdminUserField::FieldId);
 		if (strlen(RspAddAdminUser->AdminUserId) >= sizeof(RspAddAdminUser->AdminUserId))
 		{
 			RspAddAdminUser->AdminUserId[sizeof(RspAddAdminUser->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddAdminUser->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddAdminUser->AdminUserId);
 		if (strlen(RspAddAdminUser->UserId) >= sizeof(RspAddAdminUser->UserId))
 		{
 			RspAddAdminUser->UserId[sizeof(RspAddAdminUser->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, RspAddAdminUser->UserId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddAdminUserField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, RspAddAdminUser->UserId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddAdminUserField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -22557,10 +22557,10 @@ bool RspAddAdminUserPackage::FromStepStream(char* buff, int startIndex, int endI
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddAdminUser->AdminUserId))
 							{
@@ -22570,7 +22570,7 @@ bool RspAddAdminUserPackage::FromStepStream(char* buff, int startIndex, int endI
 							memcpy(RspAddAdminUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(RspAddAdminUser->UserId))
 							{
@@ -22607,10 +22607,10 @@ bool RspAddAdminUserPackage::FromStepStream(char* buff, int startIndex, int endI
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -22619,7 +22619,7 @@ bool RspAddAdminUserPackage::FromStepStream(char* buff, int startIndex, int endI
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -22760,28 +22760,28 @@ int ReqUpdateAdminUserPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqUpdateAdminUser != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqUpdateAdminUserField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqUpdateAdminUserField::FieldId);
 		if (strlen(ReqUpdateAdminUser->AdminUserId) >= sizeof(ReqUpdateAdminUser->AdminUserId))
 		{
 			ReqUpdateAdminUser->AdminUserId[sizeof(ReqUpdateAdminUser->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqUpdateAdminUser->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqUpdateAdminUser->AdminUserId);
 		if (strlen(ReqUpdateAdminUser->UserId) >= sizeof(ReqUpdateAdminUser->UserId))
 		{
 			ReqUpdateAdminUser->UserId[sizeof(ReqUpdateAdminUser->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqUpdateAdminUser->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqUpdateAdminUser->UserId);
 		if (strlen(ReqUpdateAdminUser->UserName) >= sizeof(ReqUpdateAdminUser->UserName))
 		{
 			ReqUpdateAdminUser->UserName[sizeof(ReqUpdateAdminUser->UserName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserName, ReqUpdateAdminUser->UserName);
+		StepUtility::WriteString(cursor, ProtocolItems::UserName, ReqUpdateAdminUser->UserName);
 		if (strlen(ReqUpdateAdminUser->Password) >= sizeof(ReqUpdateAdminUser->Password))
 		{
 			ReqUpdateAdminUser->Password[sizeof(ReqUpdateAdminUser->Password) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::Password, ReqUpdateAdminUser->Password);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqUpdateAdminUserField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::Password, ReqUpdateAdminUser->Password);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqUpdateAdminUserField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -22814,10 +22814,10 @@ bool ReqUpdateAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqUpdateAdminUser->AdminUserId))
 							{
@@ -22827,7 +22827,7 @@ bool ReqUpdateAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqUpdateAdminUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqUpdateAdminUser->UserId))
 							{
@@ -22837,7 +22837,7 @@ bool ReqUpdateAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqUpdateAdminUser->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserName:
+						case ProtocolItems::UserName:
 						{
 							if (value.length() >= sizeof(ReqUpdateAdminUser->UserName))
 							{
@@ -22847,7 +22847,7 @@ bool ReqUpdateAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqUpdateAdminUser->UserName, value.c_str(), value.length());
 							break;
 						}
-						case Items::Password:
+						case ProtocolItems::Password:
 						{
 							if (value.length() >= sizeof(ReqUpdateAdminUser->Password))
 							{
@@ -22970,29 +22970,29 @@ int RspUpdateAdminUserPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspUpdateAdminUser != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspUpdateAdminUserField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspUpdateAdminUserField::FieldId);
 		if (strlen(RspUpdateAdminUser->AdminUserId) >= sizeof(RspUpdateAdminUser->AdminUserId))
 		{
 			RspUpdateAdminUser->AdminUserId[sizeof(RspUpdateAdminUser->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspUpdateAdminUser->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspUpdateAdminUser->AdminUserId);
 		if (strlen(RspUpdateAdminUser->UserId) >= sizeof(RspUpdateAdminUser->UserId))
 		{
 			RspUpdateAdminUser->UserId[sizeof(RspUpdateAdminUser->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, RspUpdateAdminUser->UserId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspUpdateAdminUserField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, RspUpdateAdminUser->UserId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspUpdateAdminUserField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -23025,10 +23025,10 @@ bool RspUpdateAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspUpdateAdminUser->AdminUserId))
 							{
@@ -23038,7 +23038,7 @@ bool RspUpdateAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(RspUpdateAdminUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(RspUpdateAdminUser->UserId))
 							{
@@ -23075,10 +23075,10 @@ bool RspUpdateAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -23087,7 +23087,7 @@ bool RspUpdateAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -23228,18 +23228,18 @@ int ReqRemoveAdminUserPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRemoveAdminUser != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRemoveAdminUserField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRemoveAdminUserField::FieldId);
 		if (strlen(ReqRemoveAdminUser->AdminUserId) >= sizeof(ReqRemoveAdminUser->AdminUserId))
 		{
 			ReqRemoveAdminUser->AdminUserId[sizeof(ReqRemoveAdminUser->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqRemoveAdminUser->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqRemoveAdminUser->AdminUserId);
 		if (strlen(ReqRemoveAdminUser->UserId) >= sizeof(ReqRemoveAdminUser->UserId))
 		{
 			ReqRemoveAdminUser->UserId[sizeof(ReqRemoveAdminUser->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqRemoveAdminUser->UserId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRemoveAdminUserField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqRemoveAdminUser->UserId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRemoveAdminUserField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -23272,10 +23272,10 @@ bool ReqRemoveAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqRemoveAdminUser->AdminUserId))
 							{
@@ -23285,7 +23285,7 @@ bool ReqRemoveAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqRemoveAdminUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqRemoveAdminUser->UserId))
 							{
@@ -23408,29 +23408,29 @@ int RspRemoveAdminUserPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspRemoveAdminUser != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspRemoveAdminUserField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspRemoveAdminUserField::FieldId);
 		if (strlen(RspRemoveAdminUser->AdminUserId) >= sizeof(RspRemoveAdminUser->AdminUserId))
 		{
 			RspRemoveAdminUser->AdminUserId[sizeof(RspRemoveAdminUser->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspRemoveAdminUser->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspRemoveAdminUser->AdminUserId);
 		if (strlen(RspRemoveAdminUser->UserId) >= sizeof(RspRemoveAdminUser->UserId))
 		{
 			RspRemoveAdminUser->UserId[sizeof(RspRemoveAdminUser->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, RspRemoveAdminUser->UserId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspRemoveAdminUserField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, RspRemoveAdminUser->UserId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspRemoveAdminUserField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -23463,10 +23463,10 @@ bool RspRemoveAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspRemoveAdminUser->AdminUserId))
 							{
@@ -23476,7 +23476,7 @@ bool RspRemoveAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(RspRemoveAdminUser->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(RspRemoveAdminUser->UserId))
 							{
@@ -23513,10 +23513,10 @@ bool RspRemoveAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -23525,7 +23525,7 @@ bool RspRemoveAdminUserPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -23666,46 +23666,46 @@ int ReqAddPrimaryAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddPrimaryAccount != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddPrimaryAccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddPrimaryAccountField::FieldId);
 		if (strlen(ReqAddPrimaryAccount->AdminUserId) >= sizeof(ReqAddPrimaryAccount->AdminUserId))
 		{
 			ReqAddPrimaryAccount->AdminUserId[sizeof(ReqAddPrimaryAccount->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddPrimaryAccount->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddPrimaryAccount->AdminUserId);
 		if (strlen(ReqAddPrimaryAccount->TradingDay) >= sizeof(ReqAddPrimaryAccount->TradingDay))
 		{
 			ReqAddPrimaryAccount->TradingDay[sizeof(ReqAddPrimaryAccount->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqAddPrimaryAccount->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqAddPrimaryAccount->TradingDay);
 		if (strlen(ReqAddPrimaryAccount->PrimaryAccountId) >= sizeof(ReqAddPrimaryAccount->PrimaryAccountId))
 		{
 			ReqAddPrimaryAccount->PrimaryAccountId[sizeof(ReqAddPrimaryAccount->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, ReqAddPrimaryAccount->PrimaryAccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, ReqAddPrimaryAccount->PrimaryAccountId);
 		if (strlen(ReqAddPrimaryAccount->PrimaryAccountName) >= sizeof(ReqAddPrimaryAccount->PrimaryAccountName))
 		{
 			ReqAddPrimaryAccount->PrimaryAccountName[sizeof(ReqAddPrimaryAccount->PrimaryAccountName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountName, ReqAddPrimaryAccount->PrimaryAccountName);
-		StepUtility::WriteString(cursor, Items::AccountClass, static_cast<int>(ReqAddPrimaryAccount->AccountClass));
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountName, ReqAddPrimaryAccount->PrimaryAccountName);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountClass, static_cast<int>(ReqAddPrimaryAccount->AccountClass));
 		if (strlen(ReqAddPrimaryAccount->BrokerPassword) >= sizeof(ReqAddPrimaryAccount->BrokerPassword))
 		{
 			ReqAddPrimaryAccount->BrokerPassword[sizeof(ReqAddPrimaryAccount->BrokerPassword) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::BrokerPassword, ReqAddPrimaryAccount->BrokerPassword);
-		StepUtility::WriteString(cursor, Items::OfferId, ReqAddPrimaryAccount->OfferId);
-		StepUtility::WriteString(cursor, Items::IsAllowLogin, ReqAddPrimaryAccount->IsAllowLogin);
-		StepUtility::WriteString(cursor, Items::IsSimulateAccount, ReqAddPrimaryAccount->IsSimulateAccount);
-		StepUtility::WriteString(cursor, Items::AccountStatus, static_cast<int>(ReqAddPrimaryAccount->AccountStatus));
+		StepUtility::WriteString(cursor, ProtocolItems::BrokerPassword, ReqAddPrimaryAccount->BrokerPassword);
+		StepUtility::WriteString(cursor, ProtocolItems::OfferId, ReqAddPrimaryAccount->OfferId);
+		StepUtility::WriteString(cursor, ProtocolItems::IsAllowLogin, ReqAddPrimaryAccount->IsAllowLogin);
+		StepUtility::WriteString(cursor, ProtocolItems::IsSimulateAccount, ReqAddPrimaryAccount->IsSimulateAccount);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountStatus, static_cast<int>(ReqAddPrimaryAccount->AccountStatus));
 		if (strlen(ReqAddPrimaryAccount->Password) >= sizeof(ReqAddPrimaryAccount->Password))
 		{
 			ReqAddPrimaryAccount->Password[sizeof(ReqAddPrimaryAccount->Password) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::Password, ReqAddPrimaryAccount->Password);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, ReqAddPrimaryAccount->RiskGroupId);
-		StepUtility::WriteString(cursor, Items::CommissionGroupId, ReqAddPrimaryAccount->CommissionGroupId);
-		StepUtility::WriteString(cursor, Items::IsAutoAudit, ReqAddPrimaryAccount->IsAutoAudit);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddPrimaryAccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::Password, ReqAddPrimaryAccount->Password);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, ReqAddPrimaryAccount->RiskGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::CommissionGroupId, ReqAddPrimaryAccount->CommissionGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::IsAutoAudit, ReqAddPrimaryAccount->IsAutoAudit);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddPrimaryAccountField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -23738,10 +23738,10 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddPrimaryAccount->AdminUserId))
 							{
@@ -23751,7 +23751,7 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqAddPrimaryAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqAddPrimaryAccount->TradingDay))
 							{
@@ -23761,7 +23761,7 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqAddPrimaryAccount->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(ReqAddPrimaryAccount->PrimaryAccountId))
 							{
@@ -23771,7 +23771,7 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqAddPrimaryAccount->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountName:
+						case ProtocolItems::PrimaryAccountName:
 						{
 							if (value.length() >= sizeof(ReqAddPrimaryAccount->PrimaryAccountName))
 							{
@@ -23781,7 +23781,7 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqAddPrimaryAccount->PrimaryAccountName, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountClass:
+						case ProtocolItems::AccountClass:
 						{
 							if (!StepUtility::ParseEnum(value, ReqAddPrimaryAccount->AccountClass))
 							{
@@ -23790,7 +23790,7 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::BrokerPassword:
+						case ProtocolItems::BrokerPassword:
 						{
 							if (value.length() >= sizeof(ReqAddPrimaryAccount->BrokerPassword))
 							{
@@ -23800,7 +23800,7 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqAddPrimaryAccount->BrokerPassword, value.c_str(), value.length());
 							break;
 						}
-						case Items::OfferId:
+						case ProtocolItems::OfferId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddPrimaryAccount->OfferId))
 							{
@@ -23809,7 +23809,7 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::IsAllowLogin:
+						case ProtocolItems::IsAllowLogin:
 						{
 							if (!StepUtility::ParseBool(value, ReqAddPrimaryAccount->IsAllowLogin))
 							{
@@ -23818,7 +23818,7 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::IsSimulateAccount:
+						case ProtocolItems::IsSimulateAccount:
 						{
 							if (!StepUtility::ParseBool(value, ReqAddPrimaryAccount->IsSimulateAccount))
 							{
@@ -23827,7 +23827,7 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::AccountStatus:
+						case ProtocolItems::AccountStatus:
 						{
 							if (!StepUtility::ParseEnum(value, ReqAddPrimaryAccount->AccountStatus))
 							{
@@ -23836,7 +23836,7 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::Password:
+						case ProtocolItems::Password:
 						{
 							if (value.length() >= sizeof(ReqAddPrimaryAccount->Password))
 							{
@@ -23846,7 +23846,7 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqAddPrimaryAccount->Password, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddPrimaryAccount->RiskGroupId))
 							{
@@ -23855,7 +23855,7 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::CommissionGroupId:
+						case ProtocolItems::CommissionGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddPrimaryAccount->CommissionGroupId))
 							{
@@ -23864,7 +23864,7 @@ bool ReqAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::IsAutoAudit:
+						case ProtocolItems::IsAutoAudit:
 						{
 							if (!StepUtility::ParseBool(value, ReqAddPrimaryAccount->IsAutoAudit))
 							{
@@ -23986,29 +23986,29 @@ int RspAddPrimaryAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddPrimaryAccount != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddPrimaryAccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddPrimaryAccountField::FieldId);
 		if (strlen(RspAddPrimaryAccount->AdminUserId) >= sizeof(RspAddPrimaryAccount->AdminUserId))
 		{
 			RspAddPrimaryAccount->AdminUserId[sizeof(RspAddPrimaryAccount->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddPrimaryAccount->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddPrimaryAccount->AdminUserId);
 		if (strlen(RspAddPrimaryAccount->PrimaryAccountId) >= sizeof(RspAddPrimaryAccount->PrimaryAccountId))
 		{
 			RspAddPrimaryAccount->PrimaryAccountId[sizeof(RspAddPrimaryAccount->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, RspAddPrimaryAccount->PrimaryAccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddPrimaryAccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, RspAddPrimaryAccount->PrimaryAccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddPrimaryAccountField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -24041,10 +24041,10 @@ bool RspAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddPrimaryAccount->AdminUserId))
 							{
@@ -24054,7 +24054,7 @@ bool RspAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(RspAddPrimaryAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(RspAddPrimaryAccount->PrimaryAccountId))
 							{
@@ -24091,10 +24091,10 @@ bool RspAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -24103,7 +24103,7 @@ bool RspAddPrimaryAccountPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -24244,46 +24244,46 @@ int ReqUpdatePrimaryAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqUpdatePrimaryAccount != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqUpdatePrimaryAccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqUpdatePrimaryAccountField::FieldId);
 		if (strlen(ReqUpdatePrimaryAccount->AdminUserId) >= sizeof(ReqUpdatePrimaryAccount->AdminUserId))
 		{
 			ReqUpdatePrimaryAccount->AdminUserId[sizeof(ReqUpdatePrimaryAccount->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqUpdatePrimaryAccount->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqUpdatePrimaryAccount->AdminUserId);
 		if (strlen(ReqUpdatePrimaryAccount->TradingDay) >= sizeof(ReqUpdatePrimaryAccount->TradingDay))
 		{
 			ReqUpdatePrimaryAccount->TradingDay[sizeof(ReqUpdatePrimaryAccount->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqUpdatePrimaryAccount->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqUpdatePrimaryAccount->TradingDay);
 		if (strlen(ReqUpdatePrimaryAccount->PrimaryAccountId) >= sizeof(ReqUpdatePrimaryAccount->PrimaryAccountId))
 		{
 			ReqUpdatePrimaryAccount->PrimaryAccountId[sizeof(ReqUpdatePrimaryAccount->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, ReqUpdatePrimaryAccount->PrimaryAccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, ReqUpdatePrimaryAccount->PrimaryAccountId);
 		if (strlen(ReqUpdatePrimaryAccount->PrimaryAccountName) >= sizeof(ReqUpdatePrimaryAccount->PrimaryAccountName))
 		{
 			ReqUpdatePrimaryAccount->PrimaryAccountName[sizeof(ReqUpdatePrimaryAccount->PrimaryAccountName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountName, ReqUpdatePrimaryAccount->PrimaryAccountName);
-		StepUtility::WriteString(cursor, Items::AccountClass, static_cast<int>(ReqUpdatePrimaryAccount->AccountClass));
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountName, ReqUpdatePrimaryAccount->PrimaryAccountName);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountClass, static_cast<int>(ReqUpdatePrimaryAccount->AccountClass));
 		if (strlen(ReqUpdatePrimaryAccount->BrokerPassword) >= sizeof(ReqUpdatePrimaryAccount->BrokerPassword))
 		{
 			ReqUpdatePrimaryAccount->BrokerPassword[sizeof(ReqUpdatePrimaryAccount->BrokerPassword) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::BrokerPassword, ReqUpdatePrimaryAccount->BrokerPassword);
-		StepUtility::WriteString(cursor, Items::OfferId, ReqUpdatePrimaryAccount->OfferId);
-		StepUtility::WriteString(cursor, Items::IsAllowLogin, ReqUpdatePrimaryAccount->IsAllowLogin);
-		StepUtility::WriteString(cursor, Items::IsSimulateAccount, ReqUpdatePrimaryAccount->IsSimulateAccount);
-		StepUtility::WriteString(cursor, Items::AccountStatus, static_cast<int>(ReqUpdatePrimaryAccount->AccountStatus));
+		StepUtility::WriteString(cursor, ProtocolItems::BrokerPassword, ReqUpdatePrimaryAccount->BrokerPassword);
+		StepUtility::WriteString(cursor, ProtocolItems::OfferId, ReqUpdatePrimaryAccount->OfferId);
+		StepUtility::WriteString(cursor, ProtocolItems::IsAllowLogin, ReqUpdatePrimaryAccount->IsAllowLogin);
+		StepUtility::WriteString(cursor, ProtocolItems::IsSimulateAccount, ReqUpdatePrimaryAccount->IsSimulateAccount);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountStatus, static_cast<int>(ReqUpdatePrimaryAccount->AccountStatus));
 		if (strlen(ReqUpdatePrimaryAccount->Password) >= sizeof(ReqUpdatePrimaryAccount->Password))
 		{
 			ReqUpdatePrimaryAccount->Password[sizeof(ReqUpdatePrimaryAccount->Password) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::Password, ReqUpdatePrimaryAccount->Password);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, ReqUpdatePrimaryAccount->RiskGroupId);
-		StepUtility::WriteString(cursor, Items::CommissionGroupId, ReqUpdatePrimaryAccount->CommissionGroupId);
-		StepUtility::WriteString(cursor, Items::IsAutoAudit, ReqUpdatePrimaryAccount->IsAutoAudit);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqUpdatePrimaryAccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::Password, ReqUpdatePrimaryAccount->Password);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, ReqUpdatePrimaryAccount->RiskGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::CommissionGroupId, ReqUpdatePrimaryAccount->CommissionGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::IsAutoAudit, ReqUpdatePrimaryAccount->IsAutoAudit);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqUpdatePrimaryAccountField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -24316,10 +24316,10 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqUpdatePrimaryAccount->AdminUserId))
 							{
@@ -24329,7 +24329,7 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqUpdatePrimaryAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqUpdatePrimaryAccount->TradingDay))
 							{
@@ -24339,7 +24339,7 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqUpdatePrimaryAccount->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(ReqUpdatePrimaryAccount->PrimaryAccountId))
 							{
@@ -24349,7 +24349,7 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqUpdatePrimaryAccount->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountName:
+						case ProtocolItems::PrimaryAccountName:
 						{
 							if (value.length() >= sizeof(ReqUpdatePrimaryAccount->PrimaryAccountName))
 							{
@@ -24359,7 +24359,7 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqUpdatePrimaryAccount->PrimaryAccountName, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountClass:
+						case ProtocolItems::AccountClass:
 						{
 							if (!StepUtility::ParseEnum(value, ReqUpdatePrimaryAccount->AccountClass))
 							{
@@ -24368,7 +24368,7 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::BrokerPassword:
+						case ProtocolItems::BrokerPassword:
 						{
 							if (value.length() >= sizeof(ReqUpdatePrimaryAccount->BrokerPassword))
 							{
@@ -24378,7 +24378,7 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqUpdatePrimaryAccount->BrokerPassword, value.c_str(), value.length());
 							break;
 						}
-						case Items::OfferId:
+						case ProtocolItems::OfferId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqUpdatePrimaryAccount->OfferId))
 							{
@@ -24387,7 +24387,7 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::IsAllowLogin:
+						case ProtocolItems::IsAllowLogin:
 						{
 							if (!StepUtility::ParseBool(value, ReqUpdatePrimaryAccount->IsAllowLogin))
 							{
@@ -24396,7 +24396,7 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::IsSimulateAccount:
+						case ProtocolItems::IsSimulateAccount:
 						{
 							if (!StepUtility::ParseBool(value, ReqUpdatePrimaryAccount->IsSimulateAccount))
 							{
@@ -24405,7 +24405,7 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::AccountStatus:
+						case ProtocolItems::AccountStatus:
 						{
 							if (!StepUtility::ParseEnum(value, ReqUpdatePrimaryAccount->AccountStatus))
 							{
@@ -24414,7 +24414,7 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::Password:
+						case ProtocolItems::Password:
 						{
 							if (value.length() >= sizeof(ReqUpdatePrimaryAccount->Password))
 							{
@@ -24424,7 +24424,7 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqUpdatePrimaryAccount->Password, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqUpdatePrimaryAccount->RiskGroupId))
 							{
@@ -24433,7 +24433,7 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::CommissionGroupId:
+						case ProtocolItems::CommissionGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqUpdatePrimaryAccount->CommissionGroupId))
 							{
@@ -24442,7 +24442,7 @@ bool ReqUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::IsAutoAudit:
+						case ProtocolItems::IsAutoAudit:
 						{
 							if (!StepUtility::ParseBool(value, ReqUpdatePrimaryAccount->IsAutoAudit))
 							{
@@ -24564,29 +24564,29 @@ int RspUpdatePrimaryAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspUpdatePrimaryAccount != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspUpdatePrimaryAccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspUpdatePrimaryAccountField::FieldId);
 		if (strlen(RspUpdatePrimaryAccount->AdminUserId) >= sizeof(RspUpdatePrimaryAccount->AdminUserId))
 		{
 			RspUpdatePrimaryAccount->AdminUserId[sizeof(RspUpdatePrimaryAccount->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspUpdatePrimaryAccount->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspUpdatePrimaryAccount->AdminUserId);
 		if (strlen(RspUpdatePrimaryAccount->PrimaryAccountId) >= sizeof(RspUpdatePrimaryAccount->PrimaryAccountId))
 		{
 			RspUpdatePrimaryAccount->PrimaryAccountId[sizeof(RspUpdatePrimaryAccount->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, RspUpdatePrimaryAccount->PrimaryAccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspUpdatePrimaryAccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, RspUpdatePrimaryAccount->PrimaryAccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspUpdatePrimaryAccountField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -24619,10 +24619,10 @@ bool RspUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspUpdatePrimaryAccount->AdminUserId))
 							{
@@ -24632,7 +24632,7 @@ bool RspUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(RspUpdatePrimaryAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(RspUpdatePrimaryAccount->PrimaryAccountId))
 							{
@@ -24669,10 +24669,10 @@ bool RspUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -24681,7 +24681,7 @@ bool RspUpdatePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -24822,18 +24822,18 @@ int ReqRemovePrimaryAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRemovePrimaryAccount != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRemovePrimaryAccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRemovePrimaryAccountField::FieldId);
 		if (strlen(ReqRemovePrimaryAccount->AdminUserId) >= sizeof(ReqRemovePrimaryAccount->AdminUserId))
 		{
 			ReqRemovePrimaryAccount->AdminUserId[sizeof(ReqRemovePrimaryAccount->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqRemovePrimaryAccount->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqRemovePrimaryAccount->AdminUserId);
 		if (strlen(ReqRemovePrimaryAccount->PrimaryAccountId) >= sizeof(ReqRemovePrimaryAccount->PrimaryAccountId))
 		{
 			ReqRemovePrimaryAccount->PrimaryAccountId[sizeof(ReqRemovePrimaryAccount->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, ReqRemovePrimaryAccount->PrimaryAccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRemovePrimaryAccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, ReqRemovePrimaryAccount->PrimaryAccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRemovePrimaryAccountField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -24866,10 +24866,10 @@ bool ReqRemovePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqRemovePrimaryAccount->AdminUserId))
 							{
@@ -24879,7 +24879,7 @@ bool ReqRemovePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqRemovePrimaryAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(ReqRemovePrimaryAccount->PrimaryAccountId))
 							{
@@ -25002,29 +25002,29 @@ int RspRemovePrimaryAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspRemovePrimaryAccount != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspRemovePrimaryAccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspRemovePrimaryAccountField::FieldId);
 		if (strlen(RspRemovePrimaryAccount->AdminUserId) >= sizeof(RspRemovePrimaryAccount->AdminUserId))
 		{
 			RspRemovePrimaryAccount->AdminUserId[sizeof(RspRemovePrimaryAccount->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspRemovePrimaryAccount->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspRemovePrimaryAccount->AdminUserId);
 		if (strlen(RspRemovePrimaryAccount->PrimaryAccountId) >= sizeof(RspRemovePrimaryAccount->PrimaryAccountId))
 		{
 			RspRemovePrimaryAccount->PrimaryAccountId[sizeof(RspRemovePrimaryAccount->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, RspRemovePrimaryAccount->PrimaryAccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspRemovePrimaryAccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, RspRemovePrimaryAccount->PrimaryAccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspRemovePrimaryAccountField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -25057,10 +25057,10 @@ bool RspRemovePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspRemovePrimaryAccount->AdminUserId))
 							{
@@ -25070,7 +25070,7 @@ bool RspRemovePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(RspRemovePrimaryAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(RspRemovePrimaryAccount->PrimaryAccountId))
 							{
@@ -25107,10 +25107,10 @@ bool RspRemovePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -25119,7 +25119,7 @@ bool RspRemovePrimaryAccountPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -25260,38 +25260,38 @@ int ReqAddAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddAccount != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddAccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddAccountField::FieldId);
 		if (strlen(ReqAddAccount->AdminUserId) >= sizeof(ReqAddAccount->AdminUserId))
 		{
 			ReqAddAccount->AdminUserId[sizeof(ReqAddAccount->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddAccount->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddAccount->AdminUserId);
 		if (strlen(ReqAddAccount->TradingDay) >= sizeof(ReqAddAccount->TradingDay))
 		{
 			ReqAddAccount->TradingDay[sizeof(ReqAddAccount->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqAddAccount->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqAddAccount->TradingDay);
 		if (strlen(ReqAddAccount->AccountId) >= sizeof(ReqAddAccount->AccountId))
 		{
 			ReqAddAccount->AccountId[sizeof(ReqAddAccount->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqAddAccount->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqAddAccount->AccountId);
 		if (strlen(ReqAddAccount->AccountName) >= sizeof(ReqAddAccount->AccountName))
 		{
 			ReqAddAccount->AccountName[sizeof(ReqAddAccount->AccountName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountName, ReqAddAccount->AccountName);
-		StepUtility::WriteString(cursor, Items::AccountStatus, static_cast<int>(ReqAddAccount->AccountStatus));
+		StepUtility::WriteString(cursor, ProtocolItems::AccountName, ReqAddAccount->AccountName);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountStatus, static_cast<int>(ReqAddAccount->AccountStatus));
 		if (strlen(ReqAddAccount->Password) >= sizeof(ReqAddAccount->Password))
 		{
 			ReqAddAccount->Password[sizeof(ReqAddAccount->Password) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::Password, ReqAddAccount->Password);
-		StepUtility::WriteString(cursor, Items::TradeGroupId, ReqAddAccount->TradeGroupId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, ReqAddAccount->RiskGroupId);
-		StepUtility::WriteString(cursor, Items::CommissionGroupId, ReqAddAccount->CommissionGroupId);
-		StepUtility::WriteString(cursor, Items::IsAutoAudit, ReqAddAccount->IsAutoAudit);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddAccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::Password, ReqAddAccount->Password);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, ReqAddAccount->TradeGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, ReqAddAccount->RiskGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::CommissionGroupId, ReqAddAccount->CommissionGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::IsAutoAudit, ReqAddAccount->IsAutoAudit);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddAccountField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -25324,10 +25324,10 @@ bool ReqAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddAccount->AdminUserId))
 							{
@@ -25337,7 +25337,7 @@ bool ReqAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(ReqAddAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqAddAccount->TradingDay))
 							{
@@ -25347,7 +25347,7 @@ bool ReqAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(ReqAddAccount->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqAddAccount->AccountId))
 							{
@@ -25357,7 +25357,7 @@ bool ReqAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(ReqAddAccount->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountName:
+						case ProtocolItems::AccountName:
 						{
 							if (value.length() >= sizeof(ReqAddAccount->AccountName))
 							{
@@ -25367,7 +25367,7 @@ bool ReqAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(ReqAddAccount->AccountName, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountStatus:
+						case ProtocolItems::AccountStatus:
 						{
 							if (!StepUtility::ParseEnum(value, ReqAddAccount->AccountStatus))
 							{
@@ -25376,7 +25376,7 @@ bool ReqAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::Password:
+						case ProtocolItems::Password:
 						{
 							if (value.length() >= sizeof(ReqAddAccount->Password))
 							{
@@ -25386,7 +25386,7 @@ bool ReqAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(ReqAddAccount->Password, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddAccount->TradeGroupId))
 							{
@@ -25395,7 +25395,7 @@ bool ReqAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddAccount->RiskGroupId))
 							{
@@ -25404,7 +25404,7 @@ bool ReqAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::CommissionGroupId:
+						case ProtocolItems::CommissionGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddAccount->CommissionGroupId))
 							{
@@ -25413,7 +25413,7 @@ bool ReqAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::IsAutoAudit:
+						case ProtocolItems::IsAutoAudit:
 						{
 							if (!StepUtility::ParseBool(value, ReqAddAccount->IsAutoAudit))
 							{
@@ -25535,29 +25535,29 @@ int RspAddAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddAccount != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddAccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddAccountField::FieldId);
 		if (strlen(RspAddAccount->AdminUserId) >= sizeof(RspAddAccount->AdminUserId))
 		{
 			RspAddAccount->AdminUserId[sizeof(RspAddAccount->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddAccount->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddAccount->AdminUserId);
 		if (strlen(RspAddAccount->AccountId) >= sizeof(RspAddAccount->AccountId))
 		{
 			RspAddAccount->AccountId[sizeof(RspAddAccount->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, RspAddAccount->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddAccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, RspAddAccount->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddAccountField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -25590,10 +25590,10 @@ bool RspAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddAccount->AdminUserId))
 							{
@@ -25603,7 +25603,7 @@ bool RspAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(RspAddAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(RspAddAccount->AccountId))
 							{
@@ -25640,10 +25640,10 @@ bool RspAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -25652,7 +25652,7 @@ bool RspAddAccountPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -25793,38 +25793,38 @@ int ReqUpdateAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqUpdateAccount != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqUpdateAccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqUpdateAccountField::FieldId);
 		if (strlen(ReqUpdateAccount->AdminUserId) >= sizeof(ReqUpdateAccount->AdminUserId))
 		{
 			ReqUpdateAccount->AdminUserId[sizeof(ReqUpdateAccount->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqUpdateAccount->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqUpdateAccount->AdminUserId);
 		if (strlen(ReqUpdateAccount->TradingDay) >= sizeof(ReqUpdateAccount->TradingDay))
 		{
 			ReqUpdateAccount->TradingDay[sizeof(ReqUpdateAccount->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqUpdateAccount->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqUpdateAccount->TradingDay);
 		if (strlen(ReqUpdateAccount->AccountId) >= sizeof(ReqUpdateAccount->AccountId))
 		{
 			ReqUpdateAccount->AccountId[sizeof(ReqUpdateAccount->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqUpdateAccount->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqUpdateAccount->AccountId);
 		if (strlen(ReqUpdateAccount->AccountName) >= sizeof(ReqUpdateAccount->AccountName))
 		{
 			ReqUpdateAccount->AccountName[sizeof(ReqUpdateAccount->AccountName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountName, ReqUpdateAccount->AccountName);
-		StepUtility::WriteString(cursor, Items::AccountStatus, static_cast<int>(ReqUpdateAccount->AccountStatus));
+		StepUtility::WriteString(cursor, ProtocolItems::AccountName, ReqUpdateAccount->AccountName);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountStatus, static_cast<int>(ReqUpdateAccount->AccountStatus));
 		if (strlen(ReqUpdateAccount->Password) >= sizeof(ReqUpdateAccount->Password))
 		{
 			ReqUpdateAccount->Password[sizeof(ReqUpdateAccount->Password) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::Password, ReqUpdateAccount->Password);
-		StepUtility::WriteString(cursor, Items::TradeGroupId, ReqUpdateAccount->TradeGroupId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, ReqUpdateAccount->RiskGroupId);
-		StepUtility::WriteString(cursor, Items::CommissionGroupId, ReqUpdateAccount->CommissionGroupId);
-		StepUtility::WriteString(cursor, Items::IsAutoAudit, ReqUpdateAccount->IsAutoAudit);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqUpdateAccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::Password, ReqUpdateAccount->Password);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, ReqUpdateAccount->TradeGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, ReqUpdateAccount->RiskGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::CommissionGroupId, ReqUpdateAccount->CommissionGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::IsAutoAudit, ReqUpdateAccount->IsAutoAudit);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqUpdateAccountField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -25857,10 +25857,10 @@ bool ReqUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqUpdateAccount->AdminUserId))
 							{
@@ -25870,7 +25870,7 @@ bool ReqUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqUpdateAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqUpdateAccount->TradingDay))
 							{
@@ -25880,7 +25880,7 @@ bool ReqUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqUpdateAccount->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqUpdateAccount->AccountId))
 							{
@@ -25890,7 +25890,7 @@ bool ReqUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqUpdateAccount->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountName:
+						case ProtocolItems::AccountName:
 						{
 							if (value.length() >= sizeof(ReqUpdateAccount->AccountName))
 							{
@@ -25900,7 +25900,7 @@ bool ReqUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqUpdateAccount->AccountName, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountStatus:
+						case ProtocolItems::AccountStatus:
 						{
 							if (!StepUtility::ParseEnum(value, ReqUpdateAccount->AccountStatus))
 							{
@@ -25909,7 +25909,7 @@ bool ReqUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::Password:
+						case ProtocolItems::Password:
 						{
 							if (value.length() >= sizeof(ReqUpdateAccount->Password))
 							{
@@ -25919,7 +25919,7 @@ bool ReqUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqUpdateAccount->Password, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqUpdateAccount->TradeGroupId))
 							{
@@ -25928,7 +25928,7 @@ bool ReqUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqUpdateAccount->RiskGroupId))
 							{
@@ -25937,7 +25937,7 @@ bool ReqUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::CommissionGroupId:
+						case ProtocolItems::CommissionGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqUpdateAccount->CommissionGroupId))
 							{
@@ -25946,7 +25946,7 @@ bool ReqUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::IsAutoAudit:
+						case ProtocolItems::IsAutoAudit:
 						{
 							if (!StepUtility::ParseBool(value, ReqUpdateAccount->IsAutoAudit))
 							{
@@ -26068,29 +26068,29 @@ int RspUpdateAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspUpdateAccount != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspUpdateAccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspUpdateAccountField::FieldId);
 		if (strlen(RspUpdateAccount->AdminUserId) >= sizeof(RspUpdateAccount->AdminUserId))
 		{
 			RspUpdateAccount->AdminUserId[sizeof(RspUpdateAccount->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspUpdateAccount->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspUpdateAccount->AdminUserId);
 		if (strlen(RspUpdateAccount->AccountId) >= sizeof(RspUpdateAccount->AccountId))
 		{
 			RspUpdateAccount->AccountId[sizeof(RspUpdateAccount->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, RspUpdateAccount->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspUpdateAccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, RspUpdateAccount->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspUpdateAccountField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -26123,10 +26123,10 @@ bool RspUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspUpdateAccount->AdminUserId))
 							{
@@ -26136,7 +26136,7 @@ bool RspUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(RspUpdateAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(RspUpdateAccount->AccountId))
 							{
@@ -26173,10 +26173,10 @@ bool RspUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -26185,7 +26185,7 @@ bool RspUpdateAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -26326,18 +26326,18 @@ int ReqRemoveAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRemoveAccount != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRemoveAccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRemoveAccountField::FieldId);
 		if (strlen(ReqRemoveAccount->AdminUserId) >= sizeof(ReqRemoveAccount->AdminUserId))
 		{
 			ReqRemoveAccount->AdminUserId[sizeof(ReqRemoveAccount->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqRemoveAccount->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqRemoveAccount->AdminUserId);
 		if (strlen(ReqRemoveAccount->AccountId) >= sizeof(ReqRemoveAccount->AccountId))
 		{
 			ReqRemoveAccount->AccountId[sizeof(ReqRemoveAccount->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqRemoveAccount->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRemoveAccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqRemoveAccount->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRemoveAccountField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -26370,10 +26370,10 @@ bool ReqRemoveAccountPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqRemoveAccount->AdminUserId))
 							{
@@ -26383,7 +26383,7 @@ bool ReqRemoveAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqRemoveAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqRemoveAccount->AccountId))
 							{
@@ -26506,29 +26506,29 @@ int RspRemoveAccountPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspRemoveAccount != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspRemoveAccountField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspRemoveAccountField::FieldId);
 		if (strlen(RspRemoveAccount->AdminUserId) >= sizeof(RspRemoveAccount->AdminUserId))
 		{
 			RspRemoveAccount->AdminUserId[sizeof(RspRemoveAccount->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspRemoveAccount->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspRemoveAccount->AdminUserId);
 		if (strlen(RspRemoveAccount->AccountId) >= sizeof(RspRemoveAccount->AccountId))
 		{
 			RspRemoveAccount->AccountId[sizeof(RspRemoveAccount->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, RspRemoveAccount->AccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspRemoveAccountField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, RspRemoveAccount->AccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspRemoveAccountField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -26561,10 +26561,10 @@ bool RspRemoveAccountPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspRemoveAccount->AdminUserId))
 							{
@@ -26574,7 +26574,7 @@ bool RspRemoveAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(RspRemoveAccount->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(RspRemoveAccount->AccountId))
 							{
@@ -26611,10 +26611,10 @@ bool RspRemoveAccountPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -26623,7 +26623,7 @@ bool RspRemoveAccountPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -26764,28 +26764,28 @@ int ReqAddBaseCommissionPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddBaseCommission != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddBaseCommissionField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddBaseCommissionField::FieldId);
 		if (strlen(ReqAddBaseCommission->AdminUserId) >= sizeof(ReqAddBaseCommission->AdminUserId))
 		{
 			ReqAddBaseCommission->AdminUserId[sizeof(ReqAddBaseCommission->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddBaseCommission->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddBaseCommission->AdminUserId);
 		if (strlen(ReqAddBaseCommission->TradingDay) >= sizeof(ReqAddBaseCommission->TradingDay))
 		{
 			ReqAddBaseCommission->TradingDay[sizeof(ReqAddBaseCommission->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqAddBaseCommission->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqAddBaseCommission->TradingDay);
 		if (strlen(ReqAddBaseCommission->ExchangeId) >= sizeof(ReqAddBaseCommission->ExchangeId))
 		{
 			ReqAddBaseCommission->ExchangeId[sizeof(ReqAddBaseCommission->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqAddBaseCommission->ExchangeId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(ReqAddBaseCommission->ProductClass));
-		StepUtility::WriteString(cursor, Items::OpenStampTaxByMoney, ReqAddBaseCommission->OpenStampTaxByMoney);
-		StepUtility::WriteString(cursor, Items::CloseStampTaxByMoney, ReqAddBaseCommission->CloseStampTaxByMoney);
-		StepUtility::WriteString(cursor, Items::OpenTransferFeeByMoney, ReqAddBaseCommission->OpenTransferFeeByMoney);
-		StepUtility::WriteString(cursor, Items::CloseTransferFeeByMoney, ReqAddBaseCommission->CloseTransferFeeByMoney);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddBaseCommissionField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqAddBaseCommission->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(ReqAddBaseCommission->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::OpenStampTaxByMoney, ReqAddBaseCommission->OpenStampTaxByMoney);
+		StepUtility::WriteString(cursor, ProtocolItems::CloseStampTaxByMoney, ReqAddBaseCommission->CloseStampTaxByMoney);
+		StepUtility::WriteString(cursor, ProtocolItems::OpenTransferFeeByMoney, ReqAddBaseCommission->OpenTransferFeeByMoney);
+		StepUtility::WriteString(cursor, ProtocolItems::CloseTransferFeeByMoney, ReqAddBaseCommission->CloseTransferFeeByMoney);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddBaseCommissionField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -26818,10 +26818,10 @@ bool ReqAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddBaseCommission->AdminUserId))
 							{
@@ -26831,7 +26831,7 @@ bool ReqAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqAddBaseCommission->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqAddBaseCommission->TradingDay))
 							{
@@ -26841,7 +26841,7 @@ bool ReqAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqAddBaseCommission->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqAddBaseCommission->ExchangeId))
 							{
@@ -26851,7 +26851,7 @@ bool ReqAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqAddBaseCommission->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, ReqAddBaseCommission->ProductClass))
 							{
@@ -26860,7 +26860,7 @@ bool ReqAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::OpenStampTaxByMoney:
+						case ProtocolItems::OpenStampTaxByMoney:
 						{
 							if (!StepUtility::ParseDouble(value, ReqAddBaseCommission->OpenStampTaxByMoney))
 							{
@@ -26869,7 +26869,7 @@ bool ReqAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::CloseStampTaxByMoney:
+						case ProtocolItems::CloseStampTaxByMoney:
 						{
 							if (!StepUtility::ParseDouble(value, ReqAddBaseCommission->CloseStampTaxByMoney))
 							{
@@ -26878,7 +26878,7 @@ bool ReqAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::OpenTransferFeeByMoney:
+						case ProtocolItems::OpenTransferFeeByMoney:
 						{
 							if (!StepUtility::ParseDouble(value, ReqAddBaseCommission->OpenTransferFeeByMoney))
 							{
@@ -26887,7 +26887,7 @@ bool ReqAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::CloseTransferFeeByMoney:
+						case ProtocolItems::CloseTransferFeeByMoney:
 						{
 							if (!StepUtility::ParseDouble(value, ReqAddBaseCommission->CloseTransferFeeByMoney))
 							{
@@ -27009,35 +27009,35 @@ int RspAddBaseCommissionPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddBaseCommission != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddBaseCommissionField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddBaseCommissionField::FieldId);
 		if (strlen(RspAddBaseCommission->AdminUserId) >= sizeof(RspAddBaseCommission->AdminUserId))
 		{
 			RspAddBaseCommission->AdminUserId[sizeof(RspAddBaseCommission->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddBaseCommission->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddBaseCommission->AdminUserId);
 		if (strlen(RspAddBaseCommission->TradingDay) >= sizeof(RspAddBaseCommission->TradingDay))
 		{
 			RspAddBaseCommission->TradingDay[sizeof(RspAddBaseCommission->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, RspAddBaseCommission->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, RspAddBaseCommission->TradingDay);
 		if (strlen(RspAddBaseCommission->ExchangeId) >= sizeof(RspAddBaseCommission->ExchangeId))
 		{
 			RspAddBaseCommission->ExchangeId[sizeof(RspAddBaseCommission->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, RspAddBaseCommission->ExchangeId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(RspAddBaseCommission->ProductClass));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddBaseCommissionField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, RspAddBaseCommission->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(RspAddBaseCommission->ProductClass));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddBaseCommissionField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -27070,10 +27070,10 @@ bool RspAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddBaseCommission->AdminUserId))
 							{
@@ -27083,7 +27083,7 @@ bool RspAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(RspAddBaseCommission->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(RspAddBaseCommission->TradingDay))
 							{
@@ -27093,7 +27093,7 @@ bool RspAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(RspAddBaseCommission->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(RspAddBaseCommission->ExchangeId))
 							{
@@ -27103,7 +27103,7 @@ bool RspAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(RspAddBaseCommission->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, RspAddBaseCommission->ProductClass))
 							{
@@ -27139,10 +27139,10 @@ bool RspAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -27151,7 +27151,7 @@ bool RspAddBaseCommissionPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -27292,28 +27292,28 @@ int ReqUpdateBaseCommissionPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqUpdateBaseCommission != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqUpdateBaseCommissionField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqUpdateBaseCommissionField::FieldId);
 		if (strlen(ReqUpdateBaseCommission->AdminUserId) >= sizeof(ReqUpdateBaseCommission->AdminUserId))
 		{
 			ReqUpdateBaseCommission->AdminUserId[sizeof(ReqUpdateBaseCommission->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqUpdateBaseCommission->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqUpdateBaseCommission->AdminUserId);
 		if (strlen(ReqUpdateBaseCommission->TradingDay) >= sizeof(ReqUpdateBaseCommission->TradingDay))
 		{
 			ReqUpdateBaseCommission->TradingDay[sizeof(ReqUpdateBaseCommission->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqUpdateBaseCommission->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqUpdateBaseCommission->TradingDay);
 		if (strlen(ReqUpdateBaseCommission->ExchangeId) >= sizeof(ReqUpdateBaseCommission->ExchangeId))
 		{
 			ReqUpdateBaseCommission->ExchangeId[sizeof(ReqUpdateBaseCommission->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqUpdateBaseCommission->ExchangeId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(ReqUpdateBaseCommission->ProductClass));
-		StepUtility::WriteString(cursor, Items::OpenStampTaxByMoney, ReqUpdateBaseCommission->OpenStampTaxByMoney);
-		StepUtility::WriteString(cursor, Items::CloseStampTaxByMoney, ReqUpdateBaseCommission->CloseStampTaxByMoney);
-		StepUtility::WriteString(cursor, Items::OpenTransferFeeByMoney, ReqUpdateBaseCommission->OpenTransferFeeByMoney);
-		StepUtility::WriteString(cursor, Items::CloseTransferFeeByMoney, ReqUpdateBaseCommission->CloseTransferFeeByMoney);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqUpdateBaseCommissionField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqUpdateBaseCommission->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(ReqUpdateBaseCommission->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::OpenStampTaxByMoney, ReqUpdateBaseCommission->OpenStampTaxByMoney);
+		StepUtility::WriteString(cursor, ProtocolItems::CloseStampTaxByMoney, ReqUpdateBaseCommission->CloseStampTaxByMoney);
+		StepUtility::WriteString(cursor, ProtocolItems::OpenTransferFeeByMoney, ReqUpdateBaseCommission->OpenTransferFeeByMoney);
+		StepUtility::WriteString(cursor, ProtocolItems::CloseTransferFeeByMoney, ReqUpdateBaseCommission->CloseTransferFeeByMoney);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqUpdateBaseCommissionField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -27346,10 +27346,10 @@ bool ReqUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqUpdateBaseCommission->AdminUserId))
 							{
@@ -27359,7 +27359,7 @@ bool ReqUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqUpdateBaseCommission->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqUpdateBaseCommission->TradingDay))
 							{
@@ -27369,7 +27369,7 @@ bool ReqUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqUpdateBaseCommission->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqUpdateBaseCommission->ExchangeId))
 							{
@@ -27379,7 +27379,7 @@ bool ReqUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqUpdateBaseCommission->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, ReqUpdateBaseCommission->ProductClass))
 							{
@@ -27388,7 +27388,7 @@ bool ReqUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::OpenStampTaxByMoney:
+						case ProtocolItems::OpenStampTaxByMoney:
 						{
 							if (!StepUtility::ParseDouble(value, ReqUpdateBaseCommission->OpenStampTaxByMoney))
 							{
@@ -27397,7 +27397,7 @@ bool ReqUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::CloseStampTaxByMoney:
+						case ProtocolItems::CloseStampTaxByMoney:
 						{
 							if (!StepUtility::ParseDouble(value, ReqUpdateBaseCommission->CloseStampTaxByMoney))
 							{
@@ -27406,7 +27406,7 @@ bool ReqUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::OpenTransferFeeByMoney:
+						case ProtocolItems::OpenTransferFeeByMoney:
 						{
 							if (!StepUtility::ParseDouble(value, ReqUpdateBaseCommission->OpenTransferFeeByMoney))
 							{
@@ -27415,7 +27415,7 @@ bool ReqUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::CloseTransferFeeByMoney:
+						case ProtocolItems::CloseTransferFeeByMoney:
 						{
 							if (!StepUtility::ParseDouble(value, ReqUpdateBaseCommission->CloseTransferFeeByMoney))
 							{
@@ -27537,35 +27537,35 @@ int RspUpdateBaseCommissionPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspUpdateBaseCommission != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspUpdateBaseCommissionField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspUpdateBaseCommissionField::FieldId);
 		if (strlen(RspUpdateBaseCommission->AdminUserId) >= sizeof(RspUpdateBaseCommission->AdminUserId))
 		{
 			RspUpdateBaseCommission->AdminUserId[sizeof(RspUpdateBaseCommission->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspUpdateBaseCommission->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspUpdateBaseCommission->AdminUserId);
 		if (strlen(RspUpdateBaseCommission->TradingDay) >= sizeof(RspUpdateBaseCommission->TradingDay))
 		{
 			RspUpdateBaseCommission->TradingDay[sizeof(RspUpdateBaseCommission->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, RspUpdateBaseCommission->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, RspUpdateBaseCommission->TradingDay);
 		if (strlen(RspUpdateBaseCommission->ExchangeId) >= sizeof(RspUpdateBaseCommission->ExchangeId))
 		{
 			RspUpdateBaseCommission->ExchangeId[sizeof(RspUpdateBaseCommission->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, RspUpdateBaseCommission->ExchangeId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(RspUpdateBaseCommission->ProductClass));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspUpdateBaseCommissionField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, RspUpdateBaseCommission->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(RspUpdateBaseCommission->ProductClass));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspUpdateBaseCommissionField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -27598,10 +27598,10 @@ bool RspUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspUpdateBaseCommission->AdminUserId))
 							{
@@ -27611,7 +27611,7 @@ bool RspUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(RspUpdateBaseCommission->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(RspUpdateBaseCommission->TradingDay))
 							{
@@ -27621,7 +27621,7 @@ bool RspUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(RspUpdateBaseCommission->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(RspUpdateBaseCommission->ExchangeId))
 							{
@@ -27631,7 +27631,7 @@ bool RspUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(RspUpdateBaseCommission->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, RspUpdateBaseCommission->ProductClass))
 							{
@@ -27667,10 +27667,10 @@ bool RspUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -27679,7 +27679,7 @@ bool RspUpdateBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -27820,24 +27820,24 @@ int ReqRemoveBaseCommissionPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRemoveBaseCommission != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRemoveBaseCommissionField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRemoveBaseCommissionField::FieldId);
 		if (strlen(ReqRemoveBaseCommission->AdminUserId) >= sizeof(ReqRemoveBaseCommission->AdminUserId))
 		{
 			ReqRemoveBaseCommission->AdminUserId[sizeof(ReqRemoveBaseCommission->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqRemoveBaseCommission->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqRemoveBaseCommission->AdminUserId);
 		if (strlen(ReqRemoveBaseCommission->TradingDay) >= sizeof(ReqRemoveBaseCommission->TradingDay))
 		{
 			ReqRemoveBaseCommission->TradingDay[sizeof(ReqRemoveBaseCommission->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqRemoveBaseCommission->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqRemoveBaseCommission->TradingDay);
 		if (strlen(ReqRemoveBaseCommission->ExchangeId) >= sizeof(ReqRemoveBaseCommission->ExchangeId))
 		{
 			ReqRemoveBaseCommission->ExchangeId[sizeof(ReqRemoveBaseCommission->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqRemoveBaseCommission->ExchangeId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(ReqRemoveBaseCommission->ProductClass));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRemoveBaseCommissionField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqRemoveBaseCommission->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(ReqRemoveBaseCommission->ProductClass));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRemoveBaseCommissionField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -27870,10 +27870,10 @@ bool ReqRemoveBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqRemoveBaseCommission->AdminUserId))
 							{
@@ -27883,7 +27883,7 @@ bool ReqRemoveBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqRemoveBaseCommission->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqRemoveBaseCommission->TradingDay))
 							{
@@ -27893,7 +27893,7 @@ bool ReqRemoveBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqRemoveBaseCommission->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqRemoveBaseCommission->ExchangeId))
 							{
@@ -27903,7 +27903,7 @@ bool ReqRemoveBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqRemoveBaseCommission->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, ReqRemoveBaseCommission->ProductClass))
 							{
@@ -28025,35 +28025,35 @@ int RspRemoveBaseCommissionPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (RspRemoveBaseCommission != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspRemoveBaseCommissionField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspRemoveBaseCommissionField::FieldId);
 		if (strlen(RspRemoveBaseCommission->AdminUserId) >= sizeof(RspRemoveBaseCommission->AdminUserId))
 		{
 			RspRemoveBaseCommission->AdminUserId[sizeof(RspRemoveBaseCommission->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspRemoveBaseCommission->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspRemoveBaseCommission->AdminUserId);
 		if (strlen(RspRemoveBaseCommission->TradingDay) >= sizeof(RspRemoveBaseCommission->TradingDay))
 		{
 			RspRemoveBaseCommission->TradingDay[sizeof(RspRemoveBaseCommission->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, RspRemoveBaseCommission->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, RspRemoveBaseCommission->TradingDay);
 		if (strlen(RspRemoveBaseCommission->ExchangeId) >= sizeof(RspRemoveBaseCommission->ExchangeId))
 		{
 			RspRemoveBaseCommission->ExchangeId[sizeof(RspRemoveBaseCommission->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, RspRemoveBaseCommission->ExchangeId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(RspRemoveBaseCommission->ProductClass));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspRemoveBaseCommissionField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, RspRemoveBaseCommission->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(RspRemoveBaseCommission->ProductClass));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspRemoveBaseCommissionField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -28086,10 +28086,10 @@ bool RspRemoveBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -28098,7 +28098,7 @@ bool RspRemoveBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -28135,10 +28135,10 @@ bool RspRemoveBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspRemoveBaseCommission->AdminUserId))
 							{
@@ -28148,7 +28148,7 @@ bool RspRemoveBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(RspRemoveBaseCommission->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(RspRemoveBaseCommission->TradingDay))
 							{
@@ -28158,7 +28158,7 @@ bool RspRemoveBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(RspRemoveBaseCommission->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(RspRemoveBaseCommission->ExchangeId))
 							{
@@ -28168,7 +28168,7 @@ bool RspRemoveBaseCommissionPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(RspRemoveBaseCommission->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, RspRemoveBaseCommission->ProductClass))
 							{
@@ -28308,36 +28308,36 @@ int ReqAddCommissionGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddCommissionGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddCommissionGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddCommissionGroupField::FieldId);
 		if (strlen(ReqAddCommissionGroup->AdminUserId) >= sizeof(ReqAddCommissionGroup->AdminUserId))
 		{
 			ReqAddCommissionGroup->AdminUserId[sizeof(ReqAddCommissionGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddCommissionGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddCommissionGroup->AdminUserId);
 		if (strlen(ReqAddCommissionGroup->TradingDay) >= sizeof(ReqAddCommissionGroup->TradingDay))
 		{
 			ReqAddCommissionGroup->TradingDay[sizeof(ReqAddCommissionGroup->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqAddCommissionGroup->TradingDay);
-		StepUtility::WriteString(cursor, Items::CommissionGroupId, ReqAddCommissionGroup->CommissionGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqAddCommissionGroup->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::CommissionGroupId, ReqAddCommissionGroup->CommissionGroupId);
 		if (strlen(ReqAddCommissionGroup->CommissionGroupName) >= sizeof(ReqAddCommissionGroup->CommissionGroupName))
 		{
 			ReqAddCommissionGroup->CommissionGroupName[sizeof(ReqAddCommissionGroup->CommissionGroupName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::CommissionGroupName, ReqAddCommissionGroup->CommissionGroupName);
+		StepUtility::WriteString(cursor, ProtocolItems::CommissionGroupName, ReqAddCommissionGroup->CommissionGroupName);
 		if (strlen(ReqAddCommissionGroup->ExchangeId) >= sizeof(ReqAddCommissionGroup->ExchangeId))
 		{
 			ReqAddCommissionGroup->ExchangeId[sizeof(ReqAddCommissionGroup->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqAddCommissionGroup->ExchangeId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(ReqAddCommissionGroup->ProductClass));
-		StepUtility::WriteString(cursor, Items::OpenByMoney, ReqAddCommissionGroup->OpenByMoney);
-		StepUtility::WriteString(cursor, Items::CloseByMoney, ReqAddCommissionGroup->CloseByMoney);
-		StepUtility::WriteString(cursor, Items::OpenByVolume, ReqAddCommissionGroup->OpenByVolume);
-		StepUtility::WriteString(cursor, Items::CloseByVolume, ReqAddCommissionGroup->CloseByVolume);
-		StepUtility::WriteString(cursor, Items::MinCommission, ReqAddCommissionGroup->MinCommission);
-		StepUtility::WriteString(cursor, Items::MaxCommission, ReqAddCommissionGroup->MaxCommission);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddCommissionGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqAddCommissionGroup->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(ReqAddCommissionGroup->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::OpenByMoney, ReqAddCommissionGroup->OpenByMoney);
+		StepUtility::WriteString(cursor, ProtocolItems::CloseByMoney, ReqAddCommissionGroup->CloseByMoney);
+		StepUtility::WriteString(cursor, ProtocolItems::OpenByVolume, ReqAddCommissionGroup->OpenByVolume);
+		StepUtility::WriteString(cursor, ProtocolItems::CloseByVolume, ReqAddCommissionGroup->CloseByVolume);
+		StepUtility::WriteString(cursor, ProtocolItems::MinCommission, ReqAddCommissionGroup->MinCommission);
+		StepUtility::WriteString(cursor, ProtocolItems::MaxCommission, ReqAddCommissionGroup->MaxCommission);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddCommissionGroupField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -28370,10 +28370,10 @@ bool ReqAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddCommissionGroup->AdminUserId))
 							{
@@ -28383,7 +28383,7 @@ bool ReqAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							memcpy(ReqAddCommissionGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqAddCommissionGroup->TradingDay))
 							{
@@ -28393,7 +28393,7 @@ bool ReqAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							memcpy(ReqAddCommissionGroup->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::CommissionGroupId:
+						case ProtocolItems::CommissionGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddCommissionGroup->CommissionGroupId))
 							{
@@ -28402,7 +28402,7 @@ bool ReqAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							}
 							break;
 						}
-						case Items::CommissionGroupName:
+						case ProtocolItems::CommissionGroupName:
 						{
 							if (value.length() >= sizeof(ReqAddCommissionGroup->CommissionGroupName))
 							{
@@ -28412,7 +28412,7 @@ bool ReqAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							memcpy(ReqAddCommissionGroup->CommissionGroupName, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqAddCommissionGroup->ExchangeId))
 							{
@@ -28422,7 +28422,7 @@ bool ReqAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							memcpy(ReqAddCommissionGroup->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, ReqAddCommissionGroup->ProductClass))
 							{
@@ -28431,7 +28431,7 @@ bool ReqAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							}
 							break;
 						}
-						case Items::OpenByMoney:
+						case ProtocolItems::OpenByMoney:
 						{
 							if (!StepUtility::ParseDouble(value, ReqAddCommissionGroup->OpenByMoney))
 							{
@@ -28440,7 +28440,7 @@ bool ReqAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							}
 							break;
 						}
-						case Items::CloseByMoney:
+						case ProtocolItems::CloseByMoney:
 						{
 							if (!StepUtility::ParseDouble(value, ReqAddCommissionGroup->CloseByMoney))
 							{
@@ -28449,7 +28449,7 @@ bool ReqAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							}
 							break;
 						}
-						case Items::OpenByVolume:
+						case ProtocolItems::OpenByVolume:
 						{
 							if (!StepUtility::ParseDouble(value, ReqAddCommissionGroup->OpenByVolume))
 							{
@@ -28458,7 +28458,7 @@ bool ReqAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							}
 							break;
 						}
-						case Items::CloseByVolume:
+						case ProtocolItems::CloseByVolume:
 						{
 							if (!StepUtility::ParseDouble(value, ReqAddCommissionGroup->CloseByVolume))
 							{
@@ -28467,7 +28467,7 @@ bool ReqAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							}
 							break;
 						}
-						case Items::MinCommission:
+						case ProtocolItems::MinCommission:
 						{
 							if (!StepUtility::ParseDouble(value, ReqAddCommissionGroup->MinCommission))
 							{
@@ -28476,7 +28476,7 @@ bool ReqAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							}
 							break;
 						}
-						case Items::MaxCommission:
+						case ProtocolItems::MaxCommission:
 						{
 							if (!StepUtility::ParseDouble(value, ReqAddCommissionGroup->MaxCommission))
 							{
@@ -28598,36 +28598,36 @@ int RspAddCommissionGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddCommissionGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddCommissionGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddCommissionGroupField::FieldId);
 		if (strlen(RspAddCommissionGroup->AdminUserId) >= sizeof(RspAddCommissionGroup->AdminUserId))
 		{
 			RspAddCommissionGroup->AdminUserId[sizeof(RspAddCommissionGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddCommissionGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddCommissionGroup->AdminUserId);
 		if (strlen(RspAddCommissionGroup->TradingDay) >= sizeof(RspAddCommissionGroup->TradingDay))
 		{
 			RspAddCommissionGroup->TradingDay[sizeof(RspAddCommissionGroup->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, RspAddCommissionGroup->TradingDay);
-		StepUtility::WriteString(cursor, Items::CommissionGroupId, RspAddCommissionGroup->CommissionGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, RspAddCommissionGroup->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::CommissionGroupId, RspAddCommissionGroup->CommissionGroupId);
 		if (strlen(RspAddCommissionGroup->ExchangeId) >= sizeof(RspAddCommissionGroup->ExchangeId))
 		{
 			RspAddCommissionGroup->ExchangeId[sizeof(RspAddCommissionGroup->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, RspAddCommissionGroup->ExchangeId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(RspAddCommissionGroup->ProductClass));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddCommissionGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, RspAddCommissionGroup->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(RspAddCommissionGroup->ProductClass));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddCommissionGroupField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -28660,10 +28660,10 @@ bool RspAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddCommissionGroup->AdminUserId))
 							{
@@ -28673,7 +28673,7 @@ bool RspAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							memcpy(RspAddCommissionGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(RspAddCommissionGroup->TradingDay))
 							{
@@ -28683,7 +28683,7 @@ bool RspAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							memcpy(RspAddCommissionGroup->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::CommissionGroupId:
+						case ProtocolItems::CommissionGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAddCommissionGroup->CommissionGroupId))
 							{
@@ -28692,7 +28692,7 @@ bool RspAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							}
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(RspAddCommissionGroup->ExchangeId))
 							{
@@ -28702,7 +28702,7 @@ bool RspAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							memcpy(RspAddCommissionGroup->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, RspAddCommissionGroup->ProductClass))
 							{
@@ -28738,10 +28738,10 @@ bool RspAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -28750,7 +28750,7 @@ bool RspAddCommissionGroupPackage::FromStepStream(char* buff, int startIndex, in
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -28891,36 +28891,36 @@ int ReqUpdateCommissionGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqUpdateCommissionGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqUpdateCommissionGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqUpdateCommissionGroupField::FieldId);
 		if (strlen(ReqUpdateCommissionGroup->AdminUserId) >= sizeof(ReqUpdateCommissionGroup->AdminUserId))
 		{
 			ReqUpdateCommissionGroup->AdminUserId[sizeof(ReqUpdateCommissionGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqUpdateCommissionGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqUpdateCommissionGroup->AdminUserId);
 		if (strlen(ReqUpdateCommissionGroup->TradingDay) >= sizeof(ReqUpdateCommissionGroup->TradingDay))
 		{
 			ReqUpdateCommissionGroup->TradingDay[sizeof(ReqUpdateCommissionGroup->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqUpdateCommissionGroup->TradingDay);
-		StepUtility::WriteString(cursor, Items::CommissionGroupId, ReqUpdateCommissionGroup->CommissionGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqUpdateCommissionGroup->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::CommissionGroupId, ReqUpdateCommissionGroup->CommissionGroupId);
 		if (strlen(ReqUpdateCommissionGroup->CommissionGroupName) >= sizeof(ReqUpdateCommissionGroup->CommissionGroupName))
 		{
 			ReqUpdateCommissionGroup->CommissionGroupName[sizeof(ReqUpdateCommissionGroup->CommissionGroupName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::CommissionGroupName, ReqUpdateCommissionGroup->CommissionGroupName);
+		StepUtility::WriteString(cursor, ProtocolItems::CommissionGroupName, ReqUpdateCommissionGroup->CommissionGroupName);
 		if (strlen(ReqUpdateCommissionGroup->ExchangeId) >= sizeof(ReqUpdateCommissionGroup->ExchangeId))
 		{
 			ReqUpdateCommissionGroup->ExchangeId[sizeof(ReqUpdateCommissionGroup->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqUpdateCommissionGroup->ExchangeId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(ReqUpdateCommissionGroup->ProductClass));
-		StepUtility::WriteString(cursor, Items::OpenByMoney, ReqUpdateCommissionGroup->OpenByMoney);
-		StepUtility::WriteString(cursor, Items::CloseByMoney, ReqUpdateCommissionGroup->CloseByMoney);
-		StepUtility::WriteString(cursor, Items::OpenByVolume, ReqUpdateCommissionGroup->OpenByVolume);
-		StepUtility::WriteString(cursor, Items::CloseByVolume, ReqUpdateCommissionGroup->CloseByVolume);
-		StepUtility::WriteString(cursor, Items::MinCommission, ReqUpdateCommissionGroup->MinCommission);
-		StepUtility::WriteString(cursor, Items::MaxCommission, ReqUpdateCommissionGroup->MaxCommission);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqUpdateCommissionGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqUpdateCommissionGroup->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(ReqUpdateCommissionGroup->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::OpenByMoney, ReqUpdateCommissionGroup->OpenByMoney);
+		StepUtility::WriteString(cursor, ProtocolItems::CloseByMoney, ReqUpdateCommissionGroup->CloseByMoney);
+		StepUtility::WriteString(cursor, ProtocolItems::OpenByVolume, ReqUpdateCommissionGroup->OpenByVolume);
+		StepUtility::WriteString(cursor, ProtocolItems::CloseByVolume, ReqUpdateCommissionGroup->CloseByVolume);
+		StepUtility::WriteString(cursor, ProtocolItems::MinCommission, ReqUpdateCommissionGroup->MinCommission);
+		StepUtility::WriteString(cursor, ProtocolItems::MaxCommission, ReqUpdateCommissionGroup->MaxCommission);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqUpdateCommissionGroupField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -28953,10 +28953,10 @@ bool ReqUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqUpdateCommissionGroup->AdminUserId))
 							{
@@ -28966,7 +28966,7 @@ bool ReqUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(ReqUpdateCommissionGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqUpdateCommissionGroup->TradingDay))
 							{
@@ -28976,7 +28976,7 @@ bool ReqUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(ReqUpdateCommissionGroup->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::CommissionGroupId:
+						case ProtocolItems::CommissionGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqUpdateCommissionGroup->CommissionGroupId))
 							{
@@ -28985,7 +28985,7 @@ bool ReqUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::CommissionGroupName:
+						case ProtocolItems::CommissionGroupName:
 						{
 							if (value.length() >= sizeof(ReqUpdateCommissionGroup->CommissionGroupName))
 							{
@@ -28995,7 +28995,7 @@ bool ReqUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(ReqUpdateCommissionGroup->CommissionGroupName, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqUpdateCommissionGroup->ExchangeId))
 							{
@@ -29005,7 +29005,7 @@ bool ReqUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(ReqUpdateCommissionGroup->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, ReqUpdateCommissionGroup->ProductClass))
 							{
@@ -29014,7 +29014,7 @@ bool ReqUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::OpenByMoney:
+						case ProtocolItems::OpenByMoney:
 						{
 							if (!StepUtility::ParseDouble(value, ReqUpdateCommissionGroup->OpenByMoney))
 							{
@@ -29023,7 +29023,7 @@ bool ReqUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::CloseByMoney:
+						case ProtocolItems::CloseByMoney:
 						{
 							if (!StepUtility::ParseDouble(value, ReqUpdateCommissionGroup->CloseByMoney))
 							{
@@ -29032,7 +29032,7 @@ bool ReqUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::OpenByVolume:
+						case ProtocolItems::OpenByVolume:
 						{
 							if (!StepUtility::ParseDouble(value, ReqUpdateCommissionGroup->OpenByVolume))
 							{
@@ -29041,7 +29041,7 @@ bool ReqUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::CloseByVolume:
+						case ProtocolItems::CloseByVolume:
 						{
 							if (!StepUtility::ParseDouble(value, ReqUpdateCommissionGroup->CloseByVolume))
 							{
@@ -29050,7 +29050,7 @@ bool ReqUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::MinCommission:
+						case ProtocolItems::MinCommission:
 						{
 							if (!StepUtility::ParseDouble(value, ReqUpdateCommissionGroup->MinCommission))
 							{
@@ -29059,7 +29059,7 @@ bool ReqUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::MaxCommission:
+						case ProtocolItems::MaxCommission:
 						{
 							if (!StepUtility::ParseDouble(value, ReqUpdateCommissionGroup->MaxCommission))
 							{
@@ -29181,36 +29181,36 @@ int RspUpdateCommissionGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspUpdateCommissionGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspUpdateCommissionGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspUpdateCommissionGroupField::FieldId);
 		if (strlen(RspUpdateCommissionGroup->AdminUserId) >= sizeof(RspUpdateCommissionGroup->AdminUserId))
 		{
 			RspUpdateCommissionGroup->AdminUserId[sizeof(RspUpdateCommissionGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspUpdateCommissionGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspUpdateCommissionGroup->AdminUserId);
 		if (strlen(RspUpdateCommissionGroup->TradingDay) >= sizeof(RspUpdateCommissionGroup->TradingDay))
 		{
 			RspUpdateCommissionGroup->TradingDay[sizeof(RspUpdateCommissionGroup->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, RspUpdateCommissionGroup->TradingDay);
-		StepUtility::WriteString(cursor, Items::CommissionGroupId, RspUpdateCommissionGroup->CommissionGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, RspUpdateCommissionGroup->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::CommissionGroupId, RspUpdateCommissionGroup->CommissionGroupId);
 		if (strlen(RspUpdateCommissionGroup->ExchangeId) >= sizeof(RspUpdateCommissionGroup->ExchangeId))
 		{
 			RspUpdateCommissionGroup->ExchangeId[sizeof(RspUpdateCommissionGroup->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, RspUpdateCommissionGroup->ExchangeId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(RspUpdateCommissionGroup->ProductClass));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspUpdateCommissionGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, RspUpdateCommissionGroup->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(RspUpdateCommissionGroup->ProductClass));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspUpdateCommissionGroupField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -29243,10 +29243,10 @@ bool RspUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspUpdateCommissionGroup->AdminUserId))
 							{
@@ -29256,7 +29256,7 @@ bool RspUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(RspUpdateCommissionGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(RspUpdateCommissionGroup->TradingDay))
 							{
@@ -29266,7 +29266,7 @@ bool RspUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(RspUpdateCommissionGroup->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::CommissionGroupId:
+						case ProtocolItems::CommissionGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, RspUpdateCommissionGroup->CommissionGroupId))
 							{
@@ -29275,7 +29275,7 @@ bool RspUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(RspUpdateCommissionGroup->ExchangeId))
 							{
@@ -29285,7 +29285,7 @@ bool RspUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(RspUpdateCommissionGroup->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, RspUpdateCommissionGroup->ProductClass))
 							{
@@ -29321,10 +29321,10 @@ bool RspUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -29333,7 +29333,7 @@ bool RspUpdateCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -29474,25 +29474,25 @@ int ReqRemoveCommissionGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRemoveCommissionGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRemoveCommissionGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRemoveCommissionGroupField::FieldId);
 		if (strlen(ReqRemoveCommissionGroup->AdminUserId) >= sizeof(ReqRemoveCommissionGroup->AdminUserId))
 		{
 			ReqRemoveCommissionGroup->AdminUserId[sizeof(ReqRemoveCommissionGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqRemoveCommissionGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqRemoveCommissionGroup->AdminUserId);
 		if (strlen(ReqRemoveCommissionGroup->TradingDay) >= sizeof(ReqRemoveCommissionGroup->TradingDay))
 		{
 			ReqRemoveCommissionGroup->TradingDay[sizeof(ReqRemoveCommissionGroup->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqRemoveCommissionGroup->TradingDay);
-		StepUtility::WriteString(cursor, Items::CommissionGroupId, ReqRemoveCommissionGroup->CommissionGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqRemoveCommissionGroup->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::CommissionGroupId, ReqRemoveCommissionGroup->CommissionGroupId);
 		if (strlen(ReqRemoveCommissionGroup->ExchangeId) >= sizeof(ReqRemoveCommissionGroup->ExchangeId))
 		{
 			ReqRemoveCommissionGroup->ExchangeId[sizeof(ReqRemoveCommissionGroup->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqRemoveCommissionGroup->ExchangeId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(ReqRemoveCommissionGroup->ProductClass));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRemoveCommissionGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqRemoveCommissionGroup->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(ReqRemoveCommissionGroup->ProductClass));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRemoveCommissionGroupField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -29525,10 +29525,10 @@ bool ReqRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqRemoveCommissionGroup->AdminUserId))
 							{
@@ -29538,7 +29538,7 @@ bool ReqRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(ReqRemoveCommissionGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqRemoveCommissionGroup->TradingDay))
 							{
@@ -29548,7 +29548,7 @@ bool ReqRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(ReqRemoveCommissionGroup->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::CommissionGroupId:
+						case ProtocolItems::CommissionGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqRemoveCommissionGroup->CommissionGroupId))
 							{
@@ -29557,7 +29557,7 @@ bool ReqRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqRemoveCommissionGroup->ExchangeId))
 							{
@@ -29567,7 +29567,7 @@ bool ReqRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(ReqRemoveCommissionGroup->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, ReqRemoveCommissionGroup->ProductClass))
 							{
@@ -29689,36 +29689,36 @@ int RspRemoveCommissionGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspRemoveCommissionGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspRemoveCommissionGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspRemoveCommissionGroupField::FieldId);
 		if (strlen(RspRemoveCommissionGroup->AdminUserId) >= sizeof(RspRemoveCommissionGroup->AdminUserId))
 		{
 			RspRemoveCommissionGroup->AdminUserId[sizeof(RspRemoveCommissionGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspRemoveCommissionGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspRemoveCommissionGroup->AdminUserId);
 		if (strlen(RspRemoveCommissionGroup->TradingDay) >= sizeof(RspRemoveCommissionGroup->TradingDay))
 		{
 			RspRemoveCommissionGroup->TradingDay[sizeof(RspRemoveCommissionGroup->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, RspRemoveCommissionGroup->TradingDay);
-		StepUtility::WriteString(cursor, Items::CommissionGroupId, RspRemoveCommissionGroup->CommissionGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, RspRemoveCommissionGroup->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::CommissionGroupId, RspRemoveCommissionGroup->CommissionGroupId);
 		if (strlen(RspRemoveCommissionGroup->ExchangeId) >= sizeof(RspRemoveCommissionGroup->ExchangeId))
 		{
 			RspRemoveCommissionGroup->ExchangeId[sizeof(RspRemoveCommissionGroup->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, RspRemoveCommissionGroup->ExchangeId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(RspRemoveCommissionGroup->ProductClass));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspRemoveCommissionGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, RspRemoveCommissionGroup->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(RspRemoveCommissionGroup->ProductClass));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspRemoveCommissionGroupField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -29751,10 +29751,10 @@ bool RspRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspRemoveCommissionGroup->AdminUserId))
 							{
@@ -29764,7 +29764,7 @@ bool RspRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(RspRemoveCommissionGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(RspRemoveCommissionGroup->TradingDay))
 							{
@@ -29774,7 +29774,7 @@ bool RspRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(RspRemoveCommissionGroup->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::CommissionGroupId:
+						case ProtocolItems::CommissionGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, RspRemoveCommissionGroup->CommissionGroupId))
 							{
@@ -29783,7 +29783,7 @@ bool RspRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(RspRemoveCommissionGroup->ExchangeId))
 							{
@@ -29793,7 +29793,7 @@ bool RspRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(RspRemoveCommissionGroup->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, RspRemoveCommissionGroup->ProductClass))
 							{
@@ -29829,10 +29829,10 @@ bool RspRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -29841,7 +29841,7 @@ bool RspRemoveCommissionGroupPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -29982,25 +29982,25 @@ int ReqAddOptionMarginParamPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddOptionMarginParam != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddOptionMarginParamField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddOptionMarginParamField::FieldId);
 		if (strlen(ReqAddOptionMarginParam->AdminUserId) >= sizeof(ReqAddOptionMarginParam->AdminUserId))
 		{
 			ReqAddOptionMarginParam->AdminUserId[sizeof(ReqAddOptionMarginParam->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddOptionMarginParam->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddOptionMarginParam->AdminUserId);
 		if (strlen(ReqAddOptionMarginParam->TradingDay) >= sizeof(ReqAddOptionMarginParam->TradingDay))
 		{
 			ReqAddOptionMarginParam->TradingDay[sizeof(ReqAddOptionMarginParam->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqAddOptionMarginParam->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqAddOptionMarginParam->TradingDay);
 		if (strlen(ReqAddOptionMarginParam->ExchangeId) >= sizeof(ReqAddOptionMarginParam->ExchangeId))
 		{
 			ReqAddOptionMarginParam->ExchangeId[sizeof(ReqAddOptionMarginParam->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqAddOptionMarginParam->ExchangeId);
-		StepUtility::WriteString(cursor, Items::Param1, ReqAddOptionMarginParam->Param1);
-		StepUtility::WriteString(cursor, Items::Param2, ReqAddOptionMarginParam->Param2);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddOptionMarginParamField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqAddOptionMarginParam->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::Param1, ReqAddOptionMarginParam->Param1);
+		StepUtility::WriteString(cursor, ProtocolItems::Param2, ReqAddOptionMarginParam->Param2);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddOptionMarginParamField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -30033,10 +30033,10 @@ bool ReqAddOptionMarginParamPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddOptionMarginParam->AdminUserId))
 							{
@@ -30046,7 +30046,7 @@ bool ReqAddOptionMarginParamPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqAddOptionMarginParam->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqAddOptionMarginParam->TradingDay))
 							{
@@ -30056,7 +30056,7 @@ bool ReqAddOptionMarginParamPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqAddOptionMarginParam->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqAddOptionMarginParam->ExchangeId))
 							{
@@ -30066,7 +30066,7 @@ bool ReqAddOptionMarginParamPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqAddOptionMarginParam->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Param1:
+						case ProtocolItems::Param1:
 						{
 							if (!StepUtility::ParseDouble(value, ReqAddOptionMarginParam->Param1))
 							{
@@ -30075,7 +30075,7 @@ bool ReqAddOptionMarginParamPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::Param2:
+						case ProtocolItems::Param2:
 						{
 							if (!StepUtility::ParseDouble(value, ReqAddOptionMarginParam->Param2))
 							{
@@ -30197,29 +30197,29 @@ int RspAddOptionMarginParamPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddOptionMarginParam != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddOptionMarginParamField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddOptionMarginParamField::FieldId);
 		if (strlen(RspAddOptionMarginParam->AdminUserId) >= sizeof(RspAddOptionMarginParam->AdminUserId))
 		{
 			RspAddOptionMarginParam->AdminUserId[sizeof(RspAddOptionMarginParam->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddOptionMarginParam->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddOptionMarginParam->AdminUserId);
 		if (strlen(RspAddOptionMarginParam->ExchangeId) >= sizeof(RspAddOptionMarginParam->ExchangeId))
 		{
 			RspAddOptionMarginParam->ExchangeId[sizeof(RspAddOptionMarginParam->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, RspAddOptionMarginParam->ExchangeId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddOptionMarginParamField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, RspAddOptionMarginParam->ExchangeId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddOptionMarginParamField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -30252,10 +30252,10 @@ bool RspAddOptionMarginParamPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddOptionMarginParam->AdminUserId))
 							{
@@ -30265,7 +30265,7 @@ bool RspAddOptionMarginParamPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(RspAddOptionMarginParam->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(RspAddOptionMarginParam->ExchangeId))
 							{
@@ -30302,10 +30302,10 @@ bool RspAddOptionMarginParamPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -30314,7 +30314,7 @@ bool RspAddOptionMarginParamPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -30455,25 +30455,25 @@ int ReqUpdateOptionMarginParamPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqUpdateOptionMarginParam != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqUpdateOptionMarginParamField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqUpdateOptionMarginParamField::FieldId);
 		if (strlen(ReqUpdateOptionMarginParam->AdminUserId) >= sizeof(ReqUpdateOptionMarginParam->AdminUserId))
 		{
 			ReqUpdateOptionMarginParam->AdminUserId[sizeof(ReqUpdateOptionMarginParam->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqUpdateOptionMarginParam->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqUpdateOptionMarginParam->AdminUserId);
 		if (strlen(ReqUpdateOptionMarginParam->TradingDay) >= sizeof(ReqUpdateOptionMarginParam->TradingDay))
 		{
 			ReqUpdateOptionMarginParam->TradingDay[sizeof(ReqUpdateOptionMarginParam->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqUpdateOptionMarginParam->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqUpdateOptionMarginParam->TradingDay);
 		if (strlen(ReqUpdateOptionMarginParam->ExchangeId) >= sizeof(ReqUpdateOptionMarginParam->ExchangeId))
 		{
 			ReqUpdateOptionMarginParam->ExchangeId[sizeof(ReqUpdateOptionMarginParam->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqUpdateOptionMarginParam->ExchangeId);
-		StepUtility::WriteString(cursor, Items::Param1, ReqUpdateOptionMarginParam->Param1);
-		StepUtility::WriteString(cursor, Items::Param2, ReqUpdateOptionMarginParam->Param2);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqUpdateOptionMarginParamField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqUpdateOptionMarginParam->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::Param1, ReqUpdateOptionMarginParam->Param1);
+		StepUtility::WriteString(cursor, ProtocolItems::Param2, ReqUpdateOptionMarginParam->Param2);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqUpdateOptionMarginParamField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -30506,10 +30506,10 @@ bool ReqUpdateOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqUpdateOptionMarginParam->AdminUserId))
 							{
@@ -30519,7 +30519,7 @@ bool ReqUpdateOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 							memcpy(ReqUpdateOptionMarginParam->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqUpdateOptionMarginParam->TradingDay))
 							{
@@ -30529,7 +30529,7 @@ bool ReqUpdateOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 							memcpy(ReqUpdateOptionMarginParam->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqUpdateOptionMarginParam->ExchangeId))
 							{
@@ -30539,7 +30539,7 @@ bool ReqUpdateOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 							memcpy(ReqUpdateOptionMarginParam->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Param1:
+						case ProtocolItems::Param1:
 						{
 							if (!StepUtility::ParseDouble(value, ReqUpdateOptionMarginParam->Param1))
 							{
@@ -30548,7 +30548,7 @@ bool ReqUpdateOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 							}
 							break;
 						}
-						case Items::Param2:
+						case ProtocolItems::Param2:
 						{
 							if (!StepUtility::ParseDouble(value, ReqUpdateOptionMarginParam->Param2))
 							{
@@ -30670,29 +30670,29 @@ int RspUpdateOptionMarginParamPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspUpdateOptionMarginParam != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspUpdateOptionMarginParamField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspUpdateOptionMarginParamField::FieldId);
 		if (strlen(RspUpdateOptionMarginParam->AdminUserId) >= sizeof(RspUpdateOptionMarginParam->AdminUserId))
 		{
 			RspUpdateOptionMarginParam->AdminUserId[sizeof(RspUpdateOptionMarginParam->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspUpdateOptionMarginParam->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspUpdateOptionMarginParam->AdminUserId);
 		if (strlen(RspUpdateOptionMarginParam->ExchangeId) >= sizeof(RspUpdateOptionMarginParam->ExchangeId))
 		{
 			RspUpdateOptionMarginParam->ExchangeId[sizeof(RspUpdateOptionMarginParam->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, RspUpdateOptionMarginParam->ExchangeId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspUpdateOptionMarginParamField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, RspUpdateOptionMarginParam->ExchangeId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspUpdateOptionMarginParamField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -30725,10 +30725,10 @@ bool RspUpdateOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspUpdateOptionMarginParam->AdminUserId))
 							{
@@ -30738,7 +30738,7 @@ bool RspUpdateOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 							memcpy(RspUpdateOptionMarginParam->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(RspUpdateOptionMarginParam->ExchangeId))
 							{
@@ -30775,10 +30775,10 @@ bool RspUpdateOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -30787,7 +30787,7 @@ bool RspUpdateOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -30928,18 +30928,18 @@ int ReqRemoveOptionMarginParamPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRemoveOptionMarginParam != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRemoveOptionMarginParamField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRemoveOptionMarginParamField::FieldId);
 		if (strlen(ReqRemoveOptionMarginParam->AdminUserId) >= sizeof(ReqRemoveOptionMarginParam->AdminUserId))
 		{
 			ReqRemoveOptionMarginParam->AdminUserId[sizeof(ReqRemoveOptionMarginParam->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqRemoveOptionMarginParam->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqRemoveOptionMarginParam->AdminUserId);
 		if (strlen(ReqRemoveOptionMarginParam->ExchangeId) >= sizeof(ReqRemoveOptionMarginParam->ExchangeId))
 		{
 			ReqRemoveOptionMarginParam->ExchangeId[sizeof(ReqRemoveOptionMarginParam->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqRemoveOptionMarginParam->ExchangeId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRemoveOptionMarginParamField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqRemoveOptionMarginParam->ExchangeId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRemoveOptionMarginParamField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -30972,10 +30972,10 @@ bool ReqRemoveOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqRemoveOptionMarginParam->AdminUserId))
 							{
@@ -30985,7 +30985,7 @@ bool ReqRemoveOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 							memcpy(ReqRemoveOptionMarginParam->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqRemoveOptionMarginParam->ExchangeId))
 							{
@@ -31108,29 +31108,29 @@ int RspRemoveOptionMarginParamPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspRemoveOptionMarginParam != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspRemoveOptionMarginParamField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspRemoveOptionMarginParamField::FieldId);
 		if (strlen(RspRemoveOptionMarginParam->AdminUserId) >= sizeof(RspRemoveOptionMarginParam->AdminUserId))
 		{
 			RspRemoveOptionMarginParam->AdminUserId[sizeof(RspRemoveOptionMarginParam->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspRemoveOptionMarginParam->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspRemoveOptionMarginParam->AdminUserId);
 		if (strlen(RspRemoveOptionMarginParam->ExchangeId) >= sizeof(RspRemoveOptionMarginParam->ExchangeId))
 		{
 			RspRemoveOptionMarginParam->ExchangeId[sizeof(RspRemoveOptionMarginParam->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, RspRemoveOptionMarginParam->ExchangeId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspRemoveOptionMarginParamField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, RspRemoveOptionMarginParam->ExchangeId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspRemoveOptionMarginParamField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -31163,10 +31163,10 @@ bool RspRemoveOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspRemoveOptionMarginParam->AdminUserId))
 							{
@@ -31176,7 +31176,7 @@ bool RspRemoveOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 							memcpy(RspRemoveOptionMarginParam->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(RspRemoveOptionMarginParam->ExchangeId))
 							{
@@ -31213,10 +31213,10 @@ bool RspRemoveOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -31225,7 +31225,7 @@ bool RspRemoveOptionMarginParamPackage::FromStepStream(char* buff, int startInde
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -31366,25 +31366,25 @@ int ReqAddTradeOfferPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddTradeOffer != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddTradeOfferField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddTradeOfferField::FieldId);
 		if (strlen(ReqAddTradeOffer->AdminUserId) >= sizeof(ReqAddTradeOffer->AdminUserId))
 		{
 			ReqAddTradeOffer->AdminUserId[sizeof(ReqAddTradeOffer->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddTradeOffer->AdminUserId);
-		StepUtility::WriteString(cursor, Items::OfferId, ReqAddTradeOffer->OfferId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddTradeOffer->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::OfferId, ReqAddTradeOffer->OfferId);
 		if (strlen(ReqAddTradeOffer->OfferName) >= sizeof(ReqAddTradeOffer->OfferName))
 		{
 			ReqAddTradeOffer->OfferName[sizeof(ReqAddTradeOffer->OfferName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OfferName, ReqAddTradeOffer->OfferName);
-		StepUtility::WriteString(cursor, Items::OfferType, static_cast<int>(ReqAddTradeOffer->OfferType));
+		StepUtility::WriteString(cursor, ProtocolItems::OfferName, ReqAddTradeOffer->OfferName);
+		StepUtility::WriteString(cursor, ProtocolItems::OfferType, static_cast<int>(ReqAddTradeOffer->OfferType));
 		if (strlen(ReqAddTradeOffer->OfferPassword) >= sizeof(ReqAddTradeOffer->OfferPassword))
 		{
 			ReqAddTradeOffer->OfferPassword[sizeof(ReqAddTradeOffer->OfferPassword) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OfferPassword, ReqAddTradeOffer->OfferPassword);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddTradeOfferField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::OfferPassword, ReqAddTradeOffer->OfferPassword);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddTradeOfferField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -31417,10 +31417,10 @@ bool ReqAddTradeOfferPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddTradeOffer->AdminUserId))
 							{
@@ -31430,7 +31430,7 @@ bool ReqAddTradeOfferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqAddTradeOffer->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::OfferId:
+						case ProtocolItems::OfferId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddTradeOffer->OfferId))
 							{
@@ -31439,7 +31439,7 @@ bool ReqAddTradeOfferPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::OfferName:
+						case ProtocolItems::OfferName:
 						{
 							if (value.length() >= sizeof(ReqAddTradeOffer->OfferName))
 							{
@@ -31449,7 +31449,7 @@ bool ReqAddTradeOfferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqAddTradeOffer->OfferName, value.c_str(), value.length());
 							break;
 						}
-						case Items::OfferType:
+						case ProtocolItems::OfferType:
 						{
 							if (!StepUtility::ParseEnum(value, ReqAddTradeOffer->OfferType))
 							{
@@ -31458,7 +31458,7 @@ bool ReqAddTradeOfferPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::OfferPassword:
+						case ProtocolItems::OfferPassword:
 						{
 							if (value.length() >= sizeof(ReqAddTradeOffer->OfferPassword))
 							{
@@ -31581,25 +31581,25 @@ int RspAddTradeOfferPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddTradeOffer != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddTradeOfferField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddTradeOfferField::FieldId);
 		if (strlen(RspAddTradeOffer->AdminUserId) >= sizeof(RspAddTradeOffer->AdminUserId))
 		{
 			RspAddTradeOffer->AdminUserId[sizeof(RspAddTradeOffer->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddTradeOffer->AdminUserId);
-		StepUtility::WriteString(cursor, Items::OfferId, RspAddTradeOffer->OfferId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddTradeOfferField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddTradeOffer->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::OfferId, RspAddTradeOffer->OfferId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddTradeOfferField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -31632,10 +31632,10 @@ bool RspAddTradeOfferPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddTradeOffer->AdminUserId))
 							{
@@ -31645,7 +31645,7 @@ bool RspAddTradeOfferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(RspAddTradeOffer->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::OfferId:
+						case ProtocolItems::OfferId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAddTradeOffer->OfferId))
 							{
@@ -31681,10 +31681,10 @@ bool RspAddTradeOfferPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -31693,7 +31693,7 @@ bool RspAddTradeOfferPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -31834,25 +31834,25 @@ int ReqUpdateTradeOfferPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqUpdateTradeOffer != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqUpdateTradeOfferField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqUpdateTradeOfferField::FieldId);
 		if (strlen(ReqUpdateTradeOffer->AdminUserId) >= sizeof(ReqUpdateTradeOffer->AdminUserId))
 		{
 			ReqUpdateTradeOffer->AdminUserId[sizeof(ReqUpdateTradeOffer->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqUpdateTradeOffer->AdminUserId);
-		StepUtility::WriteString(cursor, Items::OfferId, ReqUpdateTradeOffer->OfferId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqUpdateTradeOffer->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::OfferId, ReqUpdateTradeOffer->OfferId);
 		if (strlen(ReqUpdateTradeOffer->OfferName) >= sizeof(ReqUpdateTradeOffer->OfferName))
 		{
 			ReqUpdateTradeOffer->OfferName[sizeof(ReqUpdateTradeOffer->OfferName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OfferName, ReqUpdateTradeOffer->OfferName);
-		StepUtility::WriteString(cursor, Items::OfferType, static_cast<int>(ReqUpdateTradeOffer->OfferType));
+		StepUtility::WriteString(cursor, ProtocolItems::OfferName, ReqUpdateTradeOffer->OfferName);
+		StepUtility::WriteString(cursor, ProtocolItems::OfferType, static_cast<int>(ReqUpdateTradeOffer->OfferType));
 		if (strlen(ReqUpdateTradeOffer->OfferPassword) >= sizeof(ReqUpdateTradeOffer->OfferPassword))
 		{
 			ReqUpdateTradeOffer->OfferPassword[sizeof(ReqUpdateTradeOffer->OfferPassword) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OfferPassword, ReqUpdateTradeOffer->OfferPassword);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqUpdateTradeOfferField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::OfferPassword, ReqUpdateTradeOffer->OfferPassword);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqUpdateTradeOfferField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -31885,10 +31885,10 @@ bool ReqUpdateTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqUpdateTradeOffer->AdminUserId))
 							{
@@ -31898,7 +31898,7 @@ bool ReqUpdateTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(ReqUpdateTradeOffer->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::OfferId:
+						case ProtocolItems::OfferId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqUpdateTradeOffer->OfferId))
 							{
@@ -31907,7 +31907,7 @@ bool ReqUpdateTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::OfferName:
+						case ProtocolItems::OfferName:
 						{
 							if (value.length() >= sizeof(ReqUpdateTradeOffer->OfferName))
 							{
@@ -31917,7 +31917,7 @@ bool ReqUpdateTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(ReqUpdateTradeOffer->OfferName, value.c_str(), value.length());
 							break;
 						}
-						case Items::OfferType:
+						case ProtocolItems::OfferType:
 						{
 							if (!StepUtility::ParseEnum(value, ReqUpdateTradeOffer->OfferType))
 							{
@@ -31926,7 +31926,7 @@ bool ReqUpdateTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::OfferPassword:
+						case ProtocolItems::OfferPassword:
 						{
 							if (value.length() >= sizeof(ReqUpdateTradeOffer->OfferPassword))
 							{
@@ -32049,25 +32049,25 @@ int RspUpdateTradeOfferPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspUpdateTradeOffer != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspUpdateTradeOfferField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspUpdateTradeOfferField::FieldId);
 		if (strlen(RspUpdateTradeOffer->AdminUserId) >= sizeof(RspUpdateTradeOffer->AdminUserId))
 		{
 			RspUpdateTradeOffer->AdminUserId[sizeof(RspUpdateTradeOffer->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspUpdateTradeOffer->AdminUserId);
-		StepUtility::WriteString(cursor, Items::OfferId, RspUpdateTradeOffer->OfferId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspUpdateTradeOfferField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspUpdateTradeOffer->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::OfferId, RspUpdateTradeOffer->OfferId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspUpdateTradeOfferField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -32100,10 +32100,10 @@ bool RspUpdateTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspUpdateTradeOffer->AdminUserId))
 							{
@@ -32113,7 +32113,7 @@ bool RspUpdateTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(RspUpdateTradeOffer->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::OfferId:
+						case ProtocolItems::OfferId:
 						{
 							if (!StepUtility::ParseInteger(value, RspUpdateTradeOffer->OfferId))
 							{
@@ -32149,10 +32149,10 @@ bool RspUpdateTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -32161,7 +32161,7 @@ bool RspUpdateTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -32302,14 +32302,14 @@ int ReqRemoveTradeOfferPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRemoveTradeOffer != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRemoveTradeOfferField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRemoveTradeOfferField::FieldId);
 		if (strlen(ReqRemoveTradeOffer->AdminUserId) >= sizeof(ReqRemoveTradeOffer->AdminUserId))
 		{
 			ReqRemoveTradeOffer->AdminUserId[sizeof(ReqRemoveTradeOffer->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqRemoveTradeOffer->AdminUserId);
-		StepUtility::WriteString(cursor, Items::OfferId, ReqRemoveTradeOffer->OfferId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRemoveTradeOfferField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqRemoveTradeOffer->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::OfferId, ReqRemoveTradeOffer->OfferId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRemoveTradeOfferField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -32342,10 +32342,10 @@ bool ReqRemoveTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqRemoveTradeOffer->AdminUserId))
 							{
@@ -32355,7 +32355,7 @@ bool ReqRemoveTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(ReqRemoveTradeOffer->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::OfferId:
+						case ProtocolItems::OfferId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqRemoveTradeOffer->OfferId))
 							{
@@ -32477,25 +32477,25 @@ int RspRemoveTradeOfferPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspRemoveTradeOffer != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspRemoveTradeOfferField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspRemoveTradeOfferField::FieldId);
 		if (strlen(RspRemoveTradeOffer->AdminUserId) >= sizeof(RspRemoveTradeOffer->AdminUserId))
 		{
 			RspRemoveTradeOffer->AdminUserId[sizeof(RspRemoveTradeOffer->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspRemoveTradeOffer->AdminUserId);
-		StepUtility::WriteString(cursor, Items::OfferId, RspRemoveTradeOffer->OfferId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspRemoveTradeOfferField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspRemoveTradeOffer->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::OfferId, RspRemoveTradeOffer->OfferId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspRemoveTradeOfferField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -32528,10 +32528,10 @@ bool RspRemoveTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspRemoveTradeOffer->AdminUserId))
 							{
@@ -32541,7 +32541,7 @@ bool RspRemoveTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(RspRemoveTradeOffer->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::OfferId:
+						case ProtocolItems::OfferId:
 						{
 							if (!StepUtility::ParseInteger(value, RspRemoveTradeOffer->OfferId))
 							{
@@ -32577,10 +32577,10 @@ bool RspRemoveTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -32589,7 +32589,7 @@ bool RspRemoveTradeOfferPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -32730,19 +32730,19 @@ int ReqAddTradeGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddTradeGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddTradeGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddTradeGroupField::FieldId);
 		if (strlen(ReqAddTradeGroup->AdminUserId) >= sizeof(ReqAddTradeGroup->AdminUserId))
 		{
 			ReqAddTradeGroup->AdminUserId[sizeof(ReqAddTradeGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddTradeGroup->AdminUserId);
-		StepUtility::WriteString(cursor, Items::TradeGroupId, ReqAddTradeGroup->TradeGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddTradeGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, ReqAddTradeGroup->TradeGroupId);
 		if (strlen(ReqAddTradeGroup->TradeGroupName) >= sizeof(ReqAddTradeGroup->TradeGroupName))
 		{
 			ReqAddTradeGroup->TradeGroupName[sizeof(ReqAddTradeGroup->TradeGroupName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradeGroupName, ReqAddTradeGroup->TradeGroupName);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddTradeGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupName, ReqAddTradeGroup->TradeGroupName);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddTradeGroupField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -32775,10 +32775,10 @@ bool ReqAddTradeGroupPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddTradeGroup->AdminUserId))
 							{
@@ -32788,7 +32788,7 @@ bool ReqAddTradeGroupPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqAddTradeGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddTradeGroup->TradeGroupId))
 							{
@@ -32797,7 +32797,7 @@ bool ReqAddTradeGroupPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::TradeGroupName:
+						case ProtocolItems::TradeGroupName:
 						{
 							if (value.length() >= sizeof(ReqAddTradeGroup->TradeGroupName))
 							{
@@ -32920,25 +32920,25 @@ int RspAddTradeGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddTradeGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddTradeGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddTradeGroupField::FieldId);
 		if (strlen(RspAddTradeGroup->AdminUserId) >= sizeof(RspAddTradeGroup->AdminUserId))
 		{
 			RspAddTradeGroup->AdminUserId[sizeof(RspAddTradeGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddTradeGroup->AdminUserId);
-		StepUtility::WriteString(cursor, Items::TradeGroupId, RspAddTradeGroup->TradeGroupId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddTradeGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddTradeGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, RspAddTradeGroup->TradeGroupId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddTradeGroupField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -32971,10 +32971,10 @@ bool RspAddTradeGroupPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddTradeGroup->AdminUserId))
 							{
@@ -32984,7 +32984,7 @@ bool RspAddTradeGroupPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(RspAddTradeGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAddTradeGroup->TradeGroupId))
 							{
@@ -33020,10 +33020,10 @@ bool RspAddTradeGroupPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -33032,7 +33032,7 @@ bool RspAddTradeGroupPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -33173,19 +33173,19 @@ int ReqUpdateTradeGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqUpdateTradeGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqUpdateTradeGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqUpdateTradeGroupField::FieldId);
 		if (strlen(ReqUpdateTradeGroup->AdminUserId) >= sizeof(ReqUpdateTradeGroup->AdminUserId))
 		{
 			ReqUpdateTradeGroup->AdminUserId[sizeof(ReqUpdateTradeGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqUpdateTradeGroup->AdminUserId);
-		StepUtility::WriteString(cursor, Items::TradeGroupId, ReqUpdateTradeGroup->TradeGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqUpdateTradeGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, ReqUpdateTradeGroup->TradeGroupId);
 		if (strlen(ReqUpdateTradeGroup->TradeGroupName) >= sizeof(ReqUpdateTradeGroup->TradeGroupName))
 		{
 			ReqUpdateTradeGroup->TradeGroupName[sizeof(ReqUpdateTradeGroup->TradeGroupName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradeGroupName, ReqUpdateTradeGroup->TradeGroupName);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqUpdateTradeGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupName, ReqUpdateTradeGroup->TradeGroupName);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqUpdateTradeGroupField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -33218,10 +33218,10 @@ bool ReqUpdateTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqUpdateTradeGroup->AdminUserId))
 							{
@@ -33231,7 +33231,7 @@ bool ReqUpdateTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(ReqUpdateTradeGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqUpdateTradeGroup->TradeGroupId))
 							{
@@ -33240,7 +33240,7 @@ bool ReqUpdateTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::TradeGroupName:
+						case ProtocolItems::TradeGroupName:
 						{
 							if (value.length() >= sizeof(ReqUpdateTradeGroup->TradeGroupName))
 							{
@@ -33363,25 +33363,25 @@ int RspUpdateTradeGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspUpdateTradeGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspUpdateTradeGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspUpdateTradeGroupField::FieldId);
 		if (strlen(RspUpdateTradeGroup->AdminUserId) >= sizeof(RspUpdateTradeGroup->AdminUserId))
 		{
 			RspUpdateTradeGroup->AdminUserId[sizeof(RspUpdateTradeGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspUpdateTradeGroup->AdminUserId);
-		StepUtility::WriteString(cursor, Items::TradeGroupId, RspUpdateTradeGroup->TradeGroupId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspUpdateTradeGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspUpdateTradeGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, RspUpdateTradeGroup->TradeGroupId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspUpdateTradeGroupField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -33414,10 +33414,10 @@ bool RspUpdateTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspUpdateTradeGroup->AdminUserId))
 							{
@@ -33427,7 +33427,7 @@ bool RspUpdateTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(RspUpdateTradeGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, RspUpdateTradeGroup->TradeGroupId))
 							{
@@ -33463,10 +33463,10 @@ bool RspUpdateTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -33475,7 +33475,7 @@ bool RspUpdateTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -33616,14 +33616,14 @@ int ReqRemoveTradeGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRemoveTradeGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRemoveTradeGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRemoveTradeGroupField::FieldId);
 		if (strlen(ReqRemoveTradeGroup->AdminUserId) >= sizeof(ReqRemoveTradeGroup->AdminUserId))
 		{
 			ReqRemoveTradeGroup->AdminUserId[sizeof(ReqRemoveTradeGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqRemoveTradeGroup->AdminUserId);
-		StepUtility::WriteString(cursor, Items::TradeGroupId, ReqRemoveTradeGroup->TradeGroupId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRemoveTradeGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqRemoveTradeGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, ReqRemoveTradeGroup->TradeGroupId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRemoveTradeGroupField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -33656,10 +33656,10 @@ bool ReqRemoveTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqRemoveTradeGroup->AdminUserId))
 							{
@@ -33669,7 +33669,7 @@ bool ReqRemoveTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(ReqRemoveTradeGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqRemoveTradeGroup->TradeGroupId))
 							{
@@ -33791,25 +33791,25 @@ int RspRemoveTradeGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspRemoveTradeGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspRemoveTradeGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspRemoveTradeGroupField::FieldId);
 		if (strlen(RspRemoveTradeGroup->AdminUserId) >= sizeof(RspRemoveTradeGroup->AdminUserId))
 		{
 			RspRemoveTradeGroup->AdminUserId[sizeof(RspRemoveTradeGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspRemoveTradeGroup->AdminUserId);
-		StepUtility::WriteString(cursor, Items::TradeGroupId, RspRemoveTradeGroup->TradeGroupId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspRemoveTradeGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspRemoveTradeGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, RspRemoveTradeGroup->TradeGroupId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspRemoveTradeGroupField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -33842,10 +33842,10 @@ bool RspRemoveTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspRemoveTradeGroup->AdminUserId))
 							{
@@ -33855,7 +33855,7 @@ bool RspRemoveTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(RspRemoveTradeGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, RspRemoveTradeGroup->TradeGroupId))
 							{
@@ -33891,10 +33891,10 @@ bool RspRemoveTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -33903,7 +33903,7 @@ bool RspRemoveTradeGroupPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -34044,20 +34044,20 @@ int ReqAddTradeGroupItemPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddTradeGroupItem != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddTradeGroupItemField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddTradeGroupItemField::FieldId);
 		if (strlen(ReqAddTradeGroupItem->AdminUserId) >= sizeof(ReqAddTradeGroupItem->AdminUserId))
 		{
 			ReqAddTradeGroupItem->AdminUserId[sizeof(ReqAddTradeGroupItem->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddTradeGroupItem->AdminUserId);
-		StepUtility::WriteString(cursor, Items::TradeGroupId, ReqAddTradeGroupItem->TradeGroupId);
-		StepUtility::WriteString(cursor, Items::AccountClass, static_cast<int>(ReqAddTradeGroupItem->AccountClass));
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddTradeGroupItem->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, ReqAddTradeGroupItem->TradeGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountClass, static_cast<int>(ReqAddTradeGroupItem->AccountClass));
 		if (strlen(ReqAddTradeGroupItem->PrimaryAccountId) >= sizeof(ReqAddTradeGroupItem->PrimaryAccountId))
 		{
 			ReqAddTradeGroupItem->PrimaryAccountId[sizeof(ReqAddTradeGroupItem->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, ReqAddTradeGroupItem->PrimaryAccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddTradeGroupItemField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, ReqAddTradeGroupItem->PrimaryAccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddTradeGroupItemField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -34090,10 +34090,10 @@ bool ReqAddTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddTradeGroupItem->AdminUserId))
 							{
@@ -34103,7 +34103,7 @@ bool ReqAddTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqAddTradeGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddTradeGroupItem->TradeGroupId))
 							{
@@ -34112,7 +34112,7 @@ bool ReqAddTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::AccountClass:
+						case ProtocolItems::AccountClass:
 						{
 							if (!StepUtility::ParseEnum(value, ReqAddTradeGroupItem->AccountClass))
 							{
@@ -34121,7 +34121,7 @@ bool ReqAddTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(ReqAddTradeGroupItem->PrimaryAccountId))
 							{
@@ -34244,26 +34244,26 @@ int RspAddTradeGroupItemPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddTradeGroupItem != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddTradeGroupItemField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddTradeGroupItemField::FieldId);
 		if (strlen(RspAddTradeGroupItem->AdminUserId) >= sizeof(RspAddTradeGroupItem->AdminUserId))
 		{
 			RspAddTradeGroupItem->AdminUserId[sizeof(RspAddTradeGroupItem->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddTradeGroupItem->AdminUserId);
-		StepUtility::WriteString(cursor, Items::TradeGroupId, RspAddTradeGroupItem->TradeGroupId);
-		StepUtility::WriteString(cursor, Items::AccountClass, static_cast<int>(RspAddTradeGroupItem->AccountClass));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddTradeGroupItemField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddTradeGroupItem->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, RspAddTradeGroupItem->TradeGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountClass, static_cast<int>(RspAddTradeGroupItem->AccountClass));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddTradeGroupItemField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -34296,10 +34296,10 @@ bool RspAddTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddTradeGroupItem->AdminUserId))
 							{
@@ -34309,7 +34309,7 @@ bool RspAddTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(RspAddTradeGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAddTradeGroupItem->TradeGroupId))
 							{
@@ -34318,7 +34318,7 @@ bool RspAddTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::AccountClass:
+						case ProtocolItems::AccountClass:
 						{
 							if (!StepUtility::ParseEnum(value, RspAddTradeGroupItem->AccountClass))
 							{
@@ -34354,10 +34354,10 @@ bool RspAddTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -34366,7 +34366,7 @@ bool RspAddTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -34507,20 +34507,20 @@ int ReqUpdateTradeGroupItemPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqUpdateTradeGroupItem != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqUpdateTradeGroupItemField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqUpdateTradeGroupItemField::FieldId);
 		if (strlen(ReqUpdateTradeGroupItem->AdminUserId) >= sizeof(ReqUpdateTradeGroupItem->AdminUserId))
 		{
 			ReqUpdateTradeGroupItem->AdminUserId[sizeof(ReqUpdateTradeGroupItem->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqUpdateTradeGroupItem->AdminUserId);
-		StepUtility::WriteString(cursor, Items::TradeGroupId, ReqUpdateTradeGroupItem->TradeGroupId);
-		StepUtility::WriteString(cursor, Items::AccountClass, static_cast<int>(ReqUpdateTradeGroupItem->AccountClass));
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqUpdateTradeGroupItem->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, ReqUpdateTradeGroupItem->TradeGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountClass, static_cast<int>(ReqUpdateTradeGroupItem->AccountClass));
 		if (strlen(ReqUpdateTradeGroupItem->PrimaryAccountId) >= sizeof(ReqUpdateTradeGroupItem->PrimaryAccountId))
 		{
 			ReqUpdateTradeGroupItem->PrimaryAccountId[sizeof(ReqUpdateTradeGroupItem->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, ReqUpdateTradeGroupItem->PrimaryAccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqUpdateTradeGroupItemField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, ReqUpdateTradeGroupItem->PrimaryAccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqUpdateTradeGroupItemField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -34553,10 +34553,10 @@ bool ReqUpdateTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqUpdateTradeGroupItem->AdminUserId))
 							{
@@ -34566,7 +34566,7 @@ bool ReqUpdateTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqUpdateTradeGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqUpdateTradeGroupItem->TradeGroupId))
 							{
@@ -34575,7 +34575,7 @@ bool ReqUpdateTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::AccountClass:
+						case ProtocolItems::AccountClass:
 						{
 							if (!StepUtility::ParseEnum(value, ReqUpdateTradeGroupItem->AccountClass))
 							{
@@ -34584,7 +34584,7 @@ bool ReqUpdateTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(ReqUpdateTradeGroupItem->PrimaryAccountId))
 							{
@@ -34707,26 +34707,26 @@ int RspUpdateTradeGroupItemPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspUpdateTradeGroupItem != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspUpdateTradeGroupItemField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspUpdateTradeGroupItemField::FieldId);
 		if (strlen(RspUpdateTradeGroupItem->AdminUserId) >= sizeof(RspUpdateTradeGroupItem->AdminUserId))
 		{
 			RspUpdateTradeGroupItem->AdminUserId[sizeof(RspUpdateTradeGroupItem->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspUpdateTradeGroupItem->AdminUserId);
-		StepUtility::WriteString(cursor, Items::TradeGroupId, RspUpdateTradeGroupItem->TradeGroupId);
-		StepUtility::WriteString(cursor, Items::AccountClass, static_cast<int>(RspUpdateTradeGroupItem->AccountClass));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspUpdateTradeGroupItemField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspUpdateTradeGroupItem->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, RspUpdateTradeGroupItem->TradeGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountClass, static_cast<int>(RspUpdateTradeGroupItem->AccountClass));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspUpdateTradeGroupItemField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -34759,10 +34759,10 @@ bool RspUpdateTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspUpdateTradeGroupItem->AdminUserId))
 							{
@@ -34772,7 +34772,7 @@ bool RspUpdateTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(RspUpdateTradeGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, RspUpdateTradeGroupItem->TradeGroupId))
 							{
@@ -34781,7 +34781,7 @@ bool RspUpdateTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::AccountClass:
+						case ProtocolItems::AccountClass:
 						{
 							if (!StepUtility::ParseEnum(value, RspUpdateTradeGroupItem->AccountClass))
 							{
@@ -34817,10 +34817,10 @@ bool RspUpdateTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -34829,7 +34829,7 @@ bool RspUpdateTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -34970,15 +34970,15 @@ int ReqRemoveTradeGroupItemPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRemoveTradeGroupItem != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRemoveTradeGroupItemField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRemoveTradeGroupItemField::FieldId);
 		if (strlen(ReqRemoveTradeGroupItem->AdminUserId) >= sizeof(ReqRemoveTradeGroupItem->AdminUserId))
 		{
 			ReqRemoveTradeGroupItem->AdminUserId[sizeof(ReqRemoveTradeGroupItem->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqRemoveTradeGroupItem->AdminUserId);
-		StepUtility::WriteString(cursor, Items::TradeGroupId, ReqRemoveTradeGroupItem->TradeGroupId);
-		StepUtility::WriteString(cursor, Items::AccountClass, static_cast<int>(ReqRemoveTradeGroupItem->AccountClass));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRemoveTradeGroupItemField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqRemoveTradeGroupItem->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, ReqRemoveTradeGroupItem->TradeGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountClass, static_cast<int>(ReqRemoveTradeGroupItem->AccountClass));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRemoveTradeGroupItemField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -35011,10 +35011,10 @@ bool ReqRemoveTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqRemoveTradeGroupItem->AdminUserId))
 							{
@@ -35024,7 +35024,7 @@ bool ReqRemoveTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqRemoveTradeGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqRemoveTradeGroupItem->TradeGroupId))
 							{
@@ -35033,7 +35033,7 @@ bool ReqRemoveTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::AccountClass:
+						case ProtocolItems::AccountClass:
 						{
 							if (!StepUtility::ParseEnum(value, ReqRemoveTradeGroupItem->AccountClass))
 							{
@@ -35155,26 +35155,26 @@ int RspRemoveTradeGroupItemPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspRemoveTradeGroupItem != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspRemoveTradeGroupItemField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspRemoveTradeGroupItemField::FieldId);
 		if (strlen(RspRemoveTradeGroupItem->AdminUserId) >= sizeof(RspRemoveTradeGroupItem->AdminUserId))
 		{
 			RspRemoveTradeGroupItem->AdminUserId[sizeof(RspRemoveTradeGroupItem->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspRemoveTradeGroupItem->AdminUserId);
-		StepUtility::WriteString(cursor, Items::TradeGroupId, RspRemoveTradeGroupItem->TradeGroupId);
-		StepUtility::WriteString(cursor, Items::AccountClass, static_cast<int>(RspRemoveTradeGroupItem->AccountClass));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspRemoveTradeGroupItemField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspRemoveTradeGroupItem->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeGroupId, RspRemoveTradeGroupItem->TradeGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountClass, static_cast<int>(RspRemoveTradeGroupItem->AccountClass));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspRemoveTradeGroupItemField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -35207,10 +35207,10 @@ bool RspRemoveTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspRemoveTradeGroupItem->AdminUserId))
 							{
@@ -35220,7 +35220,7 @@ bool RspRemoveTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(RspRemoveTradeGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeGroupId:
+						case ProtocolItems::TradeGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, RspRemoveTradeGroupItem->TradeGroupId))
 							{
@@ -35229,7 +35229,7 @@ bool RspRemoveTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::AccountClass:
+						case ProtocolItems::AccountClass:
 						{
 							if (!StepUtility::ParseEnum(value, RspRemoveTradeGroupItem->AccountClass))
 							{
@@ -35265,10 +35265,10 @@ bool RspRemoveTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -35277,7 +35277,7 @@ bool RspRemoveTradeGroupItemPackage::FromStepStream(char* buff, int startIndex, 
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -35418,19 +35418,19 @@ int ReqAddRiskGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddRiskGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddRiskGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddRiskGroupField::FieldId);
 		if (strlen(ReqAddRiskGroup->AdminUserId) >= sizeof(ReqAddRiskGroup->AdminUserId))
 		{
 			ReqAddRiskGroup->AdminUserId[sizeof(ReqAddRiskGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddRiskGroup->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, ReqAddRiskGroup->RiskGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddRiskGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, ReqAddRiskGroup->RiskGroupId);
 		if (strlen(ReqAddRiskGroup->RiskGroupName) >= sizeof(ReqAddRiskGroup->RiskGroupName))
 		{
 			ReqAddRiskGroup->RiskGroupName[sizeof(ReqAddRiskGroup->RiskGroupName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::RiskGroupName, ReqAddRiskGroup->RiskGroupName);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddRiskGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupName, ReqAddRiskGroup->RiskGroupName);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddRiskGroupField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -35463,10 +35463,10 @@ bool ReqAddRiskGroupPackage::FromStepStream(char* buff, int startIndex, int endI
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddRiskGroup->AdminUserId))
 							{
@@ -35476,7 +35476,7 @@ bool ReqAddRiskGroupPackage::FromStepStream(char* buff, int startIndex, int endI
 							memcpy(ReqAddRiskGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddRiskGroup->RiskGroupId))
 							{
@@ -35485,7 +35485,7 @@ bool ReqAddRiskGroupPackage::FromStepStream(char* buff, int startIndex, int endI
 							}
 							break;
 						}
-						case Items::RiskGroupName:
+						case ProtocolItems::RiskGroupName:
 						{
 							if (value.length() >= sizeof(ReqAddRiskGroup->RiskGroupName))
 							{
@@ -35608,25 +35608,25 @@ int RspAddRiskGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddRiskGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddRiskGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddRiskGroupField::FieldId);
 		if (strlen(RspAddRiskGroup->AdminUserId) >= sizeof(RspAddRiskGroup->AdminUserId))
 		{
 			RspAddRiskGroup->AdminUserId[sizeof(RspAddRiskGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddRiskGroup->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, RspAddRiskGroup->RiskGroupId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddRiskGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddRiskGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, RspAddRiskGroup->RiskGroupId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddRiskGroupField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -35659,10 +35659,10 @@ bool RspAddRiskGroupPackage::FromStepStream(char* buff, int startIndex, int endI
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddRiskGroup->AdminUserId))
 							{
@@ -35672,7 +35672,7 @@ bool RspAddRiskGroupPackage::FromStepStream(char* buff, int startIndex, int endI
 							memcpy(RspAddRiskGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAddRiskGroup->RiskGroupId))
 							{
@@ -35708,10 +35708,10 @@ bool RspAddRiskGroupPackage::FromStepStream(char* buff, int startIndex, int endI
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -35720,7 +35720,7 @@ bool RspAddRiskGroupPackage::FromStepStream(char* buff, int startIndex, int endI
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -35861,19 +35861,19 @@ int ReqUpdateRiskGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqUpdateRiskGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqUpdateRiskGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqUpdateRiskGroupField::FieldId);
 		if (strlen(ReqUpdateRiskGroup->AdminUserId) >= sizeof(ReqUpdateRiskGroup->AdminUserId))
 		{
 			ReqUpdateRiskGroup->AdminUserId[sizeof(ReqUpdateRiskGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqUpdateRiskGroup->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, ReqUpdateRiskGroup->RiskGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqUpdateRiskGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, ReqUpdateRiskGroup->RiskGroupId);
 		if (strlen(ReqUpdateRiskGroup->RiskGroupName) >= sizeof(ReqUpdateRiskGroup->RiskGroupName))
 		{
 			ReqUpdateRiskGroup->RiskGroupName[sizeof(ReqUpdateRiskGroup->RiskGroupName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::RiskGroupName, ReqUpdateRiskGroup->RiskGroupName);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqUpdateRiskGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupName, ReqUpdateRiskGroup->RiskGroupName);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqUpdateRiskGroupField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -35906,10 +35906,10 @@ bool ReqUpdateRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqUpdateRiskGroup->AdminUserId))
 							{
@@ -35919,7 +35919,7 @@ bool ReqUpdateRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqUpdateRiskGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqUpdateRiskGroup->RiskGroupId))
 							{
@@ -35928,7 +35928,7 @@ bool ReqUpdateRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::RiskGroupName:
+						case ProtocolItems::RiskGroupName:
 						{
 							if (value.length() >= sizeof(ReqUpdateRiskGroup->RiskGroupName))
 							{
@@ -36051,25 +36051,25 @@ int RspUpdateRiskGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspUpdateRiskGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspUpdateRiskGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspUpdateRiskGroupField::FieldId);
 		if (strlen(RspUpdateRiskGroup->AdminUserId) >= sizeof(RspUpdateRiskGroup->AdminUserId))
 		{
 			RspUpdateRiskGroup->AdminUserId[sizeof(RspUpdateRiskGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspUpdateRiskGroup->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, RspUpdateRiskGroup->RiskGroupId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspUpdateRiskGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspUpdateRiskGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, RspUpdateRiskGroup->RiskGroupId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspUpdateRiskGroupField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -36102,10 +36102,10 @@ bool RspUpdateRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspUpdateRiskGroup->AdminUserId))
 							{
@@ -36115,7 +36115,7 @@ bool RspUpdateRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(RspUpdateRiskGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, RspUpdateRiskGroup->RiskGroupId))
 							{
@@ -36151,10 +36151,10 @@ bool RspUpdateRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -36163,7 +36163,7 @@ bool RspUpdateRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -36304,14 +36304,14 @@ int ReqRemoveRiskGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRemoveRiskGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRemoveRiskGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRemoveRiskGroupField::FieldId);
 		if (strlen(ReqRemoveRiskGroup->AdminUserId) >= sizeof(ReqRemoveRiskGroup->AdminUserId))
 		{
 			ReqRemoveRiskGroup->AdminUserId[sizeof(ReqRemoveRiskGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqRemoveRiskGroup->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, ReqRemoveRiskGroup->RiskGroupId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRemoveRiskGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqRemoveRiskGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, ReqRemoveRiskGroup->RiskGroupId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRemoveRiskGroupField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -36344,10 +36344,10 @@ bool ReqRemoveRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqRemoveRiskGroup->AdminUserId))
 							{
@@ -36357,7 +36357,7 @@ bool ReqRemoveRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqRemoveRiskGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqRemoveRiskGroup->RiskGroupId))
 							{
@@ -36479,25 +36479,25 @@ int RspRemoveRiskGroupPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspRemoveRiskGroup != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspRemoveRiskGroupField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspRemoveRiskGroupField::FieldId);
 		if (strlen(RspRemoveRiskGroup->AdminUserId) >= sizeof(RspRemoveRiskGroup->AdminUserId))
 		{
 			RspRemoveRiskGroup->AdminUserId[sizeof(RspRemoveRiskGroup->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspRemoveRiskGroup->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, RspRemoveRiskGroup->RiskGroupId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspRemoveRiskGroupField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspRemoveRiskGroup->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, RspRemoveRiskGroup->RiskGroupId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspRemoveRiskGroupField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -36530,10 +36530,10 @@ bool RspRemoveRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspRemoveRiskGroup->AdminUserId))
 							{
@@ -36543,7 +36543,7 @@ bool RspRemoveRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(RspRemoveRiskGroup->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, RspRemoveRiskGroup->RiskGroupId))
 							{
@@ -36579,10 +36579,10 @@ bool RspRemoveRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -36591,7 +36591,7 @@ bool RspRemoveRiskGroupPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -36732,15 +36732,15 @@ int ReqAddRiskGroupItemPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddRiskGroupItem != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddRiskGroupItemField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddRiskGroupItemField::FieldId);
 		if (strlen(ReqAddRiskGroupItem->AdminUserId) >= sizeof(ReqAddRiskGroupItem->AdminUserId))
 		{
 			ReqAddRiskGroupItem->AdminUserId[sizeof(ReqAddRiskGroupItem->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddRiskGroupItem->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, ReqAddRiskGroupItem->RiskGroupId);
-		StepUtility::WriteString(cursor, Items::RiskId, ReqAddRiskGroupItem->RiskId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddRiskGroupItemField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddRiskGroupItem->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, ReqAddRiskGroupItem->RiskGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, ReqAddRiskGroupItem->RiskId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddRiskGroupItemField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -36773,10 +36773,10 @@ bool ReqAddRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddRiskGroupItem->AdminUserId))
 							{
@@ -36786,7 +36786,7 @@ bool ReqAddRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(ReqAddRiskGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddRiskGroupItem->RiskGroupId))
 							{
@@ -36795,7 +36795,7 @@ bool ReqAddRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddRiskGroupItem->RiskId))
 							{
@@ -36917,26 +36917,26 @@ int RspAddRiskGroupItemPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddRiskGroupItem != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddRiskGroupItemField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddRiskGroupItemField::FieldId);
 		if (strlen(RspAddRiskGroupItem->AdminUserId) >= sizeof(RspAddRiskGroupItem->AdminUserId))
 		{
 			RspAddRiskGroupItem->AdminUserId[sizeof(RspAddRiskGroupItem->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddRiskGroupItem->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, RspAddRiskGroupItem->RiskGroupId);
-		StepUtility::WriteString(cursor, Items::RiskId, RspAddRiskGroupItem->RiskId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddRiskGroupItemField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddRiskGroupItem->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, RspAddRiskGroupItem->RiskGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, RspAddRiskGroupItem->RiskId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddRiskGroupItemField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -36969,10 +36969,10 @@ bool RspAddRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddRiskGroupItem->AdminUserId))
 							{
@@ -36982,7 +36982,7 @@ bool RspAddRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(RspAddRiskGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAddRiskGroupItem->RiskGroupId))
 							{
@@ -36991,7 +36991,7 @@ bool RspAddRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAddRiskGroupItem->RiskId))
 							{
@@ -37027,10 +37027,10 @@ bool RspAddRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -37039,7 +37039,7 @@ bool RspAddRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -37180,15 +37180,15 @@ int ReqUpdateRiskGroupItemPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqUpdateRiskGroupItem != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqUpdateRiskGroupItemField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqUpdateRiskGroupItemField::FieldId);
 		if (strlen(ReqUpdateRiskGroupItem->AdminUserId) >= sizeof(ReqUpdateRiskGroupItem->AdminUserId))
 		{
 			ReqUpdateRiskGroupItem->AdminUserId[sizeof(ReqUpdateRiskGroupItem->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqUpdateRiskGroupItem->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, ReqUpdateRiskGroupItem->RiskGroupId);
-		StepUtility::WriteString(cursor, Items::RiskId, ReqUpdateRiskGroupItem->RiskId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqUpdateRiskGroupItemField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqUpdateRiskGroupItem->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, ReqUpdateRiskGroupItem->RiskGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, ReqUpdateRiskGroupItem->RiskId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqUpdateRiskGroupItemField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -37221,10 +37221,10 @@ bool ReqUpdateRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqUpdateRiskGroupItem->AdminUserId))
 							{
@@ -37234,7 +37234,7 @@ bool ReqUpdateRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(ReqUpdateRiskGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqUpdateRiskGroupItem->RiskGroupId))
 							{
@@ -37243,7 +37243,7 @@ bool ReqUpdateRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqUpdateRiskGroupItem->RiskId))
 							{
@@ -37365,26 +37365,26 @@ int RspUpdateRiskGroupItemPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspUpdateRiskGroupItem != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspUpdateRiskGroupItemField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspUpdateRiskGroupItemField::FieldId);
 		if (strlen(RspUpdateRiskGroupItem->AdminUserId) >= sizeof(RspUpdateRiskGroupItem->AdminUserId))
 		{
 			RspUpdateRiskGroupItem->AdminUserId[sizeof(RspUpdateRiskGroupItem->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspUpdateRiskGroupItem->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, RspUpdateRiskGroupItem->RiskGroupId);
-		StepUtility::WriteString(cursor, Items::RiskId, RspUpdateRiskGroupItem->RiskId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspUpdateRiskGroupItemField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspUpdateRiskGroupItem->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, RspUpdateRiskGroupItem->RiskGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, RspUpdateRiskGroupItem->RiskId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspUpdateRiskGroupItemField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -37417,10 +37417,10 @@ bool RspUpdateRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspUpdateRiskGroupItem->AdminUserId))
 							{
@@ -37430,7 +37430,7 @@ bool RspUpdateRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(RspUpdateRiskGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, RspUpdateRiskGroupItem->RiskGroupId))
 							{
@@ -37439,7 +37439,7 @@ bool RspUpdateRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, RspUpdateRiskGroupItem->RiskId))
 							{
@@ -37475,10 +37475,10 @@ bool RspUpdateRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -37487,7 +37487,7 @@ bool RspUpdateRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -37628,15 +37628,15 @@ int ReqRemoveRiskGroupItemPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRemoveRiskGroupItem != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRemoveRiskGroupItemField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRemoveRiskGroupItemField::FieldId);
 		if (strlen(ReqRemoveRiskGroupItem->AdminUserId) >= sizeof(ReqRemoveRiskGroupItem->AdminUserId))
 		{
 			ReqRemoveRiskGroupItem->AdminUserId[sizeof(ReqRemoveRiskGroupItem->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqRemoveRiskGroupItem->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, ReqRemoveRiskGroupItem->RiskGroupId);
-		StepUtility::WriteString(cursor, Items::RiskId, ReqRemoveRiskGroupItem->RiskId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRemoveRiskGroupItemField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqRemoveRiskGroupItem->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, ReqRemoveRiskGroupItem->RiskGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, ReqRemoveRiskGroupItem->RiskId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRemoveRiskGroupItemField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -37669,10 +37669,10 @@ bool ReqRemoveRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqRemoveRiskGroupItem->AdminUserId))
 							{
@@ -37682,7 +37682,7 @@ bool ReqRemoveRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(ReqRemoveRiskGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqRemoveRiskGroupItem->RiskGroupId))
 							{
@@ -37691,7 +37691,7 @@ bool ReqRemoveRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqRemoveRiskGroupItem->RiskId))
 							{
@@ -37813,26 +37813,26 @@ int RspRemoveRiskGroupItemPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspRemoveRiskGroupItem != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspRemoveRiskGroupItemField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspRemoveRiskGroupItemField::FieldId);
 		if (strlen(RspRemoveRiskGroupItem->AdminUserId) >= sizeof(RspRemoveRiskGroupItem->AdminUserId))
 		{
 			RspRemoveRiskGroupItem->AdminUserId[sizeof(RspRemoveRiskGroupItem->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspRemoveRiskGroupItem->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskGroupId, RspRemoveRiskGroupItem->RiskGroupId);
-		StepUtility::WriteString(cursor, Items::RiskId, RspRemoveRiskGroupItem->RiskId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspRemoveRiskGroupItemField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspRemoveRiskGroupItem->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskGroupId, RspRemoveRiskGroupItem->RiskGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, RspRemoveRiskGroupItem->RiskId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspRemoveRiskGroupItemField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -37865,10 +37865,10 @@ bool RspRemoveRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspRemoveRiskGroupItem->AdminUserId))
 							{
@@ -37878,7 +37878,7 @@ bool RspRemoveRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(RspRemoveRiskGroupItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskGroupId:
+						case ProtocolItems::RiskGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, RspRemoveRiskGroupItem->RiskGroupId))
 							{
@@ -37887,7 +37887,7 @@ bool RspRemoveRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, RspRemoveRiskGroupItem->RiskId))
 							{
@@ -37923,10 +37923,10 @@ bool RspRemoveRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -37935,7 +37935,7 @@ bool RspRemoveRiskGroupItemPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -38076,20 +38076,20 @@ int ReqAddOrUpdateRiskPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddOrUpdateRisk != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddOrUpdateRiskField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddOrUpdateRiskField::FieldId);
 		if (strlen(ReqAddOrUpdateRisk->AdminUserId) >= sizeof(ReqAddOrUpdateRisk->AdminUserId))
 		{
 			ReqAddOrUpdateRisk->AdminUserId[sizeof(ReqAddOrUpdateRisk->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddOrUpdateRisk->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskId, ReqAddOrUpdateRisk->RiskId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddOrUpdateRisk->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, ReqAddOrUpdateRisk->RiskId);
 		if (strlen(ReqAddOrUpdateRisk->RiskName) >= sizeof(ReqAddOrUpdateRisk->RiskName))
 		{
 			ReqAddOrUpdateRisk->RiskName[sizeof(ReqAddOrUpdateRisk->RiskName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::RiskName, ReqAddOrUpdateRisk->RiskName);
-		StepUtility::WriteString(cursor, Items::RiskClassId, static_cast<int>(ReqAddOrUpdateRisk->RiskClassId));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddOrUpdateRiskField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskName, ReqAddOrUpdateRisk->RiskName);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskClassId, static_cast<int>(ReqAddOrUpdateRisk->RiskClassId));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddOrUpdateRiskField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -38122,10 +38122,10 @@ bool ReqAddOrUpdateRiskPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddOrUpdateRisk->AdminUserId))
 							{
@@ -38135,7 +38135,7 @@ bool ReqAddOrUpdateRiskPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqAddOrUpdateRisk->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddOrUpdateRisk->RiskId))
 							{
@@ -38144,7 +38144,7 @@ bool ReqAddOrUpdateRiskPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::RiskName:
+						case ProtocolItems::RiskName:
 						{
 							if (value.length() >= sizeof(ReqAddOrUpdateRisk->RiskName))
 							{
@@ -38154,7 +38154,7 @@ bool ReqAddOrUpdateRiskPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqAddOrUpdateRisk->RiskName, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskClassId:
+						case ProtocolItems::RiskClassId:
 						{
 							if (!StepUtility::ParseEnum(value, ReqAddOrUpdateRisk->RiskClassId))
 							{
@@ -38276,25 +38276,25 @@ int RspAddOrUpdateRiskPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddOrUpdateRisk != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddOrUpdateRiskField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddOrUpdateRiskField::FieldId);
 		if (strlen(RspAddOrUpdateRisk->AdminUserId) >= sizeof(RspAddOrUpdateRisk->AdminUserId))
 		{
 			RspAddOrUpdateRisk->AdminUserId[sizeof(RspAddOrUpdateRisk->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddOrUpdateRisk->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskId, RspAddOrUpdateRisk->RiskId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddOrUpdateRiskField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddOrUpdateRisk->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, RspAddOrUpdateRisk->RiskId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddOrUpdateRiskField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -38327,10 +38327,10 @@ bool RspAddOrUpdateRiskPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddOrUpdateRisk->AdminUserId))
 							{
@@ -38340,7 +38340,7 @@ bool RspAddOrUpdateRiskPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(RspAddOrUpdateRisk->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAddOrUpdateRisk->RiskId))
 							{
@@ -38376,10 +38376,10 @@ bool RspAddOrUpdateRiskPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -38388,7 +38388,7 @@ bool RspAddOrUpdateRiskPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -38529,14 +38529,14 @@ int ReqRemoveRiskPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRemoveRisk != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRemoveRiskField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRemoveRiskField::FieldId);
 		if (strlen(ReqRemoveRisk->AdminUserId) >= sizeof(ReqRemoveRisk->AdminUserId))
 		{
 			ReqRemoveRisk->AdminUserId[sizeof(ReqRemoveRisk->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqRemoveRisk->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskId, ReqRemoveRisk->RiskId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRemoveRiskField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqRemoveRisk->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, ReqRemoveRisk->RiskId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRemoveRiskField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -38569,10 +38569,10 @@ bool ReqRemoveRiskPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqRemoveRisk->AdminUserId))
 							{
@@ -38582,7 +38582,7 @@ bool ReqRemoveRiskPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(ReqRemoveRisk->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqRemoveRisk->RiskId))
 							{
@@ -38704,25 +38704,25 @@ int RspRemoveRiskPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspRemoveRisk != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspRemoveRiskField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspRemoveRiskField::FieldId);
 		if (strlen(RspRemoveRisk->AdminUserId) >= sizeof(RspRemoveRisk->AdminUserId))
 		{
 			RspRemoveRisk->AdminUserId[sizeof(RspRemoveRisk->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspRemoveRisk->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskId, RspRemoveRisk->RiskId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspRemoveRiskField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspRemoveRisk->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, RspRemoveRisk->RiskId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspRemoveRiskField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -38755,10 +38755,10 @@ bool RspRemoveRiskPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspRemoveRisk->AdminUserId))
 							{
@@ -38768,7 +38768,7 @@ bool RspRemoveRiskPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(RspRemoveRisk->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, RspRemoveRisk->RiskId))
 							{
@@ -38804,10 +38804,10 @@ bool RspRemoveRiskPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -38816,7 +38816,7 @@ bool RspRemoveRiskPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -38957,21 +38957,21 @@ int ReqAddRiskRulePackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddRiskRule != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddRiskRuleField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddRiskRuleField::FieldId);
 		if (strlen(ReqAddRiskRule->AdminUserId) >= sizeof(ReqAddRiskRule->AdminUserId))
 		{
 			ReqAddRiskRule->AdminUserId[sizeof(ReqAddRiskRule->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddRiskRule->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskId, ReqAddRiskRule->RiskId);
-		StepUtility::WriteString(cursor, Items::RiskRuleId, ReqAddRiskRule->RiskRuleId);
-		StepUtility::WriteString(cursor, Items::RiskRuleStyle, static_cast<int>(ReqAddRiskRule->RiskRuleStyle));
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddRiskRule->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, ReqAddRiskRule->RiskId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskRuleId, ReqAddRiskRule->RiskRuleId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskRuleStyle, static_cast<int>(ReqAddRiskRule->RiskRuleStyle));
 		if (strlen(ReqAddRiskRule->FormatRiskMessage) >= sizeof(ReqAddRiskRule->FormatRiskMessage))
 		{
 			ReqAddRiskRule->FormatRiskMessage[sizeof(ReqAddRiskRule->FormatRiskMessage) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::FormatRiskMessage, ReqAddRiskRule->FormatRiskMessage);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddRiskRuleField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::FormatRiskMessage, ReqAddRiskRule->FormatRiskMessage);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddRiskRuleField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -39004,10 +39004,10 @@ bool ReqAddRiskRulePackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddRiskRule->AdminUserId))
 							{
@@ -39017,7 +39017,7 @@ bool ReqAddRiskRulePackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(ReqAddRiskRule->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddRiskRule->RiskId))
 							{
@@ -39026,7 +39026,7 @@ bool ReqAddRiskRulePackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::RiskRuleId:
+						case ProtocolItems::RiskRuleId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddRiskRule->RiskRuleId))
 							{
@@ -39035,7 +39035,7 @@ bool ReqAddRiskRulePackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::RiskRuleStyle:
+						case ProtocolItems::RiskRuleStyle:
 						{
 							if (!StepUtility::ParseEnum(value, ReqAddRiskRule->RiskRuleStyle))
 							{
@@ -39044,7 +39044,7 @@ bool ReqAddRiskRulePackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::FormatRiskMessage:
+						case ProtocolItems::FormatRiskMessage:
 						{
 							if (value.length() >= sizeof(ReqAddRiskRule->FormatRiskMessage))
 							{
@@ -39167,26 +39167,26 @@ int RspAddRiskRulePackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddRiskRule != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddRiskRuleField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddRiskRuleField::FieldId);
 		if (strlen(RspAddRiskRule->AdminUserId) >= sizeof(RspAddRiskRule->AdminUserId))
 		{
 			RspAddRiskRule->AdminUserId[sizeof(RspAddRiskRule->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddRiskRule->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskId, RspAddRiskRule->RiskId);
-		StepUtility::WriteString(cursor, Items::RiskRuleId, RspAddRiskRule->RiskRuleId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddRiskRuleField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddRiskRule->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, RspAddRiskRule->RiskId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskRuleId, RspAddRiskRule->RiskRuleId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddRiskRuleField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -39219,10 +39219,10 @@ bool RspAddRiskRulePackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddRiskRule->AdminUserId))
 							{
@@ -39232,7 +39232,7 @@ bool RspAddRiskRulePackage::FromStepStream(char* buff, int startIndex, int endIn
 							memcpy(RspAddRiskRule->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAddRiskRule->RiskId))
 							{
@@ -39241,7 +39241,7 @@ bool RspAddRiskRulePackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::RiskRuleId:
+						case ProtocolItems::RiskRuleId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAddRiskRule->RiskRuleId))
 							{
@@ -39277,10 +39277,10 @@ bool RspAddRiskRulePackage::FromStepStream(char* buff, int startIndex, int endIn
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -39289,7 +39289,7 @@ bool RspAddRiskRulePackage::FromStepStream(char* buff, int startIndex, int endIn
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -39430,64 +39430,64 @@ int ReqAddRiskRuleItemPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddRiskRuleItem != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddRiskRuleItemField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddRiskRuleItemField::FieldId);
 		if (strlen(ReqAddRiskRuleItem->AdminUserId) >= sizeof(ReqAddRiskRuleItem->AdminUserId))
 		{
 			ReqAddRiskRuleItem->AdminUserId[sizeof(ReqAddRiskRuleItem->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddRiskRuleItem->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskId, ReqAddRiskRuleItem->RiskId);
-		StepUtility::WriteString(cursor, Items::RiskRuleId, ReqAddRiskRuleItem->RiskRuleId);
-		StepUtility::WriteString(cursor, Items::RiskRuleItemId, ReqAddRiskRuleItem->RiskRuleItemId);
-		StepUtility::WriteString(cursor, Items::RiskIndexType, static_cast<int>(ReqAddRiskRuleItem->RiskIndexType));
-		StepUtility::WriteString(cursor, Items::RiskIndexId, ReqAddRiskRuleItem->RiskIndexId);
-		StepUtility::WriteString(cursor, Items::RiskIndexTextRef, ReqAddRiskRuleItem->RiskIndexTextRef);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddRiskRuleItem->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, ReqAddRiskRuleItem->RiskId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskRuleId, ReqAddRiskRuleItem->RiskRuleId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskRuleItemId, ReqAddRiskRuleItem->RiskRuleItemId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskIndexType, static_cast<int>(ReqAddRiskRuleItem->RiskIndexType));
+		StepUtility::WriteString(cursor, ProtocolItems::RiskIndexId, ReqAddRiskRuleItem->RiskIndexId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskIndexTextRef, ReqAddRiskRuleItem->RiskIndexTextRef);
 		if (strlen(ReqAddRiskRuleItem->IndexParam1) >= sizeof(ReqAddRiskRuleItem->IndexParam1))
 		{
 			ReqAddRiskRuleItem->IndexParam1[sizeof(ReqAddRiskRuleItem->IndexParam1) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::IndexParam1, ReqAddRiskRuleItem->IndexParam1);
+		StepUtility::WriteString(cursor, ProtocolItems::IndexParam1, ReqAddRiskRuleItem->IndexParam1);
 		if (strlen(ReqAddRiskRuleItem->IndexParam2) >= sizeof(ReqAddRiskRuleItem->IndexParam2))
 		{
 			ReqAddRiskRuleItem->IndexParam2[sizeof(ReqAddRiskRuleItem->IndexParam2) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::IndexParam2, ReqAddRiskRuleItem->IndexParam2);
+		StepUtility::WriteString(cursor, ProtocolItems::IndexParam2, ReqAddRiskRuleItem->IndexParam2);
 		if (strlen(ReqAddRiskRuleItem->IndexParam3) >= sizeof(ReqAddRiskRuleItem->IndexParam3))
 		{
 			ReqAddRiskRuleItem->IndexParam3[sizeof(ReqAddRiskRuleItem->IndexParam3) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::IndexParam3, ReqAddRiskRuleItem->IndexParam3);
+		StepUtility::WriteString(cursor, ProtocolItems::IndexParam3, ReqAddRiskRuleItem->IndexParam3);
 		if (strlen(ReqAddRiskRuleItem->IndexParam4) >= sizeof(ReqAddRiskRuleItem->IndexParam4))
 		{
 			ReqAddRiskRuleItem->IndexParam4[sizeof(ReqAddRiskRuleItem->IndexParam4) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::IndexParam4, ReqAddRiskRuleItem->IndexParam4);
+		StepUtility::WriteString(cursor, ProtocolItems::IndexParam4, ReqAddRiskRuleItem->IndexParam4);
 		if (strlen(ReqAddRiskRuleItem->IndexParam5) >= sizeof(ReqAddRiskRuleItem->IndexParam5))
 		{
 			ReqAddRiskRuleItem->IndexParam5[sizeof(ReqAddRiskRuleItem->IndexParam5) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::IndexParam5, ReqAddRiskRuleItem->IndexParam5);
+		StepUtility::WriteString(cursor, ProtocolItems::IndexParam5, ReqAddRiskRuleItem->IndexParam5);
 		if (strlen(ReqAddRiskRuleItem->IndexParam6) >= sizeof(ReqAddRiskRuleItem->IndexParam6))
 		{
 			ReqAddRiskRuleItem->IndexParam6[sizeof(ReqAddRiskRuleItem->IndexParam6) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::IndexParam6, ReqAddRiskRuleItem->IndexParam6);
-		StepUtility::WriteString(cursor, Items::LogicFunc, static_cast<int>(ReqAddRiskRuleItem->LogicFunc));
-		StepUtility::WriteString(cursor, Items::LogicParamType1, static_cast<int>(ReqAddRiskRuleItem->LogicParamType1));
+		StepUtility::WriteString(cursor, ProtocolItems::IndexParam6, ReqAddRiskRuleItem->IndexParam6);
+		StepUtility::WriteString(cursor, ProtocolItems::LogicFunc, static_cast<int>(ReqAddRiskRuleItem->LogicFunc));
+		StepUtility::WriteString(cursor, ProtocolItems::LogicParamType1, static_cast<int>(ReqAddRiskRuleItem->LogicParamType1));
 		if (strlen(ReqAddRiskRuleItem->LogicParam1) >= sizeof(ReqAddRiskRuleItem->LogicParam1))
 		{
 			ReqAddRiskRuleItem->LogicParam1[sizeof(ReqAddRiskRuleItem->LogicParam1) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::LogicParam1, ReqAddRiskRuleItem->LogicParam1);
-		StepUtility::WriteString(cursor, Items::LogicParam1TextRef, ReqAddRiskRuleItem->LogicParam1TextRef);
-		StepUtility::WriteString(cursor, Items::LogicParamType2, static_cast<int>(ReqAddRiskRuleItem->LogicParamType2));
+		StepUtility::WriteString(cursor, ProtocolItems::LogicParam1, ReqAddRiskRuleItem->LogicParam1);
+		StepUtility::WriteString(cursor, ProtocolItems::LogicParam1TextRef, ReqAddRiskRuleItem->LogicParam1TextRef);
+		StepUtility::WriteString(cursor, ProtocolItems::LogicParamType2, static_cast<int>(ReqAddRiskRuleItem->LogicParamType2));
 		if (strlen(ReqAddRiskRuleItem->LogicParam2) >= sizeof(ReqAddRiskRuleItem->LogicParam2))
 		{
 			ReqAddRiskRuleItem->LogicParam2[sizeof(ReqAddRiskRuleItem->LogicParam2) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::LogicParam2, ReqAddRiskRuleItem->LogicParam2);
-		StepUtility::WriteString(cursor, Items::LogicParam2TextRef, ReqAddRiskRuleItem->LogicParam2TextRef);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddRiskRuleItemField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::LogicParam2, ReqAddRiskRuleItem->LogicParam2);
+		StepUtility::WriteString(cursor, ProtocolItems::LogicParam2TextRef, ReqAddRiskRuleItem->LogicParam2TextRef);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddRiskRuleItemField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -39520,10 +39520,10 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddRiskRuleItem->AdminUserId))
 							{
@@ -39533,7 +39533,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqAddRiskRuleItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddRiskRuleItem->RiskId))
 							{
@@ -39542,7 +39542,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::RiskRuleId:
+						case ProtocolItems::RiskRuleId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddRiskRuleItem->RiskRuleId))
 							{
@@ -39551,7 +39551,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::RiskRuleItemId:
+						case ProtocolItems::RiskRuleItemId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddRiskRuleItem->RiskRuleItemId))
 							{
@@ -39560,7 +39560,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::RiskIndexType:
+						case ProtocolItems::RiskIndexType:
 						{
 							if (!StepUtility::ParseEnum(value, ReqAddRiskRuleItem->RiskIndexType))
 							{
@@ -39569,7 +39569,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::RiskIndexId:
+						case ProtocolItems::RiskIndexId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddRiskRuleItem->RiskIndexId))
 							{
@@ -39578,7 +39578,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::RiskIndexTextRef:
+						case ProtocolItems::RiskIndexTextRef:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddRiskRuleItem->RiskIndexTextRef))
 							{
@@ -39587,7 +39587,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::IndexParam1:
+						case ProtocolItems::IndexParam1:
 						{
 							if (value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam1))
 							{
@@ -39597,7 +39597,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqAddRiskRuleItem->IndexParam1, value.c_str(), value.length());
 							break;
 						}
-						case Items::IndexParam2:
+						case ProtocolItems::IndexParam2:
 						{
 							if (value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam2))
 							{
@@ -39607,7 +39607,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqAddRiskRuleItem->IndexParam2, value.c_str(), value.length());
 							break;
 						}
-						case Items::IndexParam3:
+						case ProtocolItems::IndexParam3:
 						{
 							if (value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam3))
 							{
@@ -39617,7 +39617,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqAddRiskRuleItem->IndexParam3, value.c_str(), value.length());
 							break;
 						}
-						case Items::IndexParam4:
+						case ProtocolItems::IndexParam4:
 						{
 							if (value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam4))
 							{
@@ -39627,7 +39627,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqAddRiskRuleItem->IndexParam4, value.c_str(), value.length());
 							break;
 						}
-						case Items::IndexParam5:
+						case ProtocolItems::IndexParam5:
 						{
 							if (value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam5))
 							{
@@ -39637,7 +39637,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqAddRiskRuleItem->IndexParam5, value.c_str(), value.length());
 							break;
 						}
-						case Items::IndexParam6:
+						case ProtocolItems::IndexParam6:
 						{
 							if (value.length() >= sizeof(ReqAddRiskRuleItem->IndexParam6))
 							{
@@ -39647,7 +39647,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqAddRiskRuleItem->IndexParam6, value.c_str(), value.length());
 							break;
 						}
-						case Items::LogicFunc:
+						case ProtocolItems::LogicFunc:
 						{
 							if (!StepUtility::ParseEnum(value, ReqAddRiskRuleItem->LogicFunc))
 							{
@@ -39656,7 +39656,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::LogicParamType1:
+						case ProtocolItems::LogicParamType1:
 						{
 							if (!StepUtility::ParseEnum(value, ReqAddRiskRuleItem->LogicParamType1))
 							{
@@ -39665,7 +39665,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::LogicParam1:
+						case ProtocolItems::LogicParam1:
 						{
 							if (value.length() >= sizeof(ReqAddRiskRuleItem->LogicParam1))
 							{
@@ -39675,7 +39675,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqAddRiskRuleItem->LogicParam1, value.c_str(), value.length());
 							break;
 						}
-						case Items::LogicParam1TextRef:
+						case ProtocolItems::LogicParam1TextRef:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddRiskRuleItem->LogicParam1TextRef))
 							{
@@ -39684,7 +39684,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::LogicParamType2:
+						case ProtocolItems::LogicParamType2:
 						{
 							if (!StepUtility::ParseEnum(value, ReqAddRiskRuleItem->LogicParamType2))
 							{
@@ -39693,7 +39693,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::LogicParam2:
+						case ProtocolItems::LogicParam2:
 						{
 							if (value.length() >= sizeof(ReqAddRiskRuleItem->LogicParam2))
 							{
@@ -39703,7 +39703,7 @@ bool ReqAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(ReqAddRiskRuleItem->LogicParam2, value.c_str(), value.length());
 							break;
 						}
-						case Items::LogicParam2TextRef:
+						case ProtocolItems::LogicParam2TextRef:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddRiskRuleItem->LogicParam2TextRef))
 							{
@@ -39825,27 +39825,27 @@ int RspAddRiskRuleItemPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddRiskRuleItem != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddRiskRuleItemField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddRiskRuleItemField::FieldId);
 		if (strlen(RspAddRiskRuleItem->AdminUserId) >= sizeof(RspAddRiskRuleItem->AdminUserId))
 		{
 			RspAddRiskRuleItem->AdminUserId[sizeof(RspAddRiskRuleItem->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddRiskRuleItem->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskId, RspAddRiskRuleItem->RiskId);
-		StepUtility::WriteString(cursor, Items::RiskRuleId, RspAddRiskRuleItem->RiskRuleId);
-		StepUtility::WriteString(cursor, Items::RiskRuleItemId, RspAddRiskRuleItem->RiskRuleItemId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddRiskRuleItemField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddRiskRuleItem->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, RspAddRiskRuleItem->RiskId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskRuleId, RspAddRiskRuleItem->RiskRuleId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskRuleItemId, RspAddRiskRuleItem->RiskRuleItemId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddRiskRuleItemField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -39878,10 +39878,10 @@ bool RspAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddRiskRuleItem->AdminUserId))
 							{
@@ -39891,7 +39891,7 @@ bool RspAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							memcpy(RspAddRiskRuleItem->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAddRiskRuleItem->RiskId))
 							{
@@ -39900,7 +39900,7 @@ bool RspAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::RiskRuleId:
+						case ProtocolItems::RiskRuleId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAddRiskRuleItem->RiskRuleId))
 							{
@@ -39909,7 +39909,7 @@ bool RspAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::RiskRuleItemId:
+						case ProtocolItems::RiskRuleItemId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAddRiskRuleItem->RiskRuleItemId))
 							{
@@ -39945,10 +39945,10 @@ bool RspAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -39957,7 +39957,7 @@ bool RspAddRiskRuleItemPackage::FromStepStream(char* buff, int startIndex, int e
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -40098,21 +40098,21 @@ int ReqAddRiskTradeScopePackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddRiskTradeScope != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddRiskTradeScopeField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddRiskTradeScopeField::FieldId);
 		if (strlen(ReqAddRiskTradeScope->AdminUserId) >= sizeof(ReqAddRiskTradeScope->AdminUserId))
 		{
 			ReqAddRiskTradeScope->AdminUserId[sizeof(ReqAddRiskTradeScope->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddRiskTradeScope->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskId, ReqAddRiskTradeScope->RiskId);
-		StepUtility::WriteString(cursor, Items::TradeScopeType, static_cast<int>(ReqAddRiskTradeScope->TradeScopeType));
-		StepUtility::WriteString(cursor, Items::InstrumentGroupId, ReqAddRiskTradeScope->InstrumentGroupId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddRiskTradeScope->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, ReqAddRiskTradeScope->RiskId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeScopeType, static_cast<int>(ReqAddRiskTradeScope->TradeScopeType));
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentGroupId, ReqAddRiskTradeScope->InstrumentGroupId);
 		if (strlen(ReqAddRiskTradeScope->FormatRiskMessage) >= sizeof(ReqAddRiskTradeScope->FormatRiskMessage))
 		{
 			ReqAddRiskTradeScope->FormatRiskMessage[sizeof(ReqAddRiskTradeScope->FormatRiskMessage) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::FormatRiskMessage, ReqAddRiskTradeScope->FormatRiskMessage);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddRiskTradeScopeField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::FormatRiskMessage, ReqAddRiskTradeScope->FormatRiskMessage);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddRiskTradeScopeField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -40145,10 +40145,10 @@ bool ReqAddRiskTradeScopePackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddRiskTradeScope->AdminUserId))
 							{
@@ -40158,7 +40158,7 @@ bool ReqAddRiskTradeScopePackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqAddRiskTradeScope->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddRiskTradeScope->RiskId))
 							{
@@ -40167,7 +40167,7 @@ bool ReqAddRiskTradeScopePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::TradeScopeType:
+						case ProtocolItems::TradeScopeType:
 						{
 							if (!StepUtility::ParseEnum(value, ReqAddRiskTradeScope->TradeScopeType))
 							{
@@ -40176,7 +40176,7 @@ bool ReqAddRiskTradeScopePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::InstrumentGroupId:
+						case ProtocolItems::InstrumentGroupId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddRiskTradeScope->InstrumentGroupId))
 							{
@@ -40185,7 +40185,7 @@ bool ReqAddRiskTradeScopePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::FormatRiskMessage:
+						case ProtocolItems::FormatRiskMessage:
 						{
 							if (value.length() >= sizeof(ReqAddRiskTradeScope->FormatRiskMessage))
 							{
@@ -40308,25 +40308,25 @@ int RspAddRiskTradeScopePackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddRiskTradeScope != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddRiskTradeScopeField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddRiskTradeScopeField::FieldId);
 		if (strlen(RspAddRiskTradeScope->AdminUserId) >= sizeof(RspAddRiskTradeScope->AdminUserId))
 		{
 			RspAddRiskTradeScope->AdminUserId[sizeof(RspAddRiskTradeScope->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddRiskTradeScope->AdminUserId);
-		StepUtility::WriteString(cursor, Items::RiskId, RspAddRiskTradeScope->RiskId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddRiskTradeScopeField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddRiskTradeScope->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, RspAddRiskTradeScope->RiskId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddRiskTradeScopeField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -40359,10 +40359,10 @@ bool RspAddRiskTradeScopePackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddRiskTradeScope->AdminUserId))
 							{
@@ -40372,7 +40372,7 @@ bool RspAddRiskTradeScopePackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(RspAddRiskTradeScope->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAddRiskTradeScope->RiskId))
 							{
@@ -40408,10 +40408,10 @@ bool RspAddRiskTradeScopePackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -40420,7 +40420,7 @@ bool RspAddRiskTradeScopePackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -40561,19 +40561,19 @@ int ReqAddAccountRiskPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAddAccountRisk != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAddAccountRiskField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAddAccountRiskField::FieldId);
 		if (strlen(ReqAddAccountRisk->AdminUserId) >= sizeof(ReqAddAccountRisk->AdminUserId))
 		{
 			ReqAddAccountRisk->AdminUserId[sizeof(ReqAddAccountRisk->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAddAccountRisk->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAddAccountRisk->AdminUserId);
 		if (strlen(ReqAddAccountRisk->AccountId) >= sizeof(ReqAddAccountRisk->AccountId))
 		{
 			ReqAddAccountRisk->AccountId[sizeof(ReqAddAccountRisk->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqAddAccountRisk->AccountId);
-		StepUtility::WriteString(cursor, Items::RiskId, ReqAddAccountRisk->RiskId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAddAccountRiskField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqAddAccountRisk->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, ReqAddAccountRisk->RiskId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAddAccountRiskField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -40606,10 +40606,10 @@ bool ReqAddAccountRiskPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAddAccountRisk->AdminUserId))
 							{
@@ -40619,7 +40619,7 @@ bool ReqAddAccountRiskPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(ReqAddAccountRisk->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqAddAccountRisk->AccountId))
 							{
@@ -40629,7 +40629,7 @@ bool ReqAddAccountRiskPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(ReqAddAccountRisk->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAddAccountRisk->RiskId))
 							{
@@ -40751,30 +40751,30 @@ int RspAddAccountRiskPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAddAccountRisk != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAddAccountRiskField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAddAccountRiskField::FieldId);
 		if (strlen(RspAddAccountRisk->AdminUserId) >= sizeof(RspAddAccountRisk->AdminUserId))
 		{
 			RspAddAccountRisk->AdminUserId[sizeof(RspAddAccountRisk->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAddAccountRisk->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAddAccountRisk->AdminUserId);
 		if (strlen(RspAddAccountRisk->AccountId) >= sizeof(RspAddAccountRisk->AccountId))
 		{
 			RspAddAccountRisk->AccountId[sizeof(RspAddAccountRisk->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, RspAddAccountRisk->AccountId);
-		StepUtility::WriteString(cursor, Items::RiskId, RspAddAccountRisk->RiskId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAddAccountRiskField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, RspAddAccountRisk->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, RspAddAccountRisk->RiskId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAddAccountRiskField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -40807,10 +40807,10 @@ bool RspAddAccountRiskPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAddAccountRisk->AdminUserId))
 							{
@@ -40820,7 +40820,7 @@ bool RspAddAccountRiskPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(RspAddAccountRisk->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(RspAddAccountRisk->AccountId))
 							{
@@ -40830,7 +40830,7 @@ bool RspAddAccountRiskPackage::FromStepStream(char* buff, int startIndex, int en
 							memcpy(RspAddAccountRisk->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAddAccountRisk->RiskId))
 							{
@@ -40866,10 +40866,10 @@ bool RspAddAccountRiskPackage::FromStepStream(char* buff, int startIndex, int en
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -40878,7 +40878,7 @@ bool RspAddAccountRiskPackage::FromStepStream(char* buff, int startIndex, int en
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -41019,19 +41019,19 @@ int ReqRemoveAccountRiskPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqRemoveAccountRisk != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqRemoveAccountRiskField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqRemoveAccountRiskField::FieldId);
 		if (strlen(ReqRemoveAccountRisk->AdminUserId) >= sizeof(ReqRemoveAccountRisk->AdminUserId))
 		{
 			ReqRemoveAccountRisk->AdminUserId[sizeof(ReqRemoveAccountRisk->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqRemoveAccountRisk->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqRemoveAccountRisk->AdminUserId);
 		if (strlen(ReqRemoveAccountRisk->AccountId) >= sizeof(ReqRemoveAccountRisk->AccountId))
 		{
 			ReqRemoveAccountRisk->AccountId[sizeof(ReqRemoveAccountRisk->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqRemoveAccountRisk->AccountId);
-		StepUtility::WriteString(cursor, Items::RiskId, ReqRemoveAccountRisk->RiskId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqRemoveAccountRiskField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqRemoveAccountRisk->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, ReqRemoveAccountRisk->RiskId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqRemoveAccountRiskField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -41064,10 +41064,10 @@ bool ReqRemoveAccountRiskPackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqRemoveAccountRisk->AdminUserId))
 							{
@@ -41077,7 +41077,7 @@ bool ReqRemoveAccountRiskPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqRemoveAccountRisk->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqRemoveAccountRisk->AccountId))
 							{
@@ -41087,7 +41087,7 @@ bool ReqRemoveAccountRiskPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(ReqRemoveAccountRisk->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqRemoveAccountRisk->RiskId))
 							{
@@ -41209,30 +41209,30 @@ int RspRemoveAccountRiskPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspRemoveAccountRisk != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspRemoveAccountRiskField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspRemoveAccountRiskField::FieldId);
 		if (strlen(RspRemoveAccountRisk->AdminUserId) >= sizeof(RspRemoveAccountRisk->AdminUserId))
 		{
 			RspRemoveAccountRisk->AdminUserId[sizeof(RspRemoveAccountRisk->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspRemoveAccountRisk->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspRemoveAccountRisk->AdminUserId);
 		if (strlen(RspRemoveAccountRisk->AccountId) >= sizeof(RspRemoveAccountRisk->AccountId))
 		{
 			RspRemoveAccountRisk->AccountId[sizeof(RspRemoveAccountRisk->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, RspRemoveAccountRisk->AccountId);
-		StepUtility::WriteString(cursor, Items::RiskId, RspRemoveAccountRisk->RiskId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspRemoveAccountRiskField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, RspRemoveAccountRisk->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::RiskId, RspRemoveAccountRisk->RiskId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspRemoveAccountRiskField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -41265,10 +41265,10 @@ bool RspRemoveAccountRiskPackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspRemoveAccountRisk->AdminUserId))
 							{
@@ -41278,7 +41278,7 @@ bool RspRemoveAccountRiskPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(RspRemoveAccountRisk->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(RspRemoveAccountRisk->AccountId))
 							{
@@ -41288,7 +41288,7 @@ bool RspRemoveAccountRiskPackage::FromStepStream(char* buff, int startIndex, int
 							memcpy(RspRemoveAccountRisk->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::RiskId:
+						case ProtocolItems::RiskId:
 						{
 							if (!StepUtility::ParseInteger(value, RspRemoveAccountRisk->RiskId))
 							{
@@ -41324,10 +41324,10 @@ bool RspRemoveAccountRiskPackage::FromStepStream(char* buff, int startIndex, int
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -41336,7 +41336,7 @@ bool RspRemoveAccountRiskPackage::FromStepStream(char* buff, int startIndex, int
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -41477,47 +41477,47 @@ int ReqMoneyTransferPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqMoneyTransfer != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqMoneyTransferField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqMoneyTransferField::FieldId);
 		if (strlen(ReqMoneyTransfer->AdminUserId) >= sizeof(ReqMoneyTransfer->AdminUserId))
 		{
 			ReqMoneyTransfer->AdminUserId[sizeof(ReqMoneyTransfer->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqMoneyTransfer->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqMoneyTransfer->AdminUserId);
 		if (strlen(ReqMoneyTransfer->TradingDay) >= sizeof(ReqMoneyTransfer->TradingDay))
 		{
 			ReqMoneyTransfer->TradingDay[sizeof(ReqMoneyTransfer->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqMoneyTransfer->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqMoneyTransfer->TradingDay);
 		if (strlen(ReqMoneyTransfer->AccountId) >= sizeof(ReqMoneyTransfer->AccountId))
 		{
 			ReqMoneyTransfer->AccountId[sizeof(ReqMoneyTransfer->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqMoneyTransfer->AccountId);
-		StepUtility::WriteString(cursor, Items::MoneyTransferId, ReqMoneyTransfer->MoneyTransferId);
-		StepUtility::WriteString(cursor, Items::AccountType, static_cast<int>(ReqMoneyTransfer->AccountType));
-		StepUtility::WriteString(cursor, Items::TransferDirection, static_cast<int>(ReqMoneyTransfer->TransferDirection));
-		StepUtility::WriteString(cursor, Items::TransferAmount, ReqMoneyTransfer->TransferAmount);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqMoneyTransfer->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::MoneyTransferId, ReqMoneyTransfer->MoneyTransferId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountType, static_cast<int>(ReqMoneyTransfer->AccountType));
+		StepUtility::WriteString(cursor, ProtocolItems::TransferDirection, static_cast<int>(ReqMoneyTransfer->TransferDirection));
+		StepUtility::WriteString(cursor, ProtocolItems::TransferAmount, ReqMoneyTransfer->TransferAmount);
 		if (strlen(ReqMoneyTransfer->InfoMessage) >= sizeof(ReqMoneyTransfer->InfoMessage))
 		{
 			ReqMoneyTransfer->InfoMessage[sizeof(ReqMoneyTransfer->InfoMessage) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InfoMessage, ReqMoneyTransfer->InfoMessage);
+		StepUtility::WriteString(cursor, ProtocolItems::InfoMessage, ReqMoneyTransfer->InfoMessage);
 		if (strlen(ReqMoneyTransfer->UserId) >= sizeof(ReqMoneyTransfer->UserId))
 		{
 			ReqMoneyTransfer->UserId[sizeof(ReqMoneyTransfer->UserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UserId, ReqMoneyTransfer->UserId);
+		StepUtility::WriteString(cursor, ProtocolItems::UserId, ReqMoneyTransfer->UserId);
 		if (strlen(ReqMoneyTransfer->TransferDate) >= sizeof(ReqMoneyTransfer->TransferDate))
 		{
 			ReqMoneyTransfer->TransferDate[sizeof(ReqMoneyTransfer->TransferDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TransferDate, ReqMoneyTransfer->TransferDate);
+		StepUtility::WriteString(cursor, ProtocolItems::TransferDate, ReqMoneyTransfer->TransferDate);
 		if (strlen(ReqMoneyTransfer->TransferTime) >= sizeof(ReqMoneyTransfer->TransferTime))
 		{
 			ReqMoneyTransfer->TransferTime[sizeof(ReqMoneyTransfer->TransferTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TransferTime, ReqMoneyTransfer->TransferTime);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqMoneyTransferField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::TransferTime, ReqMoneyTransfer->TransferTime);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqMoneyTransferField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -41550,10 +41550,10 @@ bool ReqMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqMoneyTransfer->AdminUserId))
 							{
@@ -41563,7 +41563,7 @@ bool ReqMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqMoneyTransfer->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqMoneyTransfer->TradingDay))
 							{
@@ -41573,7 +41573,7 @@ bool ReqMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqMoneyTransfer->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqMoneyTransfer->AccountId))
 							{
@@ -41583,7 +41583,7 @@ bool ReqMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqMoneyTransfer->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::MoneyTransferId:
+						case ProtocolItems::MoneyTransferId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqMoneyTransfer->MoneyTransferId))
 							{
@@ -41592,7 +41592,7 @@ bool ReqMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::AccountType:
+						case ProtocolItems::AccountType:
 						{
 							if (!StepUtility::ParseEnum(value, ReqMoneyTransfer->AccountType))
 							{
@@ -41601,7 +41601,7 @@ bool ReqMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::TransferDirection:
+						case ProtocolItems::TransferDirection:
 						{
 							if (!StepUtility::ParseEnum(value, ReqMoneyTransfer->TransferDirection))
 							{
@@ -41610,7 +41610,7 @@ bool ReqMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::TransferAmount:
+						case ProtocolItems::TransferAmount:
 						{
 							if (!StepUtility::ParseDouble(value, ReqMoneyTransfer->TransferAmount))
 							{
@@ -41619,7 +41619,7 @@ bool ReqMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::InfoMessage:
+						case ProtocolItems::InfoMessage:
 						{
 							if (value.length() >= sizeof(ReqMoneyTransfer->InfoMessage))
 							{
@@ -41629,7 +41629,7 @@ bool ReqMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqMoneyTransfer->InfoMessage, value.c_str(), value.length());
 							break;
 						}
-						case Items::UserId:
+						case ProtocolItems::UserId:
 						{
 							if (value.length() >= sizeof(ReqMoneyTransfer->UserId))
 							{
@@ -41639,7 +41639,7 @@ bool ReqMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqMoneyTransfer->UserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TransferDate:
+						case ProtocolItems::TransferDate:
 						{
 							if (value.length() >= sizeof(ReqMoneyTransfer->TransferDate))
 							{
@@ -41649,7 +41649,7 @@ bool ReqMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(ReqMoneyTransfer->TransferDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::TransferTime:
+						case ProtocolItems::TransferTime:
 						{
 							if (value.length() >= sizeof(ReqMoneyTransfer->TransferTime))
 							{
@@ -41772,35 +41772,35 @@ int RspMoneyTransferPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspMoneyTransfer != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspMoneyTransferField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspMoneyTransferField::FieldId);
 		if (strlen(RspMoneyTransfer->AdminUserId) >= sizeof(RspMoneyTransfer->AdminUserId))
 		{
 			RspMoneyTransfer->AdminUserId[sizeof(RspMoneyTransfer->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspMoneyTransfer->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspMoneyTransfer->AdminUserId);
 		if (strlen(RspMoneyTransfer->TradingDay) >= sizeof(RspMoneyTransfer->TradingDay))
 		{
 			RspMoneyTransfer->TradingDay[sizeof(RspMoneyTransfer->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, RspMoneyTransfer->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, RspMoneyTransfer->TradingDay);
 		if (strlen(RspMoneyTransfer->AccountId) >= sizeof(RspMoneyTransfer->AccountId))
 		{
 			RspMoneyTransfer->AccountId[sizeof(RspMoneyTransfer->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, RspMoneyTransfer->AccountId);
-		StepUtility::WriteString(cursor, Items::MoneyTransferId, RspMoneyTransfer->MoneyTransferId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspMoneyTransferField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, RspMoneyTransfer->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::MoneyTransferId, RspMoneyTransfer->MoneyTransferId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspMoneyTransferField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -41833,10 +41833,10 @@ bool RspMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspMoneyTransfer->AdminUserId))
 							{
@@ -41846,7 +41846,7 @@ bool RspMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(RspMoneyTransfer->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(RspMoneyTransfer->TradingDay))
 							{
@@ -41856,7 +41856,7 @@ bool RspMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(RspMoneyTransfer->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(RspMoneyTransfer->AccountId))
 							{
@@ -41866,7 +41866,7 @@ bool RspMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(RspMoneyTransfer->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::MoneyTransferId:
+						case ProtocolItems::MoneyTransferId:
 						{
 							if (!StepUtility::ParseInteger(value, RspMoneyTransfer->MoneyTransferId))
 							{
@@ -41902,10 +41902,10 @@ bool RspMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -41914,7 +41914,7 @@ bool RspMoneyTransferPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -42055,35 +42055,35 @@ int ReqAuditOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqAuditOrder != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqAuditOrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqAuditOrderField::FieldId);
 		if (strlen(ReqAuditOrder->AdminUserId) >= sizeof(ReqAuditOrder->AdminUserId))
 		{
 			ReqAuditOrder->AdminUserId[sizeof(ReqAuditOrder->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, ReqAuditOrder->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, ReqAuditOrder->AdminUserId);
 		if (strlen(ReqAuditOrder->TradingDay) >= sizeof(ReqAuditOrder->TradingDay))
 		{
 			ReqAuditOrder->TradingDay[sizeof(ReqAuditOrder->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqAuditOrder->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqAuditOrder->TradingDay);
 		if (strlen(ReqAuditOrder->AccountId) >= sizeof(ReqAuditOrder->AccountId))
 		{
 			ReqAuditOrder->AccountId[sizeof(ReqAuditOrder->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, ReqAuditOrder->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, ReqAuditOrder->AccountId);
 		if (strlen(ReqAuditOrder->ExchangeId) >= sizeof(ReqAuditOrder->ExchangeId))
 		{
 			ReqAuditOrder->ExchangeId[sizeof(ReqAuditOrder->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqAuditOrder->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqAuditOrder->ExchangeId);
 		if (strlen(ReqAuditOrder->InstrumentId) >= sizeof(ReqAuditOrder->InstrumentId))
 		{
 			ReqAuditOrder->InstrumentId[sizeof(ReqAuditOrder->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, ReqAuditOrder->InstrumentId);
-		StepUtility::WriteString(cursor, Items::OrderId, ReqAuditOrder->OrderId);
-		StepUtility::WriteString(cursor, Items::AuditStatus, static_cast<int>(ReqAuditOrder->AuditStatus));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqAuditOrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, ReqAuditOrder->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, ReqAuditOrder->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::AuditStatus, static_cast<int>(ReqAuditOrder->AuditStatus));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqAuditOrderField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -42116,10 +42116,10 @@ bool ReqAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(ReqAuditOrder->AdminUserId))
 							{
@@ -42129,7 +42129,7 @@ bool ReqAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(ReqAuditOrder->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqAuditOrder->TradingDay))
 							{
@@ -42139,7 +42139,7 @@ bool ReqAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(ReqAuditOrder->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(ReqAuditOrder->AccountId))
 							{
@@ -42149,7 +42149,7 @@ bool ReqAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(ReqAuditOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqAuditOrder->ExchangeId))
 							{
@@ -42159,7 +42159,7 @@ bool ReqAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(ReqAuditOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(ReqAuditOrder->InstrumentId))
 							{
@@ -42169,7 +42169,7 @@ bool ReqAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(ReqAuditOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqAuditOrder->OrderId))
 							{
@@ -42178,7 +42178,7 @@ bool ReqAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::AuditStatus:
+						case ProtocolItems::AuditStatus:
 						{
 							if (!StepUtility::ParseEnum(value, ReqAuditOrder->AuditStatus))
 							{
@@ -42300,46 +42300,46 @@ int RspAuditOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspAuditOrder != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspAuditOrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspAuditOrderField::FieldId);
 		if (strlen(RspAuditOrder->AdminUserId) >= sizeof(RspAuditOrder->AdminUserId))
 		{
 			RspAuditOrder->AdminUserId[sizeof(RspAuditOrder->AdminUserId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AdminUserId, RspAuditOrder->AdminUserId);
+		StepUtility::WriteString(cursor, ProtocolItems::AdminUserId, RspAuditOrder->AdminUserId);
 		if (strlen(RspAuditOrder->TradingDay) >= sizeof(RspAuditOrder->TradingDay))
 		{
 			RspAuditOrder->TradingDay[sizeof(RspAuditOrder->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, RspAuditOrder->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, RspAuditOrder->TradingDay);
 		if (strlen(RspAuditOrder->AccountId) >= sizeof(RspAuditOrder->AccountId))
 		{
 			RspAuditOrder->AccountId[sizeof(RspAuditOrder->AccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::AccountId, RspAuditOrder->AccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::AccountId, RspAuditOrder->AccountId);
 		if (strlen(RspAuditOrder->ExchangeId) >= sizeof(RspAuditOrder->ExchangeId))
 		{
 			RspAuditOrder->ExchangeId[sizeof(RspAuditOrder->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, RspAuditOrder->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, RspAuditOrder->ExchangeId);
 		if (strlen(RspAuditOrder->InstrumentId) >= sizeof(RspAuditOrder->InstrumentId))
 		{
 			RspAuditOrder->InstrumentId[sizeof(RspAuditOrder->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, RspAuditOrder->InstrumentId);
-		StepUtility::WriteString(cursor, Items::OrderId, RspAuditOrder->OrderId);
-		StepUtility::WriteString(cursor, Items::AuditStatus, static_cast<int>(RspAuditOrder->AuditStatus));
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspAuditOrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, RspAuditOrder->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, RspAuditOrder->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::AuditStatus, static_cast<int>(RspAuditOrder->AuditStatus));
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspAuditOrderField::FieldId);
 	}
 	if (RspInfo != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspInfoField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspInfo->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspInfo->ErrorId);
 		if (strlen(RspInfo->ErrorMsg) >= sizeof(RspInfo->ErrorMsg))
 		{
 			RspInfo->ErrorMsg[sizeof(RspInfo->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspInfo->ErrorMsg);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspInfoField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspInfo->ErrorMsg);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspInfoField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -42372,10 +42372,10 @@ bool RspAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::AdminUserId:
+						case ProtocolItems::AdminUserId:
 						{
 							if (value.length() >= sizeof(RspAuditOrder->AdminUserId))
 							{
@@ -42385,7 +42385,7 @@ bool RspAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(RspAuditOrder->AdminUserId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(RspAuditOrder->TradingDay))
 							{
@@ -42395,7 +42395,7 @@ bool RspAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(RspAuditOrder->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::AccountId:
+						case ProtocolItems::AccountId:
 						{
 							if (value.length() >= sizeof(RspAuditOrder->AccountId))
 							{
@@ -42405,7 +42405,7 @@ bool RspAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(RspAuditOrder->AccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(RspAuditOrder->ExchangeId))
 							{
@@ -42415,7 +42415,7 @@ bool RspAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(RspAuditOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(RspAuditOrder->InstrumentId))
 							{
@@ -42425,7 +42425,7 @@ bool RspAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(RspAuditOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, RspAuditOrder->OrderId))
 							{
@@ -42434,7 +42434,7 @@ bool RspAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::AuditStatus:
+						case ProtocolItems::AuditStatus:
 						{
 							if (!StepUtility::ParseEnum(value, RspAuditOrder->AuditStatus))
 							{
@@ -42470,10 +42470,10 @@ bool RspAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspInfo->ErrorId))
 							{
@@ -42482,7 +42482,7 @@ bool RspAuditOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspInfo->ErrorMsg))
 							{
@@ -42623,14 +42623,14 @@ int ReqOfferLoginPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqOfferLogin != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqOfferLoginField::FieldId);
-		StepUtility::WriteString(cursor, Items::OfferId, ReqOfferLogin->OfferId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqOfferLoginField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::OfferId, ReqOfferLogin->OfferId);
 		if (strlen(ReqOfferLogin->OfferPassword) >= sizeof(ReqOfferLogin->OfferPassword))
 		{
 			ReqOfferLogin->OfferPassword[sizeof(ReqOfferLogin->OfferPassword) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OfferPassword, ReqOfferLogin->OfferPassword);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqOfferLoginField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::OfferPassword, ReqOfferLogin->OfferPassword);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqOfferLoginField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -42663,10 +42663,10 @@ bool ReqOfferLoginPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::OfferId:
+						case ProtocolItems::OfferId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqOfferLogin->OfferId))
 							{
@@ -42675,7 +42675,7 @@ bool ReqOfferLoginPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::OfferPassword:
+						case ProtocolItems::OfferPassword:
 						{
 							if (value.length() >= sizeof(ReqOfferLogin->OfferPassword))
 							{
@@ -42793,20 +42793,20 @@ int RspOfferLoginPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspOfferLogin != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspOfferLoginField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspOfferLogin->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspOfferLoginField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspOfferLogin->ErrorId);
 		if (strlen(RspOfferLogin->ErrorMsg) >= sizeof(RspOfferLogin->ErrorMsg))
 		{
 			RspOfferLogin->ErrorMsg[sizeof(RspOfferLogin->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspOfferLogin->ErrorMsg);
-		StepUtility::WriteString(cursor, Items::OfferId, RspOfferLogin->OfferId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspOfferLogin->ErrorMsg);
+		StepUtility::WriteString(cursor, ProtocolItems::OfferId, RspOfferLogin->OfferId);
 		if (strlen(RspOfferLogin->TradingDay) >= sizeof(RspOfferLogin->TradingDay))
 		{
 			RspOfferLogin->TradingDay[sizeof(RspOfferLogin->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, RspOfferLogin->TradingDay);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspOfferLoginField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, RspOfferLogin->TradingDay);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspOfferLoginField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -42839,10 +42839,10 @@ bool RspOfferLoginPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspOfferLogin->ErrorId))
 							{
@@ -42851,7 +42851,7 @@ bool RspOfferLoginPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspOfferLogin->ErrorMsg))
 							{
@@ -42861,7 +42861,7 @@ bool RspOfferLoginPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(RspOfferLogin->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
-						case Items::OfferId:
+						case ProtocolItems::OfferId:
 						{
 							if (!StepUtility::ParseInteger(value, RspOfferLogin->OfferId))
 							{
@@ -42870,7 +42870,7 @@ bool RspOfferLoginPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(RspOfferLogin->TradingDay))
 							{
@@ -42988,18 +42988,18 @@ int ReqPrimaryAccountLoginPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqPrimaryAccountLogin != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqPrimaryAccountLoginField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqPrimaryAccountLoginField::FieldId);
 		if (strlen(ReqPrimaryAccountLogin->PrimaryAccountId) >= sizeof(ReqPrimaryAccountLogin->PrimaryAccountId))
 		{
 			ReqPrimaryAccountLogin->PrimaryAccountId[sizeof(ReqPrimaryAccountLogin->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, ReqPrimaryAccountLogin->PrimaryAccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, ReqPrimaryAccountLogin->PrimaryAccountId);
 		if (strlen(ReqPrimaryAccountLogin->Password) >= sizeof(ReqPrimaryAccountLogin->Password))
 		{
 			ReqPrimaryAccountLogin->Password[sizeof(ReqPrimaryAccountLogin->Password) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::Password, ReqPrimaryAccountLogin->Password);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqPrimaryAccountLoginField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::Password, ReqPrimaryAccountLogin->Password);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqPrimaryAccountLoginField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -43032,10 +43032,10 @@ bool ReqPrimaryAccountLoginPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(ReqPrimaryAccountLogin->PrimaryAccountId))
 							{
@@ -43045,7 +43045,7 @@ bool ReqPrimaryAccountLoginPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(ReqPrimaryAccountLogin->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Password:
+						case ProtocolItems::Password:
 						{
 							if (value.length() >= sizeof(ReqPrimaryAccountLogin->Password))
 							{
@@ -43163,24 +43163,24 @@ int RspPrimaryAccountLoginPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspPrimaryAccountLogin != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspPrimaryAccountLoginField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspPrimaryAccountLogin->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspPrimaryAccountLoginField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspPrimaryAccountLogin->ErrorId);
 		if (strlen(RspPrimaryAccountLogin->ErrorMsg) >= sizeof(RspPrimaryAccountLogin->ErrorMsg))
 		{
 			RspPrimaryAccountLogin->ErrorMsg[sizeof(RspPrimaryAccountLogin->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspPrimaryAccountLogin->ErrorMsg);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspPrimaryAccountLogin->ErrorMsg);
 		if (strlen(RspPrimaryAccountLogin->TradingDay) >= sizeof(RspPrimaryAccountLogin->TradingDay))
 		{
 			RspPrimaryAccountLogin->TradingDay[sizeof(RspPrimaryAccountLogin->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, RspPrimaryAccountLogin->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, RspPrimaryAccountLogin->TradingDay);
 		if (strlen(RspPrimaryAccountLogin->PrimaryAccountId) >= sizeof(RspPrimaryAccountLogin->PrimaryAccountId))
 		{
 			RspPrimaryAccountLogin->PrimaryAccountId[sizeof(RspPrimaryAccountLogin->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, RspPrimaryAccountLogin->PrimaryAccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspPrimaryAccountLoginField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, RspPrimaryAccountLogin->PrimaryAccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspPrimaryAccountLoginField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -43213,10 +43213,10 @@ bool RspPrimaryAccountLoginPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspPrimaryAccountLogin->ErrorId))
 							{
@@ -43225,7 +43225,7 @@ bool RspPrimaryAccountLoginPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspPrimaryAccountLogin->ErrorMsg))
 							{
@@ -43235,7 +43235,7 @@ bool RspPrimaryAccountLoginPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(RspPrimaryAccountLogin->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(RspPrimaryAccountLogin->TradingDay))
 							{
@@ -43245,7 +43245,7 @@ bool RspPrimaryAccountLoginPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(RspPrimaryAccountLogin->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(RspPrimaryAccountLogin->PrimaryAccountId))
 							{
@@ -43363,18 +43363,18 @@ int ReqPrimaryAccountLogoutPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqPrimaryAccountLogout != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqPrimaryAccountLogoutField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqPrimaryAccountLogoutField::FieldId);
 		if (strlen(ReqPrimaryAccountLogout->TradingDay) >= sizeof(ReqPrimaryAccountLogout->TradingDay))
 		{
 			ReqPrimaryAccountLogout->TradingDay[sizeof(ReqPrimaryAccountLogout->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqPrimaryAccountLogout->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqPrimaryAccountLogout->TradingDay);
 		if (strlen(ReqPrimaryAccountLogout->PrimaryAccountId) >= sizeof(ReqPrimaryAccountLogout->PrimaryAccountId))
 		{
 			ReqPrimaryAccountLogout->PrimaryAccountId[sizeof(ReqPrimaryAccountLogout->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, ReqPrimaryAccountLogout->PrimaryAccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqPrimaryAccountLogoutField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, ReqPrimaryAccountLogout->PrimaryAccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqPrimaryAccountLogoutField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -43407,10 +43407,10 @@ bool ReqPrimaryAccountLogoutPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqPrimaryAccountLogout->TradingDay))
 							{
@@ -43420,7 +43420,7 @@ bool ReqPrimaryAccountLogoutPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(ReqPrimaryAccountLogout->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(ReqPrimaryAccountLogout->PrimaryAccountId))
 							{
@@ -43538,18 +43538,18 @@ int RtnPrimaryAccountLogoutPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RtnPrimaryAccountLogout != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RtnPrimaryAccountLogoutField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RtnPrimaryAccountLogoutField::FieldId);
 		if (strlen(RtnPrimaryAccountLogout->TradingDay) >= sizeof(RtnPrimaryAccountLogout->TradingDay))
 		{
 			RtnPrimaryAccountLogout->TradingDay[sizeof(RtnPrimaryAccountLogout->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, RtnPrimaryAccountLogout->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, RtnPrimaryAccountLogout->TradingDay);
 		if (strlen(RtnPrimaryAccountLogout->PrimaryAccountId) >= sizeof(RtnPrimaryAccountLogout->PrimaryAccountId))
 		{
 			RtnPrimaryAccountLogout->PrimaryAccountId[sizeof(RtnPrimaryAccountLogout->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, RtnPrimaryAccountLogout->PrimaryAccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RtnPrimaryAccountLogoutField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, RtnPrimaryAccountLogout->PrimaryAccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RtnPrimaryAccountLogoutField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -43582,10 +43582,10 @@ bool RtnPrimaryAccountLogoutPackage::FromStepStream(char* buff, int startIndex, 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(RtnPrimaryAccountLogout->TradingDay))
 							{
@@ -43595,7 +43595,7 @@ bool RtnPrimaryAccountLogoutPackage::FromStepStream(char* buff, int startIndex, 
 							memcpy(RtnPrimaryAccountLogout->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(RtnPrimaryAccountLogout->PrimaryAccountId))
 							{
@@ -43713,13 +43713,13 @@ int ReqPrimaryAccountInitPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqPrimaryAccountInit != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqPrimaryAccountInitField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqPrimaryAccountInitField::FieldId);
 		if (strlen(ReqPrimaryAccountInit->PrimaryAccountId) >= sizeof(ReqPrimaryAccountInit->PrimaryAccountId))
 		{
 			ReqPrimaryAccountInit->PrimaryAccountId[sizeof(ReqPrimaryAccountInit->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, ReqPrimaryAccountInit->PrimaryAccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqPrimaryAccountInitField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, ReqPrimaryAccountInit->PrimaryAccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqPrimaryAccountInitField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -43752,10 +43752,10 @@ bool ReqPrimaryAccountInitPackage::FromStepStream(char* buff, int startIndex, in
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(ReqPrimaryAccountInit->PrimaryAccountId))
 							{
@@ -43873,19 +43873,19 @@ int RspPrimaryAccountInitPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspPrimaryAccountInit != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspPrimaryAccountInitField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspPrimaryAccountInit->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspPrimaryAccountInitField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspPrimaryAccountInit->ErrorId);
 		if (strlen(RspPrimaryAccountInit->ErrorMsg) >= sizeof(RspPrimaryAccountInit->ErrorMsg))
 		{
 			RspPrimaryAccountInit->ErrorMsg[sizeof(RspPrimaryAccountInit->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspPrimaryAccountInit->ErrorMsg);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspPrimaryAccountInit->ErrorMsg);
 		if (strlen(RspPrimaryAccountInit->PrimaryAccountId) >= sizeof(RspPrimaryAccountInit->PrimaryAccountId))
 		{
 			RspPrimaryAccountInit->PrimaryAccountId[sizeof(RspPrimaryAccountInit->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, RspPrimaryAccountInit->PrimaryAccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspPrimaryAccountInitField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, RspPrimaryAccountInit->PrimaryAccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspPrimaryAccountInitField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -43918,10 +43918,10 @@ bool RspPrimaryAccountInitPackage::FromStepStream(char* buff, int startIndex, in
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspPrimaryAccountInit->ErrorId))
 							{
@@ -43930,7 +43930,7 @@ bool RspPrimaryAccountInitPackage::FromStepStream(char* buff, int startIndex, in
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspPrimaryAccountInit->ErrorMsg))
 							{
@@ -43940,7 +43940,7 @@ bool RspPrimaryAccountInitPackage::FromStepStream(char* buff, int startIndex, in
 							memcpy(RspPrimaryAccountInit->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(RspPrimaryAccountInit->PrimaryAccountId))
 							{
@@ -44058,13 +44058,13 @@ int ReqPrimaryAccountQueryPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqPrimaryAccountQuery != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqPrimaryAccountQueryField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqPrimaryAccountQueryField::FieldId);
 		if (strlen(ReqPrimaryAccountQuery->PrimaryAccountId) >= sizeof(ReqPrimaryAccountQuery->PrimaryAccountId))
 		{
 			ReqPrimaryAccountQuery->PrimaryAccountId[sizeof(ReqPrimaryAccountQuery->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, ReqPrimaryAccountQuery->PrimaryAccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqPrimaryAccountQueryField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, ReqPrimaryAccountQuery->PrimaryAccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqPrimaryAccountQueryField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -44097,10 +44097,10 @@ bool ReqPrimaryAccountQueryPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(ReqPrimaryAccountQuery->PrimaryAccountId))
 							{
@@ -44218,19 +44218,19 @@ int RspPrimaryAccountQueryPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspPrimaryAccountQuery != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspPrimaryAccountQueryField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspPrimaryAccountQuery->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspPrimaryAccountQueryField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspPrimaryAccountQuery->ErrorId);
 		if (strlen(RspPrimaryAccountQuery->ErrorMsg) >= sizeof(RspPrimaryAccountQuery->ErrorMsg))
 		{
 			RspPrimaryAccountQuery->ErrorMsg[sizeof(RspPrimaryAccountQuery->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspPrimaryAccountQuery->ErrorMsg);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspPrimaryAccountQuery->ErrorMsg);
 		if (strlen(RspPrimaryAccountQuery->PrimaryAccountId) >= sizeof(RspPrimaryAccountQuery->PrimaryAccountId))
 		{
 			RspPrimaryAccountQuery->PrimaryAccountId[sizeof(RspPrimaryAccountQuery->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, RspPrimaryAccountQuery->PrimaryAccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspPrimaryAccountQueryField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, RspPrimaryAccountQuery->PrimaryAccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspPrimaryAccountQueryField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -44263,10 +44263,10 @@ bool RspPrimaryAccountQueryPackage::FromStepStream(char* buff, int startIndex, i
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspPrimaryAccountQuery->ErrorId))
 							{
@@ -44275,7 +44275,7 @@ bool RspPrimaryAccountQueryPackage::FromStepStream(char* buff, int startIndex, i
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspPrimaryAccountQuery->ErrorMsg))
 							{
@@ -44285,7 +44285,7 @@ bool RspPrimaryAccountQueryPackage::FromStepStream(char* buff, int startIndex, i
 							memcpy(RspPrimaryAccountQuery->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(RspPrimaryAccountQuery->PrimaryAccountId))
 							{
@@ -44403,13 +44403,13 @@ int ReqQryOfferOptionInstrumentPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqQryOfferOptionInstrument != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqQryOfferOptionInstrumentField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqQryOfferOptionInstrumentField::FieldId);
 		if (strlen(ReqQryOfferOptionInstrument->PrimaryAccountId) >= sizeof(ReqQryOfferOptionInstrument->PrimaryAccountId))
 		{
 			ReqQryOfferOptionInstrument->PrimaryAccountId[sizeof(ReqQryOfferOptionInstrument->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, ReqQryOfferOptionInstrument->PrimaryAccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqQryOfferOptionInstrumentField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, ReqQryOfferOptionInstrument->PrimaryAccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqQryOfferOptionInstrumentField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -44442,10 +44442,10 @@ bool ReqQryOfferOptionInstrumentPackage::FromStepStream(char* buff, int startInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(ReqQryOfferOptionInstrument->PrimaryAccountId))
 							{
@@ -44563,19 +44563,19 @@ int RspQryOfferOptionInstrumentPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (RspQryOfferOptionInstrument != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, RspQryOfferOptionInstrumentField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, RspQryOfferOptionInstrument->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, RspQryOfferOptionInstrumentField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, RspQryOfferOptionInstrument->ErrorId);
 		if (strlen(RspQryOfferOptionInstrument->ErrorMsg) >= sizeof(RspQryOfferOptionInstrument->ErrorMsg))
 		{
 			RspQryOfferOptionInstrument->ErrorMsg[sizeof(RspQryOfferOptionInstrument->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, RspQryOfferOptionInstrument->ErrorMsg);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, RspQryOfferOptionInstrument->ErrorMsg);
 		if (strlen(RspQryOfferOptionInstrument->PrimaryAccountId) >= sizeof(RspQryOfferOptionInstrument->PrimaryAccountId))
 		{
 			RspQryOfferOptionInstrument->PrimaryAccountId[sizeof(RspQryOfferOptionInstrument->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, RspQryOfferOptionInstrument->PrimaryAccountId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, RspQryOfferOptionInstrumentField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, RspQryOfferOptionInstrument->PrimaryAccountId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, RspQryOfferOptionInstrumentField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -44608,10 +44608,10 @@ bool RspQryOfferOptionInstrumentPackage::FromStepStream(char* buff, int startInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, RspQryOfferOptionInstrument->ErrorId))
 							{
@@ -44620,7 +44620,7 @@ bool RspQryOfferOptionInstrumentPackage::FromStepStream(char* buff, int startInd
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(RspQryOfferOptionInstrument->ErrorMsg))
 							{
@@ -44630,7 +44630,7 @@ bool RspQryOfferOptionInstrumentPackage::FromStepStream(char* buff, int startInd
 							memcpy(RspQryOfferOptionInstrument->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(RspQryOfferOptionInstrument->PrimaryAccountId))
 							{
@@ -44748,50 +44748,50 @@ int RtnOfferOptionInstrumentPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (OfferOptionInstrument != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, OfferOptionInstrumentField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, OfferOptionInstrumentField::FieldId);
 		if (strlen(OfferOptionInstrument->TradingDay) >= sizeof(OfferOptionInstrument->TradingDay))
 		{
 			OfferOptionInstrument->TradingDay[sizeof(OfferOptionInstrument->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, OfferOptionInstrument->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, OfferOptionInstrument->TradingDay);
 		if (strlen(OfferOptionInstrument->ExchangeId) >= sizeof(OfferOptionInstrument->ExchangeId))
 		{
 			OfferOptionInstrument->ExchangeId[sizeof(OfferOptionInstrument->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, OfferOptionInstrument->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, OfferOptionInstrument->ExchangeId);
 		if (strlen(OfferOptionInstrument->InstrumentId) >= sizeof(OfferOptionInstrument->InstrumentId))
 		{
 			OfferOptionInstrument->InstrumentId[sizeof(OfferOptionInstrument->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, OfferOptionInstrument->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, OfferOptionInstrument->InstrumentId);
 		if (strlen(OfferOptionInstrument->ExchangeInstId) >= sizeof(OfferOptionInstrument->ExchangeInstId))
 		{
 			OfferOptionInstrument->ExchangeInstId[sizeof(OfferOptionInstrument->ExchangeInstId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeInstId, OfferOptionInstrument->ExchangeInstId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeInstId, OfferOptionInstrument->ExchangeInstId);
 		if (strlen(OfferOptionInstrument->InstrumentName) >= sizeof(OfferOptionInstrument->InstrumentName))
 		{
 			OfferOptionInstrument->InstrumentName[sizeof(OfferOptionInstrument->InstrumentName) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentName, OfferOptionInstrument->InstrumentName);
-		StepUtility::WriteString(cursor, Items::VolumeMultiple, OfferOptionInstrument->VolumeMultiple);
-		StepUtility::WriteString(cursor, Items::OptionType, static_cast<int>(OfferOptionInstrument->OptionType));
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentName, OfferOptionInstrument->InstrumentName);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeMultiple, OfferOptionInstrument->VolumeMultiple);
+		StepUtility::WriteString(cursor, ProtocolItems::OptionType, static_cast<int>(OfferOptionInstrument->OptionType));
 		if (strlen(OfferOptionInstrument->UnderlyingInstrumentId) >= sizeof(OfferOptionInstrument->UnderlyingInstrumentId))
 		{
 			OfferOptionInstrument->UnderlyingInstrumentId[sizeof(OfferOptionInstrument->UnderlyingInstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::UnderlyingInstrumentId, OfferOptionInstrument->UnderlyingInstrumentId);
-		StepUtility::WriteString(cursor, Items::ExecutePrice, OfferOptionInstrument->ExecutePrice);
-		StepUtility::WriteString(cursor, Items::UnitMargin, OfferOptionInstrument->UnitMargin);
-		StepUtility::WriteString(cursor, Items::PriceTick, OfferOptionInstrument->PriceTick);
-		StepUtility::WriteString(cursor, Items::MaxLimitOrderVolume, OfferOptionInstrument->MaxLimitOrderVolume);
-		StepUtility::WriteString(cursor, Items::MaxMarketOrderVolume, OfferOptionInstrument->MaxMarketOrderVolume);
+		StepUtility::WriteString(cursor, ProtocolItems::UnderlyingInstrumentId, OfferOptionInstrument->UnderlyingInstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExecutePrice, OfferOptionInstrument->ExecutePrice);
+		StepUtility::WriteString(cursor, ProtocolItems::UnitMargin, OfferOptionInstrument->UnitMargin);
+		StepUtility::WriteString(cursor, ProtocolItems::PriceTick, OfferOptionInstrument->PriceTick);
+		StepUtility::WriteString(cursor, ProtocolItems::MaxLimitOrderVolume, OfferOptionInstrument->MaxLimitOrderVolume);
+		StepUtility::WriteString(cursor, ProtocolItems::MaxMarketOrderVolume, OfferOptionInstrument->MaxMarketOrderVolume);
 		if (strlen(OfferOptionInstrument->ExpiringDate) >= sizeof(OfferOptionInstrument->ExpiringDate))
 		{
 			OfferOptionInstrument->ExpiringDate[sizeof(OfferOptionInstrument->ExpiringDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExpiringDate, OfferOptionInstrument->ExpiringDate);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, OfferOptionInstrumentField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExpiringDate, OfferOptionInstrument->ExpiringDate);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, OfferOptionInstrumentField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -44824,10 +44824,10 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(OfferOptionInstrument->TradingDay))
 							{
@@ -44837,7 +44837,7 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(OfferOptionInstrument->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(OfferOptionInstrument->ExchangeId))
 							{
@@ -44847,7 +44847,7 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(OfferOptionInstrument->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(OfferOptionInstrument->InstrumentId))
 							{
@@ -44857,7 +44857,7 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(OfferOptionInstrument->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeInstId:
+						case ProtocolItems::ExchangeInstId:
 						{
 							if (value.length() >= sizeof(OfferOptionInstrument->ExchangeInstId))
 							{
@@ -44867,7 +44867,7 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(OfferOptionInstrument->ExchangeInstId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentName:
+						case ProtocolItems::InstrumentName:
 						{
 							if (value.length() >= sizeof(OfferOptionInstrument->InstrumentName))
 							{
@@ -44877,7 +44877,7 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(OfferOptionInstrument->InstrumentName, value.c_str(), value.length());
 							break;
 						}
-						case Items::VolumeMultiple:
+						case ProtocolItems::VolumeMultiple:
 						{
 							if (!StepUtility::ParseInteger(value, OfferOptionInstrument->VolumeMultiple))
 							{
@@ -44886,7 +44886,7 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::OptionType:
+						case ProtocolItems::OptionType:
 						{
 							if (!StepUtility::ParseEnum(value, OfferOptionInstrument->OptionType))
 							{
@@ -44895,7 +44895,7 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::UnderlyingInstrumentId:
+						case ProtocolItems::UnderlyingInstrumentId:
 						{
 							if (value.length() >= sizeof(OfferOptionInstrument->UnderlyingInstrumentId))
 							{
@@ -44905,7 +44905,7 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(OfferOptionInstrument->UnderlyingInstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExecutePrice:
+						case ProtocolItems::ExecutePrice:
 						{
 							if (!StepUtility::ParseDouble(value, OfferOptionInstrument->ExecutePrice))
 							{
@@ -44914,7 +44914,7 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::UnitMargin:
+						case ProtocolItems::UnitMargin:
 						{
 							if (!StepUtility::ParseDouble(value, OfferOptionInstrument->UnitMargin))
 							{
@@ -44923,7 +44923,7 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::PriceTick:
+						case ProtocolItems::PriceTick:
 						{
 							if (!StepUtility::ParseDouble(value, OfferOptionInstrument->PriceTick))
 							{
@@ -44932,7 +44932,7 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::MaxLimitOrderVolume:
+						case ProtocolItems::MaxLimitOrderVolume:
 						{
 							if (!StepUtility::ParseInteger(value, OfferOptionInstrument->MaxLimitOrderVolume))
 							{
@@ -44941,7 +44941,7 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::MaxMarketOrderVolume:
+						case ProtocolItems::MaxMarketOrderVolume:
 						{
 							if (!StepUtility::ParseInteger(value, OfferOptionInstrument->MaxMarketOrderVolume))
 							{
@@ -44950,7 +44950,7 @@ bool RtnOfferOptionInstrumentPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::ExpiringDate:
+						case ProtocolItems::ExpiringDate:
 						{
 							if (value.length() >= sizeof(OfferOptionInstrument->ExpiringDate))
 							{
@@ -45068,35 +45068,35 @@ int ReqOfferOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqOfferOrder != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqOfferOrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqOfferOrderField::FieldId);
 		if (strlen(ReqOfferOrder->TradingDay) >= sizeof(ReqOfferOrder->TradingDay))
 		{
 			ReqOfferOrder->TradingDay[sizeof(ReqOfferOrder->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqOfferOrder->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqOfferOrder->TradingDay);
 		if (strlen(ReqOfferOrder->PrimaryAccountId) >= sizeof(ReqOfferOrder->PrimaryAccountId))
 		{
 			ReqOfferOrder->PrimaryAccountId[sizeof(ReqOfferOrder->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, ReqOfferOrder->PrimaryAccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, ReqOfferOrder->PrimaryAccountId);
 		if (strlen(ReqOfferOrder->ExchangeId) >= sizeof(ReqOfferOrder->ExchangeId))
 		{
 			ReqOfferOrder->ExchangeId[sizeof(ReqOfferOrder->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqOfferOrder->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqOfferOrder->ExchangeId);
 		if (strlen(ReqOfferOrder->InstrumentId) >= sizeof(ReqOfferOrder->InstrumentId))
 		{
 			ReqOfferOrder->InstrumentId[sizeof(ReqOfferOrder->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, ReqOfferOrder->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(ReqOfferOrder->ProductClass));
-		StepUtility::WriteString(cursor, Items::OrderId, ReqOfferOrder->OrderId);
-		StepUtility::WriteString(cursor, Items::Direction, static_cast<int>(ReqOfferOrder->Direction));
-		StepUtility::WriteString(cursor, Items::OffsetFlag, static_cast<int>(ReqOfferOrder->OffsetFlag));
-		StepUtility::WriteString(cursor, Items::OrderPriceType, static_cast<int>(ReqOfferOrder->OrderPriceType));
-		StepUtility::WriteString(cursor, Items::Price, ReqOfferOrder->Price);
-		StepUtility::WriteString(cursor, Items::Volume, ReqOfferOrder->Volume);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqOfferOrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, ReqOfferOrder->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(ReqOfferOrder->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, ReqOfferOrder->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::Direction, static_cast<int>(ReqOfferOrder->Direction));
+		StepUtility::WriteString(cursor, ProtocolItems::OffsetFlag, static_cast<int>(ReqOfferOrder->OffsetFlag));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderPriceType, static_cast<int>(ReqOfferOrder->OrderPriceType));
+		StepUtility::WriteString(cursor, ProtocolItems::Price, ReqOfferOrder->Price);
+		StepUtility::WriteString(cursor, ProtocolItems::Volume, ReqOfferOrder->Volume);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqOfferOrderField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -45129,10 +45129,10 @@ bool ReqOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqOfferOrder->TradingDay))
 							{
@@ -45142,7 +45142,7 @@ bool ReqOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(ReqOfferOrder->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(ReqOfferOrder->PrimaryAccountId))
 							{
@@ -45152,7 +45152,7 @@ bool ReqOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(ReqOfferOrder->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqOfferOrder->ExchangeId))
 							{
@@ -45162,7 +45162,7 @@ bool ReqOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(ReqOfferOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(ReqOfferOrder->InstrumentId))
 							{
@@ -45172,7 +45172,7 @@ bool ReqOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(ReqOfferOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, ReqOfferOrder->ProductClass))
 							{
@@ -45181,7 +45181,7 @@ bool ReqOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqOfferOrder->OrderId))
 							{
@@ -45190,7 +45190,7 @@ bool ReqOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::Direction:
+						case ProtocolItems::Direction:
 						{
 							if (!StepUtility::ParseEnum(value, ReqOfferOrder->Direction))
 							{
@@ -45199,7 +45199,7 @@ bool ReqOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::OffsetFlag:
+						case ProtocolItems::OffsetFlag:
 						{
 							if (!StepUtility::ParseEnum(value, ReqOfferOrder->OffsetFlag))
 							{
@@ -45208,7 +45208,7 @@ bool ReqOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::OrderPriceType:
+						case ProtocolItems::OrderPriceType:
 						{
 							if (!StepUtility::ParseEnum(value, ReqOfferOrder->OrderPriceType))
 							{
@@ -45217,7 +45217,7 @@ bool ReqOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::Price:
+						case ProtocolItems::Price:
 						{
 							if (!StepUtility::ParseDouble(value, ReqOfferOrder->Price))
 							{
@@ -45226,7 +45226,7 @@ bool ReqOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::Volume:
+						case ProtocolItems::Volume:
 						{
 							if (!StepUtility::ParseInteger(value, ReqOfferOrder->Volume))
 							{
@@ -45343,37 +45343,37 @@ int ReqOfferCancelOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (ReqOfferCancelOrder != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, ReqOfferCancelOrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, ReqOfferCancelOrderField::FieldId);
 		if (strlen(ReqOfferCancelOrder->TradingDay) >= sizeof(ReqOfferCancelOrder->TradingDay))
 		{
 			ReqOfferCancelOrder->TradingDay[sizeof(ReqOfferCancelOrder->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, ReqOfferCancelOrder->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, ReqOfferCancelOrder->TradingDay);
 		if (strlen(ReqOfferCancelOrder->PrimaryAccountId) >= sizeof(ReqOfferCancelOrder->PrimaryAccountId))
 		{
 			ReqOfferCancelOrder->PrimaryAccountId[sizeof(ReqOfferCancelOrder->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, ReqOfferCancelOrder->PrimaryAccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, ReqOfferCancelOrder->PrimaryAccountId);
 		if (strlen(ReqOfferCancelOrder->ExchangeId) >= sizeof(ReqOfferCancelOrder->ExchangeId))
 		{
 			ReqOfferCancelOrder->ExchangeId[sizeof(ReqOfferCancelOrder->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, ReqOfferCancelOrder->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, ReqOfferCancelOrder->ExchangeId);
 		if (strlen(ReqOfferCancelOrder->InstrumentId) >= sizeof(ReqOfferCancelOrder->InstrumentId))
 		{
 			ReqOfferCancelOrder->InstrumentId[sizeof(ReqOfferCancelOrder->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, ReqOfferCancelOrder->InstrumentId);
-		StepUtility::WriteString(cursor, Items::ProductClass, static_cast<int>(ReqOfferCancelOrder->ProductClass));
-		StepUtility::WriteString(cursor, Items::Direction, static_cast<int>(ReqOfferCancelOrder->Direction));
-		StepUtility::WriteString(cursor, Items::CancelOrderId, ReqOfferCancelOrder->CancelOrderId);
-		StepUtility::WriteString(cursor, Items::OrderId, ReqOfferCancelOrder->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, ReqOfferCancelOrder->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::ProductClass, static_cast<int>(ReqOfferCancelOrder->ProductClass));
+		StepUtility::WriteString(cursor, ProtocolItems::Direction, static_cast<int>(ReqOfferCancelOrder->Direction));
+		StepUtility::WriteString(cursor, ProtocolItems::CancelOrderId, ReqOfferCancelOrder->CancelOrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, ReqOfferCancelOrder->OrderId);
 		if (strlen(ReqOfferCancelOrder->OrderSysId) >= sizeof(ReqOfferCancelOrder->OrderSysId))
 		{
 			ReqOfferCancelOrder->OrderSysId[sizeof(ReqOfferCancelOrder->OrderSysId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderSysId, ReqOfferCancelOrder->OrderSysId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, ReqOfferCancelOrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderSysId, ReqOfferCancelOrder->OrderSysId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, ReqOfferCancelOrderField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -45406,10 +45406,10 @@ bool ReqOfferCancelOrderPackage::FromStepStream(char* buff, int startIndex, int 
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(ReqOfferCancelOrder->TradingDay))
 							{
@@ -45419,7 +45419,7 @@ bool ReqOfferCancelOrderPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(ReqOfferCancelOrder->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(ReqOfferCancelOrder->PrimaryAccountId))
 							{
@@ -45429,7 +45429,7 @@ bool ReqOfferCancelOrderPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(ReqOfferCancelOrder->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(ReqOfferCancelOrder->ExchangeId))
 							{
@@ -45439,7 +45439,7 @@ bool ReqOfferCancelOrderPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(ReqOfferCancelOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(ReqOfferCancelOrder->InstrumentId))
 							{
@@ -45449,7 +45449,7 @@ bool ReqOfferCancelOrderPackage::FromStepStream(char* buff, int startIndex, int 
 							memcpy(ReqOfferCancelOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ProductClass:
+						case ProtocolItems::ProductClass:
 						{
 							if (!StepUtility::ParseEnum(value, ReqOfferCancelOrder->ProductClass))
 							{
@@ -45458,7 +45458,7 @@ bool ReqOfferCancelOrderPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::Direction:
+						case ProtocolItems::Direction:
 						{
 							if (!StepUtility::ParseEnum(value, ReqOfferCancelOrder->Direction))
 							{
@@ -45467,7 +45467,7 @@ bool ReqOfferCancelOrderPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::CancelOrderId:
+						case ProtocolItems::CancelOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqOfferCancelOrder->CancelOrderId))
 							{
@@ -45476,7 +45476,7 @@ bool ReqOfferCancelOrderPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, ReqOfferCancelOrder->OrderId))
 							{
@@ -45485,7 +45485,7 @@ bool ReqOfferCancelOrderPackage::FromStepStream(char* buff, int startIndex, int 
 							}
 							break;
 						}
-						case Items::OrderSysId:
+						case ProtocolItems::OrderSysId:
 						{
 							if (value.length() >= sizeof(ReqOfferCancelOrder->OrderSysId))
 							{
@@ -45603,68 +45603,68 @@ int RtnOfferOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (OfferOrder != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, OfferOrderField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, OfferOrderField::FieldId);
 		if (strlen(OfferOrder->TradingDay) >= sizeof(OfferOrder->TradingDay))
 		{
 			OfferOrder->TradingDay[sizeof(OfferOrder->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, OfferOrder->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, OfferOrder->TradingDay);
 		if (strlen(OfferOrder->PrimaryAccountId) >= sizeof(OfferOrder->PrimaryAccountId))
 		{
 			OfferOrder->PrimaryAccountId[sizeof(OfferOrder->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, OfferOrder->PrimaryAccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, OfferOrder->PrimaryAccountId);
 		if (strlen(OfferOrder->ExchangeId) >= sizeof(OfferOrder->ExchangeId))
 		{
 			OfferOrder->ExchangeId[sizeof(OfferOrder->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, OfferOrder->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, OfferOrder->ExchangeId);
 		if (strlen(OfferOrder->InstrumentId) >= sizeof(OfferOrder->InstrumentId))
 		{
 			OfferOrder->InstrumentId[sizeof(OfferOrder->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, OfferOrder->InstrumentId);
-		StepUtility::WriteString(cursor, Items::OrderId, OfferOrder->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, OfferOrder->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, OfferOrder->OrderId);
 		if (strlen(OfferOrder->OrderSysId) >= sizeof(OfferOrder->OrderSysId))
 		{
 			OfferOrder->OrderSysId[sizeof(OfferOrder->OrderSysId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderSysId, OfferOrder->OrderSysId);
-		StepUtility::WriteString(cursor, Items::Direction, static_cast<int>(OfferOrder->Direction));
-		StepUtility::WriteString(cursor, Items::OffsetFlag, static_cast<int>(OfferOrder->OffsetFlag));
-		StepUtility::WriteString(cursor, Items::OrderPriceType, static_cast<int>(OfferOrder->OrderPriceType));
-		StepUtility::WriteString(cursor, Items::Price, OfferOrder->Price);
-		StepUtility::WriteString(cursor, Items::Volume, OfferOrder->Volume);
-		StepUtility::WriteString(cursor, Items::VolumeTotal, OfferOrder->VolumeTotal);
-		StepUtility::WriteString(cursor, Items::VolumeTraded, OfferOrder->VolumeTraded);
-		StepUtility::WriteString(cursor, Items::OrderStatus, static_cast<int>(OfferOrder->OrderStatus));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderSysId, OfferOrder->OrderSysId);
+		StepUtility::WriteString(cursor, ProtocolItems::Direction, static_cast<int>(OfferOrder->Direction));
+		StepUtility::WriteString(cursor, ProtocolItems::OffsetFlag, static_cast<int>(OfferOrder->OffsetFlag));
+		StepUtility::WriteString(cursor, ProtocolItems::OrderPriceType, static_cast<int>(OfferOrder->OrderPriceType));
+		StepUtility::WriteString(cursor, ProtocolItems::Price, OfferOrder->Price);
+		StepUtility::WriteString(cursor, ProtocolItems::Volume, OfferOrder->Volume);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeTotal, OfferOrder->VolumeTotal);
+		StepUtility::WriteString(cursor, ProtocolItems::VolumeTraded, OfferOrder->VolumeTraded);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderStatus, static_cast<int>(OfferOrder->OrderStatus));
 		if (strlen(OfferOrder->StatusMsg) >= sizeof(OfferOrder->StatusMsg))
 		{
 			OfferOrder->StatusMsg[sizeof(OfferOrder->StatusMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::StatusMsg, OfferOrder->StatusMsg);
+		StepUtility::WriteString(cursor, ProtocolItems::StatusMsg, OfferOrder->StatusMsg);
 		if (strlen(OfferOrder->OrderDate) >= sizeof(OfferOrder->OrderDate))
 		{
 			OfferOrder->OrderDate[sizeof(OfferOrder->OrderDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderDate, OfferOrder->OrderDate);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderDate, OfferOrder->OrderDate);
 		if (strlen(OfferOrder->OrderTime) >= sizeof(OfferOrder->OrderTime))
 		{
 			OfferOrder->OrderTime[sizeof(OfferOrder->OrderTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderTime, OfferOrder->OrderTime);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderTime, OfferOrder->OrderTime);
 		if (strlen(OfferOrder->CancelDate) >= sizeof(OfferOrder->CancelDate))
 		{
 			OfferOrder->CancelDate[sizeof(OfferOrder->CancelDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::CancelDate, OfferOrder->CancelDate);
+		StepUtility::WriteString(cursor, ProtocolItems::CancelDate, OfferOrder->CancelDate);
 		if (strlen(OfferOrder->CancelTime) >= sizeof(OfferOrder->CancelTime))
 		{
 			OfferOrder->CancelTime[sizeof(OfferOrder->CancelTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::CancelTime, OfferOrder->CancelTime);
-		StepUtility::WriteString(cursor, Items::IsNewOrder, OfferOrder->IsNewOrder);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, OfferOrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::CancelTime, OfferOrder->CancelTime);
+		StepUtility::WriteString(cursor, ProtocolItems::IsNewOrder, OfferOrder->IsNewOrder);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, OfferOrderField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -45697,10 +45697,10 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(OfferOrder->TradingDay))
 							{
@@ -45710,7 +45710,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferOrder->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(OfferOrder->PrimaryAccountId))
 							{
@@ -45720,7 +45720,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferOrder->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(OfferOrder->ExchangeId))
 							{
@@ -45730,7 +45730,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(OfferOrder->InstrumentId))
 							{
@@ -45740,7 +45740,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, OfferOrder->OrderId))
 							{
@@ -45749,7 +45749,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::OrderSysId:
+						case ProtocolItems::OrderSysId:
 						{
 							if (value.length() >= sizeof(OfferOrder->OrderSysId))
 							{
@@ -45759,7 +45759,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferOrder->OrderSysId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Direction:
+						case ProtocolItems::Direction:
 						{
 							if (!StepUtility::ParseEnum(value, OfferOrder->Direction))
 							{
@@ -45768,7 +45768,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::OffsetFlag:
+						case ProtocolItems::OffsetFlag:
 						{
 							if (!StepUtility::ParseEnum(value, OfferOrder->OffsetFlag))
 							{
@@ -45777,7 +45777,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::OrderPriceType:
+						case ProtocolItems::OrderPriceType:
 						{
 							if (!StepUtility::ParseEnum(value, OfferOrder->OrderPriceType))
 							{
@@ -45786,7 +45786,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::Price:
+						case ProtocolItems::Price:
 						{
 							if (!StepUtility::ParseDouble(value, OfferOrder->Price))
 							{
@@ -45795,7 +45795,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::Volume:
+						case ProtocolItems::Volume:
 						{
 							if (!StepUtility::ParseInteger(value, OfferOrder->Volume))
 							{
@@ -45804,7 +45804,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::VolumeTotal:
+						case ProtocolItems::VolumeTotal:
 						{
 							if (!StepUtility::ParseInteger(value, OfferOrder->VolumeTotal))
 							{
@@ -45813,7 +45813,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::VolumeTraded:
+						case ProtocolItems::VolumeTraded:
 						{
 							if (!StepUtility::ParseInteger(value, OfferOrder->VolumeTraded))
 							{
@@ -45822,7 +45822,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::OrderStatus:
+						case ProtocolItems::OrderStatus:
 						{
 							if (!StepUtility::ParseEnum(value, OfferOrder->OrderStatus))
 							{
@@ -45831,7 +45831,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::StatusMsg:
+						case ProtocolItems::StatusMsg:
 						{
 							if (value.length() >= sizeof(OfferOrder->StatusMsg))
 							{
@@ -45841,7 +45841,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferOrder->StatusMsg, value.c_str(), value.length());
 							break;
 						}
-						case Items::OrderDate:
+						case ProtocolItems::OrderDate:
 						{
 							if (value.length() >= sizeof(OfferOrder->OrderDate))
 							{
@@ -45851,7 +45851,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferOrder->OrderDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::OrderTime:
+						case ProtocolItems::OrderTime:
 						{
 							if (value.length() >= sizeof(OfferOrder->OrderTime))
 							{
@@ -45861,7 +45861,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferOrder->OrderTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::CancelDate:
+						case ProtocolItems::CancelDate:
 						{
 							if (value.length() >= sizeof(OfferOrder->CancelDate))
 							{
@@ -45871,7 +45871,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferOrder->CancelDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::CancelTime:
+						case ProtocolItems::CancelTime:
 						{
 							if (value.length() >= sizeof(OfferOrder->CancelTime))
 							{
@@ -45881,7 +45881,7 @@ bool RtnOfferOrderPackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferOrder->CancelTime, value.c_str(), value.length());
 							break;
 						}
-						case Items::IsNewOrder:
+						case ProtocolItems::IsNewOrder:
 						{
 							if (!StepUtility::ParseBool(value, OfferOrder->IsNewOrder))
 							{
@@ -45998,53 +45998,53 @@ int RtnOfferTradePackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (OfferTrade != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, OfferTradeField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, OfferTradeField::FieldId);
 		if (strlen(OfferTrade->TradingDay) >= sizeof(OfferTrade->TradingDay))
 		{
 			OfferTrade->TradingDay[sizeof(OfferTrade->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, OfferTrade->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, OfferTrade->TradingDay);
 		if (strlen(OfferTrade->PrimaryAccountId) >= sizeof(OfferTrade->PrimaryAccountId))
 		{
 			OfferTrade->PrimaryAccountId[sizeof(OfferTrade->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, OfferTrade->PrimaryAccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, OfferTrade->PrimaryAccountId);
 		if (strlen(OfferTrade->ExchangeId) >= sizeof(OfferTrade->ExchangeId))
 		{
 			OfferTrade->ExchangeId[sizeof(OfferTrade->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, OfferTrade->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, OfferTrade->ExchangeId);
 		if (strlen(OfferTrade->InstrumentId) >= sizeof(OfferTrade->InstrumentId))
 		{
 			OfferTrade->InstrumentId[sizeof(OfferTrade->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, OfferTrade->InstrumentId);
-		StepUtility::WriteString(cursor, Items::OrderId, OfferTrade->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, OfferTrade->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, OfferTrade->OrderId);
 		if (strlen(OfferTrade->OrderSysId) >= sizeof(OfferTrade->OrderSysId))
 		{
 			OfferTrade->OrderSysId[sizeof(OfferTrade->OrderSysId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderSysId, OfferTrade->OrderSysId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderSysId, OfferTrade->OrderSysId);
 		if (strlen(OfferTrade->TradeId) >= sizeof(OfferTrade->TradeId))
 		{
 			OfferTrade->TradeId[sizeof(OfferTrade->TradeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradeId, OfferTrade->TradeId);
-		StepUtility::WriteString(cursor, Items::Direction, static_cast<int>(OfferTrade->Direction));
-		StepUtility::WriteString(cursor, Items::OffsetFlag, static_cast<int>(OfferTrade->OffsetFlag));
-		StepUtility::WriteString(cursor, Items::Price, OfferTrade->Price);
-		StepUtility::WriteString(cursor, Items::Volume, OfferTrade->Volume);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeId, OfferTrade->TradeId);
+		StepUtility::WriteString(cursor, ProtocolItems::Direction, static_cast<int>(OfferTrade->Direction));
+		StepUtility::WriteString(cursor, ProtocolItems::OffsetFlag, static_cast<int>(OfferTrade->OffsetFlag));
+		StepUtility::WriteString(cursor, ProtocolItems::Price, OfferTrade->Price);
+		StepUtility::WriteString(cursor, ProtocolItems::Volume, OfferTrade->Volume);
 		if (strlen(OfferTrade->TradeDate) >= sizeof(OfferTrade->TradeDate))
 		{
 			OfferTrade->TradeDate[sizeof(OfferTrade->TradeDate) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradeDate, OfferTrade->TradeDate);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeDate, OfferTrade->TradeDate);
 		if (strlen(OfferTrade->TradeTime) >= sizeof(OfferTrade->TradeTime))
 		{
 			OfferTrade->TradeTime[sizeof(OfferTrade->TradeTime) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradeTime, OfferTrade->TradeTime);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, OfferTradeField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::TradeTime, OfferTrade->TradeTime);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, OfferTradeField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -46077,10 +46077,10 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(OfferTrade->TradingDay))
 							{
@@ -46090,7 +46090,7 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferTrade->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(OfferTrade->PrimaryAccountId))
 							{
@@ -46100,7 +46100,7 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferTrade->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(OfferTrade->ExchangeId))
 							{
@@ -46110,7 +46110,7 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferTrade->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(OfferTrade->InstrumentId))
 							{
@@ -46120,7 +46120,7 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferTrade->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, OfferTrade->OrderId))
 							{
@@ -46129,7 +46129,7 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::OrderSysId:
+						case ProtocolItems::OrderSysId:
 						{
 							if (value.length() >= sizeof(OfferTrade->OrderSysId))
 							{
@@ -46139,7 +46139,7 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferTrade->OrderSysId, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeId:
+						case ProtocolItems::TradeId:
 						{
 							if (value.length() >= sizeof(OfferTrade->TradeId))
 							{
@@ -46149,7 +46149,7 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferTrade->TradeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Direction:
+						case ProtocolItems::Direction:
 						{
 							if (!StepUtility::ParseEnum(value, OfferTrade->Direction))
 							{
@@ -46158,7 +46158,7 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::OffsetFlag:
+						case ProtocolItems::OffsetFlag:
 						{
 							if (!StepUtility::ParseEnum(value, OfferTrade->OffsetFlag))
 							{
@@ -46167,7 +46167,7 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::Price:
+						case ProtocolItems::Price:
 						{
 							if (!StepUtility::ParseDouble(value, OfferTrade->Price))
 							{
@@ -46176,7 +46176,7 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::Volume:
+						case ProtocolItems::Volume:
 						{
 							if (!StepUtility::ParseInteger(value, OfferTrade->Volume))
 							{
@@ -46185,7 +46185,7 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 							}
 							break;
 						}
-						case Items::TradeDate:
+						case ProtocolItems::TradeDate:
 						{
 							if (value.length() >= sizeof(OfferTrade->TradeDate))
 							{
@@ -46195,7 +46195,7 @@ bool RtnOfferTradePackage::FromStepStream(char* buff, int startIndex, int endInd
 							memcpy(OfferTrade->TradeDate, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradeTime:
+						case ProtocolItems::TradeTime:
 						{
 							if (value.length() >= sizeof(OfferTrade->TradeTime))
 							{
@@ -46313,42 +46313,42 @@ int RtnOfferErrorCancelOrderPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (OfferErrorCancelOrder != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, OfferErrorCancelOrderField::FieldId);
-		StepUtility::WriteString(cursor, Items::ErrorId, OfferErrorCancelOrder->ErrorId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, OfferErrorCancelOrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorId, OfferErrorCancelOrder->ErrorId);
 		if (strlen(OfferErrorCancelOrder->ErrorMsg) >= sizeof(OfferErrorCancelOrder->ErrorMsg))
 		{
 			OfferErrorCancelOrder->ErrorMsg[sizeof(OfferErrorCancelOrder->ErrorMsg) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ErrorMsg, OfferErrorCancelOrder->ErrorMsg);
+		StepUtility::WriteString(cursor, ProtocolItems::ErrorMsg, OfferErrorCancelOrder->ErrorMsg);
 		if (strlen(OfferErrorCancelOrder->TradingDay) >= sizeof(OfferErrorCancelOrder->TradingDay))
 		{
 			OfferErrorCancelOrder->TradingDay[sizeof(OfferErrorCancelOrder->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, OfferErrorCancelOrder->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, OfferErrorCancelOrder->TradingDay);
 		if (strlen(OfferErrorCancelOrder->PrimaryAccountId) >= sizeof(OfferErrorCancelOrder->PrimaryAccountId))
 		{
 			OfferErrorCancelOrder->PrimaryAccountId[sizeof(OfferErrorCancelOrder->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, OfferErrorCancelOrder->PrimaryAccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, OfferErrorCancelOrder->PrimaryAccountId);
 		if (strlen(OfferErrorCancelOrder->ExchangeId) >= sizeof(OfferErrorCancelOrder->ExchangeId))
 		{
 			OfferErrorCancelOrder->ExchangeId[sizeof(OfferErrorCancelOrder->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, OfferErrorCancelOrder->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, OfferErrorCancelOrder->ExchangeId);
 		if (strlen(OfferErrorCancelOrder->InstrumentId) >= sizeof(OfferErrorCancelOrder->InstrumentId))
 		{
 			OfferErrorCancelOrder->InstrumentId[sizeof(OfferErrorCancelOrder->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, OfferErrorCancelOrder->InstrumentId);
-		StepUtility::WriteString(cursor, Items::Direction, static_cast<int>(OfferErrorCancelOrder->Direction));
-		StepUtility::WriteString(cursor, Items::CancelOrderId, OfferErrorCancelOrder->CancelOrderId);
-		StepUtility::WriteString(cursor, Items::OrderId, OfferErrorCancelOrder->OrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, OfferErrorCancelOrder->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::Direction, static_cast<int>(OfferErrorCancelOrder->Direction));
+		StepUtility::WriteString(cursor, ProtocolItems::CancelOrderId, OfferErrorCancelOrder->CancelOrderId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderId, OfferErrorCancelOrder->OrderId);
 		if (strlen(OfferErrorCancelOrder->OrderSysId) >= sizeof(OfferErrorCancelOrder->OrderSysId))
 		{
 			OfferErrorCancelOrder->OrderSysId[sizeof(OfferErrorCancelOrder->OrderSysId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::OrderSysId, OfferErrorCancelOrder->OrderSysId);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, OfferErrorCancelOrderField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::OrderSysId, OfferErrorCancelOrder->OrderSysId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, OfferErrorCancelOrderField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -46381,10 +46381,10 @@ bool RtnOfferErrorCancelOrderPackage::FromStepStream(char* buff, int startIndex,
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::ErrorId:
+						case ProtocolItems::ErrorId:
 						{
 							if (!StepUtility::ParseInteger(value, OfferErrorCancelOrder->ErrorId))
 							{
@@ -46393,7 +46393,7 @@ bool RtnOfferErrorCancelOrderPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::ErrorMsg:
+						case ProtocolItems::ErrorMsg:
 						{
 							if (value.length() >= sizeof(OfferErrorCancelOrder->ErrorMsg))
 							{
@@ -46403,7 +46403,7 @@ bool RtnOfferErrorCancelOrderPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(OfferErrorCancelOrder->ErrorMsg, value.c_str(), value.length());
 							break;
 						}
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(OfferErrorCancelOrder->TradingDay))
 							{
@@ -46413,7 +46413,7 @@ bool RtnOfferErrorCancelOrderPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(OfferErrorCancelOrder->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(OfferErrorCancelOrder->PrimaryAccountId))
 							{
@@ -46423,7 +46423,7 @@ bool RtnOfferErrorCancelOrderPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(OfferErrorCancelOrder->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(OfferErrorCancelOrder->ExchangeId))
 							{
@@ -46433,7 +46433,7 @@ bool RtnOfferErrorCancelOrderPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(OfferErrorCancelOrder->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(OfferErrorCancelOrder->InstrumentId))
 							{
@@ -46443,7 +46443,7 @@ bool RtnOfferErrorCancelOrderPackage::FromStepStream(char* buff, int startIndex,
 							memcpy(OfferErrorCancelOrder->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::Direction:
+						case ProtocolItems::Direction:
 						{
 							if (!StepUtility::ParseEnum(value, OfferErrorCancelOrder->Direction))
 							{
@@ -46452,7 +46452,7 @@ bool RtnOfferErrorCancelOrderPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::CancelOrderId:
+						case ProtocolItems::CancelOrderId:
 						{
 							if (!StepUtility::ParseInteger(value, OfferErrorCancelOrder->CancelOrderId))
 							{
@@ -46461,7 +46461,7 @@ bool RtnOfferErrorCancelOrderPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::OrderId:
+						case ProtocolItems::OrderId:
 						{
 							if (!StepUtility::ParseInteger(value, OfferErrorCancelOrder->OrderId))
 							{
@@ -46470,7 +46470,7 @@ bool RtnOfferErrorCancelOrderPackage::FromStepStream(char* buff, int startIndex,
 							}
 							break;
 						}
-						case Items::OrderSysId:
+						case ProtocolItems::OrderSysId:
 						{
 							if (value.length() >= sizeof(OfferErrorCancelOrder->OrderSysId))
 							{
@@ -46588,19 +46588,19 @@ int RtnOfferCapitalPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (OfferCapital != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, OfferCapitalField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, OfferCapitalField::FieldId);
 		if (strlen(OfferCapital->TradingDay) >= sizeof(OfferCapital->TradingDay))
 		{
 			OfferCapital->TradingDay[sizeof(OfferCapital->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, OfferCapital->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, OfferCapital->TradingDay);
 		if (strlen(OfferCapital->PrimaryAccountId) >= sizeof(OfferCapital->PrimaryAccountId))
 		{
 			OfferCapital->PrimaryAccountId[sizeof(OfferCapital->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, OfferCapital->PrimaryAccountId);
-		StepUtility::WriteString(cursor, Items::PreCashAsset, OfferCapital->PreCashAsset);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, OfferCapitalField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, OfferCapital->PrimaryAccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::PreCashAsset, OfferCapital->PreCashAsset);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, OfferCapitalField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -46633,10 +46633,10 @@ bool RtnOfferCapitalPackage::FromStepStream(char* buff, int startIndex, int endI
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(OfferCapital->TradingDay))
 							{
@@ -46646,7 +46646,7 @@ bool RtnOfferCapitalPackage::FromStepStream(char* buff, int startIndex, int endI
 							memcpy(OfferCapital->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(OfferCapital->PrimaryAccountId))
 							{
@@ -46656,7 +46656,7 @@ bool RtnOfferCapitalPackage::FromStepStream(char* buff, int startIndex, int endI
 							memcpy(OfferCapital->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::PreCashAsset:
+						case ProtocolItems::PreCashAsset:
 						{
 							if (!StepUtility::ParseDouble(value, OfferCapital->PreCashAsset))
 							{
@@ -46773,34 +46773,34 @@ int RtnOfferPositionPackage::ToStepStream(char* buff, int size) const
 	StepWriteCursor cursor(buff, size);
 	if (OfferPosition != nullptr)
 	{
-		StepUtility::WriteHexString(cursor, Items::FieldStart, OfferPositionField::FieldId);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldStart, OfferPositionField::FieldId);
 		if (strlen(OfferPosition->TradingDay) >= sizeof(OfferPosition->TradingDay))
 		{
 			OfferPosition->TradingDay[sizeof(OfferPosition->TradingDay) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::TradingDay, OfferPosition->TradingDay);
+		StepUtility::WriteString(cursor, ProtocolItems::TradingDay, OfferPosition->TradingDay);
 		if (strlen(OfferPosition->PrimaryAccountId) >= sizeof(OfferPosition->PrimaryAccountId))
 		{
 			OfferPosition->PrimaryAccountId[sizeof(OfferPosition->PrimaryAccountId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::PrimaryAccountId, OfferPosition->PrimaryAccountId);
+		StepUtility::WriteString(cursor, ProtocolItems::PrimaryAccountId, OfferPosition->PrimaryAccountId);
 		if (strlen(OfferPosition->ExchangeId) >= sizeof(OfferPosition->ExchangeId))
 		{
 			OfferPosition->ExchangeId[sizeof(OfferPosition->ExchangeId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::ExchangeId, OfferPosition->ExchangeId);
+		StepUtility::WriteString(cursor, ProtocolItems::ExchangeId, OfferPosition->ExchangeId);
 		if (strlen(OfferPosition->InstrumentId) >= sizeof(OfferPosition->InstrumentId))
 		{
 			OfferPosition->InstrumentId[sizeof(OfferPosition->InstrumentId) - 1] = 0;
 		}
-		StepUtility::WriteString(cursor, Items::InstrumentId, OfferPosition->InstrumentId);
-		StepUtility::WriteString(cursor, Items::PosiDirection, static_cast<int>(OfferPosition->PosiDirection));
-		StepUtility::WriteString(cursor, Items::TotalPosition, OfferPosition->TotalPosition);
-		StepUtility::WriteString(cursor, Items::PositionFrozen, OfferPosition->PositionFrozen);
-		StepUtility::WriteString(cursor, Items::TotalCostPrice, OfferPosition->TotalCostPrice);
-		StepUtility::WriteString(cursor, Items::Margin, OfferPosition->Margin);
-		StepUtility::WriteString(cursor, Items::MarketValue, OfferPosition->MarketValue);
-		StepUtility::WriteHexString(cursor, Items::FieldEnd, OfferPositionField::FieldId);
+		StepUtility::WriteString(cursor, ProtocolItems::InstrumentId, OfferPosition->InstrumentId);
+		StepUtility::WriteString(cursor, ProtocolItems::PosiDirection, static_cast<int>(OfferPosition->PosiDirection));
+		StepUtility::WriteString(cursor, ProtocolItems::TotalPosition, OfferPosition->TotalPosition);
+		StepUtility::WriteString(cursor, ProtocolItems::PositionFrozen, OfferPosition->PositionFrozen);
+		StepUtility::WriteString(cursor, ProtocolItems::TotalCostPrice, OfferPosition->TotalCostPrice);
+		StepUtility::WriteString(cursor, ProtocolItems::Margin, OfferPosition->Margin);
+		StepUtility::WriteString(cursor, ProtocolItems::MarketValue, OfferPosition->MarketValue);
+		StepUtility::WriteHexString(cursor, ProtocolItems::FieldEnd, OfferPositionField::FieldId);
 	}
 	if (cursor.IsTruncated())
 	{
@@ -46833,10 +46833,10 @@ bool RtnOfferPositionPackage::FromStepStream(char* buff, int startIndex, int end
 					{
 						switch (itemId)
 						{
-						case Items::FieldStart:
-						case Items::FieldEnd:
+						case ProtocolItems::FieldStart:
+						case ProtocolItems::FieldEnd:
 							break;
-						case Items::TradingDay:
+						case ProtocolItems::TradingDay:
 						{
 							if (value.length() >= sizeof(OfferPosition->TradingDay))
 							{
@@ -46846,7 +46846,7 @@ bool RtnOfferPositionPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(OfferPosition->TradingDay, value.c_str(), value.length());
 							break;
 						}
-						case Items::PrimaryAccountId:
+						case ProtocolItems::PrimaryAccountId:
 						{
 							if (value.length() >= sizeof(OfferPosition->PrimaryAccountId))
 							{
@@ -46856,7 +46856,7 @@ bool RtnOfferPositionPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(OfferPosition->PrimaryAccountId, value.c_str(), value.length());
 							break;
 						}
-						case Items::ExchangeId:
+						case ProtocolItems::ExchangeId:
 						{
 							if (value.length() >= sizeof(OfferPosition->ExchangeId))
 							{
@@ -46866,7 +46866,7 @@ bool RtnOfferPositionPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(OfferPosition->ExchangeId, value.c_str(), value.length());
 							break;
 						}
-						case Items::InstrumentId:
+						case ProtocolItems::InstrumentId:
 						{
 							if (value.length() >= sizeof(OfferPosition->InstrumentId))
 							{
@@ -46876,7 +46876,7 @@ bool RtnOfferPositionPackage::FromStepStream(char* buff, int startIndex, int end
 							memcpy(OfferPosition->InstrumentId, value.c_str(), value.length());
 							break;
 						}
-						case Items::PosiDirection:
+						case ProtocolItems::PosiDirection:
 						{
 							if (!StepUtility::ParseEnum(value, OfferPosition->PosiDirection))
 							{
@@ -46885,7 +46885,7 @@ bool RtnOfferPositionPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::TotalPosition:
+						case ProtocolItems::TotalPosition:
 						{
 							if (!StepUtility::ParseInteger(value, OfferPosition->TotalPosition))
 							{
@@ -46894,7 +46894,7 @@ bool RtnOfferPositionPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::PositionFrozen:
+						case ProtocolItems::PositionFrozen:
 						{
 							if (!StepUtility::ParseInteger(value, OfferPosition->PositionFrozen))
 							{
@@ -46903,7 +46903,7 @@ bool RtnOfferPositionPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::TotalCostPrice:
+						case ProtocolItems::TotalCostPrice:
 						{
 							if (!StepUtility::ParseDouble(value, OfferPosition->TotalCostPrice))
 							{
@@ -46912,7 +46912,7 @@ bool RtnOfferPositionPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::Margin:
+						case ProtocolItems::Margin:
 						{
 							if (!StepUtility::ParseDouble(value, OfferPosition->Margin))
 							{
@@ -46921,7 +46921,7 @@ bool RtnOfferPositionPackage::FromStepStream(char* buff, int startIndex, int end
 							}
 							break;
 						}
-						case Items::MarketValue:
+						case ProtocolItems::MarketValue:
 						{
 							if (!StepUtility::ParseDouble(value, OfferPosition->MarketValue))
 							{

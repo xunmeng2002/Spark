@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 #include "TestUtility/TestUtility.h"
+
+using namespace Spark;
 // ============================================================
 // TryParseTestProtocol / ApplyTestProtocolFromCommandLine 测试
 // 名字→协议 的映射是"选中哪条读路径"的唯一入口，故需钉住：

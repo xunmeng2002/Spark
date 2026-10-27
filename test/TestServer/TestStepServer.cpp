@@ -5,9 +5,11 @@
 #include "PackageFactory.h"
 
 using namespace std;
+using namespace Spark;
 using namespace Spark::Core;
 using namespace Spark::Network;
-using namespace Spark::Packages;
+using namespace Spark::Test;
+using namespace Spark::Test::Packages;
 
 StepServer::StepServer()
     : Protocol(ProtocolTypeType::Step, ServerTypeType::Server, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
@@ -17,14 +19,14 @@ StepServer::StepServer()
 }
 StepServer::~StepServer() {}
 
-void StepServer::OnProtocolConnect(SessionIdType sessionId, const char* ip, int port)
+void StepServer::OnProtocolConnect(Spark::SessionIdType sessionId, const char* ip, int port)
 {
     WriteLog(LogLevel::Info, "StepServer::OnConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
 
     sessionId_ = sessionId;
     connected_ = true;
 }
-void StepServer::OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port)
+void StepServer::OnProtocolDisConnect(Spark::SessionIdType sessionId, const char* ip, int port)
 {
     WriteLog(LogLevel::Info, "StepServer::OnDisConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
 

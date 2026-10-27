@@ -30,10 +30,10 @@ constexpr char SOH = '\x01';
 static_assert(StepHeadLen == 62u, "包头布局变化必须同步核对 HeadToStream 的字段格式与宽度");
 static_assert(StepTailLen == 14u, "报尾布局变化必须同步核对 TailToStream 的字段格式与宽度");
 
-static_assert(std::is_same<Int32Type, int>::value, "Int32Type 必须是 int，XTP 按 sizeof 取宽");
-static_assert(std::is_same<Int64Type, long long>::value, "Int64Type 必须是 long long，XTP 按 sizeof 取宽");
-static_assert(std::is_same<UInt64Type, unsigned long long>::value, "UInt64Type 必须是 unsigned long long，XTP 按 sizeof 取宽");
-static_assert(std::is_same<DoubleType, double>::value, "DoubleType 必须是 double，XTP 按 sizeof 取宽");
+static_assert(std::is_same<Spark::Int32Type, int>::value, "Int32Type 必须是 int，XTP 按 sizeof 取宽");
+static_assert(std::is_same<Spark::Int64Type, long long>::value, "Int64Type 必须是 long long，XTP 按 sizeof 取宽");
+static_assert(std::is_same<Spark::UInt64Type, unsigned long long>::value, "UInt64Type 必须是 unsigned long long，XTP 按 sizeof 取宽");
+static_assert(std::is_same<Spark::DoubleType, double>::value, "DoubleType 必须是 double，XTP 按 sizeof 取宽");
 
 namespace Spark::Network
 {

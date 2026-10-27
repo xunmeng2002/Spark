@@ -10,7 +10,8 @@ using namespace std::chrono;
 using namespace Spark;
 using namespace Spark::Core;
 using namespace Spark::Network;
-using namespace Spark::Packages;
+using namespace Spark::Test;
+using namespace Spark::Test::Packages;
 
 ClientIoSubscriberImpl::ClientIoSubscriberImpl(IoBase* io, IoThread* ioThread) : io_(io), ioThread_(ioThread)
 {
@@ -21,21 +22,21 @@ ClientIoSubscriberImpl::~ClientIoSubscriberImpl()
     io_->UnSubscribe();
 }
 
-void ClientIoSubscriberImpl::OnConnect(SessionIdType sessionId, const char* ip, int port)
+void ClientIoSubscriberImpl::OnConnect(Spark::SessionIdType sessionId, const char* ip, int port)
 {
     WriteLog(LogLevel::Info, "ClientIoSubscriberImpl::OnConnect SessionId:[%lld], IP:[%s], Port:[%d]", sessionId, ip, port);
     messageCounts_.insert(std::make_pair(sessionId, 0));
     startSendTime_ = steady_clock::now();
     Send(sessionId);
 }
-void ClientIoSubscriberImpl::OnDisConnect(SessionIdType sessionId, const char* ip, int port)
+void ClientIoSubscriberImpl::OnDisConnect(Spark::SessionIdType sessionId, const char* ip, int port)
 {
     WriteLog(LogLevel::Info, "ClientIoSubscriberImpl::OnDisConnect SessionId:[%lld], IP:[%s], Port:[%d]", sessionId, ip, port);
     messageCounts_.erase(sessionId);
 
     ioThread_->Stop();
 }
-void ClientIoSubscriberImpl::OnRecv(SessionIdType sessionId, const char* data, size_t length)
+void ClientIoSubscriberImpl::OnRecv(Spark::SessionIdType sessionId, const char* data, size_t length)
 {
     auto count = messageCounts_[sessionId];
     if (count % 100 == 0)
@@ -55,7 +56,7 @@ void ClientIoSubscriberImpl::OnRecv(SessionIdType sessionId, const char* data, s
         io_->DisConnect(sessionId);
     }
 }
-void ClientIoSubscriberImpl::Send(SessionIdType sessionId)
+void ClientIoSubscriberImpl::Send(Spark::SessionIdType sessionId)
 {
     auto count = ++messageCounts_[sessionId];
 
@@ -77,7 +78,7 @@ void ClientIoSubscriberImpl::Send(SessionIdType sessionId)
 
     io_->Send(sessionId, buffer);
 }
-void ClientIoSubscriberImpl::SendCommand(SessionIdType sessionId, const char* cmd)
+void ClientIoSubscriberImpl::SendCommand(Spark::SessionIdType sessionId, const char* cmd)
 {
     ++messageCounts_[sessionId];
     LinearBuffer<BufferSize>* buffer = io_->AllocateSendBuffer();

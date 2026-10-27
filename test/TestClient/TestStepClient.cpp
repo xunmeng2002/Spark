@@ -12,7 +12,8 @@ using namespace std;
 using namespace Spark;
 using namespace Spark::Core;
 using namespace Spark::Network;
-using namespace Spark::Packages;
+using namespace Spark::Test;
+using namespace Spark::Test::Packages;
 
 StepClient::StepClient()
     : Protocol(ProtocolTypeType::Step, ServerTypeType::Client, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
@@ -22,7 +23,7 @@ StepClient::StepClient()
 }
 StepClient::~StepClient() {}
 
-void StepClient::OnProtocolConnect(SessionIdType sessionId, const char* ip, int port)
+void StepClient::OnProtocolConnect(Spark::SessionIdType sessionId, const char* ip, int port)
 {
     WriteLog(LogLevel::Info, "StepClient::OnConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
 
@@ -31,7 +32,7 @@ void StepClient::OnProtocolConnect(SessionIdType sessionId, const char* ip, int 
     startTime_ = chrono::steady_clock::now();
     SendReqInsertOrder(++recvCount_);
 }
-void StepClient::OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port)
+void StepClient::OnProtocolDisConnect(Spark::SessionIdType sessionId, const char* ip, int port)
 {
     WriteLog(LogLevel::Info, "StepClient::OnDisConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
 

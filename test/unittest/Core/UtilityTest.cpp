@@ -2,6 +2,7 @@
 #include <Spark/Core/Utility/Utility.h>
 
 #include <cstring>
+using namespace Spark;
 using namespace Spark::Core;
 // ============================================================
 // Utility 剩余函数测试（ItoA/FtoA 之前已改，此处测试简化版本）

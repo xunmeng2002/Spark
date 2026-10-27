@@ -9,14 +9,14 @@ public:
     XtpClient();
     virtual ~XtpClient();
 
-    virtual void OnProtocolConnect(SessionIdType sessionId, const char* ip, int port) override;
-    virtual void OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port) override;
+    virtual void OnProtocolConnect(Spark::SessionIdType sessionId, const char* ip, int port) override;
+    virtual void OnProtocolDisConnect(Spark::SessionIdType sessionId, const char* ip, int port) override;
     virtual void OnMessage(Package* ownedPackage) override;
 
     void SendReqInsertOrder(int index);
 
     bool connected_;
-    SessionIdType sessionId_;
+    Spark::SessionIdType sessionId_;
 
     std::chrono::steady_clock::time_point startTime_;
     int recvCount_;

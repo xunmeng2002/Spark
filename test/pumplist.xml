@@ -1,7 +1,9 @@
 <pumplist>
+	<pump dest="./test/Packages/Spark/ApiTypes.h" tpl="../Templates/Cpp/Spark/Types.h.tpl" model="./test/Model/Types.xml"/>
+	<pump dest="./test/Packages/ProtocolItems.h" tpl="../Templates/Cpp/Protocol/Packages/ProtocolItems.h.tpl" model="./test/Model/Protocol/Packages.xml ./test/Model/Items.xml"/>
 	<pump dest="./test/Packages/Spark/Fields.h" tpl="../Templates/Cpp/Protocol/Packages/Fields.h.tpl" model="./test/Model/Protocol/Fields.xml"/>
 	<pump dest="./test/Packages/Packages.h" tpl="../Templates/Cpp/Protocol/Packages/Packages.h.tpl" model="./test/Model/Protocol/Packages.xml"/>
-	<pump dest="./test/Packages/Packages.cpp" tpl="../Templates/Cpp/Protocol/Packages/Packages.cpp.tpl" model="./test/Model/Protocol/Packages.xml ../Model/Types.xml"/>
+	<pump dest="./test/Packages/Packages.cpp" tpl="../Templates/Cpp/Protocol/Packages/Packages.cpp.tpl" model="./test/Model/Protocol/Packages.xml ./test/Model/Types.xml"/>
     <pump dest="./test/Packages/PackageFactory.h" tpl="../Templates/Cpp/Protocol/Packages/PackageFactory.h.tpl" model="./test/Model/Protocol/Packages.xml"/>
 	<pump dest="./test/Packages/PackageFactory.cpp" tpl="../Templates/Cpp/Protocol/Packages/PackageFactory.cpp.tpl" model="./test/Model/Protocol/Packages.xml"/>
 </pumplist>

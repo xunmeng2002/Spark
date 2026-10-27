@@ -13,7 +13,8 @@ using namespace std;
 using namespace Spark;
 using namespace Spark::Core;
 using namespace Spark::Network;
-using namespace Spark::Packages;
+using namespace Spark::Test;
+using namespace Spark::Test::Packages;
 
 XtpClient::XtpClient()
     : Protocol(ProtocolTypeType::Xtp, ServerTypeType::Client, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
@@ -22,7 +23,7 @@ XtpClient::XtpClient()
     RegisterFront(TcpAddress);
 }
 XtpClient::~XtpClient() {}
-void XtpClient::OnProtocolConnect(SessionIdType sessionId, const char* ip, int port)
+void XtpClient::OnProtocolConnect(Spark::SessionIdType sessionId, const char* ip, int port)
 {
     WriteLog(LogLevel::Info, "XtpClient::OnConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
 
@@ -31,7 +32,7 @@ void XtpClient::OnProtocolConnect(SessionIdType sessionId, const char* ip, int p
     startTime_ = chrono::steady_clock::now();
     SendReqInsertOrder(++recvCount_);
 }
-void XtpClient::OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port)
+void XtpClient::OnProtocolDisConnect(Spark::SessionIdType sessionId, const char* ip, int port)
 {
     WriteLog(LogLevel::Info, "XtpClient::OnDisConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
 

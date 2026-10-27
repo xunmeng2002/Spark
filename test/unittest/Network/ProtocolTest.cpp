@@ -10,11 +10,12 @@
 
 using namespace Spark;
 using namespace Spark::Network;
-using namespace Spark::Packages;
+using namespace Spark::Test;
+using namespace Spark::Test::Packages;
 
 namespace
 {
-constexpr SessionIdType SessionId = 42;
+constexpr Spark::SessionIdType SessionId = 42;
 constexpr const char* IP = "192.168.1.100";
 constexpr int FirstMsgSeqNum = 1001;
 constexpr int SecondMsgSeqNum = 1002;
@@ -60,7 +61,7 @@ class PackageAccountingFactory : public PackageFactoryBase
 {
 public:
     explicit PackageAccountingFactory(PackageAccounting* accounting) : accounting_(accounting) {}
-    Package* CreatePackage(UInt16Type) override
+    Package* CreatePackage(Spark::UInt16Type) override
     {
         ++accounting_->CreatedCount;
         return new LedgeredPackage(accounting_);
@@ -75,9 +76,9 @@ class RecvProbeIo : public IoBase
 public:
     RecvProbeIo() : IoBase(ServerTypeType::Server, "tcp://127.0.0.1:10001", 1000) {}
 
-    void Send(SessionIdType, Spark::LinearBuffer<BufferSize>*) override { ++SendCount; }
+    void Send(Spark::SessionIdType, Spark::LinearBuffer<BufferSize>*) override { ++SendCount; }
     void HandleIoEvent() override {}
-    void DisConnect(SessionIdType) override { ++DisConnectCount; }
+    void DisConnect(Spark::SessionIdType) override { ++DisConnectCount; }
 
     int DisConnectCount = 0;
     int SendCount = 0;
@@ -90,7 +91,7 @@ protected:
 class ThrowingMessageProbe : public ProtocolSubscriber
 {
 public:
-    void OnProtocolDisConnect(SessionIdType, const char*, int) override {}
+    void OnProtocolDisConnect(Spark::SessionIdType, const char*, int) override {}
     void OnMessage(Package* ownedPackage) override
     {
         ++MessageCount;
@@ -115,8 +116,8 @@ public:
     {
     }
     void AttachIo(IoBase* ioBase) { ioBase_ = ioBase; }
-    void AttachReader(SessionIdType sessionId, PackageReader* packageReader) { sessionPackageReaders_.insert({sessionId, packageReader}); }
-    PackageReader* ReaderOf(SessionIdType sessionId)
+    void AttachReader(Spark::SessionIdType sessionId, PackageReader* packageReader) { sessionPackageReaders_.insert({sessionId, packageReader}); }
+    PackageReader* ReaderOf(Spark::SessionIdType sessionId)
     {
         auto it = sessionPackageReaders_.find(sessionId);
         return it == sessionPackageReaders_.end() ? nullptr : it->second;

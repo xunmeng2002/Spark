@@ -10,6 +10,7 @@
 #include <thread>
 #include <vector>
 
+using namespace Spark;
 using namespace Spark::Network;
 
 namespace

@@ -1,0 +1,66 @@
+<types namespace="Spark">
+	<bools>
+		<bool name="Bool" desc="布尔类型" />
+	</bools>
+	<uint8s>
+		<uint8 name="UInt8" desc="无符号8位整型类型" />
+	</uint8s>
+	<int8s>
+		<int8 name="Int8" desc="8位整型类型" />
+	</int8s>
+	<uint16s>
+		<uint16 name="UInt16" desc="无符号16位整型类型" />
+	</uint16s>
+	<int16s>
+		<int16 name="Int16" desc="16位整型类型" />
+	</int16s>
+	<uint32s>
+		<uint32 name="UInt32" desc="无符号32位整型类型" />
+	</uint32s>
+	<int32s>
+		<int32 name="Int32" desc="32位整型类型" />
+	</int32s>
+	<uint64s>
+		<uint64 name="UInt64" desc="无符号64位整型类型" />
+	</uint64s>
+	<int64s>
+		<int64 name="Int64" desc="64位整型类型" />
+		<int64 name="SessionId" desc="会话代码类型" />
+	</int64s>
+	<doubles>
+		<double name="Double" desc="双精度浮点类型" />
+	</doubles>
+	<strings>
+		<string name="Date" len="16" sqltype="char(16)" desc="日期类型" />
+		<string name="IpAddress" len="32" sqltype="char(32)" desc="Ip地址类型" />
+		<string name="Time" len="16" sqltype="char(16)" desc="时间类型" />
+	</strings>
+	<enums basetype="int32_t">
+		<enum name="ConnectStatus" desc="连接状态">
+			<item name="UnConnected" value="0" desc="未连接" />
+			<item name="Connecting" value="1" desc="正在链接" />
+			<item name="Accepted" value="2" desc="已接受" />
+			<item name="Rejected" value="3" desc="已拒绝" />
+			<item name="Connected" value="4" desc="已连接" />
+			<item name="DisConnected" value="5" desc="已断开连接" />
+		</enum>
+		<enum name="IoModel" desc="IO模型">
+			<item name="Select" value="0" desc="Select" />
+			<item name="Epoll" value="1" desc="Epoll" />
+			<item name="Iocp" value="2" desc="Iocp" />
+		</enum>
+		<enum name="IoType" desc="IO类型">
+			<item name="Tcp" value="0" desc="Tcp" />
+			<item name="Udp" value="1" desc="Udp" />
+			<item name="Shm" value="2" desc="共享内存" />
+		</enum>
+		<enum name="ProtocolType" desc="协议类型">
+			<item name="Xtp" value="0" desc="Xtp协议" />
+			<item name="Step" value="1" desc="Step协议" />
+		</enum>
+		<enum name="ServerType" desc="服务类别">
+			<item name="Client" value="0" desc="客户端" />
+			<item name="Server" value="1" desc="服务端" />
+		</enum>
+	</enums>
+</types>

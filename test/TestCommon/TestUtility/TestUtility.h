@@ -3,6 +3,7 @@
 #include <optional>
 #include <Spark/Types.h>
 
+
 enum class TestProtocolType : int
 {
     Shm = 0,
@@ -21,7 +22,7 @@ struct ShmPackage
 extern TestProtocolType TestProtocol;
 extern const char* ShmAddress;
 extern const char* TcpAddress;
-extern IoModelType IoModel;
+extern Spark::IoModelType IoModel;
 
 // 名字无法识别时返回空，不由解析函数决定报错与退出码
 std::optional<TestProtocolType> TryParseTestProtocol(const char* name);
@@ -30,7 +31,7 @@ std::optional<TestProtocolType> TryParseTestProtocol(const char* name);
 int ApplyTestProtocolFromCommandLine(int argc, const char* const argv[]);
 
 // 名字取自 GetIoModelString，保证与日志/工厂用的拼写同源
-std::optional<IoModelType> TryParseIoModel(const char* name);
+std::optional<Spark::IoModelType> TryParseIoModel(const char* name);
 
 // 用命令行第二个参数（若有）覆盖 IoModel；返回进程退出码，0 表示可继续
 int ApplyIoModelFromCommandLine(int argc, const char* const argv[]);

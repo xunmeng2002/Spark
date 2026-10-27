@@ -1,7 +1,9 @@
-﻿// 本文件由 ../Templates/Cpp/Protocol/Packages/Fields.h.tpl 生成；请勿手改，改动请改模板后重跑 pumpall.py
+// 本文件由 ../Templates/Cpp/Protocol/Packages/Fields.h.tpl 生成；请勿手改，改动请改模板后重跑 pumpall.py
 #pragma once
-#include <Spark/Types.h>
+#include "ApiTypes.h"
 
+namespace Spark::Test
+{
 class RspInfoField
 {
 public:
@@ -1653,3 +1655,4 @@ public:
 	MoneyType Margin;		//保证金
 	MoneyType MarketValue;		//市值
 };
+}

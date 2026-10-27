@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include "Spark/ApiTypes.h"
 #include <Spark/Network/Protocol/StepUtility.h>
 #include <Spark/Network/Protocol/Head.h>
 #include <Spark/Network/Protocol/Items.h>
@@ -10,6 +11,7 @@
 #include <limits>
 #include <string>
 #include <vector>
+using namespace Spark;
 using namespace Spark::Network;
 // ============================================================
 // StepUtility 测试
@@ -1029,17 +1031,17 @@ TEST(StepUtilityTest, ParseEnumAcceptsTheIntegerRangeOnly)
     for (const char* text : rejected)
     {
         SCOPED_TRACE(std::string("拒绝 \"") + text + "\"");
-        ExpectEnumRejected<ProductClassType>(text, ProductClassType::ETF);
-        ExpectEnumRejected<ComponentType>(text, ComponentType::MarketData);
+        ExpectEnumRejected<Spark::Test::ProductClassType>(text, Spark::Test::ProductClassType::ETF);
+        ExpectEnumRejected<Spark::Test::ComponentType>(text, Spark::Test::ComponentType::MarketData);
     }
 
-    ExpectEnumParsed<ProductClassType>("0", ProductClassType::Future);
-    ExpectEnumParsed<ProductClassType>("8", ProductClassType::ETF);
-    ExpectEnumParsed<ProductClassType>("00123", static_cast<ProductClassType>(123));
-    ExpectEnumParsed<ProductClassType>("-1", static_cast<ProductClassType>(-1));
-    ExpectEnumParsed<ComponentType>("4", ComponentType::MarketData);
-    ExpectEnumParsed<ComponentType>("-2147483648", static_cast<ComponentType>(std::numeric_limits<Int32Type>::min()));
-    ExpectEnumParsed<ComponentType>("2147483647", static_cast<ComponentType>(std::numeric_limits<Int32Type>::max()));
+    ExpectEnumParsed<Spark::Test::ProductClassType>("0", Spark::Test::ProductClassType::Future);
+    ExpectEnumParsed<Spark::Test::ProductClassType>("8", Spark::Test::ProductClassType::ETF);
+    ExpectEnumParsed<Spark::Test::ProductClassType>("00123", static_cast<Spark::Test::ProductClassType>(123));
+    ExpectEnumParsed<Spark::Test::ProductClassType>("-1", static_cast<Spark::Test::ProductClassType>(-1));
+    ExpectEnumParsed<Spark::Test::ComponentType>("4", Spark::Test::ComponentType::MarketData);
+    ExpectEnumParsed<Spark::Test::ComponentType>("-2147483648", static_cast<Spark::Test::ComponentType>(std::numeric_limits<Int32Type>::min()));
+    ExpectEnumParsed<Spark::Test::ComponentType>("2147483647", static_cast<Spark::Test::ComponentType>(std::numeric_limits<Int32Type>::max()));
 }
 
 TEST(StepUtilityTest, ParseBoolAcceptsOnlyZeroAndOne)

@@ -6,13 +6,14 @@
 
 using namespace std;
 using namespace std::chrono;
+using namespace Spark;
 using namespace Spark::Core;
 
 TestProtocolType TestProtocol = TestProtocolType::Tcp;
 
 const char* ShmAddress = "shm://TestShm:4";
 const char* TcpAddress = "tcp://127.0.0.1:20001";
-IoModelType IoModel = IoModelType::Select;
+Spark::IoModelType IoModel = Spark::IoModelType::Select;
 
 namespace
 {
@@ -63,13 +64,13 @@ int ApplyTestProtocolFromCommandLine(int argc, const char* const argv[])
     return 0;
 }
 
-std::optional<IoModelType> TryParseIoModel(const char* name)
+std::optional<Spark::IoModelType> TryParseIoModel(const char* name)
 {
     if (name == nullptr)
     {
         return std::nullopt;
     }
-    for (const IoModelType candidate : {IoModelType::Select, IoModelType::Epoll, IoModelType::Iocp})
+    for (const Spark::IoModelType candidate : {Spark::IoModelType::Select, Spark::IoModelType::Epoll, Spark::IoModelType::Iocp})
     {
         if (strcmp(name, Spark::GetIoModelString(candidate)) == 0)
         {
@@ -85,7 +86,7 @@ int ApplyIoModelFromCommandLine(int argc, const char* const argv[])
     {
         return 0;
     }
-    const std::optional<IoModelType> ioModel = TryParseIoModel(argv[2]);
+    const std::optional<Spark::IoModelType> ioModel = TryParseIoModel(argv[2]);
     if (!ioModel.has_value())
     {
         WriteLog(LogLevel::Error, "Unknown IoModel:[%s], Expected: Select/Epoll/Iocp", argv[2]);

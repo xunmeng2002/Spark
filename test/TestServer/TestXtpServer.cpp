@@ -6,9 +6,11 @@
 
 using namespace std;
 
+using namespace Spark;
 using namespace Spark::Core;
 using namespace Spark::Network;
-using namespace Spark::Packages;
+using namespace Spark::Test;
+using namespace Spark::Test::Packages;
 
 XtpServer::XtpServer()
     : Protocol(ProtocolTypeType::Xtp, ServerTypeType::Server, IoModel, 0, new PackageFactory()), connected_(false), sessionId_(0LL), recvCount_(0)
@@ -18,14 +20,14 @@ XtpServer::XtpServer()
 }
 XtpServer::~XtpServer() {}
 
-void XtpServer::OnProtocolConnect(SessionIdType sessionId, const char* ip, int port)
+void XtpServer::OnProtocolConnect(Spark::SessionIdType sessionId, const char* ip, int port)
 {
     WriteLog(LogLevel::Info, "XtpServer::OnConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
 
     sessionId_ = sessionId;
     connected_ = true;
 }
-void XtpServer::OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port)
+void XtpServer::OnProtocolDisConnect(Spark::SessionIdType sessionId, const char* ip, int port)
 {
     WriteLog(LogLevel::Info, "XtpServer::OnDisConnect SessionId:[%lld], IP:[%s], port:[%d]", sessionId, ip, port);
 

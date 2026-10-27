@@ -1,9 +1,9 @@
 #include "PackageFactory.h"
 #include "Packages.h"
+#include "ProtocolItems.h"
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
 #include <Spark/Network/Protocol/PackageReader.h>
 #include <Spark/Network/Protocol/StepUtility.h>
-#include <Spark/Network/Protocol/Items.h>
 #include <Spark/Network/Protocol/ProtocolVersion.h>
 #include <Spark/Network/Protocol/ProtocolUtility.h>
 #include <gtest/gtest.h>
@@ -16,7 +16,8 @@
 #include <string>
 using namespace Spark;
 using namespace Spark::Network;
-using namespace Spark::Packages;
+using namespace Spark::Test;
+using namespace Spark::Test::Packages;
 // ============================================================
 // Package 序列化测试
 // 端到端测试 MakePackage → PackageReader::ParsePackage 往返
@@ -25,7 +26,7 @@ using namespace Spark::Packages;
 
 namespace
 {
-constexpr SessionIdType SessionId = 42;
+constexpr Spark::SessionIdType SessionId = 42;
 constexpr const char* IP = "192.168.1.100";
 
 // 构造并填入字段
@@ -56,7 +57,7 @@ int MakeFrame(ProtocolTypeType protocolType, char* buff, int msgSeqNum)
 bool PatchStepVersion(std::string& frame, unsigned short version)
 {
     const std::string& anchor = StepUtility::GetPackageStartAnchor();
-    std::string key = anchor + std::format("{:04X}", Items::Version) + "=";
+    std::string key = anchor + std::format("{:04X}", ProtocolItems::Version) + "=";
     size_t pos = frame.find(key);
     if (pos == std::string::npos)
     {
@@ -73,7 +74,7 @@ bool PatchStepVersion(std::string& frame, unsigned short version)
 }
 
 // 验证解析后的包与原始值一致
-void VerifyPackage(const NotifyComponentConnectStatusPackage* parsed, SessionIdType expectedSessionId, int expectedMsgSeqNum)
+void VerifyPackage(const NotifyComponentConnectStatusPackage* parsed, Spark::SessionIdType expectedSessionId, int expectedMsgSeqNum)
 {
     ASSERT_NE(parsed, nullptr);
     ASSERT_NE(parsed->NotifyComponentConnectStatus, nullptr);
@@ -221,7 +222,7 @@ TEST(PackageSerializationTest, XtpRoundTrip_WrongVersionIsFatal)
     HeadField head = {};
     memcpy(&head, buff, sizeof(head));
     EXPECT_EQ(head.Version, ProtocolVersionValue);
-    head.Version = static_cast<UInt16Type>(ProtocolVersionValue + 1);
+    head.Version = static_cast<Spark::UInt16Type>(ProtocolVersionValue + 1);
     memcpy(buff, &head, sizeof(head));
 
     PackageFactory factory;
@@ -687,7 +688,7 @@ namespace
 // 宽度一变就会挪动后面的分隔符，构造出的帧不再是"只改了值"的那一条。
 // 定位靠"键 + 期望值"两段一起匹配，而不是只看键——同一个 item 可能在一条帧里出现多次
 // （同名具名类型被多个包引用），撞上别处就会改错地方
-bool PatchStepItemValue(std::string& frame, UInt16Type itemId, const std::string& origin, const std::string& replacement)
+bool PatchStepItemValue(std::string& frame, Spark::UInt16Type itemId, const std::string& origin, const std::string& replacement)
 {
     if (origin.size() != replacement.size())
     {
@@ -712,7 +713,7 @@ bool PatchStepItemValue(std::string& frame, UInt16Type itemId, const std::string
 // 后文整体挪开；但包头的 BodyLen 与包尾 CRC 都得跟着重算，否则读侧在"版本 → 长度 → CRC"那几道
 // 就退了，走不到读字段那一步。头是定宽文本（BodyLen 恒 4 位十六进制、位置在包体之前），
 // 故改头不改位、改体不动头
-bool PatchStepItemValueWidened(std::string& frame, UInt16Type itemId, const std::string& origin, const std::string& replacement)
+bool PatchStepItemValueWidened(std::string& frame, Spark::UInt16Type itemId, const std::string& origin, const std::string& replacement)
 {
     const std::string key = std::format("{:04X}=", itemId);
     const size_t valuePos = frame.find(key);
@@ -720,7 +721,7 @@ bool PatchStepItemValueWidened(std::string& frame, UInt16Type itemId, const std:
     {
         return false;
     }
-    const std::string bodyLenKey = std::format("{:04X}=", Items::BodyLen);
+    const std::string bodyLenKey = std::format("{:04X}=", ProtocolItems::BodyLen);
     const size_t bodyLenPos = frame.find(bodyLenKey);
     if (bodyLenPos == std::string::npos)
     {
@@ -740,7 +741,7 @@ bool PatchStepItemValueWidened(std::string& frame, UInt16Type itemId, const std:
     }
     const long long growth = static_cast<long long>(replacement.size()) - static_cast<long long>(origin.size());
     const long long widenedBodyLen = static_cast<long long>(bodyLen) + growth;
-    if (widenedBodyLen < 0 || widenedBodyLen > std::numeric_limits<UInt16Type>::max())
+    if (widenedBodyLen < 0 || widenedBodyLen > std::numeric_limits<Spark::UInt16Type>::max())
     {
         return false;
     }
@@ -793,7 +794,7 @@ TEST(PackageSerializationTest, StepRoundTrip_Int32FieldPreserved)
     pkg->Deallocate();
 
     std::string frame(buff, totalLen);
-    EXPECT_NE(frame.find(std::format("{:04X}={:d}", Items::ClientOrderId, ExpectedClientOrderId)), std::string::npos)
+    EXPECT_NE(frame.find(std::format("{:04X}={:d}", ProtocolItems::ClientOrderId, ExpectedClientOrderId)), std::string::npos)
         << "int32 字段必须写成裸十进制（无补位、无前导空格、无正号），否则严格解析会拒绝自家输出";
 
     PackageFactory factory;
@@ -829,7 +830,7 @@ TEST(PackageSerializationTest, StepRoundTrip_Int32OutOfRangeIsRejected)
     pkg->Deallocate();
 
     std::string frame(buff, totalLen);
-    ASSERT_TRUE(PatchStepItemValue(frame, Items::ClientOrderId, InRangeValue, OverflowValue));
+    ASSERT_TRUE(PatchStepItemValue(frame, ProtocolItems::ClientOrderId, InRangeValue, OverflowValue));
 
     {
         PackageFactory factory;
@@ -906,7 +907,7 @@ TEST(PackageSerializationTest, StepRoundTrip_EnumFieldRejectsNonIntegerText)
     pkg->Deallocate();
 
     std::string frame(buff, totalLen);
-    EXPECT_NE(frame.find(std::format("{:04X}=0", Items::AccountType)), std::string::npos)
+    EXPECT_NE(frame.find(std::format("{:04X}=0", ProtocolItems::AccountType)), std::string::npos)
         << "枚举写侧必须写成裸十进制整数，否则严格解析会拒绝自家输出";
 
     Package* parsedRaw = nullptr;
@@ -915,7 +916,7 @@ TEST(PackageSerializationTest, StepRoundTrip_EnumFieldRejectsNonIntegerText)
     parsedRaw->Deallocate();
 
     std::string nonIntegerFrame = frame;
-    ASSERT_TRUE(PatchStepItemValue(nonIntegerFrame, Items::AccountType, "0", "x"));
+    ASSERT_TRUE(PatchStepItemValue(nonIntegerFrame, ProtocolItems::AccountType, "0", "x"));
     std::memcpy(buff, nonIntegerFrame.data(), nonIntegerFrame.size());
     RefreshStepTail(buff, totalLen);
     parsedRaw = nullptr;
@@ -923,7 +924,7 @@ TEST(PackageSerializationTest, StepRoundTrip_EnumFieldRejectsNonIntegerText)
     EXPECT_EQ(parsedRaw, nullptr);
 
     std::string unnamedValueFrame = frame;
-    ASSERT_TRUE(PatchStepItemValue(unnamedValueFrame, Items::AccountType, "0", "9"));
+    ASSERT_TRUE(PatchStepItemValue(unnamedValueFrame, ProtocolItems::AccountType, "0", "9"));
     std::memcpy(buff, unnamedValueFrame.data(), unnamedValueFrame.size());
     RefreshStepTail(buff, totalLen);
     parsedRaw = nullptr;
@@ -954,7 +955,7 @@ TEST(PackageSerializationTest, StepRoundTrip_NonFiniteDoubleFieldIsRejected)
         pkg->Deallocate();
 
         const std::string frame(buff, totalLen);
-        EXPECT_NE(frame.find(std::format("{:04X}={}", Items::Asset, sample.WrittenText)), std::string::npos)
+        EXPECT_NE(frame.find(std::format("{:04X}={}", ProtocolItems::Asset, sample.WrittenText)), std::string::npos)
             << "写侧本就把 " << sample.WrittenText << " 原样写出，读侧必须拒绝";
 
         Package* parsedRaw = nullptr;
@@ -970,14 +971,14 @@ TEST(PackageSerializationTest, StepRoundTrip_BoolFieldRejectsNonZeroOne)
     ASSERT_GT(totalLen, 0);
 
     std::string frame(buff, totalLen);
-    EXPECT_NE(frame.find(std::format("{:04X}=1", Items::IsConnected)), std::string::npos);
+    EXPECT_NE(frame.find(std::format("{:04X}=1", ProtocolItems::IsConnected)), std::string::npos);
 
     Package* controlRaw = nullptr;
     ASSERT_TRUE(ParseStepFrame(buff, totalLen, controlRaw)) << "对照帧都解析不了，下面的失败结论不作数";
     EXPECT_TRUE(static_cast<NotifyComponentConnectStatusPackage*>(controlRaw)->NotifyComponentConnectStatus->IsConnected);
     controlRaw->Deallocate();
 
-    ASSERT_TRUE(PatchStepItemValue(frame, Items::IsConnected, "1", "2"));
+    ASSERT_TRUE(PatchStepItemValue(frame, ProtocolItems::IsConnected, "1", "2"));
     std::memcpy(buff, frame.data(), frame.size());
     RefreshStepTail(buff, totalLen);
 
@@ -1002,7 +1003,7 @@ TEST(PackageSerializationTest, StepRoundTrip_StringFieldLongerThanCapacityIsReje
     pkg->Deallocate();
 
     const std::string frame(buff, totalLen);
-    ASSERT_NE(frame.find(std::format("{:04X}=Xunmeng001", Items::AccountId)), std::string::npos);
+    ASSERT_NE(frame.find(std::format("{:04X}=Xunmeng001", ProtocolItems::AccountId)), std::string::npos);
 
     Package* controlRaw = nullptr;
     ASSERT_TRUE(ParseStepFrame(buff, totalLen, controlRaw)) << "对照帧都解析不了，下面的失败结论不作数";
@@ -1010,7 +1011,7 @@ TEST(PackageSerializationTest, StepRoundTrip_StringFieldLongerThanCapacityIsReje
     controlRaw->Deallocate();
 
     std::string maxLegalFrame = frame;
-    ASSERT_TRUE(PatchStepItemValueWidened(maxLegalFrame, Items::AccountId, "Xunmeng001", maxLegalAccountId));
+    ASSERT_TRUE(PatchStepItemValueWidened(maxLegalFrame, ProtocolItems::AccountId, "Xunmeng001", maxLegalAccountId));
     std::memcpy(buff, maxLegalFrame.data(), maxLegalFrame.size());
     const int maxLegalLen = static_cast<int>(maxLegalFrame.size());
     RefreshStepTail(buff, maxLegalLen);
@@ -1020,7 +1021,7 @@ TEST(PackageSerializationTest, StepRoundTrip_StringFieldLongerThanCapacityIsReje
     maxLegalRaw->Deallocate();
 
     std::string overLongFrame = frame;
-    ASSERT_TRUE(PatchStepItemValueWidened(overLongFrame, Items::AccountId, "Xunmeng001", overLongAccountId));
+    ASSERT_TRUE(PatchStepItemValueWidened(overLongFrame, ProtocolItems::AccountId, "Xunmeng001", overLongAccountId));
     std::memcpy(buff, overLongFrame.data(), overLongFrame.size());
     const int overLongLen = static_cast<int>(overLongFrame.size());
     RefreshStepTail(buff, overLongLen);

@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include <ctime>
+using namespace Spark;
 using namespace Spark::Core;
 // ============================================================
 // TimeUtility 测试

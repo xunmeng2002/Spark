@@ -2,6 +2,7 @@
 #include <Spark/Network/Protocol/PackageReader.h>
 
 #include <cstring>
+using namespace Spark;
 using namespace Spark::Network;
 // ============================================================
 // PackageReader 缓冲管理测试

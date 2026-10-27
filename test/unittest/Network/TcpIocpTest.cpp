@@ -27,7 +27,8 @@
 using namespace Spark;
 using namespace Spark::Core;
 using namespace Spark::Network;
-using namespace Spark::Packages;
+using namespace Spark::Test;
+using namespace Spark::Test::Packages;
 
 namespace
 {
@@ -130,8 +131,8 @@ public:
     }
     virtual ~IocpLoopbackServer() {}
 
-    virtual void OnProtocolConnect(SessionIdType sessionId, const char* ip, int port) override { ++connectCount_; }
-    virtual void OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port) override { ++disConnectCount_; }
+    virtual void OnProtocolConnect(Spark::SessionIdType sessionId, const char* ip, int port) override { ++connectCount_; }
+    virtual void OnProtocolDisConnect(Spark::SessionIdType sessionId, const char* ip, int port) override { ++disConnectCount_; }
     virtual void OnMessage(Package* ownedPackage) override
     {
         EchoedOrder order;
@@ -174,13 +175,13 @@ public:
     }
     virtual ~IocpLoopbackClient() {}
 
-    virtual void OnProtocolConnect(SessionIdType sessionId, const char* ip, int port) override
+    virtual void OnProtocolConnect(Spark::SessionIdType sessionId, const char* ip, int port) override
     {
         ++connectCount_;
         sessionId_ = sessionId;
         SendDistinctOrders();
     }
-    virtual void OnProtocolDisConnect(SessionIdType sessionId, const char* ip, int port) override { ++disConnectCount_; }
+    virtual void OnProtocolDisConnect(Spark::SessionIdType sessionId, const char* ip, int port) override { ++disConnectCount_; }
     virtual void OnMessage(Package* ownedPackage) override
     {
         EchoedOrder order;
@@ -234,7 +235,7 @@ private:
     std::atomic<int> connectCount_{0};
     std::atomic<int> disConnectCount_{0};
     std::atomic<int> unexpectedFrameCount_{0};
-    SessionIdType sessionId_{0};
+    Spark::SessionIdType sessionId_{0};
     EchoedOrderRecorder receivedOrders_;
 };
 
