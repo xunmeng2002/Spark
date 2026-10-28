@@ -389,7 +389,7 @@ Python scripts in the root directory are used for automated code processing:
 | ParsePackageModel.py / ParseTableModel.py | Package model / table model parsing |
 | ParseShortField.py / ParseShortItem.py | Short field / short item parsing |
 | parseall.py | Batch parsing entry point |
-| ConvertToUtf8Bom.py | Normalize file encoding to UTF-8 BOM |
+| ConvertToUtf8.py | Normalize file encoding to UTF-8 without BOM |
 | clearall.py | Temporary file cleanup |
 
 ## 9. License & Disclaimer

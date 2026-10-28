@@ -388,7 +388,7 @@ ctest
 | ParsePackageModel.py / ParseTableModel.py | 包模型 / 数据表模型解析 |
 | ParseShortField.py / ParseShortItem.py | 短字段 / 短条目解析 |
 | parseall.py | 批量解析入口 |
-| ConvertToUtf8Bom.py | 文件编码统一转换为 UTF-8 BOM |
+| ConvertToUtf8.py | 文件编码统一为 UTF-8（去掉 BOM） |
 | clearall.py | 临时文件清理 |
 
 ## 九、许可证 & 声明
