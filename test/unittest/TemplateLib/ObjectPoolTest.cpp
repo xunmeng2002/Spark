@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
+#include "doctest/doctest.h"
 
 #include <algorithm>
 #include <atomic>
@@ -52,24 +52,24 @@ std::atomic<int> PoolTracked::Destroyed{0};
 
 // ---------- Allocate ----------
 
-TEST(ObjectPoolTest, Allocate_Default)
+TEST_CASE("ObjectPoolTest.Allocate_Default")
 {
     PoolInt* obj = ObjectPool<PoolInt>::GetInstance().Allocate();
-    ASSERT_NE(obj, nullptr);
-    EXPECT_EQ(obj->value, 0);
+    REQUIRE_NE(obj, nullptr);
+    CHECK_EQ(obj->value, 0);
     ObjectPool<PoolInt>::GetInstance().Deallocate(obj);
 }
 
-TEST(ObjectPoolTest, Allocate_WithArgs)
+TEST_CASE("ObjectPoolTest.Allocate_WithArgs")
 {
     PoolPoint* obj = ObjectPool<PoolPoint>::GetInstance().Allocate(3, 7);
-    ASSERT_NE(obj, nullptr);
-    EXPECT_EQ(obj->x, 3);
-    EXPECT_EQ(obj->y, 7);
+    REQUIRE_NE(obj, nullptr);
+    CHECK_EQ(obj->x, 3);
+    CHECK_EQ(obj->y, 7);
     ObjectPool<PoolPoint>::GetInstance().Deallocate(obj);
 }
 
-TEST(ObjectPoolTest, Allocate_ReturnsTheSlotToTheFreeListWhenConstructionThrows)
+TEST_CASE("ObjectPoolTest.Allocate_ReturnsTheSlotToTheFreeListWhenConstructionThrows")
 {
     struct ThrowingType
     {
@@ -100,19 +100,19 @@ TEST(ObjectPoolTest, Allocate_ReturnsTheSlotToTheFreeListWhenConstructionThrows)
 
     for (int i = 0; i < 3; ++i)
     {
-        EXPECT_THROW(pool.Allocate(true), std::runtime_error);
+        CHECK_THROWS_AS(pool.Allocate(true), std::runtime_error);
     }
 
     std::vector<ThrowingType*> recycledSlots;
     for (int i = 0; i < 4; ++i)
     {
         ThrowingType* slot = pool.Allocate(false);
-        ASSERT_NE(slot, nullptr);
+        REQUIRE_NE(slot, nullptr);
         recycledSlots.push_back(slot);
     }
     std::sort(recycledSlots.begin(), recycledSlots.end());
 
-    EXPECT_EQ(recycledSlots, slots);
+    CHECK_EQ(recycledSlots, slots);
 
     for (ThrowingType* slot : recycledSlots)
     {
@@ -122,22 +122,22 @@ TEST(ObjectPoolTest, Allocate_ReturnsTheSlotToTheFreeListWhenConstructionThrows)
 
 // ---------- Allocate / Deallocate 循环 ----------
 
-TEST(ObjectPoolTest, AllocateAndDeallocate_Recycles)
+TEST_CASE("ObjectPoolTest.AllocateAndDeallocate_Recycles")
 {
     ObjectPool<PoolInt>& pool = ObjectPool<PoolInt>::GetInstance();
 
     PoolInt* a = pool.Allocate(42);
-    ASSERT_NE(a, nullptr);
+    REQUIRE_NE(a, nullptr);
     pool.Deallocate(a);
 
     // Next allocation should reuse the same memory
     PoolInt* b = pool.Allocate(99);
-    ASSERT_NE(b, nullptr);
-    EXPECT_EQ(b->value, 99);
+    REQUIRE_NE(b, nullptr);
+    CHECK_EQ(b->value, 99);
     pool.Deallocate(b);
 }
 
-TEST(ObjectPoolTest, MultipleAllocateDeallocate)
+TEST_CASE("ObjectPoolTest.MultipleAllocateDeallocate")
 {
     ObjectPool<PoolInt>& pool = ObjectPool<PoolInt>::GetInstance();
     std::vector<PoolInt*> items;
@@ -155,34 +155,34 @@ TEST(ObjectPoolTest, MultipleAllocateDeallocate)
 
 // ---------- AllocateShared ----------
 
-TEST(ObjectPoolTest, AllocateShared_Basic)
+TEST_CASE("ObjectPoolTest.AllocateShared_Basic")
 {
     auto ptr = ObjectPool<PoolInt>::GetInstance().AllocateShared(42);
-    ASSERT_NE(ptr, nullptr);
-    EXPECT_EQ(ptr->value, 42);
+    REQUIRE_NE(ptr, nullptr);
+    CHECK_EQ(ptr->value, 42);
 
     // When shared_ptr goes out of scope, Deallocate is called automatically
 }
 
-TEST(ObjectPoolTest, AllocateShared_ReusesOnDeallocate)
+TEST_CASE("ObjectPoolTest.AllocateShared_ReusesOnDeallocate")
 {
     ObjectPool<PoolInt>& pool = ObjectPool<PoolInt>::GetInstance();
 
     {
         auto a = pool.AllocateShared(10);
-        ASSERT_EQ(a->value, 10);
+        REQUIRE_EQ(a->value, 10);
     }
     // a is destroyed, memory returned to pool
 
     auto b = pool.AllocateShared(20);
-    ASSERT_EQ(b->value, 20);
+    REQUIRE_EQ(b->value, 20);
     // Should have reused the same slot (verify by tracking count would be hard here,
     // but at minimum no crash and correct value)
 }
 
 // ---------- Deallocate(nullptr) 安全 ----------
 
-TEST(ObjectPoolTest, Deallocate_Nullptr_Safe)
+TEST_CASE("ObjectPoolTest.Deallocate_Nullptr_Safe")
 {
     ObjectPool<PoolInt>& pool = ObjectPool<PoolInt>::GetInstance();
     // Should not crash
@@ -191,7 +191,7 @@ TEST(ObjectPoolTest, Deallocate_Nullptr_Safe)
 
 // ---------- 扩容 ----------
 
-TEST(ObjectPoolTest, Expand_Blocks)
+TEST_CASE("ObjectPoolTest.Expand_Blocks")
 {
     // 使用独立类型确保旧扩容不影响
     struct ExpandType
@@ -209,7 +209,7 @@ TEST(ObjectPoolTest, Expand_Blocks)
     for (int i = 0; i < 40; ++i)
     {
         items.push_back(pool.Allocate());
-        ASSERT_NE(items.back(), nullptr);
+        REQUIRE_NE(items.back(), nullptr);
     }
 
     // 全部归还
@@ -221,7 +221,7 @@ TEST(ObjectPoolTest, Expand_Blocks)
 
 // ---------- 块容量取值门禁 ----------
 
-TEST(ObjectPoolTest, SetBlockUnitNum_RejectsNonPositive)
+TEST_CASE("ObjectPoolTest.SetBlockUnitNum_RejectsNonPositive")
 {
     struct BlockUnitNumType
     {
@@ -231,23 +231,23 @@ TEST(ObjectPoolTest, SetBlockUnitNum_RejectsNonPositive)
     };
 
     ObjectPool<BlockUnitNumType>& pool = ObjectPool<BlockUnitNumType>::GetInstance();
-    EXPECT_THROW(pool.SetBlockUnitNum(0), std::invalid_argument);
-    EXPECT_THROW(pool.SetBlockUnitNum(-8), std::invalid_argument);
+    CHECK_THROWS_AS(pool.SetBlockUnitNum(0), std::invalid_argument);
+    CHECK_THROWS_AS(pool.SetBlockUnitNum(-8), std::invalid_argument);
 
     // 被拒绝后池仍可用：默认块容量未受影响，分配照常
     BlockUnitNumType* obj = pool.Allocate();
-    ASSERT_NE(obj, nullptr);
+    REQUIRE_NE(obj, nullptr);
     pool.Deallocate(obj);
 
     pool.SetBlockUnitNum(8); // 合法值照收
     BlockUnitNumType* item = pool.Allocate();
-    ASSERT_NE(item, nullptr);
+    REQUIRE_NE(item, nullptr);
     pool.Deallocate(item);
 }
 
 // ---------- 线程本地缓存整批交回 ----------
 
-TEST(ObjectPoolTest, RecycleAfterExcessReturnToSharedList)
+TEST_CASE("ObjectPoolTest.RecycleAfterExcessReturnToSharedList")
 {
     struct ExcessReturnType
     {
@@ -263,7 +263,7 @@ TEST(ObjectPoolTest, RecycleAfterExcessReturnToSharedList)
     for (int i = 0; i < 40; ++i)
     {
         ExcessReturnType* item = pool.Allocate();
-        ASSERT_NE(item, nullptr);
+        REQUIRE_NE(item, nullptr);
         item->value = i;
         allocated.push_back(item);
     }
@@ -278,19 +278,19 @@ TEST(ObjectPoolTest, RecycleAfterExcessReturnToSharedList)
     for (int i = 0; i < 40; ++i)
     {
         ExcessReturnType* item = pool.Allocate();
-        ASSERT_NE(item, nullptr);
+        REQUIRE_NE(item, nullptr);
         recycled.push_back(item);
     }
 
     std::vector<ExcessReturnType*> sortedRecycled = recycled;
     std::sort(sortedRecycled.begin(), sortedRecycled.end());
-    EXPECT_EQ(std::adjacent_find(sortedRecycled.begin(), sortedRecycled.end()), sortedRecycled.end());
+    CHECK_EQ(std::adjacent_find(sortedRecycled.begin(), sortedRecycled.end()), sortedRecycled.end());
 
     for (int i = 0; i < 40; ++i)
     {
-        EXPECT_NE(std::find(allocated.begin(), allocated.end(), recycled[i]), allocated.end());
+        CHECK_NE(std::find(allocated.begin(), allocated.end(), recycled[i]), allocated.end());
         recycled[i]->value = 100 + i;
-        EXPECT_EQ(recycled[i]->value, 100 + i);
+        CHECK_EQ(recycled[i]->value, 100 + i);
     }
 
     for (ExcessReturnType* item : recycled)
@@ -301,7 +301,7 @@ TEST(ObjectPoolTest, RecycleAfterExcessReturnToSharedList)
 
 // ---------- 多线程分配 ----------
 
-TEST(ObjectPoolTest, MultiThreadAllocate)
+TEST_CASE("ObjectPoolTest.MultiThreadAllocate")
 {
     struct MTPoolType
     {
@@ -337,7 +337,7 @@ TEST(ObjectPoolTest, MultiThreadAllocate)
 
     // 每个线程分配 0..PerThread-1，共 Threads 个线程
     long long expected = static_cast<long long>(PerThread) * (PerThread - 1) / 2 * Threads;
-    EXPECT_EQ(sum.load(), expected);
+    CHECK_EQ(sum.load(), expected);
 
     // Clean up any remaining items left in pool
     // (no-op: pool destructor cleans all blocks)
@@ -345,7 +345,7 @@ TEST(ObjectPoolTest, MultiThreadAllocate)
 
 // ---------- 跨线程归还 ----------
 
-TEST(ObjectPoolTest, CrossThreadDeallocate)
+TEST_CASE("ObjectPoolTest.CrossThreadDeallocate")
 {
     struct CrossThreadType
     {
@@ -361,7 +361,7 @@ TEST(ObjectPoolTest, CrossThreadDeallocate)
     for (int i = 0; i < ItemCount; ++i)
     {
         CrossThreadType* item = pool.Allocate();
-        ASSERT_NE(item, nullptr);
+        REQUIRE_NE(item, nullptr);
         item->value = i;
         allocated.push_back(item);
     }
@@ -380,16 +380,16 @@ TEST(ObjectPoolTest, CrossThreadDeallocate)
     for (int i = 0; i < ItemCount; ++i)
     {
         CrossThreadType* item = pool.Allocate();
-        ASSERT_NE(item, nullptr);
+        REQUIRE_NE(item, nullptr);
         item->value = 900 + i;
-        EXPECT_EQ(item->value, 900 + i);
+        CHECK_EQ(item->value, 900 + i);
         pool.Deallocate(item);
     }
 }
 
 // ---------- 多线程并发取还与整批搬运 ----------
 
-TEST(ObjectPoolTest, ConcurrentBatchAllocateDeallocate)
+TEST_CASE("ObjectPoolTest.ConcurrentBatchAllocateDeallocate")
 {
     struct ConcurrentBatchType
     {
@@ -452,20 +452,20 @@ TEST(ObjectPoolTest, ConcurrentBatchAllocateDeallocate)
         worker.join();
     }
 
-    ASSERT_FALSE(duplicatePointerSeen.load());
-    EXPECT_TRUE(livePointers.empty());
+    REQUIRE_FALSE(duplicatePointerSeen.load());
+    CHECK(livePointers.empty());
 
     // 全部归还后池仍可正常取还
     ConcurrentBatchType* item = pool.Allocate();
-    ASSERT_NE(item, nullptr);
+    REQUIRE_NE(item, nullptr);
     item->value = 7;
-    EXPECT_EQ(item->value, 7);
+    CHECK_EQ(item->value, 7);
     pool.Deallocate(item);
 }
 
 // ---------- 线程退出回收 ----------
 
-TEST(ObjectPoolTest, ThreadExit_ReturnsThreadLocalNodesToSharedList)
+TEST_CASE("ObjectPoolTest.ThreadExit_ReturnsThreadLocalNodesToSharedList")
 {
     struct ThreadExitReclaimType
     {
@@ -499,7 +499,7 @@ TEST(ObjectPoolTest, ThreadExit_ReturnsThreadLocalNodesToSharedList)
     }
 
     const std::set<ThreadExitReclaimType*> reclaimedNodes(reclaimedSlots.begin(), reclaimedSlots.end());
-    EXPECT_EQ(reclaimedNodes, exitedThreadNodes);
+    CHECK_EQ(reclaimedNodes, exitedThreadNodes);
 
     for (ThreadExitReclaimType* slot : reclaimedSlots)
     {
@@ -509,7 +509,7 @@ TEST(ObjectPoolTest, ThreadExit_ReturnsThreadLocalNodesToSharedList)
 
 // ---------- 析构/构造计数 ----------
 
-TEST(ObjectPoolTest, TrackedType_ConstructAndDestroy)
+TEST_CASE("ObjectPoolTest.TrackedType_ConstructAndDestroy")
 {
     // 重置计数（注意类型是 PoolTracked，各测试共享此静态计数）
     // 由于单例特性，前面可能有残留计数，此处只验证分配/归还增减一致
@@ -517,12 +517,12 @@ TEST(ObjectPoolTest, TrackedType_ConstructAndDestroy)
     auto beforeDestroy = PoolTracked::Destroyed.load();
 
     PoolTracked* obj = ObjectPool<PoolTracked>::GetInstance().Allocate(5);
-    ASSERT_NE(obj, nullptr);
-    EXPECT_EQ(obj->id, 5);
+    REQUIRE_NE(obj, nullptr);
+    CHECK_EQ(obj->id, 5);
 
     ObjectPool<PoolTracked>::GetInstance().Deallocate(obj);
 
     // Deallocate 调用了析构函数，但不释放内存（还给 pool）
     // 所以 Destroyed 增加，Constructed 不变（归还后 Allocate 通过 placement-new 重用）
-    EXPECT_GT(PoolTracked::Destroyed.load(), beforeDestroy);
+    CHECK_GT(PoolTracked::Destroyed.load(), beforeDestroy);
 }

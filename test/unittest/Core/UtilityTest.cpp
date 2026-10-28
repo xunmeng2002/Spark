@@ -1,7 +1,8 @@
-#include <gtest/gtest.h>
 #include <Spark/Core/Utility/Utility.h>
+#include "doctest/doctest.h"
 
 #include <cstring>
+#include <string_view>
 using namespace Spark;
 using namespace Spark::Core;
 // ============================================================
@@ -10,109 +11,109 @@ using namespace Spark::Core;
 
 // ---------- ItoA ----------
 
-TEST(UtilityTest, ItoA_Positive)
+TEST_CASE("UtilityTest.ItoA_Positive")
 {
-    EXPECT_EQ(Utility::ItoA(42), "42");
-    EXPECT_EQ(Utility::ItoA(0), "0");
-    EXPECT_EQ(Utility::ItoA(2147483647), "2147483647");
+    CHECK_EQ(Utility::ItoA(42), "42");
+    CHECK_EQ(Utility::ItoA(0), "0");
+    CHECK_EQ(Utility::ItoA(2147483647), "2147483647");
 }
 
-TEST(UtilityTest, ItoA_Negative)
+TEST_CASE("UtilityTest.ItoA_Negative")
 {
-    EXPECT_EQ(Utility::ItoA(-1), "-1");
-    EXPECT_EQ(Utility::ItoA(-2147483647), "-2147483647");
+    CHECK_EQ(Utility::ItoA(-1), "-1");
+    CHECK_EQ(Utility::ItoA(-2147483647), "-2147483647");
 }
 
 // ---------- FtoA ----------
 
-TEST(UtilityTest, FtoA_NotEmpty)
+TEST_CASE("UtilityTest.FtoA_NotEmpty")
 {
     // std::format("{}", d) 默认格式与实现有关，验证非空即可
-    EXPECT_FALSE(Utility::FtoA(3.14).empty());
-    EXPECT_FALSE(Utility::FtoA(0.0).empty());
-    EXPECT_FALSE(Utility::FtoA(-1.5).empty());
+    CHECK_FALSE(Utility::FtoA(3.14).empty());
+    CHECK_FALSE(Utility::FtoA(0.0).empty());
+    CHECK_FALSE(Utility::FtoA(-1.5).empty());
 }
 
 // ---------- RemoveCharacter ----------
 
-TEST(UtilityTest, RemoveCharacter_AtStart)
+TEST_CASE("UtilityTest.RemoveCharacter_AtStart")
 {
     char buf[] = "  hello";
     Utility::RemoveCharacter(buf, static_cast<int>(sizeof(buf)), ' ');
-    EXPECT_STREQ(buf, "hello");
+    CHECK_EQ(std::string_view(buf), std::string_view("hello"));
 }
 
-TEST(UtilityTest, RemoveCharacter_AtEnd)
+TEST_CASE("UtilityTest.RemoveCharacter_AtEnd")
 {
     char buf[] = "hello  ";
     Utility::RemoveCharacter(buf, static_cast<int>(sizeof(buf)), ' ');
-    EXPECT_STREQ(buf, "hello");
+    CHECK_EQ(std::string_view(buf), std::string_view("hello"));
 }
 
-TEST(UtilityTest, RemoveCharacter_AllSpaces)
+TEST_CASE("UtilityTest.RemoveCharacter_AllSpaces")
 {
     char buf[] = "     ";
     Utility::RemoveCharacter(buf, static_cast<int>(sizeof(buf)), ' ');
-    EXPECT_STREQ(buf, "");
+    CHECK_EQ(std::string_view(buf), std::string_view(""));
 }
 
-TEST(UtilityTest, RemoveCharacter_NoMatch)
+TEST_CASE("UtilityTest.RemoveCharacter_NoMatch")
 {
     char buf[] = "hello";
     Utility::RemoveCharacter(buf, static_cast<int>(sizeof(buf)), 'x');
-    EXPECT_STREQ(buf, "hello");
+    CHECK_EQ(std::string_view(buf), std::string_view("hello"));
 }
 
-TEST(UtilityTest, RemoveCharacter_Mixed)
+TEST_CASE("UtilityTest.RemoveCharacter_Mixed")
 {
     char buf[] = "a b c d";
     Utility::RemoveCharacter(buf, static_cast<int>(sizeof(buf)), ' ');
-    EXPECT_STREQ(buf, "abcd");
+    CHECK_EQ(std::string_view(buf), std::string_view("abcd"));
 }
 
-TEST(UtilityTest, RemoveCharacter_Empty)
+TEST_CASE("UtilityTest.RemoveCharacter_Empty")
 {
     char buf[] = "";
     Utility::RemoveCharacter(buf, static_cast<int>(sizeof(buf)), ' ');
-    EXPECT_STREQ(buf, "");
+    CHECK_EQ(std::string_view(buf), std::string_view(""));
 }
 
 // ---------- GetConfigProtocolType ----------
 
-TEST(UtilityTest, GetConfigProtocolType_Step)
+TEST_CASE("UtilityTest.GetConfigProtocolType_Step")
 {
-    EXPECT_EQ(Utility::GetConfigProtocolType("step"), ProtocolTypeType::Step);
+    CHECK_EQ(Utility::GetConfigProtocolType("step"), ProtocolTypeType::Step);
 }
 
-TEST(UtilityTest, GetConfigProtocolType_Xtp)
+TEST_CASE("UtilityTest.GetConfigProtocolType_Xtp")
 {
-    EXPECT_EQ(Utility::GetConfigProtocolType("xtp"), ProtocolTypeType::Xtp);
+    CHECK_EQ(Utility::GetConfigProtocolType("xtp"), ProtocolTypeType::Xtp);
 }
 
-TEST(UtilityTest, GetConfigProtocolType_Unknown)
+TEST_CASE("UtilityTest.GetConfigProtocolType_Unknown")
 {
     // 未知类型返回 Xtp（默认行为）
-    EXPECT_EQ(Utility::GetConfigProtocolType("unknown"), ProtocolTypeType::Xtp);
+    CHECK_EQ(Utility::GetConfigProtocolType("unknown"), ProtocolTypeType::Xtp);
 }
 
-TEST(UtilityTest, GetConfigProtocolType_Empty)
+TEST_CASE("UtilityTest.GetConfigProtocolType_Empty")
 {
-    EXPECT_EQ(Utility::GetConfigProtocolType(""), ProtocolTypeType::Xtp);
+    CHECK_EQ(Utility::GetConfigProtocolType(""), ProtocolTypeType::Xtp);
 }
 
-TEST(UtilityTest, GetConfigProtocolType_CaseSensitive)
+TEST_CASE("UtilityTest.GetConfigProtocolType_CaseSensitive")
 {
     // 严格匹配，大写不匹配
-    EXPECT_EQ(Utility::GetConfigProtocolType("Step"), ProtocolTypeType::Xtp);
+    CHECK_EQ(Utility::GetConfigProtocolType("Step"), ProtocolTypeType::Xtp);
 }
 
 // ---------- ParseProcessName ----------
 
-TEST(UtilityTest, ParseProcessName)
+TEST_CASE("UtilityTest.ParseProcessName")
 {
     char buf[256] = {};
     Utility::ParseProcessName("/usr/local/bin/myapp.exe", buf, static_cast<int>(sizeof(buf)));
     // 函数用 strrchr 找 '/' 或 '\'，然后截断到 '.'
     // 不同平台行为不同，验证不崩溃且非空即可
-    EXPECT_GT(std::strlen(buf), 0);
+    CHECK_GT(std::strlen(buf), 0);
 }

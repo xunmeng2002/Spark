@@ -71,7 +71,7 @@ Spark/
 │   ├── Network/                # Network module implementations
 │   └── Serialization/          # Serialization module implementations
 ├── test/                       # Test programs
-│   ├── unittest/               # GTest unit tests (primary test entry)
+│   ├── unittest/               # doctest unit tests (primary test entry)
 │   │   ├── Core/               # Core module tests (9 files)
 │   │   ├── Network/            # Network module tests (9 files)
 │   │   ├── Serialization/      # Serialization module tests (4 files)
@@ -106,14 +106,14 @@ Spark/
 - C++ compiler supporting **C++20 or later** (GCC, Clang, MSVC)
 - Build tool: **CMake 3.20+**
 - Script runtime: **Python 3.6+** (only for code generation scripts, not a runtime dependency)
-- Test framework: **Google Test** (auto-detected by CMake; must be installed via vcpkg or system package manager)
+- Test framework: **doctest 2.5.3** (header-only; read from the sibling directory `../Libs/doctest`, no package manager needed)
 - Platform: Linux, Windows
 
 ### Submodule Dependencies
 
 The project depends on the `CMakeCommon` submodule. After cloning, you need to synchronize and pull the submodule.
 
-> For detailed environment setup steps (proxy configuration, vcpkg installation, WSL mirrored networking, etc.), see the [Environment Setup Guide](docs/environment-setup.en.md).
+> For detailed environment setup steps (proxy configuration, doctest placement, WSL mirrored networking, etc.), see the [Environment Setup Guide](docs/environment-setup.en.md).
 
 ## 5. Quick Build & Compilation
 

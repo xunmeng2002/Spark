@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include <Spark/Core/Timer/Timer.h>
+#include "doctest/doctest.h"
 
 #include <thread>
 #include <chrono>
@@ -31,50 +31,50 @@ protected:
 
 // ---------- 默认构造 ----------
 
-TEST(TimerTest, DefaultValues)
+TEST_CASE("TimerTest.DefaultValues")
 {
     TestTimer timer;
 
     // 默认：60 秒间隔，每 100ms 轮询一次 → 600 次轮询后检查时间
-    EXPECT_EQ(timer.GetTimeInterval(), 60000);
-    EXPECT_EQ(timer.GetEventCount(), 600);
-    EXPECT_EQ(timer.GetCurrentEventCount(), 0);
+    CHECK_EQ(timer.GetTimeInterval(), 60000);
+    CHECK_EQ(timer.GetEventCount(), 600);
+    CHECK_EQ(timer.GetCurrentEventCount(), 0);
 }
 
 // ---------- SetTimer ----------
 
-TEST(TimerTest, SetTimer_CalculatesEventCount)
+TEST_CASE("TimerTest.SetTimer_CalculatesEventCount")
 {
     TestTimer timer;
 
     // interval=1000ms, poll=100ms → eventCount=10
     timer.SetTimer(1000, 100);
-    EXPECT_EQ(timer.GetTimeInterval(), 1000);
-    EXPECT_EQ(timer.GetEventCount(), 10);
+    CHECK_EQ(timer.GetTimeInterval(), 1000);
+    CHECK_EQ(timer.GetEventCount(), 10);
 }
 
-TEST(TimerTest, SetTimer_LargeInterval)
+TEST_CASE("TimerTest.SetTimer_LargeInterval")
 {
     TestTimer timer;
 
     timer.SetTimer(5000, 500);
-    EXPECT_EQ(timer.GetTimeInterval(), 5000);
-    EXPECT_EQ(timer.GetEventCount(), 10);
+    CHECK_EQ(timer.GetTimeInterval(), 5000);
+    CHECK_EQ(timer.GetEventCount(), 10);
 }
 
-TEST(TimerTest, SetTimer_OneToOne)
+TEST_CASE("TimerTest.SetTimer_OneToOne")
 {
     TestTimer timer;
 
     // 轮询间隔 = 触发间隔 → eventCount=1（每次 CheckTimer 都检查时间）
     timer.SetTimer(100, 100);
-    EXPECT_EQ(timer.GetTimeInterval(), 100);
-    EXPECT_EQ(timer.GetEventCount(), 1);
+    CHECK_EQ(timer.GetTimeInterval(), 100);
+    CHECK_EQ(timer.GetEventCount(), 1);
 }
 
 // ---------- CheckTimer: 未触发 ----------
 
-TEST(TimerTest, CheckTimer_NotFiredBeforeEventCount)
+TEST_CASE("TimerTest.CheckTimer_NotFiredBeforeEventCount")
 {
     TestTimer timer;
     timer.SetTimer(1000, 100); // eventCount=10
@@ -84,10 +84,10 @@ TEST(TimerTest, CheckTimer_NotFiredBeforeEventCount)
     {
         timer.CheckTimer();
     }
-    EXPECT_EQ(timer.OnTimerCallCount, 0);
+    CHECK_EQ(timer.OnTimerCallCount, 0);
 }
 
-TEST(TimerTest, CheckTimer_FiresAfterElapsedTime)
+TEST_CASE("TimerTest.CheckTimer_FiresAfterElapsedTime")
 {
     TestTimer timer;
     timer.SetTimer(50, 10); // interval=50ms, eventCount=5
@@ -102,12 +102,12 @@ TEST(TimerTest, CheckTimer_FiresAfterElapsedTime)
         timer.CheckTimer();
     }
 
-    EXPECT_EQ(timer.OnTimerCallCount, 1);
+    CHECK_EQ(timer.OnTimerCallCount, 1);
 }
 
 // ---------- CheckTimer: 多次触发 ----------
 
-TEST(TimerTest, CheckTimer_MultipleFires)
+TEST_CASE("TimerTest.CheckTimer_MultipleFires")
 {
     TestTimer timer;
     timer.SetTimer(30, 5); // interval=30ms, eventCount=6
@@ -118,7 +118,7 @@ TEST(TimerTest, CheckTimer_MultipleFires)
     {
         timer.CheckTimer();
     }
-    EXPECT_EQ(timer.OnTimerCallCount, 1);
+    CHECK_EQ(timer.OnTimerCallCount, 1);
 
     // 第二次触发
     std::this_thread::sleep_for(std::chrono::milliseconds(40));
@@ -126,12 +126,12 @@ TEST(TimerTest, CheckTimer_MultipleFires)
     {
         timer.CheckTimer();
     }
-    EXPECT_EQ(timer.OnTimerCallCount, 2);
+    CHECK_EQ(timer.OnTimerCallCount, 2);
 }
 
 // ---------- CheckTimer: 时间未到不触发 ----------
 
-TEST(TimerTest, CheckTimer_DoesNotFireIfTimeNotElapsed)
+TEST_CASE("TimerTest.CheckTimer_DoesNotFireIfTimeNotElapsed")
 {
     TestTimer timer;
     timer.SetTimer(10000, 50); // interval=10s, eventCount=200
@@ -143,12 +143,12 @@ TEST(TimerTest, CheckTimer_DoesNotFireIfTimeNotElapsed)
     }
 
     // 时间远未到 10s，不应触发
-    EXPECT_EQ(timer.OnTimerCallCount, 0);
+    CHECK_EQ(timer.OnTimerCallCount, 0);
 }
 
 // ---------- CheckTimer: 触发后重置计数值 ----------
 
-TEST(TimerTest, CheckTimer_ResetsCounterAfterFire)
+TEST_CASE("TimerTest.CheckTimer_ResetsCounterAfterFire")
 {
     TestTimer timer;
     timer.SetTimer(30, 10); // interval=30ms, eventCount=3
@@ -164,6 +164,6 @@ TEST(TimerTest, CheckTimer_ResetsCounterAfterFire)
     // 第 1-3 次：count=1,2,3（3>3 不成立，不触发）
     // 第 4 次：count=4（4>3 成立，时间已到 → 触发 OnTimer，重置为 0）
     // 第 5-10 次：count=1,2,3,4,5,6（时间未再次流逝，不触发）
-    EXPECT_EQ(timer.OnTimerCallCount, 1);
-    EXPECT_EQ(timer.GetCurrentEventCount(), 6);
+    CHECK_EQ(timer.OnTimerCallCount, 1);
+    CHECK_EQ(timer.GetCurrentEventCount(), 6);
 }

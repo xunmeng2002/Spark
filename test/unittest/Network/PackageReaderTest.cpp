@@ -1,7 +1,8 @@
-#include <gtest/gtest.h>
 #include <Spark/Network/Protocol/PackageReader.h>
+#include "doctest/doctest.h"
 
 #include <cstring>
+#include <string>
 using namespace Spark;
 using namespace Spark::Network;
 // ============================================================
@@ -22,66 +23,66 @@ PackageReader MakeReader()
 }
 }
 
-TEST(PackageReaderTest, InitialState)
+TEST_CASE("PackageReaderTest.InitialState")
 {
     PackageReader reader = MakeReader();
 
-    EXPECT_EQ(reader.Length(), 0);
-    EXPECT_NE(reader.Data(), nullptr);
+    CHECK_EQ(reader.Length(), 0);
+    CHECK_NE(reader.Data(), nullptr);
     // Data 应为内部缓冲起始地址
-    EXPECT_EQ(reader.Data(), reader.Tail());
+    CHECK_EQ(reader.Data(), reader.Tail());
 }
 
-TEST(PackageReaderTest, ResetAfterConstruction)
+TEST_CASE("PackageReaderTest.ResetAfterConstruction")
 {
     PackageReader reader = MakeReader();
     reader.Reset();
 
-    EXPECT_EQ(reader.Length(), 0);
-    EXPECT_EQ(reader.Data(), reader.Tail());
+    CHECK_EQ(reader.Length(), 0);
+    CHECK_EQ(reader.Data(), reader.Tail());
 }
 
-TEST(PackageReaderTest, AppendAndReadData)
+TEST_CASE("PackageReaderTest.AppendAndReadData")
 {
     PackageReader reader = MakeReader();
     const char testData[] = "Hello, PackageReader!";
 
     size_t appended = reader.Append(const_cast<char*>(testData), strlen(testData));
-    EXPECT_EQ(appended, strlen(testData));
-    EXPECT_EQ(reader.Length(), strlen(testData));
+    CHECK_EQ(appended, strlen(testData));
+    CHECK_EQ(reader.Length(), strlen(testData));
 
     // Data() 应指向刚写入的数据
-    EXPECT_EQ(memcmp(reader.Data(), testData, strlen(testData)), 0);
+    CHECK_EQ(memcmp(reader.Data(), testData, strlen(testData)), 0);
 }
 
-TEST(PackageReaderTest, AppendUpdatesTail)
+TEST_CASE("PackageReaderTest.AppendUpdatesTail")
 {
     PackageReader reader = MakeReader();
 
     const char data1[] = "First";
     reader.Append(const_cast<char*>(data1), strlen(data1));
-    EXPECT_EQ(reader.Length(), strlen(data1));
+    CHECK_EQ(reader.Length(), strlen(data1));
 
     const char data2[] = "Second";
     reader.Append(const_cast<char*>(data2), strlen(data2));
-    EXPECT_EQ(reader.Length(), strlen(data1) + strlen(data2));
+    CHECK_EQ(reader.Length(), strlen(data1) + strlen(data2));
 
     // Tail() 应在所有数据之后
-    EXPECT_EQ(reader.Tail(), reader.Data() + reader.Length());
+    CHECK_EQ(reader.Tail(), reader.Data() + reader.Length());
 }
 
-TEST(PackageReaderTest, PopFrontRemovesData)
+TEST_CASE("PackageReaderTest.PopFrontRemovesData")
 {
     PackageReader reader = MakeReader();
     const char testData[] = "HelloWorld";
     reader.Append(const_cast<char*>(testData), strlen(testData));
 
     reader.PopFront(5); // remove "Hello"
-    EXPECT_EQ(reader.Length(), 5);
-    EXPECT_EQ(memcmp(reader.Data(), "World", 5), 0); // "World" remains
+    CHECK_EQ(reader.Length(), 5);
+    CHECK_EQ(memcmp(reader.Data(), "World", 5), 0); // "World" remains
 }
 
-TEST(PackageReaderTest, PopFrontClampsToLength)
+TEST_CASE("PackageReaderTest.PopFrontClampsToLength")
 {
     PackageReader reader = MakeReader();
     const char testData[] = "Short";
@@ -89,21 +90,21 @@ TEST(PackageReaderTest, PopFrontClampsToLength)
 
     // PopFront 超过实际长度——应 clamp 到 length_
     reader.PopFront(100);
-    EXPECT_EQ(reader.Length(), 0);
+    CHECK_EQ(reader.Length(), 0);
 }
 
-TEST(PackageReaderTest, PopFrontAllData)
+TEST_CASE("PackageReaderTest.PopFrontAllData")
 {
     PackageReader reader = MakeReader();
     const char testData[] = "TestData";
     reader.Append(const_cast<char*>(testData), strlen(testData));
 
     reader.PopFront(strlen(testData));
-    EXPECT_EQ(reader.Length(), 0);
-    EXPECT_EQ(reader.Data(), reader.Tail());
+    CHECK_EQ(reader.Length(), 0);
+    CHECK_EQ(reader.Data(), reader.Tail());
 }
 
-TEST(PackageReaderTest, PopFrontMovesDataToBufferStart)
+TEST_CASE("PackageReaderTest.PopFrontMovesDataToBufferStart")
 {
     PackageReader reader = MakeReader();
 
@@ -112,17 +113,17 @@ TEST(PackageReaderTest, PopFrontMovesDataToBufferStart)
     const char data2[] = "FGH";
 
     reader.Append(const_cast<char*>(data1), strlen(data1));
-    EXPECT_EQ(reader.Data(), reader.Tail() - reader.Length());
+    CHECK_EQ(reader.Data(), reader.Tail() - reader.Length());
 
     reader.PopFront(2); // remove "AB" → "CDE" moved to start
-    EXPECT_EQ(memcmp(reader.Data(), "CDE", 3), 0);
+    CHECK_EQ(memcmp(reader.Data(), "CDE", 3), 0);
 
     reader.Append(const_cast<char*>(data2), strlen(data2));
     // "CDE" + "FGH" = "CDEFGH"
-    EXPECT_EQ(memcmp(reader.Data(), "CDEFGH", 6), 0);
+    CHECK_EQ(memcmp(reader.Data(), "CDEFGH", 6), 0);
 }
 
-TEST(PackageReaderTest, TailSizeDecreasesAsDataGrows)
+TEST_CASE("PackageReaderTest.TailSizeDecreasesAsDataGrows")
 {
     PackageReader reader = MakeReader();
     size_t initialTailSize = reader.TailSize();
@@ -132,10 +133,10 @@ TEST(PackageReaderTest, TailSizeDecreasesAsDataGrows)
     reader.Append(const_cast<char*>(data), dataLen);
 
     // 追加数据后 TailSize 应减少
-    EXPECT_EQ(reader.TailSize(), initialTailSize - dataLen);
+    CHECK_EQ(reader.TailSize(), initialTailSize - dataLen);
 }
 
-TEST(PackageReaderTest, AppendClampsToTailSize)
+TEST_CASE("PackageReaderTest.AppendClampsToTailSize")
 {
     PackageReader reader = MakeReader();
 
@@ -144,25 +145,25 @@ TEST(PackageReaderTest, AppendClampsToTailSize)
     std::string bigData(tailSize + 100, 'X');
     size_t appended = reader.Append(const_cast<char*>(bigData.data()), bigData.size());
     // 应该被 clamp 到 tailSize
-    EXPECT_EQ(appended, tailSize);
-    EXPECT_EQ(reader.Length(), tailSize);
+    CHECK_EQ(appended, tailSize);
+    CHECK_EQ(reader.Length(), tailSize);
 }
 
-TEST(PackageReaderTest, ResetRestoresState)
+TEST_CASE("PackageReaderTest.ResetRestoresState")
 {
     PackageReader reader = MakeReader();
 
     const char data[] = "SomeData";
     reader.Append(const_cast<char*>(data), strlen(data));
     reader.PopFront(2);
-    EXPECT_GT(reader.Length(), 0);
+    CHECK_GT(reader.Length(), 0);
 
     reader.Reset();
-    EXPECT_EQ(reader.Length(), 0);
-    EXPECT_EQ(reader.Data(), reader.Tail());
+    CHECK_EQ(reader.Length(), 0);
+    CHECK_EQ(reader.Data(), reader.Tail());
 }
 
-TEST(PackageReaderTest, MultiplePopFrontAndVerifyData)
+TEST_CASE("PackageReaderTest.MultiplePopFrontAndVerifyData")
 {
     PackageReader reader = MakeReader();
 
@@ -171,11 +172,11 @@ TEST(PackageReaderTest, MultiplePopFrontAndVerifyData)
     reader.Append(const_cast<char*>(expected), strlen(expected));
 
     reader.PopFront(5); // remove "Hello"
-    EXPECT_EQ(memcmp(reader.Data(), "ReaderTest", 10), 0);
+    CHECK_EQ(memcmp(reader.Data(), "ReaderTest", 10), 0);
 
     reader.PopFront(6); // remove "Reader"
-    EXPECT_EQ(memcmp(reader.Data(), "Test", 4), 0);
+    CHECK_EQ(memcmp(reader.Data(), "Test", 4), 0);
 
     reader.PopFront(4); // remove "Test"
-    EXPECT_EQ(reader.Length(), 0);
+    CHECK_EQ(reader.Length(), 0);
 }

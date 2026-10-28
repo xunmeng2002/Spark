@@ -1,4 +1,3 @@
-#include <gtest/gtest.h>
 
 #if defined(_WIN32)
 
@@ -11,11 +10,13 @@
 #include <Spark/Network/Io/IoThread.h>
 #include <Spark/Network/Protocol/Protocol.h>
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
+#include "doctest/doctest.h"
 
 #include <Windows.h>
 
 #include <atomic>
 #include <chrono>
+#include <cmath>
 #include <condition_variable>
 #include <functional>
 #include <memory>
@@ -107,17 +108,17 @@ bool TryExtractEchoedOrder(const Package* package, EchoedOrder& order)
 
 void ExpectAllOrdersIntact(const std::vector<EchoedOrder>& orders)
 {
-    ASSERT_EQ(orders.size(), static_cast<size_t>(RoundTripFrameCount));
+    REQUIRE_EQ(orders.size(), static_cast<size_t>(RoundTripFrameCount));
     for (size_t offset = 0; offset < orders.size(); ++offset)
     {
         const int expectedIndex = FirstOrderIndex + static_cast<int>(offset);
         const EchoedOrder& order = orders[offset];
-        EXPECT_EQ(order.Index, expectedIndex);
-        EXPECT_EQ(order.Volume, expectedIndex);
-        EXPECT_NEAR(order.Price, PriceBase + expectedIndex, 1e-6);
-        EXPECT_EQ(order.AccountId, ExpectedAccountId);
-        EXPECT_EQ(order.ExchangeId, ExpectedExchangeId);
-        EXPECT_EQ(order.InstrumentId, ExpectedInstrumentId);
+        CHECK_EQ(order.Index, expectedIndex);
+        CHECK_EQ(order.Volume, expectedIndex);
+        CHECK(std::abs(order.Price - (PriceBase + expectedIndex)) <= 1e-6);
+        CHECK_EQ(order.AccountId, ExpectedAccountId);
+        CHECK_EQ(order.ExchangeId, ExpectedExchangeId);
+        CHECK_EQ(order.InstrumentId, ExpectedInstrumentId);
     }
 }
 
@@ -286,14 +287,14 @@ unsigned long GetCurrentProcessHandleCount()
 void RunOneClientBuildAndTeardown(const char* address)
 {
     std::unique_ptr<IoBase> io(IoFactory::CreateIo(ServerTypeType::Client, address, IoModelType::Iocp, 0));
-    EXPECT_TRUE(io->Init());
+    CHECK(io->Init());
     io.reset();
 }
 
 void RunOneServerBuildAndTeardown(const char* address)
 {
     std::unique_ptr<IoBase> io(IoFactory::CreateIo(ServerTypeType::Server, address, IoModelType::Iocp, 0));
-    EXPECT_TRUE(io->Init());
+    CHECK(io->Init());
     io.reset();
 }
 
@@ -317,15 +318,15 @@ BuildTeardownMeasurement MeasureBuildTeardownRounds(int roundCount, const std::f
 }
 }
 
-TEST(TcpIocpTest, LoopbackRoundTripKeepsEveryFrameIntactOnASingleConnection)
+TEST_CASE("TcpIocpTest.LoopbackRoundTripKeepsEveryFrameIntactOnASingleConnection")
 {
     IocpLoopbackServer server;
     IocpLoopbackClient client;
     IocpLoopbackThreadGuard threads(server, client);
 
-    ASSERT_TRUE(server.Init());
-    ASSERT_TRUE(client.Init());
-    ASSERT_TRUE(threads.Start());
+    REQUIRE(server.Init());
+    REQUIRE(client.Init());
+    REQUIRE(threads.Start());
 
     const auto roundTripTimeout = std::chrono::seconds(30);
     const bool clientReceivedAll = client.WaitForReceivedCount(RoundTripFrameCount, roundTripTimeout);
@@ -336,20 +337,24 @@ TEST(TcpIocpTest, LoopbackRoundTripKeepsEveryFrameIntactOnASingleConnection)
 
     threads.StopAndDetachIo();
 
-    EXPECT_TRUE(clientReceivedAll) << "客户端只收到 " << client.ReceivedCount() << " 帧回显";
-    EXPECT_TRUE(serverReceivedAll) << "服务端只收到 " << server.ReceivedCount() << " 帧请求";
-    EXPECT_EQ(server.ConnectCount(), 1) << "服务端接受了 " << server.ConnectCount() << " 条连接";
-    EXPECT_EQ(client.ConnectCount(), 1) << "客户端建立了 " << client.ConnectCount() << " 条连接";
-    EXPECT_EQ(serverDisConnectCountDuringRoundTrip, 0);
-    EXPECT_EQ(clientDisConnectCountDuringRoundTrip, 0);
-    EXPECT_EQ(server.UnexpectedFrameCount(), 0);
-    EXPECT_EQ(client.UnexpectedFrameCount(), 0);
+    INFO("客户端只收到 " << client.ReceivedCount() << " 帧回显");
+    CHECK(clientReceivedAll);
+    INFO("服务端只收到 " << server.ReceivedCount() << " 帧请求");
+    CHECK(serverReceivedAll);
+    INFO("服务端接受了 " << server.ConnectCount() << " 条连接");
+    CHECK_EQ(server.ConnectCount(), 1);
+    INFO("客户端建立了 " << client.ConnectCount() << " 条连接");
+    CHECK_EQ(client.ConnectCount(), 1);
+    CHECK_EQ(serverDisConnectCountDuringRoundTrip, 0);
+    CHECK_EQ(clientDisConnectCountDuringRoundTrip, 0);
+    CHECK_EQ(server.UnexpectedFrameCount(), 0);
+    CHECK_EQ(client.UnexpectedFrameCount(), 0);
 
     ExpectAllOrdersIntact(server.ReceivedOrders());
     ExpectAllOrdersIntact(client.ReceivedOrders());
 }
 
-TEST(TcpIocpTest, RepeatedlyRejectedConnectAttemptsKeepProcessHandleCountFlat)
+TEST_CASE("TcpIocpTest.RepeatedlyRejectedConnectAttemptsKeepProcessHandleCountFlat")
 {
     WriteLogFunc savedWriteLogFunc = Logger::GetWriteLogFunc();
     Logger::SetExternLogger(CountErrorLog);
@@ -359,12 +364,13 @@ TEST(TcpIocpTest, RepeatedlyRejectedConnectAttemptsKeepProcessHandleCountFlat)
 
     Logger::SetExternLogger(savedWriteLogFunc);
 
-    EXPECT_EQ(measurement.ErrorLogCount, BuildTeardownRoundCount)
-        << BuildTeardownRoundCount << " 次尝试只记到 " << measurement.ErrorLogCount << " 次同步拒绝：失败模式变了，本用例量的已不是同一条路径";
-    EXPECT_LE(measurement.HandleGrowth, AllowedHandleGrowth) << BuildTeardownRoundCount << " 次被拒的连接尝试让句柄涨了 " << measurement.HandleGrowth;
+    INFO(BuildTeardownRoundCount << " 次尝试只记到 " << measurement.ErrorLogCount << " 次同步拒绝：失败模式变了，本用例量的已不是同一条路径");
+    CHECK_EQ(measurement.ErrorLogCount, BuildTeardownRoundCount);
+    INFO(BuildTeardownRoundCount << " 次被拒的连接尝试让句柄涨了 " << measurement.HandleGrowth);
+    CHECK_LE(measurement.HandleGrowth, AllowedHandleGrowth);
 }
 
-TEST(TcpIocpTest, AbandonedPendingConnectKeepsProcessHandleCountFlat)
+TEST_CASE("TcpIocpTest.AbandonedPendingConnectKeepsProcessHandleCountFlat")
 {
     WriteLogFunc savedWriteLogFunc = Logger::GetWriteLogFunc();
     Logger::SetExternLogger(CountErrorLog);
@@ -374,20 +380,21 @@ TEST(TcpIocpTest, AbandonedPendingConnectKeepsProcessHandleCountFlat)
 
     Logger::SetExternLogger(savedWriteLogFunc);
 
-    EXPECT_EQ(measurement.ErrorLogCount, 0) << "出现 " << measurement.ErrorLogCount
-                                            << " 条 Error 级日志：目标地址已被同步拒绝，本用例量的不再是「悬着的请求」";
-    EXPECT_LE(measurement.HandleGrowth, AllowedHandleGrowth)
-        << BuildTeardownRoundCount << " 轮建/毁让句柄涨了 " << measurement.HandleGrowth << "：ConnectEx 请求没被收回来";
+    INFO("出现 " << measurement.ErrorLogCount << " 条 Error 级日志：目标地址已被同步拒绝，本用例量的不再是「悬着的请求」");
+    CHECK_EQ(measurement.ErrorLogCount, 0);
+    INFO(BuildTeardownRoundCount << " 轮建/毁让句柄涨了 " << measurement.HandleGrowth << "：ConnectEx 请求没被收回来");
+    CHECK_LE(measurement.HandleGrowth, AllowedHandleGrowth);
 }
 
-TEST(TcpIocpTest, ServerAbandonedPendingAcceptsKeepProcessHandleCountFlat)
+TEST_CASE("TcpIocpTest.ServerAbandonedPendingAcceptsKeepProcessHandleCountFlat")
 {
     const BuildTeardownMeasurement measurement =
         MeasureBuildTeardownRounds(BuildTeardownRoundCount, [] { RunOneServerBuildAndTeardown(ThrowawayListenAddress); });
 
-    EXPECT_EQ(measurement.ErrorLogCount, 0) << "析构路径记到 " << measurement.ErrorLogCount << " 条 Error 级日志";
-    EXPECT_LE(measurement.HandleGrowth, AllowedHandleGrowth)
-        << BuildTeardownRoundCount << " 轮建/毁让句柄涨了 " << measurement.HandleGrowth << "：AcceptEx 请求没被收回来";
+    INFO("析构路径记到 " << measurement.ErrorLogCount << " 条 Error 级日志");
+    CHECK_EQ(measurement.ErrorLogCount, 0);
+    INFO(BuildTeardownRoundCount << " 轮建/毁让句柄涨了 " << measurement.HandleGrowth << "：AcceptEx 请求没被收回来");
+    CHECK_LE(measurement.HandleGrowth, AllowedHandleGrowth);
 }
 
 #endif // _WIN32

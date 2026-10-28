@@ -13,20 +13,19 @@
     - [1.2 Visual Studio 2022](#12-visual-studio-2022)
     - [1.3 Git](#13-git)
     - [1.4 代理配置（可选但推荐）](#14-代理配置可选但推荐)
-    - [1.5 vcpkg](#15-vcpkg)
+    - [1.5 doctest](#15-doctest)
     - [1.6 验证](#16-验证)
   - [二、WSL（GCC）](#二wslgcc)
     - [2.1 系统要求](#21-系统要求)
     - [2.2 WSL 安装与配置](#22-wsl-安装与配置)
     - [2.3 构建工具链](#23-构建工具链)
-    - [2.4 vcpkg](#24-vcpkg)
+    - [2.4 doctest](#24-doctest)
     - [2.5 代理配置（可选）](#25-代理配置可选)
     - [2.6 验证](#26-验证)
   - [三、常见问题](#三常见问题)
-    - [3.1 vcpkg 拉取超时 / 无法连接 GitHub](#31-vcpkg-拉取超时--无法连接-github)
-    - [3.2 VS 提示 "Could not find GTest"](#32-vs-提示-could-not-find-gtest)
-    - [3.3 WSL 中 cmake 找不到 Ninja](#33-wsl-中-cmake-找不到-ninja)
-    - [3.4 代理关闭后 Git 报错](#34-代理关闭后-git-报错)
+    - [3.1 CMake 报找不到 doctest](#31-cmake-报找不到-doctest)
+    - [3.2 WSL 中 cmake 找不到 Ninja](#32-wsl-中-cmake-找不到-ninja)
+    - [3.3 代理关闭后 Git 报错](#33-代理关闭后-git-报错)
 
 ---
 
@@ -52,8 +51,6 @@
 ```
 D:/Program Files/Microsoft Visual Studio/2022/Enterprise/
 ```
-
-> 如果 vcpkg 安装在其他位置，请同步更新 `VCPKG_ROOT` 系统环境变量，使其指向实际安装目录。
 
 ### 1.3 Git
 
@@ -90,33 +87,33 @@ setx https_proxy "http://127.0.0.1:7897"
 
 设置后需重启终端或 Visual Studio。
 
-### 1.5 vcpkg
+### 1.5 doctest
 
-**方案一：系统级安装（推荐）**
+单元测试框架为 **doctest 2.5.3**，纯头文件、无需包管理器。按兄弟仓的约定，构建从同级目录 `../Libs/doctest` 读取，该目录须为 CMake 安装后的形态：
 
-```bash
-git clone https://github.com/microsoft/vcpkg
-cd vcpkg
-.\bootstrap-vcpkg.bat
+```text
+Libs/
+└── doctest/
+    ├── include/doctest/doctest.h
+    └── lib/cmake/doctest/doctestConfig.cmake
 ```
 
-**设置 `VCPKG_ROOT` 系统环境变量（必需）：**
+由 doctest 源码安装到该位置（下称源码树根为 `doctest`）：
 
 ```bash
-setx VCPKG_ROOT "D:/path/to/vcpkg"
+cmake -S doctest -B doctest/build -DCMAKE_INSTALL_PREFIX=../Libs/doctest
+cmake --build doctest/build --target install
 ```
 
-将 `%VCPKG_ROOT%` 添加到 `PATH`，并**重启终端 / Visual Studio** 使环境变量生效。
-
-> **注意**：项目 CMake 通过 `$ENV{VCPKG_ROOT}` 定位 vcpkg（`CMakeLists.txt` 中 `set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")`），Windows 下由 `restore_vcpkg_root()` 自动读取**系统环境变量**（优先 User 级，其次 Machine 级）。因此 `VCPKG_ROOT` 必须以系统环境变量形式设置，**不再支持固定的回退路径**。
+> **注意**：根 `CMakeLists.txt` 通过 `find_package(doctest CONFIG REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/../Libs/doctest")` 定位；目录移动或改名后须同步修改该行。
 
 ### 1.6 验证
 
 打开 **Visual Studio**，选择 `x64-Debug` 配置，执行 CMake 配置（生成 cache）：
 
-- 控制台应输出 vcpkg 相关日志（自动安装 gtest）
-- 配置完成后 `test/unittest` 能正确找到 `GTestConfig.cmake`
-- 构建无报错
+- 配置阶段应定位到 `../Libs/doctest/lib/cmake/doctest/doctestConfig.cmake`
+- 构建 `UnitTests` 无报错、无警告
+- 运行 `UnitTests`，末尾汇总应为 `test cases: 503 | 503 passed`（Debug 档）
 
 ---
 
@@ -168,7 +165,7 @@ wsl --shutdown
 
 ```bash
 sudo apt update
-sudo apt install build-essential cmake ninja-build curl zip unzip tar pkg-config -y
+sudo apt install build-essential cmake ninja-build pkg-config -y
 ```
 
 | 包名 | 作用 |
@@ -176,37 +173,17 @@ sudo apt install build-essential cmake ninja-build curl zip unzip tar pkg-config
 | `build-essential` | g++、gcc、make 等编译工具链 |
 | `cmake` | CMake 构建系统 |
 | `ninja-build` | Ninja 构建系统（项目使用的生成器） |
-| `curl`、`zip`、`unzip`、`tar` | vcpkg 下载和解压依赖 |
 | `pkg-config` | 包配置工具 |
 
-### 2.4 vcpkg
+### 2.4 doctest
 
-**安装 vcpkg：**
-
-```bash
-cd ~
-git clone https://github.com/microsoft/vcpkg ~/Github/vcpkg
-./vcpkg/bootstrap-vcpkg.sh
-```
-
-**设置环境变量（持久化）：**
-
-```bash
-echo 'export VCPKG_ROOT=~/Github/vcpkg' >> ~/.bashrc
-echo 'export PATH=$VCPKG_ROOT:$PATH' >> ~/.bashrc
-source ~/.bashrc
-```
-
-（如果使用 zsh，将 `.bashrc` 替换为 `.zshrc`）
+WSL 中构建 `/mnt/d/Gitee/Spark` 时，`../Libs/doctest` 与 Windows 侧指向同一份目录，不必重复安装。若仓库在 WSL 内独立克隆，把同样的 doctest 安装目录放回仓库同级即可。
 
 **验证：**
 
 ```bash
-vcpkg --version
-echo $VCPKG_ROOT  # 应输出 /home/xxx/Github/vcpkg
+ls ../Libs/doctest/lib/cmake/doctest/doctestConfig.cmake
 ```
-
-> **注意**：WSL / Linux 构建时，CMake 直接读取 shell 环境变量 `VCPKG_ROOT`（`restore_vcpkg_root()` 仅在 Windows 生效），请确保上述 `export` 已写入 `~/.bashrc` 并 `source` 生效。
 
 ### 2.5 代理配置（可选）
 
@@ -231,7 +208,6 @@ source ~/.bashrc
 cd /mnt/d/Gitee/Spark
 cmake -S . -B out/build/WSL-GCC-Debug \
   -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
   -DCMAKE_INSTALL_PREFIX=../Libs/Spark/x64-linux \
   -G Ninja
 ```
@@ -242,26 +218,19 @@ cmake -S . -B out/build/WSL-GCC-Debug \
 
 ## 三、常见问题
 
-### 3.1 vcpkg 拉取超时 / 无法连接 GitHub
+### 3.1 CMake 报找不到 doctest
 
-- 确认代理工具已开启
-- 检查 `git config --global http.proxy` 是否设置正确
-- vcpkg 下载器只读取 `HTTP_PROXY` / `HTTPS_PROXY` 环境变量；项目 CMake 已通过 `reuse_git_proxy_for_vcpkg()` 在未设置环境变量时自动复用 git 代理配置，通常无需额外处理
-- 若仍未生效，请手动设置 `http_proxy` / `https_proxy` 环境变量
-
-### 3.2 VS 提示 "Could not find GTest"
-
-- 确认 vcpkg 已安装，且 `VCPKG_ROOT` 已设置为**系统环境变量**（`restore_vcpkg_root()` 会从 User / Machine 级环境变量读取）
-- 设置 `VCPKG_ROOT` 后请**重启终端或 Visual Studio** 再执行 CMake 配置（VS 不会自动刷新旧的环境变量）
+- 确认 `../Libs/doctest/lib/cmake/doctest/doctestConfig.cmake` 存在（doctest 2.5.3）
+- 目录位置不对时，移回仓库同级，或同步修改根 `CMakeLists.txt` 中的 `find_package(doctest ...)` 行
 - 在 VS 中选择 **项目 → 清除缓存并重新生成**，或删除 `out/` 目录后重新配置
 
-### 3.3 WSL 中 cmake 找不到 Ninja
+### 3.2 WSL 中 cmake 找不到 Ninja
 
 ```bash
 sudo apt install ninja-build
 ```
 
-### 3.4 代理关闭后 Git 报错
+### 3.3 代理关闭后 Git 报错
 
 ```bash
 git config --global --unset http.proxy

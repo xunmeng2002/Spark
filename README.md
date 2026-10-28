@@ -71,7 +71,7 @@ Spark/
 │   ├── Network/                # Network 模块实现
 │   └── Serialization/          # Serialization 模块实现
 ├── test/                       # 测试程序
-│   ├── unittest/               # GTest 单元测试（主要测试入口）
+│   ├── unittest/               # doctest 单元测试（主要测试入口）
 │   │   ├── Core/               # Core 模块单元测试（9 文件）
 │   │   ├── Network/            # Network 模块单元测试（9 文件）
 │   │   ├── Serialization/      # Serialization 模块单元测试（4 文件）
@@ -106,14 +106,14 @@ Spark/
 - C++ 编译器：支持 **C++20 及以上**（GCC、Clang、MSVC）
 - 构建工具：**CMake 3.20+**
 - 脚本环境：**Python 3.6+**（仅用于代码生成类脚本，非运行依赖）
-- 测试框架：**Google Test**（CMake 自动查找，需已安装或由 vcpkg / 系统包管理器提供）
+- 测试框架：**doctest 2.5.3**（纯头文件，从同级目录 `../Libs/doctest` 读取，无需包管理器）
 - 平台：Linux、Windows
 
 ### 依赖子模块
 
 项目依赖 `CMakeCommon` 子模块，克隆代码后需同步拉取子模块。
 
-> 详细的环境搭建步骤（代理配置、vcpkg 安装、WSL 镜像网络等）请参见 [环境准备指南](docs/environment-setup.md)。
+> 详细的环境搭建步骤（代理配置、doctest 放置、WSL 镜像网络等）请参见 [环境准备指南](docs/environment-setup.md)。
 
 ## 五、快速构建 & 编译
 

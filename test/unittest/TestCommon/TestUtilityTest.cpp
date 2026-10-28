@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include "TestUtility/TestUtility.h"
+#include "doctest/doctest.h"
 
 using namespace Spark;
 // ============================================================
@@ -30,132 +30,132 @@ private:
 };
 }
 
-TEST(TryParseTestProtocolTest, AcceptsEachConfiguredName)
+TEST_CASE("TryParseTestProtocolTest.AcceptsEachConfiguredName")
 {
-    ASSERT_TRUE(TryParseTestProtocol("Shm").has_value());
-    EXPECT_EQ(*TryParseTestProtocol("Shm"), TestProtocolType::Shm);
-    EXPECT_EQ(*TryParseTestProtocol("Tcp"), TestProtocolType::Tcp);
-    EXPECT_EQ(*TryParseTestProtocol("Xtp"), TestProtocolType::Xtp);
-    EXPECT_EQ(*TryParseTestProtocol("Step"), TestProtocolType::Step);
+    REQUIRE(TryParseTestProtocol("Shm").has_value());
+    CHECK_EQ(*TryParseTestProtocol("Shm"), TestProtocolType::Shm);
+    CHECK_EQ(*TryParseTestProtocol("Tcp"), TestProtocolType::Tcp);
+    CHECK_EQ(*TryParseTestProtocol("Xtp"), TestProtocolType::Xtp);
+    CHECK_EQ(*TryParseTestProtocol("Step"), TestProtocolType::Step);
 }
 
-TEST(TryParseTestProtocolTest, RejectsNullName)
+TEST_CASE("TryParseTestProtocolTest.RejectsNullName")
 {
-    EXPECT_FALSE(TryParseTestProtocol(nullptr).has_value());
+    CHECK_FALSE(TryParseTestProtocol(nullptr).has_value());
 }
 
-TEST(TryParseTestProtocolTest, RejectsUnconfiguredName)
+TEST_CASE("TryParseTestProtocolTest.RejectsUnconfiguredName")
 {
-    EXPECT_FALSE(TryParseTestProtocol("").has_value());
-    EXPECT_FALSE(TryParseTestProtocol("Http").has_value());
-    EXPECT_FALSE(TryParseTestProtocol("Step ").has_value());
+    CHECK_FALSE(TryParseTestProtocol("").has_value());
+    CHECK_FALSE(TryParseTestProtocol("Http").has_value());
+    CHECK_FALSE(TryParseTestProtocol("Step ").has_value());
 }
 
-TEST(TryParseTestProtocolTest, IsCaseSensitive)
+TEST_CASE("TryParseTestProtocolTest.IsCaseSensitive")
 {
-    EXPECT_FALSE(TryParseTestProtocol("step").has_value());
-    EXPECT_FALSE(TryParseTestProtocol("STEP").has_value());
+    CHECK_FALSE(TryParseTestProtocol("step").has_value());
+    CHECK_FALSE(TryParseTestProtocol("STEP").has_value());
 }
 
-TEST(ApplyTestProtocolFromCommandLineTest, LeavesProtocolUnchangedWhenNoArgument)
+TEST_CASE("ApplyTestProtocolFromCommandLineTest.LeavesProtocolUnchangedWhenNoArgument")
 {
     GlobalValueGuard<TestProtocolType> guard(TestProtocol);
     TestProtocol = TestProtocolType::Step;
 
     const char* const argv[] = {"TestClient.exe"};
-    EXPECT_EQ(ApplyTestProtocolFromCommandLine(1, argv), 0);
-    EXPECT_EQ(TestProtocol, TestProtocolType::Step);
+    CHECK_EQ(ApplyTestProtocolFromCommandLine(1, argv), 0);
+    CHECK_EQ(TestProtocol, TestProtocolType::Step);
 }
 
-TEST(ApplyTestProtocolFromCommandLineTest, SelectsProtocolFromFirstArgument)
+TEST_CASE("ApplyTestProtocolFromCommandLineTest.SelectsProtocolFromFirstArgument")
 {
     GlobalValueGuard<TestProtocolType> guard(TestProtocol);
 
     const char* const argv[] = {"TestClient.exe", "Step"};
-    EXPECT_EQ(ApplyTestProtocolFromCommandLine(2, argv), 0);
-    EXPECT_EQ(TestProtocol, TestProtocolType::Step);
+    CHECK_EQ(ApplyTestProtocolFromCommandLine(2, argv), 0);
+    CHECK_EQ(TestProtocol, TestProtocolType::Step);
 }
 
-TEST(ApplyTestProtocolFromCommandLineTest, IgnoresArgumentsAfterTheFirst)
+TEST_CASE("ApplyTestProtocolFromCommandLineTest.IgnoresArgumentsAfterTheFirst")
 {
     GlobalValueGuard<TestProtocolType> guard(TestProtocol);
 
     const char* const argv[] = {"TestClient.exe", "Xtp", "Step"};
-    EXPECT_EQ(ApplyTestProtocolFromCommandLine(3, argv), 0);
-    EXPECT_EQ(TestProtocol, TestProtocolType::Xtp);
+    CHECK_EQ(ApplyTestProtocolFromCommandLine(3, argv), 0);
+    CHECK_EQ(TestProtocol, TestProtocolType::Xtp);
 }
 
-TEST(ApplyTestProtocolFromCommandLineTest, ReportsUsageExitCodeAndKeepsProtocolOnUnknownName)
+TEST_CASE("ApplyTestProtocolFromCommandLineTest.ReportsUsageExitCodeAndKeepsProtocolOnUnknownName")
 {
     GlobalValueGuard<TestProtocolType> guard(TestProtocol);
     TestProtocol = TestProtocolType::Shm;
 
     const char* const argv[] = {"TestClient.exe", "step"};
-    EXPECT_EQ(ApplyTestProtocolFromCommandLine(2, argv), 2);
-    EXPECT_EQ(TestProtocol, TestProtocolType::Shm);
+    CHECK_EQ(ApplyTestProtocolFromCommandLine(2, argv), 2);
+    CHECK_EQ(TestProtocol, TestProtocolType::Shm);
 }
 
-TEST(TryParseIoModelTest, AcceptsEachConfiguredName)
+TEST_CASE("TryParseIoModelTest.AcceptsEachConfiguredName")
 {
-    ASSERT_TRUE(TryParseIoModel("Select").has_value());
-    EXPECT_EQ(*TryParseIoModel("Select"), IoModelType::Select);
-    EXPECT_EQ(*TryParseIoModel("Epoll"), IoModelType::Epoll);
-    EXPECT_EQ(*TryParseIoModel("Iocp"), IoModelType::Iocp);
+    REQUIRE(TryParseIoModel("Select").has_value());
+    CHECK_EQ(*TryParseIoModel("Select"), IoModelType::Select);
+    CHECK_EQ(*TryParseIoModel("Epoll"), IoModelType::Epoll);
+    CHECK_EQ(*TryParseIoModel("Iocp"), IoModelType::Iocp);
 }
 
-TEST(TryParseIoModelTest, RejectsNullName)
+TEST_CASE("TryParseIoModelTest.RejectsNullName")
 {
-    EXPECT_FALSE(TryParseIoModel(nullptr).has_value());
+    CHECK_FALSE(TryParseIoModel(nullptr).has_value());
 }
 
-TEST(TryParseIoModelTest, RejectsUnconfiguredName)
+TEST_CASE("TryParseIoModelTest.RejectsUnconfiguredName")
 {
-    EXPECT_FALSE(TryParseIoModel("").has_value());
-    EXPECT_FALSE(TryParseIoModel("Unknown").has_value());
-    EXPECT_FALSE(TryParseIoModel("Iocp ").has_value());
+    CHECK_FALSE(TryParseIoModel("").has_value());
+    CHECK_FALSE(TryParseIoModel("Unknown").has_value());
+    CHECK_FALSE(TryParseIoModel("Iocp ").has_value());
 }
 
-TEST(TryParseIoModelTest, IsCaseSensitive)
+TEST_CASE("TryParseIoModelTest.IsCaseSensitive")
 {
-    EXPECT_FALSE(TryParseIoModel("iocp").has_value());
-    EXPECT_FALSE(TryParseIoModel("SELECT").has_value());
+    CHECK_FALSE(TryParseIoModel("iocp").has_value());
+    CHECK_FALSE(TryParseIoModel("SELECT").has_value());
 }
 
-TEST(ApplyIoModelFromCommandLineTest, LeavesIoModelUnchangedWhenNoSecondArgument)
+TEST_CASE("ApplyIoModelFromCommandLineTest.LeavesIoModelUnchangedWhenNoSecondArgument")
 {
     GlobalValueGuard<IoModelType> guard(IoModel);
     IoModel = IoModelType::Select;
 
     const char* const argv[] = {"TestClient.exe", "Step"};
-    EXPECT_EQ(ApplyIoModelFromCommandLine(2, argv), 0);
-    EXPECT_EQ(IoModel, IoModelType::Select);
+    CHECK_EQ(ApplyIoModelFromCommandLine(2, argv), 0);
+    CHECK_EQ(IoModel, IoModelType::Select);
 }
 
-TEST(ApplyIoModelFromCommandLineTest, SelectsIoModelFromSecondArgument)
+TEST_CASE("ApplyIoModelFromCommandLineTest.SelectsIoModelFromSecondArgument")
 {
     GlobalValueGuard<IoModelType> guard(IoModel);
     IoModel = IoModelType::Select;
 
     const char* const argv[] = {"TestClient.exe", "Step", "Iocp"};
-    EXPECT_EQ(ApplyIoModelFromCommandLine(3, argv), 0);
-    EXPECT_EQ(IoModel, IoModelType::Iocp);
+    CHECK_EQ(ApplyIoModelFromCommandLine(3, argv), 0);
+    CHECK_EQ(IoModel, IoModelType::Iocp);
 }
 
-TEST(ApplyIoModelFromCommandLineTest, IgnoresArgumentsAfterTheSecond)
+TEST_CASE("ApplyIoModelFromCommandLineTest.IgnoresArgumentsAfterTheSecond")
 {
     GlobalValueGuard<IoModelType> guard(IoModel);
 
     const char* const argv[] = {"TestClient.exe", "Step", "Iocp", "Epoll"};
-    EXPECT_EQ(ApplyIoModelFromCommandLine(4, argv), 0);
-    EXPECT_EQ(IoModel, IoModelType::Iocp);
+    CHECK_EQ(ApplyIoModelFromCommandLine(4, argv), 0);
+    CHECK_EQ(IoModel, IoModelType::Iocp);
 }
 
-TEST(ApplyIoModelFromCommandLineTest, ReportsUsageExitCodeAndKeepsIoModelOnUnknownName)
+TEST_CASE("ApplyIoModelFromCommandLineTest.ReportsUsageExitCodeAndKeepsIoModelOnUnknownName")
 {
     GlobalValueGuard<IoModelType> guard(IoModel);
     IoModel = IoModelType::Select;
 
     const char* const argv[] = {"TestClient.exe", "Step", "iocp"};
-    EXPECT_EQ(ApplyIoModelFromCommandLine(3, argv), 2);
-    EXPECT_EQ(IoModel, IoModelType::Select);
+    CHECK_EQ(ApplyIoModelFromCommandLine(3, argv), 2);
+    CHECK_EQ(IoModel, IoModelType::Select);
 }

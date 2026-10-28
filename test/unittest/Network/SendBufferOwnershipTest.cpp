@@ -1,7 +1,7 @@
-#include <gtest/gtest.h>
 #include <Spark/Network/Io/IoBase.h>
 #include <Spark/Network/Io/IoFactory.h>
 #include <Spark/TemplateLib/Buffer/LinearBuffer.h>
+#include "doctest/doctest.h"
 
 #include <memory>
 using namespace Spark;
@@ -13,16 +13,16 @@ using namespace Spark::Network;
 // 领取发送缓冲；自行 Allocate 得到的对象会被归还进非属主的池（Debug 下检测器中止）。
 // ============================================================
 
-TEST(SendBufferOwnershipTest, AllocatedSendBufferIsReturnedByIoLayer)
+TEST_CASE("SendBufferOwnershipTest.AllocatedSendBufferIsReturnedByIoLayer")
 {
     const std::unique_ptr<IoBase> io(IoFactory::CreateIo(ServerTypeType::Server, "tcp://127.0.0.1:1"));
-    ASSERT_NE(io, nullptr);
+    REQUIRE_NE(io, nullptr);
 
     LinearBuffer<BufferSize>* buffer = io->AllocateSendBuffer();
-    ASSERT_NE(buffer, nullptr);
-    EXPECT_GT(buffer->GetWriteBufferSize(), 0u);
-    EXPECT_EQ(buffer->Append("Spark", 5), 5u);
-    EXPECT_EQ(buffer->GetLength(), 5u);
+    REQUIRE_NE(buffer, nullptr);
+    CHECK_GT(buffer->GetWriteBufferSize(), 0u);
+    CHECK_EQ(buffer->Append("Spark", 5), 5u);
+    CHECK_EQ(buffer->GetLength(), 5u);
 
     // 不存在的会话：Send 走「找不到连接即丢弃」路径，由 IO 层归还它自己发放的缓冲
     io->Send(0, buffer);

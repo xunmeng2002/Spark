@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include <Spark/Core/Utility/DoubleUtility.h>
+#include "doctest/doctest.h"
 
 #include <limits>
 #include <cmath>
@@ -13,111 +13,111 @@ static constexpr double Epsilon = std::numeric_limits<double>::epsilon();
 
 // ---------- DoubleEqual ----------
 
-TEST(DoubleUtilityTest, DoubleEqual_ExactEqual)
+TEST_CASE("DoubleUtilityTest.DoubleEqual_ExactEqual")
 {
-    EXPECT_TRUE(DoubleUtility::DoubleEqual(1.0, 1.0));
-    EXPECT_TRUE(DoubleUtility::DoubleEqual(-1.0, -1.0));
-    EXPECT_TRUE(DoubleUtility::DoubleEqual(0.0, 0.0));
+    CHECK(DoubleUtility::DoubleEqual(1.0, 1.0));
+    CHECK(DoubleUtility::DoubleEqual(-1.0, -1.0));
+    CHECK(DoubleUtility::DoubleEqual(0.0, 0.0));
 }
 
-TEST(DoubleUtilityTest, DoubleEqual_WithinEpsilon)
+TEST_CASE("DoubleUtilityTest.DoubleEqual_WithinEpsilon")
 {
     // 差值刚好在 epsilon 内
-    EXPECT_TRUE(DoubleUtility::DoubleEqual(1.0, 1.0 + Epsilon * 0.5));
-    EXPECT_TRUE(DoubleUtility::DoubleEqual(1.0 - Epsilon * 0.5, 1.0));
+    CHECK(DoubleUtility::DoubleEqual(1.0, 1.0 + Epsilon * 0.5));
+    CHECK(DoubleUtility::DoubleEqual(1.0 - Epsilon * 0.5, 1.0));
 }
 
-TEST(DoubleUtilityTest, DoubleEqual_BarelyOutside)
+TEST_CASE("DoubleUtilityTest.DoubleEqual_BarelyOutside")
 {
     // 差值刚好超过 epsilon
-    EXPECT_FALSE(DoubleUtility::DoubleEqual(1.0, 1.0 + Epsilon * 2.0));
+    CHECK_FALSE(DoubleUtility::DoubleEqual(1.0, 1.0 + Epsilon * 2.0));
 }
 
-TEST(DoubleUtilityTest, DoubleEqual_OppositeSign)
+TEST_CASE("DoubleUtilityTest.DoubleEqual_OppositeSign")
 {
-    EXPECT_FALSE(DoubleUtility::DoubleEqual(1.0, -1.0));
+    CHECK_FALSE(DoubleUtility::DoubleEqual(1.0, -1.0));
 }
 
 // ---------- DoubleNotEqual ----------
 
-TEST(DoubleUtilityTest, DoubleNotEqual)
+TEST_CASE("DoubleUtilityTest.DoubleNotEqual")
 {
-    EXPECT_TRUE(DoubleUtility::DoubleNotEqual(1.0, 2.0));
-    EXPECT_FALSE(DoubleUtility::DoubleNotEqual(1.0, 1.0));
+    CHECK(DoubleUtility::DoubleNotEqual(1.0, 2.0));
+    CHECK_FALSE(DoubleUtility::DoubleNotEqual(1.0, 1.0));
 }
 
 // ---------- DoubleLess ----------
 
-TEST(DoubleUtilityTest, DoubleLess)
+TEST_CASE("DoubleUtilityTest.DoubleLess")
 {
-    EXPECT_TRUE(DoubleUtility::DoubleLess(1.0, 2.0));
-    EXPECT_FALSE(DoubleUtility::DoubleLess(2.0, 1.0));
+    CHECK(DoubleUtility::DoubleLess(1.0, 2.0));
+    CHECK_FALSE(DoubleUtility::DoubleLess(2.0, 1.0));
 }
 
-TEST(DoubleUtilityTest, DoubleLess_NearEqual)
+TEST_CASE("DoubleUtilityTest.DoubleLess_NearEqual")
 {
     // 差值在 epsilon 内时不算 less
-    EXPECT_FALSE(DoubleUtility::DoubleLess(1.0, 1.0 + Epsilon * 0.5));
+    CHECK_FALSE(DoubleUtility::DoubleLess(1.0, 1.0 + Epsilon * 0.5));
 }
 
 // ---------- DoubleLessEqual ----------
 
-TEST(DoubleUtilityTest, DoubleLessEqual)
+TEST_CASE("DoubleUtilityTest.DoubleLessEqual")
 {
-    EXPECT_TRUE(DoubleUtility::DoubleLessEqual(1.0, 2.0));
-    EXPECT_TRUE(DoubleUtility::DoubleLessEqual(1.0, 1.0));
-    EXPECT_FALSE(DoubleUtility::DoubleLessEqual(2.0, 1.0));
+    CHECK(DoubleUtility::DoubleLessEqual(1.0, 2.0));
+    CHECK(DoubleUtility::DoubleLessEqual(1.0, 1.0));
+    CHECK_FALSE(DoubleUtility::DoubleLessEqual(2.0, 1.0));
 }
 
-TEST(DoubleUtilityTest, DoubleLessEqual_NearEqual)
+TEST_CASE("DoubleUtilityTest.DoubleLessEqual_NearEqual")
 {
     // 差值在 epsilon 内也算 equal
-    EXPECT_TRUE(DoubleUtility::DoubleLessEqual(1.0, 1.0 + Epsilon * 0.5));
+    CHECK(DoubleUtility::DoubleLessEqual(1.0, 1.0 + Epsilon * 0.5));
 }
 
 // ---------- DoubleGreat ----------
 
-TEST(DoubleUtilityTest, DoubleGreat)
+TEST_CASE("DoubleUtilityTest.DoubleGreat")
 {
-    EXPECT_TRUE(DoubleUtility::DoubleGreat(2.0, 1.0));
-    EXPECT_FALSE(DoubleUtility::DoubleGreat(1.0, 2.0));
+    CHECK(DoubleUtility::DoubleGreat(2.0, 1.0));
+    CHECK_FALSE(DoubleUtility::DoubleGreat(1.0, 2.0));
 }
 
-TEST(DoubleUtilityTest, DoubleGreat_NearEqual)
+TEST_CASE("DoubleUtilityTest.DoubleGreat_NearEqual")
 {
-    EXPECT_FALSE(DoubleUtility::DoubleGreat(1.0 + Epsilon * 0.5, 1.0));
+    CHECK_FALSE(DoubleUtility::DoubleGreat(1.0 + Epsilon * 0.5, 1.0));
 }
 
 // ---------- DoubleGreatEqual ----------
 
-TEST(DoubleUtilityTest, DoubleGreatEqual)
+TEST_CASE("DoubleUtilityTest.DoubleGreatEqual")
 {
-    EXPECT_TRUE(DoubleUtility::DoubleGreatEqual(2.0, 1.0));
-    EXPECT_TRUE(DoubleUtility::DoubleGreatEqual(1.0, 1.0));
-    EXPECT_FALSE(DoubleUtility::DoubleGreatEqual(1.0, 2.0));
+    CHECK(DoubleUtility::DoubleGreatEqual(2.0, 1.0));
+    CHECK(DoubleUtility::DoubleGreatEqual(1.0, 1.0));
+    CHECK_FALSE(DoubleUtility::DoubleGreatEqual(1.0, 2.0));
 }
 
-TEST(DoubleUtilityTest, DoubleGreatEqual_NearEqual)
+TEST_CASE("DoubleUtilityTest.DoubleGreatEqual_NearEqual")
 {
-    EXPECT_TRUE(DoubleUtility::DoubleGreatEqual(1.0 + Epsilon * 0.5, 1.0));
+    CHECK(DoubleUtility::DoubleGreatEqual(1.0 + Epsilon * 0.5, 1.0));
 }
 
 // ---------- GetDoubleValue ----------
 
-TEST(DoubleUtilityTest, GetDoubleValue_Normal)
+TEST_CASE("DoubleUtilityTest.GetDoubleValue_Normal")
 {
-    EXPECT_DOUBLE_EQ(DoubleUtility::GetDoubleValue(3.14), 3.14);
-    EXPECT_DOUBLE_EQ(DoubleUtility::GetDoubleValue(-2.5), -2.5);
-    EXPECT_DOUBLE_EQ(DoubleUtility::GetDoubleValue(0.0), 0.0);
+    CHECK_EQ(DoubleUtility::GetDoubleValue(3.14), 3.14);
+    CHECK_EQ(DoubleUtility::GetDoubleValue(-2.5), -2.5);
+    CHECK_EQ(DoubleUtility::GetDoubleValue(0.0), 0.0);
 }
 
-TEST(DoubleUtilityTest, GetDoubleValue_NaN)
+TEST_CASE("DoubleUtilityTest.GetDoubleValue_NaN")
 {
-    EXPECT_DOUBLE_EQ(DoubleUtility::GetDoubleValue(std::nan("")), 0.0);
+    CHECK_EQ(DoubleUtility::GetDoubleValue(std::nan("")), 0.0);
 }
 
-TEST(DoubleUtilityTest, GetDoubleValue_Infinity)
+TEST_CASE("DoubleUtilityTest.GetDoubleValue_Infinity")
 {
-    EXPECT_DOUBLE_EQ(DoubleUtility::GetDoubleValue(std::numeric_limits<double>::infinity()), 0.0);
-    EXPECT_DOUBLE_EQ(DoubleUtility::GetDoubleValue(-std::numeric_limits<double>::infinity()), 0.0);
+    CHECK_EQ(DoubleUtility::GetDoubleValue(std::numeric_limits<double>::infinity()), 0.0);
+    CHECK_EQ(DoubleUtility::GetDoubleValue(-std::numeric_limits<double>::infinity()), 0.0);
 }

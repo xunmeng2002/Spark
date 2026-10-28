@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include <Spark/TemplateLib/ThreadSafeContainer/LockFreeQueue.h>
+#include "doctest/doctest.h"
 
 #include <memory>
 #include <string>
@@ -12,37 +12,37 @@ using namespace Spark;
 
 // ---------- 初始状态 ----------
 
-TEST(LockFreeQueueTest, DefaultConstructor_Empty)
+TEST_CASE("LockFreeQueueTest.DefaultConstructor_Empty")
 {
     LockFreeQueue<int> q;
-    EXPECT_TRUE(q.Empty());
-    EXPECT_EQ(q.PopFront(), nullptr);
+    CHECK(q.Empty());
+    CHECK_EQ(q.PopFront(), nullptr);
 }
 
 // ---------- PushBack / PopFront ----------
 
-TEST(LockFreeQueueTest, PushBack_Single)
+TEST_CASE("LockFreeQueueTest.PushBack_Single")
 {
     LockFreeQueue<int> q;
     auto data = std::make_shared<int>(42);
-    EXPECT_TRUE(q.Empty());
+    CHECK(q.Empty());
 
     q.PushBack(data);
-    EXPECT_FALSE(q.Empty());
+    CHECK_FALSE(q.Empty());
 
     auto result = q.PopFront();
-    ASSERT_NE(result, nullptr);
-    EXPECT_EQ(*result, 42);
-    EXPECT_TRUE(q.Empty());
+    REQUIRE_NE(result, nullptr);
+    CHECK_EQ(*result, 42);
+    CHECK(q.Empty());
 }
 
-TEST(LockFreeQueueTest, PopFront_Empty_ReturnsNull)
+TEST_CASE("LockFreeQueueTest.PopFront_Empty_ReturnsNull")
 {
     LockFreeQueue<int> q;
-    EXPECT_EQ(q.PopFront(), nullptr);
+    CHECK_EQ(q.PopFront(), nullptr);
 }
 
-TEST(LockFreeQueueTest, PushBack_Multiple_FIFO)
+TEST_CASE("LockFreeQueueTest.PushBack_Multiple_FIFO")
 {
     LockFreeQueue<int> q;
 
@@ -54,32 +54,32 @@ TEST(LockFreeQueueTest, PushBack_Multiple_FIFO)
     for (int i = 0; i < 10; ++i)
     {
         auto result = q.PopFront();
-        ASSERT_NE(result, nullptr);
-        EXPECT_EQ(*result, i);
+        REQUIRE_NE(result, nullptr);
+        CHECK_EQ(*result, i);
     }
 
-    EXPECT_TRUE(q.Empty());
+    CHECK(q.Empty());
 }
 
-TEST(LockFreeQueueTest, InterleavedPushPop)
+TEST_CASE("LockFreeQueueTest.InterleavedPushPop")
 {
     LockFreeQueue<int> q;
 
     q.PushBack(std::make_shared<int>(1));
     q.PushBack(std::make_shared<int>(2));
 
-    EXPECT_EQ(*q.PopFront(), 1);
+    CHECK_EQ(*q.PopFront(), 1);
 
     q.PushBack(std::make_shared<int>(3));
 
-    EXPECT_EQ(*q.PopFront(), 2);
-    EXPECT_EQ(*q.PopFront(), 3);
-    EXPECT_TRUE(q.Empty());
+    CHECK_EQ(*q.PopFront(), 2);
+    CHECK_EQ(*q.PopFront(), 3);
+    CHECK(q.Empty());
 }
 
 // ---------- shared_ptr 语义 ----------
 
-TEST(LockFreeQueueTest, PushBack_SharedPtrAliasing)
+TEST_CASE("LockFreeQueueTest.PushBack_SharedPtrAliasing")
 {
     // 验证 queue 接管了 shared_ptr，内部不会提前释放
     LockFreeQueue<int> q;
@@ -90,20 +90,20 @@ TEST(LockFreeQueueTest, PushBack_SharedPtrAliasing)
     data.reset(); // 释放外部引用
 
     // queue 内部仍持有共享所有权
-    EXPECT_FALSE(weak.expired());
+    CHECK_FALSE(weak.expired());
 
     auto result = q.PopFront();
-    ASSERT_NE(result, nullptr);
-    EXPECT_EQ(*result, 99);
+    REQUIRE_NE(result, nullptr);
+    CHECK_EQ(*result, 99);
 
     // PopFront 后 queue 释放，weak 到期
     result.reset();
-    EXPECT_TRUE(weak.expired());
+    CHECK(weak.expired());
 }
 
 // ---------- 字符串类型 ----------
 
-TEST(LockFreeQueueTest, StringType)
+TEST_CASE("LockFreeQueueTest.StringType")
 {
     LockFreeQueue<std::string> q;
     q.PushBack(std::make_shared<std::string>("Hello"));
@@ -111,15 +111,15 @@ TEST(LockFreeQueueTest, StringType)
 
     auto a = q.PopFront();
     auto b = q.PopFront();
-    ASSERT_NE(a, nullptr);
-    ASSERT_NE(b, nullptr);
-    EXPECT_EQ(*a, "Hello");
-    EXPECT_EQ(*b, "World");
+    REQUIRE_NE(a, nullptr);
+    REQUIRE_NE(b, nullptr);
+    CHECK_EQ(*a, "Hello");
+    CHECK_EQ(*b, "World");
 }
 
 // ---------- 多线程 ----------
 
-TEST(LockFreeQueueTest, MultiThread_SingleProducerSingleConsumer)
+TEST_CASE("LockFreeQueueTest.MultiThread_SingleProducerSingleConsumer")
 {
     LockFreeQueue<int> q;
     constexpr int ItemCount = 10000;
@@ -160,16 +160,16 @@ TEST(LockFreeQueueTest, MultiThread_SingleProducerSingleConsumer)
     consumer.join();
 
     // 验证收到全部数据并按 FIFO 顺序
-    ASSERT_EQ(results.size(), static_cast<size_t>(ItemCount));
+    REQUIRE_EQ(results.size(), static_cast<size_t>(ItemCount));
     for (int i = 0; i < ItemCount; ++i)
     {
-        EXPECT_EQ(results[i], i);
+        CHECK_EQ(results[i], i);
     }
 }
 
 // ---------- 析构安全 ----------
 
-TEST(LockFreeQueueTest, DestructorWithRemainingItems)
+TEST_CASE("LockFreeQueueTest.DestructorWithRemainingItems")
 {
     // 验证析构函数能安全清理非空队列
     auto q = std::make_unique<LockFreeQueue<int>>();

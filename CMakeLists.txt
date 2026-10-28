@@ -1,15 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
 include(submodules/CMakeCommon/CMakeCommon.cmake)
-restore_vcpkg_root()
-reuse_git_proxy_for_vcpkg()
-# VCPKG_ROOT 在 Windows 注册表中是反斜杠形式（如 D:\Github\vcpkg），直接拼接成工具链路径
-# 会让 CMake 写进 CMakeSystem.cmake 的 include() 里把 \G 当成非法转义，故先规范化为正斜杠
-file(TO_CMAKE_PATH "$ENV{VCPKG_ROOT}" SPARK_VCPKG_ROOT)
-set(CMAKE_TOOLCHAIN_FILE "${SPARK_VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
-message(STATUS "ENV{VCPKG_ROOT} = $ENV{VCPKG_ROOT}")
-message(STATUS "ENV{VCPKG_DOWNLOADS} = $ENV{VCPKG_DOWNLOADS}")
-message(STATUS "ENV{VCPKG_DEFAULT_BINARY_CACHE} = $ENV{VCPKG_DEFAULT_BINARY_CACHE}")
-message(STATUS "CMAKE_TOOLCHAIN_FILE = ${CMAKE_TOOLCHAIN_FILE}")
 SET(PROJECT_NAME "Spark")
 project(${PROJECT_NAME} VERSION 1.0.0 LANGUAGES CXX)
 include(GNUInstallDirs)
@@ -87,6 +77,8 @@ target_link_libraries(Network PUBLIC Core)
 
 option(BUILD_TESTS "Build test projects" ON)
 if(BUILD_TESTS)
+    # doctest 是纯头文件、无平台差异，与兄弟仓共用 ../Libs/doctest，不经包管理器
+    find_package(doctest CONFIG REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/../Libs/doctest")
     add_subdirectory(test)
 endif()
 

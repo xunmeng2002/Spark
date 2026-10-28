@@ -1,6 +1,6 @@
-#include <gtest/gtest.h>
 #include <Spark/Network/Io/IoBase.h>
 #include <Spark/TemplateLib/Buffer/LinearBuffer.h>
+#include "doctest/doctest.h"
 
 #include <algorithm>
 #include <atomic>
@@ -84,7 +84,7 @@ protected:
 };
 }
 
-TEST(IoSubscriberNotificationTest, AnOnConnectFailureIsContainedAndTheConnectionStaysRegistered)
+TEST_CASE("IoSubscriberNotificationTest.AnOnConnectFailureIsContainedAndTheConnectionStaysRegistered")
 {
     ProbeIo io;
     SubscriberNotificationProbe subscriber;
@@ -94,12 +94,12 @@ TEST(IoSubscriberNotificationTest, AnOnConnectFailureIsContainedAndTheConnection
 
     io.RegisterConnect(&connect);
 
-    EXPECT_EQ(subscriber.ConnectCount, 1);
-    EXPECT_TRUE(io.HasRegisteredConnect(ProbeSessionId));
-    EXPECT_EQ(connect.DeallocateCount, 0);
+    CHECK_EQ(subscriber.ConnectCount, 1);
+    CHECK(io.HasRegisteredConnect(ProbeSessionId));
+    CHECK_EQ(connect.DeallocateCount, 0);
 }
 
-TEST(IoSubscriberNotificationTest, AnOnDisConnectFailureDoesNotSkipTheTeardown)
+TEST_CASE("IoSubscriberNotificationTest.AnOnDisConnectFailureDoesNotSkipTheTeardown")
 {
     ProbeIo io;
     SubscriberNotificationProbe subscriber;
@@ -110,13 +110,13 @@ TEST(IoSubscriberNotificationTest, AnOnDisConnectFailureDoesNotSkipTheTeardown)
 
     io.UnregisterConnect(&connect);
 
-    EXPECT_EQ(subscriber.ConnectCount, 1);
-    EXPECT_EQ(subscriber.DisConnectCount, 1);
-    EXPECT_FALSE(io.HasRegisteredConnect(ProbeSessionId));
-    EXPECT_EQ(connect.DeallocateCount, 1);
+    CHECK_EQ(subscriber.ConnectCount, 1);
+    CHECK_EQ(subscriber.DisConnectCount, 1);
+    CHECK_FALSE(io.HasRegisteredConnect(ProbeSessionId));
+    CHECK_EQ(connect.DeallocateCount, 1);
 }
 
-TEST(IoSubscriberNotificationTest, AnOnRecvFailureIsContainedAndDoesNotSkipWhatFollows)
+TEST_CASE("IoSubscriberNotificationTest.AnOnRecvFailureIsContainedAndDoesNotSkipWhatFollows")
 {
     ProbeIo io;
     SubscriberNotificationProbe subscriber;
@@ -128,11 +128,11 @@ TEST(IoSubscriberNotificationTest, AnOnRecvFailureIsContainedAndDoesNotSkipWhatF
     io.DeliverRecv(&connect, "Spark", 5);
     deliveredRecvReturnedToItsCaller = true;
 
-    EXPECT_EQ(subscriber.RecvCount, 1);
-    EXPECT_TRUE(deliveredRecvReturnedToItsCaller);
+    CHECK_EQ(subscriber.RecvCount, 1);
+    CHECK(deliveredRecvReturnedToItsCaller);
 }
 
-TEST(IoSubscriberNotificationTest, AnUnregisteredConnectionIsReturnedWithoutADisConnectNotification)
+TEST_CASE("IoSubscriberNotificationTest.AnUnregisteredConnectionIsReturnedWithoutADisConnectNotification")
 {
     ProbeIo io;
     SubscriberNotificationProbe subscriber;
@@ -141,12 +141,12 @@ TEST(IoSubscriberNotificationTest, AnUnregisteredConnectionIsReturnedWithoutADis
 
     io.UnregisterConnect(&connect);
 
-    EXPECT_EQ(subscriber.ConnectCount, 0);
-    EXPECT_EQ(subscriber.DisConnectCount, 0);
-    EXPECT_EQ(connect.DeallocateCount, 1);
+    CHECK_EQ(subscriber.ConnectCount, 0);
+    CHECK_EQ(subscriber.DisConnectCount, 0);
+    CHECK_EQ(connect.DeallocateCount, 1);
 }
 
-TEST(IoSubscriberNotificationTest, ARepeatedSessionIdIsNotRegisteredAndNotNotifiedASecondTime)
+TEST_CASE("IoSubscriberNotificationTest.ARepeatedSessionIdIsNotRegisteredAndNotNotifiedASecondTime")
 {
     ProbeIo io;
     SubscriberNotificationProbe subscriber;
@@ -157,15 +157,15 @@ TEST(IoSubscriberNotificationTest, ARepeatedSessionIdIsNotRegisteredAndNotNotifi
     io.RegisterConnect(&firstConnect);
     io.RegisterConnect(&secondConnect);
 
-    EXPECT_EQ(subscriber.ConnectCount, 1);
-    EXPECT_TRUE(io.IsRegisteredConnect(&firstConnect));
-    EXPECT_FALSE(io.IsRegisteredConnect(&secondConnect));
-    EXPECT_EQ(firstConnect.DeallocateCount, 0);
+    CHECK_EQ(subscriber.ConnectCount, 1);
+    CHECK(io.IsRegisteredConnect(&firstConnect));
+    CHECK_FALSE(io.IsRegisteredConnect(&secondConnect));
+    CHECK_EQ(firstConnect.DeallocateCount, 0);
     // 登记失败不是「拒绝」：对象仍归调用方处置，本层不归还它。
-    EXPECT_EQ(secondConnect.DeallocateCount, 0);
+    CHECK_EQ(secondConnect.DeallocateCount, 0);
 }
 
-TEST(IoSubscriberNotificationTest, ARemoveOfAnotherConnectNeverErasesTheRegisteredEntry)
+TEST_CASE("IoSubscriberNotificationTest.ARemoveOfAnotherConnectNeverErasesTheRegisteredEntry")
 {
     ProbeIo io;
     SubscriberNotificationProbe subscriber;
@@ -176,13 +176,13 @@ TEST(IoSubscriberNotificationTest, ARemoveOfAnotherConnectNeverErasesTheRegister
 
     io.UnregisterConnect(&sameSessionIdConnect);
 
-    EXPECT_TRUE(io.IsRegisteredConnect(&registeredConnect));
-    EXPECT_EQ(subscriber.DisConnectCount, 0);
-    EXPECT_EQ(registeredConnect.DeallocateCount, 0);
-    EXPECT_EQ(sameSessionIdConnect.DeallocateCount, 1);
+    CHECK(io.IsRegisteredConnect(&registeredConnect));
+    CHECK_EQ(subscriber.DisConnectCount, 0);
+    CHECK_EQ(registeredConnect.DeallocateCount, 0);
+    CHECK_EQ(sameSessionIdConnect.DeallocateCount, 1);
 }
 
-TEST(IoSubscriberNotificationTest, SessionIdAdvancesByExactlyOneEachTime)
+TEST_CASE("IoSubscriberNotificationTest.SessionIdAdvancesByExactlyOneEachTime")
 {
     ProbeIo io;
     SessionIdType previousId = io.NextSessionId();
@@ -190,12 +190,12 @@ TEST(IoSubscriberNotificationTest, SessionIdAdvancesByExactlyOneEachTime)
     for (int step = 0; step < 1000; ++step)
     {
         SessionIdType currentId = io.NextSessionId();
-        EXPECT_EQ(currentId, previousId + 1);
+        CHECK_EQ(currentId, previousId + 1);
         previousId = currentId;
     }
 }
 
-TEST(IoSubscriberNotificationTest, SessionIdsTakenConcurrentlyAreAllDistinct)
+TEST_CASE("IoSubscriberNotificationTest.SessionIdsTakenConcurrentlyAreAllDistinct")
 {
     constexpr int ThreadCount = 4;
     constexpr int IdsPerThread = 5;
@@ -228,6 +228,6 @@ TEST(IoSubscriberNotificationTest, SessionIdsTakenConcurrentlyAreAllDistinct)
     }
 
     std::sort(takenIds.begin(), takenIds.end());
-    EXPECT_EQ(takenIds.size(), static_cast<size_t>(ThreadCount) * IdsPerThread);
-    EXPECT_EQ(std::adjacent_find(takenIds.begin(), takenIds.end()), takenIds.end());
+    CHECK_EQ(takenIds.size(), static_cast<size_t>(ThreadCount) * IdsPerThread);
+    CHECK_EQ(std::adjacent_find(takenIds.begin(), takenIds.end()), takenIds.end());
 }

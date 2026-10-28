@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include <Spark/TemplateLib/ThreadSafeContainer/ThreadSafeList.h>
+#include "doctest/doctest.h"
 
 #include <algorithm>
 #include <numeric>
@@ -14,18 +14,18 @@ using namespace Spark;
 
 // ---------- 基本 Push/Pop ----------
 
-TEST(ThreadSafeListTest, PushBackAndPopFront_Single)
+TEST_CASE("ThreadSafeListTest.PushBackAndPopFront_Single")
 {
     ThreadSafeList<int> list;
     int item = 42;
     list.PushBack(&item);
 
     int* result = list.PopFront();
-    ASSERT_NE(result, nullptr);
-    EXPECT_EQ(*result, 42);
+    REQUIRE_NE(result, nullptr);
+    CHECK_EQ(*result, 42);
 }
 
-TEST(ThreadSafeListTest, PushBackAndPopFront_Multiple_FIFO)
+TEST_CASE("ThreadSafeListTest.PushBackAndPopFront_Multiple_FIFO")
 {
     ThreadSafeList<int> list;
     std::vector<int> items(10);
@@ -39,28 +39,28 @@ TEST(ThreadSafeListTest, PushBackAndPopFront_Multiple_FIFO)
     for (int i = 0; i < 10; ++i)
     {
         int* result = list.PopFront();
-        ASSERT_NE(result, nullptr);
-        EXPECT_EQ(*result, i);
+        REQUIRE_NE(result, nullptr);
+        CHECK_EQ(*result, i);
     }
 }
 
-TEST(ThreadSafeListTest, InterleavedPushPop)
+TEST_CASE("ThreadSafeListTest.InterleavedPushPop")
 {
     ThreadSafeList<int> list;
     int a = 1, b = 2, c = 3;
 
     list.PushBack(&a);
     list.PushBack(&b);
-    EXPECT_EQ(*list.PopFront(), 1);
+    CHECK_EQ(*list.PopFront(), 1);
 
     list.PushBack(&c);
-    EXPECT_EQ(*list.PopFront(), 2);
-    EXPECT_EQ(*list.PopFront(), 3);
+    CHECK_EQ(*list.PopFront(), 2);
+    CHECK_EQ(*list.PopFront(), 3);
 }
 
 // ---------- 拷贝构造 ----------
 
-TEST(ThreadSafeListTest, CopyConstructor)
+TEST_CASE("ThreadSafeListTest.CopyConstructor")
 {
     ThreadSafeList<int> original;
     std::vector<int> items = {1, 2, 3};
@@ -71,16 +71,16 @@ TEST(ThreadSafeListTest, CopyConstructor)
 
     ThreadSafeList<int> copy(original);
     // 原列表仍有数据
-    EXPECT_EQ(*original.PopFront(), 1);
+    CHECK_EQ(*original.PopFront(), 1);
     // 拷贝也有数据
-    EXPECT_EQ(*copy.PopFront(), 1);
-    EXPECT_EQ(*copy.PopFront(), 2);
-    EXPECT_EQ(*copy.PopFront(), 3);
+    CHECK_EQ(*copy.PopFront(), 1);
+    CHECK_EQ(*copy.PopFront(), 2);
+    CHECK_EQ(*copy.PopFront(), 3);
 }
 
 // ---------- 多线程：单生产 + 单消费 ----------
 
-TEST(ThreadSafeListTest, SingleProducerSingleConsumer)
+TEST_CASE("ThreadSafeListTest.SingleProducerSingleConsumer")
 {
     ThreadSafeList<int> list;
     constexpr int ItemCount = 1000;
@@ -111,16 +111,16 @@ TEST(ThreadSafeListTest, SingleProducerSingleConsumer)
     producer.join();
     consumer.join();
 
-    ASSERT_EQ(results.size(), static_cast<size_t>(ItemCount));
+    REQUIRE_EQ(results.size(), static_cast<size_t>(ItemCount));
     for (int i = 0; i < ItemCount; ++i)
     {
-        EXPECT_EQ(results[i], i);
+        CHECK_EQ(results[i], i);
     }
 }
 
 // ---------- 多线程：多生产 + 单消费 ----------
 
-TEST(ThreadSafeListTest, MultiProducerSingleConsumer)
+TEST_CASE("ThreadSafeListTest.MultiProducerSingleConsumer")
 {
     ThreadSafeList<int> list;
     constexpr int Producers = 4;
@@ -163,9 +163,9 @@ TEST(ThreadSafeListTest, MultiProducerSingleConsumer)
     consumer.join();
 
     // 验证收到全部元素
-    ASSERT_EQ(results.size(), static_cast<size_t>(TotalItems));
+    REQUIRE_EQ(results.size(), static_cast<size_t>(TotalItems));
     for (int i = 0; i < TotalItems; ++i)
     {
-        EXPECT_EQ(results[i], i);
+        CHECK_EQ(results[i], i);
     }
 }

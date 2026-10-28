@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include <Spark/Core/Thread/ThreadBase.h>
+#include "doctest/doctest.h"
 
 #include <thread>
 #include <chrono>
@@ -38,22 +38,22 @@ protected:
 
 // ---------- 构造 ----------
 
-TEST(ThreadBaseTest, DefaultConstruction)
+TEST_CASE("ThreadBaseTest.DefaultConstruction")
 {
     TestWorker worker("TestThread", 200);
 
-    EXPECT_FALSE(worker.IsJoinable());
-    EXPECT_EQ(worker.GetThreadId(), std::thread::id());
+    CHECK_FALSE(worker.IsJoinable());
+    CHECK_EQ(worker.GetThreadId(), std::thread::id());
 }
 
 // ---------- Start / Stop / Join ----------
 
-TEST(ThreadBaseTest, StartAndStop)
+TEST_CASE("ThreadBaseTest.StartAndStop")
 {
     TestWorker worker("Worker1", 50);
 
-    EXPECT_TRUE(worker.Start());
-    EXPECT_TRUE(worker.IsJoinable());
+    CHECK(worker.Start());
+    CHECK(worker.IsJoinable());
 
     // 让线程运行一小段时间
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -61,32 +61,32 @@ TEST(ThreadBaseTest, StartAndStop)
     worker.Stop();
     worker.Join();
 
-    EXPECT_FALSE(worker.IsJoinable());
-    EXPECT_GT(worker.RunCount, 0);
+    CHECK_FALSE(worker.IsJoinable());
+    CHECK_GT(worker.RunCount, 0);
 }
 
-TEST(ThreadBaseTest, StartAndImmediateStop)
+TEST_CASE("ThreadBaseTest.StartAndImmediateStop")
 {
     TestWorker worker("Worker2", 100);
 
-    EXPECT_TRUE(worker.Start());
+    CHECK(worker.Start());
     worker.Stop();
     worker.Join();
 
     // 即使立即停止，Run 也可能执行了若干次
-    EXPECT_GE(worker.RunCount, 0);
-    EXPECT_FALSE(worker.IsJoinable());
+    CHECK_GE(worker.RunCount, 0);
+    CHECK_FALSE(worker.IsJoinable());
 }
 
 // ---------- 重复启动 ----------
 
-TEST(ThreadBaseTest, DoubleStart_ReturnsFalse)
+TEST_CASE("ThreadBaseTest.DoubleStart_ReturnsFalse")
 {
     TestWorker worker("Double", 100);
 
-    EXPECT_TRUE(worker.Start());
-    EXPECT_FALSE(worker.Start()); // 第二次启动返回 false
-    EXPECT_TRUE(worker.IsJoinable());
+    CHECK(worker.Start());
+    CHECK_FALSE(worker.Start()); // 第二次启动返回 false
+    CHECK(worker.IsJoinable());
 
     worker.Stop();
     worker.Join();
@@ -94,26 +94,26 @@ TEST(ThreadBaseTest, DoubleStart_ReturnsFalse)
 
 // ---------- 未启动直接 Join ----------
 
-TEST(ThreadBaseTest, JoinWithoutStart)
+TEST_CASE("ThreadBaseTest.JoinWithoutStart")
 {
     TestWorker worker("NoStart", 100);
 
     // 未启动的线程调用 Join 不崩溃
-    EXPECT_NO_THROW(worker.Join());
+    CHECK_NOTHROW(worker.Join());
 }
 
 // ---------- GetThreadId ----------
 
-TEST(ThreadBaseTest, GetThreadId_AfterStart)
+TEST_CASE("ThreadBaseTest.GetThreadId_AfterStart")
 {
     TestWorker worker("WithId", 100);
 
-    EXPECT_EQ(worker.GetThreadId(), std::thread::id());
+    CHECK_EQ(worker.GetThreadId(), std::thread::id());
 
     worker.Start();
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
 
-    EXPECT_NE(worker.GetThreadId(), std::thread::id());
+    CHECK_NE(worker.GetThreadId(), std::thread::id());
 
     worker.Stop();
     worker.Join();
@@ -121,7 +121,7 @@ TEST(ThreadBaseTest, GetThreadId_AfterStart)
 
 // ---------- ThreadInit / ThreadExit ----------
 
-TEST(ThreadBaseTest, InitAndExitAreCalled)
+TEST_CASE("ThreadBaseTest.InitAndExitAreCalled")
 {
     TestWorker worker("InitExit", 50);
 
@@ -130,13 +130,13 @@ TEST(ThreadBaseTest, InitAndExitAreCalled)
     worker.Stop();
     worker.Join();
 
-    EXPECT_TRUE(worker.InitCalled);
-    EXPECT_TRUE(worker.ExitCalled);
+    CHECK(worker.InitCalled);
+    CHECK(worker.ExitCalled);
 }
 
 // ---------- 析构函数自动 Stop + Join ----------
 
-TEST(ThreadBaseTest, DestructorStopsThread)
+TEST_CASE("ThreadBaseTest.DestructorStopsThread")
 {
     {
         TestWorker worker("AutoStop", 50);
@@ -149,20 +149,20 @@ TEST(ThreadBaseTest, DestructorStopsThread)
 
 // ---------- SetTimeOut ----------
 
-TEST(ThreadBaseTest, SetTimeOut_BeforeStart)
+TEST_CASE("ThreadBaseTest.SetTimeOut_BeforeStart")
 {
     TestWorker worker("Timeout", 100);
 
-    EXPECT_NO_THROW(worker.SetTimeOut(200));
+    CHECK_NOTHROW(worker.SetTimeOut(200));
 }
 
-TEST(ThreadBaseTest, SetTimeOut_MultipleWorkers)
+TEST_CASE("ThreadBaseTest.SetTimeOut_MultipleWorkers")
 {
     TestWorker worker1("Multi1", 50);
     TestWorker worker2("Multi2", 50);
 
-    EXPECT_TRUE(worker1.Start());
-    EXPECT_TRUE(worker2.Start());
+    CHECK(worker1.Start());
+    CHECK(worker2.Start());
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
@@ -171,6 +171,6 @@ TEST(ThreadBaseTest, SetTimeOut_MultipleWorkers)
     worker1.Join();
     worker2.Join();
 
-    EXPECT_GT(worker1.RunCount, 0);
-    EXPECT_GT(worker2.RunCount, 0);
+    CHECK_GT(worker1.RunCount, 0);
+    CHECK_GT(worker2.RunCount, 0);
 }

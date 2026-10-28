@@ -3,7 +3,7 @@
 #include <Spark/Network/Protocol/PackageReader.h>
 #include <Spark/Network/Protocol/Protocol.h>
 #include <Spark/TemplateLib/Buffer/LinearBuffer.h>
-#include <gtest/gtest.h>
+#include "doctest/doctest.h"
 
 #include <memory>
 #include <stdexcept>
@@ -133,10 +133,10 @@ int MakeStepFrame(char* buff, int capacity, int msgSeqNum)
     return totalLen;
 }
 
-class ProtocolRecvTest : public testing::Test
+class ProtocolRecvTest
 {
 protected:
-    void SetUp() override
+    ProtocolRecvTest()
     {
         auto ioProbe = std::make_unique<RecvProbeIo>();
         ioProbe_ = ioProbe.get();
@@ -146,7 +146,7 @@ protected:
         protocol_->AttachReader(SessionId, packageReader_);
     }
 
-    void TearDown() override
+    ~ProtocolRecvTest()
     {
         packageReader_->Deallocate();
         protocol_.reset();
@@ -160,7 +160,7 @@ protected:
 };
 }
 
-TEST_F(ProtocolRecvTest, AThrowingOnMessageNeitherEscapesTheRecvLoopNorStrandsTheRestOfTheBatch)
+TEST_CASE_FIXTURE(ProtocolRecvTest, "ProtocolRecvTest.AThrowingOnMessageNeitherEscapesTheRecvLoopNorStrandsTheRestOfTheBatch")
 {
     ThrowingMessageProbe subscriber;
     subscriber.ThrowingMessageIndex = 1;
@@ -168,58 +168,58 @@ TEST_F(ProtocolRecvTest, AThrowingOnMessageNeitherEscapesTheRecvLoopNorStrandsTh
 
     char frames[MaxPackageSize] = {};
     int firstLen = MakeStepFrame(frames, MaxPackageSize, FirstMsgSeqNum);
-    ASSERT_GT(firstLen, 0);
+    REQUIRE_GT(firstLen, 0);
     int secondLen = MakeStepFrame(frames + firstLen, MaxPackageSize - firstLen, SecondMsgSeqNum);
-    ASSERT_GT(secondLen, 0);
+    REQUIRE_GT(secondLen, 0);
     int totalLen = firstLen + secondLen;
-    ASSERT_LT(totalLen, MaxPackageSize);
+    REQUIRE_LT(totalLen, MaxPackageSize);
 
     bool recvReturnedToItsCaller = false;
     protocol_->OnRecv(SessionId, frames, static_cast<size_t>(totalLen));
     recvReturnedToItsCaller = true;
 
-    EXPECT_TRUE(recvReturnedToItsCaller);
-    EXPECT_EQ(subscriber.MessageCount, 2);
-    EXPECT_EQ(subscriber.LastMsgSeqNum, SecondMsgSeqNum);
-    EXPECT_EQ(accounting_.CreatedCount, 2);
-    EXPECT_EQ(accounting_.DisposedCount, 2);
-    EXPECT_EQ(ioProbe_->DisConnectCount, 0);
+    CHECK(recvReturnedToItsCaller);
+    CHECK_EQ(subscriber.MessageCount, 2);
+    CHECK_EQ(subscriber.LastMsgSeqNum, SecondMsgSeqNum);
+    CHECK_EQ(accounting_.CreatedCount, 2);
+    CHECK_EQ(accounting_.DisposedCount, 2);
+    CHECK_EQ(ioProbe_->DisConnectCount, 0);
 }
 
-TEST_F(ProtocolRecvTest, APackageParsedWithoutASubscriberIsReturnedToTheFactory)
+TEST_CASE_FIXTURE(ProtocolRecvTest, "ProtocolRecvTest.APackageParsedWithoutASubscriberIsReturnedToTheFactory")
 {
     char frames[MaxPackageSize] = {};
     int frameLen = MakeStepFrame(frames, MaxPackageSize, FirstMsgSeqNum);
-    ASSERT_GT(frameLen, 0);
+    REQUIRE_GT(frameLen, 0);
 
     protocol_->OnRecv(SessionId, frames, static_cast<size_t>(frameLen));
 
-    EXPECT_EQ(accounting_.CreatedCount, 1);
-    EXPECT_EQ(accounting_.DisposedCount, 1);
-    EXPECT_EQ(ioProbe_->DisConnectCount, 0);
+    CHECK_EQ(accounting_.CreatedCount, 1);
+    CHECK_EQ(accounting_.DisposedCount, 1);
+    CHECK_EQ(ioProbe_->DisConnectCount, 0);
 }
 
-TEST_F(ProtocolRecvTest, AFrameThatCannotBeBuiltReportsFailureAndIsNeverHandedToTheTransport)
+TEST_CASE_FIXTURE(ProtocolRecvTest, "ProtocolRecvTest.AFrameThatCannotBeBuiltReportsFailureAndIsNeverHandedToTheTransport")
 {
     OversizedBodyPackage oversized;
     oversized.SessionId = SessionId;
 
-    EXPECT_FALSE(protocol_->Send(&oversized));
-    EXPECT_EQ(ioProbe_->SendCount, 0);
+    CHECK_FALSE(protocol_->Send(&oversized));
+    CHECK_EQ(ioProbe_->SendCount, 0);
 }
 
-TEST_F(ProtocolRecvTest, AFrameThatCanBeBuiltReportsSuccessAndIsHandedToTheTransportOnce)
+TEST_CASE_FIXTURE(ProtocolRecvTest, "ProtocolRecvTest.AFrameThatCanBeBuiltReportsSuccessAndIsHandedToTheTransportOnce")
 {
     auto* package = NotifyComponentConnectStatusPackage::Allocate();
     package->Prepare(SessionId, 0, FirstMsgSeqNum);
 
-    EXPECT_TRUE(protocol_->Send(package));
-    EXPECT_EQ(ioProbe_->SendCount, 1);
+    CHECK(protocol_->Send(package));
+    CHECK_EQ(ioProbe_->SendCount, 1);
 
     package->Deallocate();
 }
 
-TEST_F(ProtocolRecvTest, ARepeatedOnConnectForOneSessionKeepsTheFirstReaderAndReturnsTheSecondToThePool)
+TEST_CASE_FIXTURE(ProtocolRecvTest, "ProtocolRecvTest.ARepeatedOnConnectForOneSessionKeepsTheFirstReaderAndReturnsTheSecondToThePool")
 {
     PackageReader* recycledReader = PackageReader::Allocate(ProtocolTypeType::Step, &packageFactory_, SessionId, IP);
     recycledReader->Deallocate();
@@ -227,7 +227,7 @@ TEST_F(ProtocolRecvTest, ARepeatedOnConnectForOneSessionKeepsTheFirstReaderAndRe
     protocol_->OnConnect(SessionId, IP, 10001);
 
     PackageReader* nextReader = PackageReader::Allocate(ProtocolTypeType::Step, &packageFactory_, SessionId, IP);
-    EXPECT_EQ(nextReader, recycledReader);
+    CHECK_EQ(nextReader, recycledReader);
     nextReader->Deallocate();
-    EXPECT_EQ(protocol_->ReaderOf(SessionId), packageReader_);
+    CHECK_EQ(protocol_->ReaderOf(SessionId), packageReader_);
 }

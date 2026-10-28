@@ -44,9 +44,6 @@
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "cmakeExecutable": "cmake",
-      "environment": {
-        "VCPKG_MAX_CONCURRENCY": "4"
-      },
       "cacheVariables": {
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/../Libs/Spark/x64-linux",
         "CMAKE_DISABLE_FIND_PACKAGE_ICU": "ON"

@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include <Spark/TemplateLib/Buffer/SpscRingBuffer.h>
+#include "doctest/doctest.h"
 
 #include <cstring>
 #include <string>
@@ -19,127 +19,127 @@ static char ByteAt(size_t streamPosition)
 
 // ---------- 构造 / 初始状态 ----------
 
-TEST(SpscRingBufferTest, DefaultConstructor_Empty)
+TEST_CASE("SpscRingBufferTest.DefaultConstructor_Empty")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
-    EXPECT_TRUE(buf.IsEmpty());
-    EXPECT_FALSE(buf.IsFull());
-    EXPECT_EQ(buf.GetReadBufferSize(), 0u);
-    EXPECT_EQ(buf.GetWriteBufferSize(), SpscRingBufferSize);
+    CHECK(buf.IsEmpty());
+    CHECK_FALSE(buf.IsFull());
+    CHECK_EQ(buf.GetReadBufferSize(), 0u);
+    CHECK_EQ(buf.GetWriteBufferSize(), SpscRingBufferSize);
 }
 
-TEST(SpscRingBufferTest, SmallestCapacity)
+TEST_CASE("SpscRingBufferTest.SmallestCapacity")
 {
     SpscRingBuffer<1> buf;
-    EXPECT_EQ(buf.Write("A", 1), 1u);
-    EXPECT_TRUE(buf.IsFull());
-    EXPECT_FALSE(buf.IsEmpty());
+    CHECK_EQ(buf.Write("A", 1), 1u);
+    CHECK(buf.IsFull());
+    CHECK_FALSE(buf.IsEmpty());
 
     char output[1] = {};
-    EXPECT_EQ(buf.Read(output, 1), 1u);
-    EXPECT_EQ(output[0], 'A');
-    EXPECT_TRUE(buf.IsEmpty());
+    CHECK_EQ(buf.Read(output, 1), 1u);
+    CHECK_EQ(output[0], 'A');
+    CHECK(buf.IsEmpty());
 }
 
-TEST(SpscRingBufferTest, SmallestMultiSlotCapacity)
+TEST_CASE("SpscRingBufferTest.SmallestMultiSlotCapacity")
 {
     SpscRingBuffer<2> buf;
-    ASSERT_EQ(buf.Write("AB", 2), 2u);
-    EXPECT_TRUE(buf.IsFull());
+    REQUIRE_EQ(buf.Write("AB", 2), 2u);
+    CHECK(buf.IsFull());
 
     char first[2] = {};
-    ASSERT_EQ(buf.Read(first, 1), 1u);
-    EXPECT_EQ(first[0], 'A');
+    REQUIRE_EQ(buf.Read(first, 1), 1u);
+    CHECK_EQ(first[0], 'A');
 
     // 写位置绕回 0；读出时应按环序取到 1 号槽的 B、再绕回 0 号槽的 C
-    ASSERT_EQ(buf.Write("C", 1), 1u);
+    REQUIRE_EQ(buf.Write("C", 1), 1u);
     char rest[2] = {};
-    EXPECT_EQ(buf.Read(rest, 2), 2u);
-    EXPECT_EQ(rest[0], 'B');
-    EXPECT_EQ(rest[1], 'C');
+    CHECK_EQ(buf.Read(rest, 2), 2u);
+    CHECK_EQ(rest[0], 'B');
+    CHECK_EQ(rest[1], 'C');
 }
 
 // ---------- Write / Read ----------
 
-TEST(SpscRingBufferTest, WriteAndRead)
+TEST_CASE("SpscRingBufferTest.WriteAndRead")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     const char* data = "Hello";
-    EXPECT_EQ(buf.Write(data, 5), 5u);
-    EXPECT_FALSE(buf.IsEmpty());
-    EXPECT_EQ(buf.GetReadBufferSize(), 5u);
+    CHECK_EQ(buf.Write(data, 5), 5u);
+    CHECK_FALSE(buf.IsEmpty());
+    CHECK_EQ(buf.GetReadBufferSize(), 5u);
 
     char output[16] = {};
-    EXPECT_EQ(buf.Read(output, 5), 5u);
-    EXPECT_EQ(std::memcmp(output, "Hello", 5), 0);
-    EXPECT_TRUE(buf.IsEmpty());
+    CHECK_EQ(buf.Read(output, 5), 5u);
+    CHECK_EQ(std::memcmp(output, "Hello", 5), 0);
+    CHECK(buf.IsEmpty());
 }
 
-TEST(SpscRingBufferTest, Write_FillToFull)
+TEST_CASE("SpscRingBufferTest.Write_FillToFull")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     std::string data(SpscRingBufferSize, 'X');
-    EXPECT_EQ(buf.Write(data.data(), data.size()), SpscRingBufferSize);
-    EXPECT_TRUE(buf.IsFull());
-    EXPECT_EQ(buf.GetWriteBufferSize(), 0u);
+    CHECK_EQ(buf.Write(data.data(), data.size()), SpscRingBufferSize);
+    CHECK(buf.IsFull());
+    CHECK_EQ(buf.GetWriteBufferSize(), 0u);
 }
 
-TEST(SpscRingBufferTest, Write_TruncatesToRemainingSpace)
+TEST_CASE("SpscRingBufferTest.Write_TruncatesToRemainingSpace")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     std::string firstPart(SpscRingBufferSize - 4, 'A');
-    EXPECT_EQ(buf.Write(firstPart.data(), firstPart.size()), SpscRingBufferSize - 4);
+    CHECK_EQ(buf.Write(firstPart.data(), firstPart.size()), SpscRingBufferSize - 4);
 
     // 缓冲区仅剩 4 字节空间，写入 10 字节只落 4 字节
-    EXPECT_EQ(buf.Write("BBBBBBBBBB", 10), 4u);
-    EXPECT_TRUE(buf.IsFull());
-    EXPECT_EQ(buf.GetReadBufferSize(), SpscRingBufferSize);
+    CHECK_EQ(buf.Write("BBBBBBBBBB", 10), 4u);
+    CHECK(buf.IsFull());
+    CHECK_EQ(buf.GetReadBufferSize(), SpscRingBufferSize);
 }
 
-TEST(SpscRingBufferTest, Write_WhenFullWritesNothing)
+TEST_CASE("SpscRingBufferTest.Write_WhenFullWritesNothing")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     std::string data(SpscRingBufferSize, 'X');
-    ASSERT_EQ(buf.Write(data.data(), data.size()), SpscRingBufferSize);
-    EXPECT_EQ(buf.Write("Y", 1), 0u);
-    EXPECT_TRUE(buf.IsFull());
+    REQUIRE_EQ(buf.Write(data.data(), data.size()), SpscRingBufferSize);
+    CHECK_EQ(buf.Write("Y", 1), 0u);
+    CHECK(buf.IsFull());
 }
 
-TEST(SpscRingBufferTest, Write_ZeroLength)
+TEST_CASE("SpscRingBufferTest.Write_ZeroLength")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
-    EXPECT_EQ(buf.Write("Hello", 0), 0u);
-    EXPECT_TRUE(buf.IsEmpty());
+    CHECK_EQ(buf.Write("Hello", 0), 0u);
+    CHECK(buf.IsEmpty());
 }
 
-TEST(SpscRingBufferTest, Read_Empty)
+TEST_CASE("SpscRingBufferTest.Read_Empty")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     char output[16] = {};
-    EXPECT_EQ(buf.Read(output, 5), 0u);
+    CHECK_EQ(buf.Read(output, 5), 0u);
 }
 
-TEST(SpscRingBufferTest, Read_ZeroLength)
+TEST_CASE("SpscRingBufferTest.Read_ZeroLength")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     buf.Write("Hello", 5);
     char output[16] = {};
-    EXPECT_EQ(buf.Read(output, 0), 0u);
-    EXPECT_EQ(buf.GetReadBufferSize(), 5u);
+    CHECK_EQ(buf.Read(output, 0), 0u);
+    CHECK_EQ(buf.GetReadBufferSize(), 5u);
 }
 
-TEST(SpscRingBufferTest, Read_TruncatesToReadableBytes)
+TEST_CASE("SpscRingBufferTest.Read_TruncatesToReadableBytes")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     buf.Write("Hello", 5);
 
     char output[16] = {};
-    EXPECT_EQ(buf.Read(output, 16), 5u);
-    EXPECT_EQ(std::memcmp(output, "Hello", 5), 0);
-    EXPECT_TRUE(buf.IsEmpty());
+    CHECK_EQ(buf.Read(output, 16), 5u);
+    CHECK_EQ(std::memcmp(output, "Hello", 5), 0);
+    CHECK(buf.IsEmpty());
 }
 
-TEST(SpscRingBufferTest, Read_MultipleChunks)
+TEST_CASE("SpscRingBufferTest.Read_MultipleChunks")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     std::string payload(SpscRingBufferSize, '\0');
@@ -147,7 +147,7 @@ TEST(SpscRingBufferTest, Read_MultipleChunks)
     {
         payload[i] = ByteAt(i);
     }
-    ASSERT_EQ(buf.Write(payload.data(), payload.size()), SpscRingBufferSize);
+    REQUIRE_EQ(buf.Write(payload.data(), payload.size()), SpscRingBufferSize);
 
     std::vector<char> received;
     char chunk[7] = {};
@@ -157,66 +157,66 @@ TEST(SpscRingBufferTest, Read_MultipleChunks)
         received.insert(received.end(), chunk, chunk + readLength);
     }
 
-    EXPECT_EQ(received.size(), payload.size());
-    EXPECT_EQ(std::memcmp(received.data(), payload.data(), payload.size()), 0);
+    CHECK_EQ(received.size(), payload.size());
+    CHECK_EQ(std::memcmp(received.data(), payload.data(), payload.size()), 0);
 }
 
 // ---------- Peek ----------
 
-TEST(SpscRingBufferTest, Peek_DoesNotConsume)
+TEST_CASE("SpscRingBufferTest.Peek_DoesNotConsume")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     buf.Write("Hello", 5);
 
     char first[16] = {};
-    EXPECT_EQ(buf.Peek(first, 5), 5u);
-    EXPECT_EQ(std::memcmp(first, "Hello", 5), 0);
+    CHECK_EQ(buf.Peek(first, 5), 5u);
+    CHECK_EQ(std::memcmp(first, "Hello", 5), 0);
 
     // 再 Peek 一次，数据仍在
     char second[16] = {};
-    EXPECT_EQ(buf.Peek(second, 5), 5u);
-    EXPECT_EQ(std::memcmp(second, "Hello", 5), 0);
+    CHECK_EQ(buf.Peek(second, 5), 5u);
+    CHECK_EQ(std::memcmp(second, "Hello", 5), 0);
 
-    EXPECT_EQ(buf.GetReadBufferSize(), 5u);
+    CHECK_EQ(buf.GetReadBufferSize(), 5u);
 }
 
-TEST(SpscRingBufferTest, Peek_TruncatesToReadableBytes)
+TEST_CASE("SpscRingBufferTest.Peek_TruncatesToReadableBytes")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     buf.Write("Hello", 5);
 
     char output[16] = {};
-    EXPECT_EQ(buf.Peek(output, 16), 5u);
-    EXPECT_EQ(std::memcmp(output, "Hello", 5), 0);
-    EXPECT_EQ(buf.GetReadBufferSize(), 5u);
+    CHECK_EQ(buf.Peek(output, 16), 5u);
+    CHECK_EQ(std::memcmp(output, "Hello", 5), 0);
+    CHECK_EQ(buf.GetReadBufferSize(), 5u);
 }
 
-TEST(SpscRingBufferTest, Peek_Empty)
+TEST_CASE("SpscRingBufferTest.Peek_Empty")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     char output[16] = {};
-    EXPECT_EQ(buf.Peek(output, 5), 0u);
+    CHECK_EQ(buf.Peek(output, 5), 0u);
 }
 
-TEST(SpscRingBufferTest, Peek_ZeroLength)
+TEST_CASE("SpscRingBufferTest.Peek_ZeroLength")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     buf.Write("Hello", 5);
 
     char output[16] = {};
-    EXPECT_EQ(buf.Peek(output, 0), 0u);
-    EXPECT_EQ(buf.GetReadBufferSize(), 5u);
+    CHECK_EQ(buf.Peek(output, 0), 0u);
+    CHECK_EQ(buf.GetReadBufferSize(), 5u);
 }
 
-TEST(SpscRingBufferTest, Peek_WrapsAround)
+TEST_CASE("SpscRingBufferTest.Peek_WrapsAround")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
 
     // 先把读索引推到 10：写入 10 字节后全部读走
     std::string consumed(10, 'Z');
-    ASSERT_EQ(buf.Write(consumed.data(), consumed.size()), consumed.size());
+    REQUIRE_EQ(buf.Write(consumed.data(), consumed.size()), consumed.size());
     char discard[16] = {};
-    ASSERT_EQ(buf.Read(discard, consumed.size()), consumed.size());
+    REQUIRE_EQ(buf.Read(discard, consumed.size()), consumed.size());
 
     // 再写 60 字节：越过末尾 54 字节后绕回缓冲区头部，Peek 需按环序拼接
     std::string payload(SpscRingBufferSize - 4, '\0');
@@ -224,151 +224,151 @@ TEST(SpscRingBufferTest, Peek_WrapsAround)
     {
         payload[i] = ByteAt(i);
     }
-    ASSERT_EQ(buf.Write(payload.data(), payload.size()), payload.size());
+    REQUIRE_EQ(buf.Write(payload.data(), payload.size()), payload.size());
 
     std::vector<char> peeked(SpscRingBufferSize, '\0');
-    EXPECT_EQ(buf.Peek(peeked.data(), peeked.size()), payload.size());
-    EXPECT_EQ(std::memcmp(peeked.data(), payload.data(), payload.size()), 0);
-    EXPECT_EQ(buf.GetReadBufferSize(), payload.size());
+    CHECK_EQ(buf.Peek(peeked.data(), peeked.size()), payload.size());
+    CHECK_EQ(std::memcmp(peeked.data(), payload.data(), payload.size()), 0);
+    CHECK_EQ(buf.GetReadBufferSize(), payload.size());
 }
 
-TEST(SpscRingBufferTest, PeekThenRead_Equal)
+TEST_CASE("SpscRingBufferTest.PeekThenRead_Equal")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     buf.Write("HelloWorld", 10);
 
     char peeked[16] = {};
-    ASSERT_EQ(buf.Peek(peeked, 10), 10u);
+    REQUIRE_EQ(buf.Peek(peeked, 10), 10u);
 
     char read[16] = {};
-    ASSERT_EQ(buf.Read(read, 10), 10u);
-    EXPECT_EQ(std::memcmp(peeked, read, 10), 0);
+    REQUIRE_EQ(buf.Read(read, 10), 10u);
+    CHECK_EQ(std::memcmp(peeked, read, 10), 0);
 }
 
 // ---------- Skip ----------
 
-TEST(SpscRingBufferTest, Skip)
+TEST_CASE("SpscRingBufferTest.Skip")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     buf.Write("HelloWorld", 10);
 
-    EXPECT_EQ(buf.Skip(5), 5u);
-    EXPECT_EQ(buf.GetReadBufferSize(), 5u);
+    CHECK_EQ(buf.Skip(5), 5u);
+    CHECK_EQ(buf.GetReadBufferSize(), 5u);
 
     char output[16] = {};
-    EXPECT_EQ(buf.Read(output, 5), 5u);
-    EXPECT_EQ(std::memcmp(output, "World", 5), 0);
+    CHECK_EQ(buf.Read(output, 5), 5u);
+    CHECK_EQ(std::memcmp(output, "World", 5), 0);
 }
 
-TEST(SpscRingBufferTest, Skip_ExcessClampsToReadableBytes)
+TEST_CASE("SpscRingBufferTest.Skip_ExcessClampsToReadableBytes")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     buf.Write("Hello", 5);
-    EXPECT_EQ(buf.Skip(100), 5u);
-    EXPECT_TRUE(buf.IsEmpty());
+    CHECK_EQ(buf.Skip(100), 5u);
+    CHECK(buf.IsEmpty());
 }
 
-TEST(SpscRingBufferTest, Skip_ZeroLength)
+TEST_CASE("SpscRingBufferTest.Skip_ZeroLength")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     buf.Write("Hello", 5);
-    EXPECT_EQ(buf.Skip(0), 0u);
-    EXPECT_EQ(buf.GetReadBufferSize(), 5u);
+    CHECK_EQ(buf.Skip(0), 0u);
+    CHECK_EQ(buf.GetReadBufferSize(), 5u);
 }
 
-TEST(SpscRingBufferTest, Skip_ThenReadAcrossWrapBoundary)
+TEST_CASE("SpscRingBufferTest.Skip_ThenReadAcrossWrapBoundary")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
 
     std::string payload(SpscRingBufferSize, 'X');
-    ASSERT_EQ(buf.Write(payload.data(), payload.size()), SpscRingBufferSize);
+    REQUIRE_EQ(buf.Write(payload.data(), payload.size()), SpscRingBufferSize);
     char discard[4] = {};
-    ASSERT_EQ(buf.Read(discard, 2), 2u);
+    REQUIRE_EQ(buf.Read(discard, 2), 2u);
 
     // 读走 2 字节后只剩 2 字节空间，写入的 2 字节落到绕回后的 0..1 号槽
-    ASSERT_EQ(buf.Write("YZ", 2), 2u);
-    EXPECT_TRUE(buf.IsFull());
+    REQUIRE_EQ(buf.Write("YZ", 2), 2u);
+    CHECK(buf.IsFull());
 
     // 跳过 61 字节使读位置落到 63 号槽；再读 3 字节必须跨过末尾拼接 Y、Z
-    EXPECT_EQ(buf.Skip(61), 61u);
+    CHECK_EQ(buf.Skip(61), 61u);
     char output[4] = {};
-    EXPECT_EQ(buf.Read(output, 3), 3u);
-    EXPECT_EQ(std::memcmp(output, "XYZ", 3), 0);
-    EXPECT_TRUE(buf.IsEmpty());
+    CHECK_EQ(buf.Read(output, 3), 3u);
+    CHECK_EQ(std::memcmp(output, "XYZ", 3), 0);
+    CHECK(buf.IsEmpty());
 }
 
-TEST(SpscRingBufferTest, PeekThenSkip_EqualsRead)
+TEST_CASE("SpscRingBufferTest.PeekThenSkip_EqualsRead")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
     buf.Write("HelloWorld", 10);
 
     char peeked[16] = {};
-    ASSERT_EQ(buf.Peek(peeked, 6), 6u);
-    ASSERT_EQ(buf.Skip(6), 6u);
-    EXPECT_EQ(buf.GetReadBufferSize(), 4u);
+    REQUIRE_EQ(buf.Peek(peeked, 6), 6u);
+    REQUIRE_EQ(buf.Skip(6), 6u);
+    CHECK_EQ(buf.GetReadBufferSize(), 4u);
 
     char rest[16] = {};
-    ASSERT_EQ(buf.Read(rest, 16), 4u);
-    EXPECT_EQ(std::memcmp(peeked, "HelloW", 6), 0);
-    EXPECT_EQ(std::memcmp(rest, "orld", 4), 0);
+    REQUIRE_EQ(buf.Read(rest, 16), 4u);
+    CHECK_EQ(std::memcmp(peeked, "HelloW", 6), 0);
+    CHECK_EQ(std::memcmp(rest, "orld", 4), 0);
 }
 
 // ---------- 绕回（wrap-around） ----------
 
-TEST(SpscRingBufferTest, Write_WrapsAroundBoundary)
+TEST_CASE("SpscRingBufferTest.Write_WrapsAroundBoundary")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
 
     // 写 61 字节后读走 2 字节：写位置落在 61，剩余可写 5 字节，再写 5 字节必然跨过末尾
     std::string headPart(61, 'A');
-    ASSERT_EQ(buf.Write(headPart.data(), headPart.size()), 61u);
+    REQUIRE_EQ(buf.Write(headPart.data(), headPart.size()), 61u);
     char discard[4] = {};
-    ASSERT_EQ(buf.Read(discard, 2), 2u);
-    ASSERT_EQ(buf.GetWriteBufferSize(), 5u);
+    REQUIRE_EQ(buf.Read(discard, 2), 2u);
+    REQUIRE_EQ(buf.GetWriteBufferSize(), 5u);
 
     // 3 字节落在 61..63 号槽，2 字节绕回 0..1 号槽
-    ASSERT_EQ(buf.Write("BBBBB", 5), 5u);
-    EXPECT_TRUE(buf.IsFull());
-    EXPECT_EQ(buf.GetReadBufferSize(), SpscRingBufferSize);
-    EXPECT_EQ(buf.GetWriteBufferSize(), 0u);
+    REQUIRE_EQ(buf.Write("BBBBB", 5), 5u);
+    CHECK(buf.IsFull());
+    CHECK_EQ(buf.GetReadBufferSize(), SpscRingBufferSize);
+    CHECK_EQ(buf.GetWriteBufferSize(), 0u);
 
     // 读出全部：首段 62 字节（59 个 A + 3 个 B），余段 2 字节（B）
     std::vector<char> output(SpscRingBufferSize);
-    EXPECT_EQ(buf.Read(output.data(), SpscRingBufferSize), SpscRingBufferSize);
+    CHECK_EQ(buf.Read(output.data(), SpscRingBufferSize), SpscRingBufferSize);
 
     std::string expected(59, 'A');
     expected += "BBBBB";
-    EXPECT_EQ(std::memcmp(output.data(), expected.data(), SpscRingBufferSize), 0);
+    CHECK_EQ(std::memcmp(output.data(), expected.data(), SpscRingBufferSize), 0);
 }
 
-TEST(SpscRingBufferTest, Read_WrapsAround)
+TEST_CASE("SpscRingBufferTest.Read_WrapsAround")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
 
     std::string payload(SpscRingBufferSize, 'X');
-    ASSERT_EQ(buf.Write(payload.data(), payload.size()), SpscRingBufferSize);
-    EXPECT_TRUE(buf.IsFull());
+    REQUIRE_EQ(buf.Write(payload.data(), payload.size()), SpscRingBufferSize);
+    CHECK(buf.IsFull());
 
     // 读走 5 字节释放队头空间
     char discard[16] = {};
-    ASSERT_EQ(buf.Read(discard, 5), 5u);
-    EXPECT_EQ(buf.GetWriteBufferSize(), 5u);
+    REQUIRE_EQ(buf.Read(discard, 5), 5u);
+    CHECK_EQ(buf.GetWriteBufferSize(), 5u);
 
     // 写满释放出的 5 字节
-    ASSERT_EQ(buf.Write("YYYYY", 5), 5u);
-    EXPECT_TRUE(buf.IsFull());
+    REQUIRE_EQ(buf.Write("YYYYY", 5), 5u);
+    CHECK(buf.IsFull());
 
     std::vector<char> output(SpscRingBufferSize);
-    EXPECT_EQ(buf.Read(output.data(), SpscRingBufferSize), SpscRingBufferSize);
+    CHECK_EQ(buf.Read(output.data(), SpscRingBufferSize), SpscRingBufferSize);
 
-    EXPECT_EQ(output[0], 'X');
+    CHECK_EQ(output[0], 'X');
     for (size_t i = SpscRingBufferSize - 5; i < SpscRingBufferSize; ++i)
     {
-        EXPECT_EQ(output[i], 'Y');
+        CHECK_EQ(output[i], 'Y');
     }
 }
 
-TEST(SpscRingBufferTest, AccumulatingPartialReadsPreserveByteOrder)
+TEST_CASE("SpscRingBufferTest.AccumulatingPartialReadsPreserveByteOrder")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
 
@@ -385,70 +385,71 @@ TEST(SpscRingBufferTest, AccumulatingPartialReadsPreserveByteOrder)
         {
             payload[i] = ByteAt(writtenTotal + i);
         }
-        ASSERT_EQ(buf.Write(payload, WriteLength), WriteLength);
+        REQUIRE_EQ(buf.Write(payload, WriteLength), WriteLength);
         writtenTotal += WriteLength;
 
         const bool isDrainedRound = ((round + 1) % DrainedRoundInterval) == 0;
         const size_t requestedLength = isDrainedRound ? SpscRingBufferSize : 5;
         char chunk[SpscRingBufferSize] = {};
         const size_t readLength = buf.Read(chunk, requestedLength);
-        ASSERT_LE(readLength, requestedLength);
+        REQUIRE_LE(readLength, requestedLength);
         if (isDrainedRound)
         {
-            ASSERT_LT(readLength, requestedLength);
+            REQUIRE_LT(readLength, requestedLength);
         }
         received.insert(received.end(), chunk, chunk + readLength);
     }
 
     // 读出的字节是写入流的前缀，且没有字节被吞掉
-    ASSERT_EQ(received.size() + buf.GetReadBufferSize(), writtenTotal);
+    REQUIRE_EQ(received.size() + buf.GetReadBufferSize(), writtenTotal);
     for (size_t i = 0; i < received.size(); ++i)
     {
-        ASSERT_EQ(received[i], ByteAt(i)) << "stream position " << i;
+        INFO("stream position " << i);
+        REQUIRE_EQ(received[i], ByteAt(i));
     }
 }
 
 // ---------- 多个 Write/Read 周期 ----------
 
-TEST(SpscRingBufferTest, MultiCycle)
+TEST_CASE("SpscRingBufferTest.MultiCycle")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
 
     for (int cycle = 0; cycle < 10; ++cycle)
     {
         std::string data = "Cycle" + std::to_string(cycle);
-        EXPECT_EQ(buf.Write(data.data(), data.size()), data.size());
+        CHECK_EQ(buf.Write(data.data(), data.size()), data.size());
 
         char output[32] = {};
-        EXPECT_EQ(buf.Read(output, data.size()), data.size());
-        EXPECT_EQ(std::memcmp(output, data.data(), data.size()), 0);
-        EXPECT_TRUE(buf.IsEmpty());
+        CHECK_EQ(buf.Read(output, data.size()), data.size());
+        CHECK_EQ(std::memcmp(output, data.data(), data.size()), 0);
+        CHECK(buf.IsEmpty());
     }
 }
 
 // ---------- ResetWhenIdle ----------
 
-TEST(SpscRingBufferTest, ResetWhenIdle_AfterWrapAround)
+TEST_CASE("SpscRingBufferTest.ResetWhenIdle_AfterWrapAround")
 {
     SpscRingBuffer<SpscRingBufferSize> buf;
 
     // 先让读写索引双双超过容量（绕回态）
     std::string payload(SpscRingBufferSize, 'X');
-    ASSERT_EQ(buf.Write(payload.data(), payload.size()), SpscRingBufferSize);
+    REQUIRE_EQ(buf.Write(payload.data(), payload.size()), SpscRingBufferSize);
     char discard[SpscRingBufferSize] = {};
-    ASSERT_EQ(buf.Read(discard, 5), 5u);
-    ASSERT_EQ(buf.Write("YYYYY", 5), 5u);
-    ASSERT_EQ(buf.Read(discard, SpscRingBufferSize), SpscRingBufferSize);
-    ASSERT_TRUE(buf.IsEmpty());
+    REQUIRE_EQ(buf.Read(discard, 5), 5u);
+    REQUIRE_EQ(buf.Write("YYYYY", 5), 5u);
+    REQUIRE_EQ(buf.Read(discard, SpscRingBufferSize), SpscRingBufferSize);
+    REQUIRE(buf.IsEmpty());
 
     buf.ResetWhenIdle();
-    EXPECT_TRUE(buf.IsEmpty());
-    EXPECT_FALSE(buf.IsFull());
-    EXPECT_EQ(buf.GetWriteBufferSize(), SpscRingBufferSize);
+    CHECK(buf.IsEmpty());
+    CHECK_FALSE(buf.IsFull());
+    CHECK_EQ(buf.GetWriteBufferSize(), SpscRingBufferSize);
 
     // 复位后仍可正常读写
-    EXPECT_EQ(buf.Write("World", 5), 5u);
+    CHECK_EQ(buf.Write("World", 5), 5u);
     char output[16] = {};
-    EXPECT_EQ(buf.Read(output, 5), 5u);
-    EXPECT_EQ(std::memcmp(output, "World", 5), 0);
+    CHECK_EQ(buf.Read(output, 5), 5u);
+    CHECK_EQ(std::memcmp(output, "World", 5), 0);
 }

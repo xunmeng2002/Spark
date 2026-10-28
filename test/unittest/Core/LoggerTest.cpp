@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include <Spark/Core/Logger/Logger.h>
+#include "doctest/doctest.h"
 
 #include <cstdarg>
 #include <cstdio>
@@ -35,75 +35,75 @@ void ClearTestCallback()
 
 // ---------- 单例 ----------
 
-TEST(LoggerTest, GetInstance_SameInstance)
+TEST_CASE("LoggerTest.GetInstance_SameInstance")
 {
     Logger& instance1 = Logger::GetInstance();
     Logger& instance2 = Logger::GetInstance();
 
-    EXPECT_EQ(&instance1, &instance2);
+    CHECK_EQ(&instance1, &instance2);
 }
 
 // ---------- 默认日志级别 ----------
 
-TEST(LoggerTest, DefaultLogLevel)
+TEST_CASE("LoggerTest.DefaultLogLevel")
 {
     // 默认日志级别为 Info
-    EXPECT_EQ(Logger::GetLogLevel(), LogLevel::Info);
+    CHECK_EQ(Logger::GetLogLevel(), LogLevel::Info);
 }
 
-TEST(LoggerTest, DefaultConsoleLogLevel)
+TEST_CASE("LoggerTest.DefaultConsoleLogLevel")
 {
     // 默认控制台级别为 Warning
-    EXPECT_EQ(Logger::GetConsoleLogLevel(), LogLevel::Warning);
+    CHECK_EQ(Logger::GetConsoleLogLevel(), LogLevel::Warning);
 }
 
 // ---------- SetLogLevel ----------
 
-TEST(LoggerTest, SetLogLevel_Info)
+TEST_CASE("LoggerTest.SetLogLevel_Info")
 {
     LogLevel saved_level = Logger::GetLogLevel();
     LogLevel saved_console = Logger::GetConsoleLogLevel();
 
     Logger::GetInstance().SetLogLevel(LogLevel::Info, LogLevel::Warning);
-    EXPECT_EQ(Logger::GetLogLevel(), LogLevel::Info);
-    EXPECT_EQ(Logger::GetConsoleLogLevel(), LogLevel::Warning);
+    CHECK_EQ(Logger::GetLogLevel(), LogLevel::Info);
+    CHECK_EQ(Logger::GetConsoleLogLevel(), LogLevel::Warning);
 
     // 恢复
     Logger::GetInstance().SetLogLevel(saved_level, saved_console);
 }
 
-TEST(LoggerTest, SetLogLevel_Debug)
+TEST_CASE("LoggerTest.SetLogLevel_Debug")
 {
     LogLevel saved_level = Logger::GetLogLevel();
     LogLevel saved_console = Logger::GetConsoleLogLevel();
 
     Logger::GetInstance().SetLogLevel(LogLevel::Debug, LogLevel::Debug);
-    EXPECT_EQ(Logger::GetLogLevel(), LogLevel::Debug);
-    EXPECT_EQ(Logger::GetConsoleLogLevel(), LogLevel::Debug);
+    CHECK_EQ(Logger::GetLogLevel(), LogLevel::Debug);
+    CHECK_EQ(Logger::GetConsoleLogLevel(), LogLevel::Debug);
 
     Logger::GetInstance().SetLogLevel(saved_level, saved_console);
 }
 
-TEST(LoggerTest, SetLogLevel_ErrorOnly)
+TEST_CASE("LoggerTest.SetLogLevel_ErrorOnly")
 {
     LogLevel saved_level = Logger::GetLogLevel();
     LogLevel saved_console = Logger::GetConsoleLogLevel();
 
     Logger::GetInstance().SetLogLevel(LogLevel::Error, LogLevel::Emergency);
-    EXPECT_EQ(Logger::GetLogLevel(), LogLevel::Error);
-    EXPECT_EQ(Logger::GetConsoleLogLevel(), LogLevel::Emergency);
+    CHECK_EQ(Logger::GetLogLevel(), LogLevel::Error);
+    CHECK_EQ(Logger::GetConsoleLogLevel(), LogLevel::Emergency);
 
     Logger::GetInstance().SetLogLevel(saved_level, saved_console);
 }
 
 // ---------- 外部日志回调 ----------
 
-TEST(LoggerTest, GetWriteLogFunc_DefaultIsNull)
+TEST_CASE("LoggerTest.GetWriteLogFunc_DefaultIsNull")
 {
-    EXPECT_EQ(Logger::GetWriteLogFunc(), nullptr);
+    CHECK_EQ(Logger::GetWriteLogFunc(), nullptr);
 }
 
-TEST(LoggerTest, SetExternLogger_CallbackIsCalled)
+TEST_CASE("LoggerTest.SetExternLogger_CallbackIsCalled")
 {
     ClearTestCallback();
 
@@ -112,19 +112,19 @@ TEST(LoggerTest, SetExternLogger_CallbackIsCalled)
 
     // 注册测试回调
     Logger::SetExternLogger(TestLogCallback);
-    EXPECT_EQ(Logger::GetWriteLogFunc(), TestLogCallback);
+    CHECK_EQ(Logger::GetWriteLogFunc(), TestLogCallback);
 
     // 通过 WriteLog 宏调用（设计上日志入口只有宏）
     WriteLog(LogLevel::Info, "Test message %d", 42);
 
-    EXPECT_EQ(LastLevel, LogLevel::Info);
-    EXPECT_NE(std::strlen(LastMessage), 0);
+    CHECK_EQ(LastLevel, LogLevel::Info);
+    CHECK_NE(std::strlen(LastMessage), 0);
 
     // 恢复
     Logger::SetExternLogger(saved_func);
 }
 
-TEST(LoggerTest, SetExternLogger_MultipleLevels)
+TEST_CASE("LoggerTest.SetExternLogger_MultipleLevels")
 {
     ClearTestCallback();
 
@@ -132,20 +132,20 @@ TEST(LoggerTest, SetExternLogger_MultipleLevels)
     Logger::SetExternLogger(TestLogCallback);
 
     WriteLog(LogLevel::Warning, "Warning test");
-    EXPECT_EQ(LastLevel, LogLevel::Warning);
+    CHECK_EQ(LastLevel, LogLevel::Warning);
 
     WriteLog(LogLevel::Error, "Error test");
-    EXPECT_EQ(LastLevel, LogLevel::Error);
+    CHECK_EQ(LastLevel, LogLevel::Error);
 
     WriteLog(LogLevel::Debug, "Debug test");
-    EXPECT_EQ(LastLevel, LogLevel::Debug);
+    CHECK_EQ(LastLevel, LogLevel::Debug);
 
     Logger::SetExternLogger(saved_func);
 }
 
 // ---------- WriteLog 宏 ----------
 
-TEST(LoggerTest, WriteLogMacro_WithRegisteredCallback)
+TEST_CASE("LoggerTest.WriteLogMacro_WithRegisteredCallback")
 {
     ClearTestCallback();
 
@@ -155,27 +155,27 @@ TEST(LoggerTest, WriteLogMacro_WithRegisteredCallback)
     // WriteLog 宏在回调存在时调用回调
     WriteLog(LogLevel::Critical, "Macro test %s %d", "hello", 99);
 
-    EXPECT_EQ(LastLevel, LogLevel::Critical);
-    EXPECT_NE(std::strlen(LastMessage), 0);
+    CHECK_EQ(LastLevel, LogLevel::Critical);
+    CHECK_NE(std::strlen(LastMessage), 0);
 
     Logger::SetExternLogger(saved_func);
 }
 
-TEST(LoggerTest, WriteLogMacro_NoCallbackDoesNothing)
+TEST_CASE("LoggerTest.WriteLogMacro_NoCallbackDoesNothing")
 {
     // 确保回调为空时不崩溃
     WriteLogFunc saved_func = Logger::GetWriteLogFunc();
     Logger::SetExternLogger(nullptr);
 
-    EXPECT_NO_THROW(WriteLog(LogLevel::Info, "Should not crash"));
-    EXPECT_NO_THROW(WriteErrorLog(1001, "Should not crash either"));
+    CHECK_NOTHROW(WriteLog(LogLevel::Info, "Should not crash"));
+    CHECK_NOTHROW(WriteErrorLog(1001, "Should not crash either"));
 
     Logger::SetExternLogger(saved_func);
 }
 
 // ---------- WriteErrorLog 宏 ----------
 
-TEST(LoggerTest, WriteErrorLogMacro)
+TEST_CASE("LoggerTest.WriteErrorLogMacro")
 {
     ClearTestCallback();
 
@@ -184,20 +184,20 @@ TEST(LoggerTest, WriteErrorLogMacro)
 
     WriteErrorLog(404, "Not found");
 
-    EXPECT_EQ(LastLevel, LogLevel::Error);
+    CHECK_EQ(LastLevel, LogLevel::Error);
 
     Logger::SetExternLogger(saved_func);
 }
 
 // ---------- 恢复默认状态 ----------
 
-TEST(LoggerTest, RestoreDefaultAfterTests)
+TEST_CASE("LoggerTest.RestoreDefaultAfterTests")
 {
     // 确保不影响后续测试
     Logger::GetInstance().SetLogLevel(LogLevel::Info, LogLevel::Warning);
     Logger::SetExternLogger(nullptr);
 
-    EXPECT_EQ(Logger::GetLogLevel(), LogLevel::Info);
-    EXPECT_EQ(Logger::GetConsoleLogLevel(), LogLevel::Warning);
-    EXPECT_EQ(Logger::GetWriteLogFunc(), nullptr);
+    CHECK_EQ(Logger::GetLogLevel(), LogLevel::Info);
+    CHECK_EQ(Logger::GetConsoleLogLevel(), LogLevel::Warning);
+    CHECK_EQ(Logger::GetWriteLogFunc(), nullptr);
 }

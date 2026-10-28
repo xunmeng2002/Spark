@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include <Spark/Serialization/Base64/Base64.h>
+#include "doctest/doctest.h"
 
 #include <cstring>
 #include <vector>
@@ -28,82 +28,82 @@ static std::string DecodeToString(const std::string& input)
 
 // ---------- RFC 4648 编码测试 ----------
 
-TEST(Base64Test, Encode_Empty)
+TEST_CASE("Base64Test.Encode_Empty")
 {
-    EXPECT_EQ(EncodeToString(""), "");
+    CHECK_EQ(EncodeToString(""), "");
 }
 
-TEST(Base64Test, Encode_f)
+TEST_CASE("Base64Test.Encode_f")
 {
-    EXPECT_EQ(EncodeToString("f"), "Zg==");
+    CHECK_EQ(EncodeToString("f"), "Zg==");
 }
 
-TEST(Base64Test, Encode_fo)
+TEST_CASE("Base64Test.Encode_fo")
 {
-    EXPECT_EQ(EncodeToString("fo"), "Zm8=");
+    CHECK_EQ(EncodeToString("fo"), "Zm8=");
 }
 
-TEST(Base64Test, Encode_foo)
+TEST_CASE("Base64Test.Encode_foo")
 {
-    EXPECT_EQ(EncodeToString("foo"), "Zm9v");
+    CHECK_EQ(EncodeToString("foo"), "Zm9v");
 }
 
-TEST(Base64Test, Encode_foob)
+TEST_CASE("Base64Test.Encode_foob")
 {
-    EXPECT_EQ(EncodeToString("foob"), "Zm9vYg==");
+    CHECK_EQ(EncodeToString("foob"), "Zm9vYg==");
 }
 
-TEST(Base64Test, Encode_fooba)
+TEST_CASE("Base64Test.Encode_fooba")
 {
-    EXPECT_EQ(EncodeToString("fooba"), "Zm9vYmE=");
+    CHECK_EQ(EncodeToString("fooba"), "Zm9vYmE=");
 }
 
-TEST(Base64Test, Encode_foobar)
+TEST_CASE("Base64Test.Encode_foobar")
 {
-    EXPECT_EQ(EncodeToString("foobar"), "Zm9vYmFy");
+    CHECK_EQ(EncodeToString("foobar"), "Zm9vYmFy");
 }
 
 // ---------- RFC 4648 解码测试 ----------
 
-TEST(Base64Test, Decode_Empty)
+TEST_CASE("Base64Test.Decode_Empty")
 {
-    EXPECT_EQ(DecodeToString(""), "");
+    CHECK_EQ(DecodeToString(""), "");
 }
 
-TEST(Base64Test, Decode_Zg)
+TEST_CASE("Base64Test.Decode_Zg")
 {
-    EXPECT_EQ(DecodeToString("Zg=="), "f");
+    CHECK_EQ(DecodeToString("Zg=="), "f");
 }
 
-TEST(Base64Test, Decode_Zm8)
+TEST_CASE("Base64Test.Decode_Zm8")
 {
-    EXPECT_EQ(DecodeToString("Zm8="), "fo");
+    CHECK_EQ(DecodeToString("Zm8="), "fo");
 }
 
-TEST(Base64Test, Decode_Zm9v)
+TEST_CASE("Base64Test.Decode_Zm9v")
 {
-    EXPECT_EQ(DecodeToString("Zm9v"), "foo");
+    CHECK_EQ(DecodeToString("Zm9v"), "foo");
 }
 
 // ---------- 编解码互逆 ----------
 
-TEST(Base64Test, RoundTrip_Empty)
+TEST_CASE("Base64Test.RoundTrip_Empty")
 {
     std::string original = "";
     auto encoded = EncodeToString(original);
     auto decoded = DecodeToString(encoded);
-    EXPECT_EQ(original, decoded);
+    CHECK_EQ(original, decoded);
 }
 
-TEST(Base64Test, RoundTrip_Short)
+TEST_CASE("Base64Test.RoundTrip_Short")
 {
     std::string original = "Hello";
     auto encoded = EncodeToString(original);
     auto decoded = DecodeToString(encoded);
-    EXPECT_EQ(original, decoded);
+    CHECK_EQ(original, decoded);
 }
 
-TEST(Base64Test, RoundTrip_AllBytes)
+TEST_CASE("Base64Test.RoundTrip_AllBytes")
 {
     std::string original;
     for (int i = 0; i < 256; ++i)
@@ -111,14 +111,14 @@ TEST(Base64Test, RoundTrip_AllBytes)
 
     auto encoded = EncodeToString(original);
     auto decoded = DecodeToString(encoded);
-    EXPECT_EQ(original, decoded);
+    CHECK_EQ(original, decoded);
 }
 
-TEST(Base64Test, RoundTrip_Binary)
+TEST_CASE("Base64Test.RoundTrip_Binary")
 {
     unsigned char raw[] = {0x00, 0xFF, 0x80, 0x7F, 0x55, 0xAA};
     std::string original(reinterpret_cast<const char*>(raw), sizeof(raw));
     auto encoded = EncodeToString(original);
     auto decoded = DecodeToString(encoded);
-    EXPECT_EQ(original, decoded);
+    CHECK_EQ(original, decoded);
 }
