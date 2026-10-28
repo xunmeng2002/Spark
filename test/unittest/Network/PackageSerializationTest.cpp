@@ -2,6 +2,7 @@
 #include "Packages.h"
 #include "ProtocolItems.h"
 #include <Spark/TemplateLib/ObjectPool/ObjectPool.h>
+#include <Spark/Network/Protocol/Items.h>
 #include <Spark/Network/Protocol/PackageReader.h>
 #include <Spark/Network/Protocol/StepUtility.h>
 #include <Spark/Network/Protocol/ProtocolVersion.h>
@@ -57,7 +58,7 @@ int MakeFrame(ProtocolTypeType protocolType, char* buff, int msgSeqNum)
 bool PatchStepVersion(std::string& frame, unsigned short version)
 {
     const std::string& anchor = StepUtility::GetPackageStartAnchor();
-    std::string key = anchor + std::format("{:04X}", ProtocolItems::Version) + "=";
+    std::string key = anchor + std::format("{:04X}", Items::Version) + "=";
     size_t pos = frame.find(key);
     if (pos == std::string::npos)
     {
@@ -721,7 +722,7 @@ bool PatchStepItemValueWidened(std::string& frame, Spark::UInt16Type itemId, con
     {
         return false;
     }
-    const std::string bodyLenKey = std::format("{:04X}=", ProtocolItems::BodyLen);
+    const std::string bodyLenKey = std::format("{:04X}=", Items::BodyLen);
     const size_t bodyLenPos = frame.find(bodyLenKey);
     if (bodyLenPos == std::string::npos)
     {

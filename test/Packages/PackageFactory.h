@@ -7,7 +7,7 @@ namespace Spark::Test::Packages
 class PackageFactory : public Spark::Network::PackageFactoryBase
 {
 public:
-	virtual Spark::Network::Package* CreatePackage(UInt16Type packageId) override;
+	virtual Spark::Network::Package* CreatePackage(Spark::UInt16Type packageId) override;
 };
 }
 

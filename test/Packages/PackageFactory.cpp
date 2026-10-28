@@ -7,7 +7,7 @@ using namespace Spark::Network;
 
 namespace Spark::Test::Packages
 {
-Package* PackageFactory::CreatePackage(UInt16Type packageId)
+Package* PackageFactory::CreatePackage(Spark::UInt16Type packageId)
 {
 	switch (packageId)
 	{

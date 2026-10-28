@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "Spark/ApiTypes.h"
+#include <Spark/Test/Types.h>
 #include <Spark/Network/Protocol/StepUtility.h>
 #include <Spark/Network/Protocol/Head.h>
 #include <Spark/Network/Protocol/Items.h>
