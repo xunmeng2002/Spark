@@ -1,4 +1,4 @@
-<types namespace="Spark::Test">
+<types project="Spark" namespace="Spark::Test">
 	<bools>
 		<bool name="Bool" desc="布尔类型" />
 	</bools>
