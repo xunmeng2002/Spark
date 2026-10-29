@@ -594,3 +594,67 @@ TEST_CASE("TimeUtilityTest.GetNextTradingDay_CharArray")
     TimeUtility::GetNextTradingDay("20240112", buf);
     CHECK_EQ(std::string_view(buf), std::string_view("20240115"));
 }
+
+// ---------- 手写格式化的零填充（不依赖 strftime） ----------
+
+TEST_CASE("TimeUtilityTest.ToLocalDateTime_PadsSingleDigitFields")
+{
+    // 2024-01-05 03:04:05：月、日、时、分、秒都是个位数，必须补零到固定宽度
+    tm fixedTime{};
+    fixedTime.tm_year = 124;
+    fixedTime.tm_mon = 0;
+    fixedTime.tm_mday = 5;
+    fixedTime.tm_hour = 3;
+    fixedTime.tm_min = 4;
+    fixedTime.tm_sec = 5;
+    fixedTime.tm_isdst = -1;
+    time_t fixedTimeValue = mktime(&fixedTime);
+    CHECK_EQ(TimeUtility::ToLocalDateTime(&fixedTimeValue), std::string("20240105-03:04:05"));
+    CHECK_EQ(TimeUtility::ToLocalDate(&fixedTimeValue), std::string("20240105"));
+    CHECK_EQ(TimeUtility::ToLocalTime(&fixedTimeValue), std::string("03:04:05"));
+}
+
+TEST_CASE("TimeUtilityTest.GetTm_ReturnsByValue")
+{
+    const tm brokenDownTime = TimeUtility::GetTm(20240115);
+    CHECK_EQ(brokenDownTime.tm_year + 1900, 2024);
+    CHECK_EQ(brokenDownTime.tm_mon + 1, 1);
+    CHECK_EQ(brokenDownTime.tm_mday, 15);
+}
+
+// ---------- 写入调用方缓冲的重载 ----------
+
+TEST_CASE("TimeUtilityTest.GetLocalDateTimeWithMilliSecond_BufferVersion")
+{
+    char buffer[TimeUtility::MaxDateTimeWithMilliSecondLength] = {};
+    const size_t length = TimeUtility::GetLocalDateTimeWithMilliSecond(buffer, sizeof(buffer));
+    CHECK_EQ(length, TimeUtility::MaxDateTimeWithMilliSecondLength);
+    CHECK_EQ(buffer[8], '-');
+    CHECK_EQ(buffer[11], ':');
+    CHECK_EQ(buffer[14], ':');
+    CHECK_EQ(buffer[17], '.');
+    for (size_t index = 18; index < TimeUtility::MaxDateTimeWithMilliSecondLength; ++index)
+    {
+        CHECK_GE(buffer[index], '0');
+        CHECK_LE(buffer[index], '9');
+    }
+}
+
+TEST_CASE("TimeUtilityTest.GetLocalDateTimeWithMilliSecond_BufferTooSmall")
+{
+    char buffer[TimeUtility::MaxDateTimeWithMilliSecondLength - 1] = {};
+    CHECK_EQ(TimeUtility::GetLocalDateTimeWithMilliSecond(buffer, sizeof(buffer)), static_cast<size_t>(0));
+    CHECK_EQ(buffer[0], '\0');
+}
+
+// ---------- 解析失败的分档 ----------
+
+TEST_CASE("TimeUtilityTest.GetTimeFromString_UnparsableReturnsMinusOne")
+{
+    CHECK_EQ(TimeUtility::GetTimeFromString("not-a-date", "%d-%d-%d %d:%d:%d"), static_cast<time_t>(-1));
+}
+
+TEST_CASE("TimeUtilityTest.GetTimeFromTimeString_UnparsableReturnsZero")
+{
+    CHECK_EQ(TimeUtility::GetTimeFromTimeString("abc"), 0);
+}

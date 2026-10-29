@@ -1,20 +1,27 @@
 #pragma once
 #include <Spark/Core/CoreExport.h>
 #include <Spark/Types.h>
+
 #include <chrono>
+#include <cstddef>
+#include <ctime>
 #include <string>
+#include <string_view>
 
 namespace Spark::Core
 {
 class CORE_EXPORTS TimeUtility
 {
 public:
+    // "YYYYMMDD-HH:MM:SS.mmm" 的字节数（不含结尾 NUL），调用方缓冲至少这么大
+    static constexpr size_t MaxDateTimeWithMilliSecondLength = 21;
+
     static time_t GetTime();
     static time_t GetTime(const char* date);
     static time_t GetTime(int date);
-    static tm* GetTm(int date);
-    static tm* GetUtcTm();
-    static tm* GetLocalTm();
+    static tm GetTm(int date);
+    static tm GetUtcTm();
+    static tm GetLocalTm();
 
     static void GetPreTradingDay(const char* tradingDay, char* preTradingDay);
     static int GetPreTradingDay(int tradingDay);
@@ -41,11 +48,14 @@ public:
     static std::string GetLocalDateTime();
     static void GetLocalDateTime(char* date, char* time);
     static std::string GetLocalDateTimeWithMilliSecond();
+    // 写入调用方缓冲（至少 MaxDateTimeWithMilliSecondLength 字节），返回写入长度；缓冲不足返回 0
+    static size_t GetLocalDateTimeWithMilliSecond(char* buffer, size_t capacity);
     static long long GetMilliSecondTimeStamp();
     static void GetDateTimeFromTimeStamp(const Int64Type& timeStamp, DateType& date, TimeType& time);
 
     static int GetTimeFromTimeString(const char* time);
-    static time_t GetTimeFromString(std::string dateTime, std::string format = "%04d%02d%02d-%02d:%02d:%02d");
+    // 解析失败返回 -1；格式串按 sscanf 语法逐字段填写
+    static time_t GetTimeFromString(std::string_view dateTime, std::string_view format = "%04d%02d%02d-%02d:%02d:%02d");
     static std::string ToUtcDate(time_t* time);
     static std::string ToUtcTime(time_t* time);
     static std::string ToUtcDateTime(time_t* time);

@@ -1,18 +1,114 @@
 #include <Spark/Core/Utility/TimeUtility.h>
-#include <format>
-#include <iostream>
-#include <sstream>
-#include <ctime>
-#include <time.h>
-#include <cstring>
-#include <sys/timeb.h>
 
-using namespace std;
-using namespace std::chrono;
+#include <chrono>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 namespace Spark::Core
 {
-thread_local char DateTimeBuff[32];
+namespace
+{
+constexpr size_t DateTimeBufferSize = 32;
+
+size_t WriteTwoDigits(char* buffer, int value)
+{
+    buffer[0] = static_cast<char>('0' + value / 10 % 10);
+    buffer[1] = static_cast<char>('0' + value % 10);
+    return 2;
+}
+
+size_t WriteThreeDigits(char* buffer, int value)
+{
+    buffer[0] = static_cast<char>('0' + value / 100 % 10);
+    buffer[1] = static_cast<char>('0' + value / 10 % 10);
+    buffer[2] = static_cast<char>('0' + value % 10);
+    return 3;
+}
+
+size_t WriteFourDigits(char* buffer, int value)
+{
+    buffer[0] = static_cast<char>('0' + value / 1000 % 10);
+    buffer[1] = static_cast<char>('0' + value / 100 % 10);
+    buffer[2] = static_cast<char>('0' + value / 10 % 10);
+    buffer[3] = static_cast<char>('0' + value % 10);
+    return 4;
+}
+
+size_t WriteMilliSecond(char* buffer, int milliSecond)
+{
+    buffer[0] = '.';
+    return 1 + WriteThreeDigits(buffer + 1, milliSecond);
+}
+
+// "YYYYMMDD"
+size_t FormatDate(const tm& brokenDownTime, char* buffer)
+{
+    size_t length = WriteFourDigits(buffer, brokenDownTime.tm_year + 1900);
+    length += WriteTwoDigits(buffer + length, brokenDownTime.tm_mon + 1);
+    length += WriteTwoDigits(buffer + length, brokenDownTime.tm_mday);
+    return length;
+}
+
+// "HH:MM:SS"
+size_t FormatTime(const tm& brokenDownTime, char* buffer)
+{
+    size_t length = WriteTwoDigits(buffer, brokenDownTime.tm_hour);
+    buffer[length++] = ':';
+    length += WriteTwoDigits(buffer + length, brokenDownTime.tm_min);
+    buffer[length++] = ':';
+    length += WriteTwoDigits(buffer + length, brokenDownTime.tm_sec);
+    return length;
+}
+
+// "YYYYMMDD-HH:MM:SS"
+size_t FormatDateTime(const tm& brokenDownTime, char* buffer)
+{
+    const size_t length = FormatDate(brokenDownTime, buffer);
+    buffer[length] = '-';
+    return length + 1 + FormatTime(brokenDownTime, buffer + length + 1);
+}
+
+int FormatDateValue(const tm& brokenDownTime)
+{
+    return (brokenDownTime.tm_year + 1900) * 10000 + (brokenDownTime.tm_mon + 1) * 100 + brokenDownTime.tm_mday;
+}
+
+int FormatTimeValue(const tm& brokenDownTime)
+{
+    return brokenDownTime.tm_hour * 10000 + brokenDownTime.tm_min * 100 + brokenDownTime.tm_sec;
+}
+
+tm ToBrokenDownTime(time_t timeValue, bool isUtc)
+{
+    return isUtc ? *gmtime(&timeValue) : *localtime(&timeValue);
+}
+
+// 日期时间前缀一秒才变一次：缓存住，秒内只补毫秒，省掉每行一次 localtime 与格式化
+struct SecondPrefixCache
+{
+    long long Second = -1;
+    bool IsUtc = false;
+    size_t Length = 0;
+    char Text[TimeUtility::MaxDateTimeWithMilliSecondLength];
+};
+
+thread_local SecondPrefixCache CachedSecondPrefix;
+
+size_t FormatSecondPrefix(bool isUtc, long long secondsSinceEpoch, char* buffer)
+{
+    if (CachedSecondPrefix.Second != secondsSinceEpoch || CachedSecondPrefix.IsUtc != isUtc)
+    {
+        const tm brokenDownTime = ToBrokenDownTime(static_cast<time_t>(secondsSinceEpoch), isUtc);
+        CachedSecondPrefix.Second = secondsSinceEpoch;
+        CachedSecondPrefix.IsUtc = isUtc;
+        CachedSecondPrefix.Length = FormatDateTime(brokenDownTime, CachedSecondPrefix.Text);
+    }
+    std::memcpy(buffer, CachedSecondPrefix.Text, CachedSecondPrefix.Length);
+    return CachedSecondPrefix.Length;
+}
+}
+
 time_t TimeUtility::GetTime()
 {
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
@@ -21,8 +117,7 @@ time_t TimeUtility::GetTime()
 time_t TimeUtility::GetTime(const char* date)
 {
     auto dateInt = atoi(date);
-    tm dateTm;
-    memset(&dateTm, 0, sizeof(dateTm));
+    tm dateTm{};
     dateTm.tm_year = dateInt / 10000 - 1900;
     dateTm.tm_mon = (dateInt / 100) % 100 - 1;
     dateTm.tm_mday = dateInt % 100;
@@ -30,113 +125,89 @@ time_t TimeUtility::GetTime(const char* date)
 }
 time_t TimeUtility::GetTime(int date)
 {
-    tm dateTm;
-    memset(&dateTm, 0, sizeof(dateTm));
+    tm dateTm{};
     dateTm.tm_year = date / 10000 - 1900;
     dateTm.tm_mon = (date / 100) % 100 - 1;
     dateTm.tm_mday = date % 100;
     return mktime(&dateTm);
 }
-tm* TimeUtility::GetTm(int date)
+tm TimeUtility::GetTm(int date)
 {
-    auto t = GetTime(date);
-    return localtime(&t);
+    return ToBrokenDownTime(GetTime(date), false);
 }
-tm* TimeUtility::GetUtcTm()
+tm TimeUtility::GetUtcTm()
 {
-    time_t t = GetTime();
-    return gmtime(&t);
+    return ToBrokenDownTime(GetTime(), true);
 }
-tm* TimeUtility::GetLocalTm()
+tm TimeUtility::GetLocalTm()
 {
-    time_t t = GetTime();
-    return localtime(&t);
+    return ToBrokenDownTime(GetTime(), false);
 }
 
 void TimeUtility::GetPreTradingDay(const char* tradingDay, char* preTradingDay)
 {
-    auto dateTime = GetTime(tradingDay);
-
-    time_t lastTradingDay = dateTime - 86400LL;
-    tm* lastTradingDayTm = localtime(&lastTradingDay);
-    while (lastTradingDayTm->tm_wday == 0 || lastTradingDayTm->tm_wday == 6)
+    time_t lastTradingDay = GetTime(tradingDay) - 86400LL;
+    tm lastTradingDayTm = ToBrokenDownTime(lastTradingDay, false);
+    while (lastTradingDayTm.tm_wday == 0 || lastTradingDayTm.tm_wday == 6)
     {
         lastTradingDay = lastTradingDay - 86400LL;
-        lastTradingDayTm = localtime(&lastTradingDay);
+        lastTradingDayTm = ToBrokenDownTime(lastTradingDay, false);
     }
-    strftime(preTradingDay, 9, "%Y%m%d", lastTradingDayTm);
+    preTradingDay[FormatDate(lastTradingDayTm, preTradingDay)] = '\0';
 }
 int TimeUtility::GetPreTradingDay(int tradingDay)
 {
-    auto dateTime = GetTime(tradingDay);
-    time_t lastTradingDay = dateTime - 86400LL;
-    tm* lastTradingDayTm = localtime(&lastTradingDay);
-    while (lastTradingDayTm->tm_wday == 0 || lastTradingDayTm->tm_wday == 6)
+    time_t lastTradingDay = GetTime(tradingDay) - 86400LL;
+    tm lastTradingDayTm = ToBrokenDownTime(lastTradingDay, false);
+    while (lastTradingDayTm.tm_wday == 0 || lastTradingDayTm.tm_wday == 6)
     {
         lastTradingDay = lastTradingDay - 86400LL;
-        lastTradingDayTm = localtime(&lastTradingDay);
+        lastTradingDayTm = ToBrokenDownTime(lastTradingDay, false);
     }
-    return (lastTradingDayTm->tm_year + 1900) * 10000 + (lastTradingDayTm->tm_mon + 1) * 100 + lastTradingDayTm->tm_mday;
+    return FormatDateValue(lastTradingDayTm);
 }
 int TimeUtility::GetPreDate(int date)
 {
-    auto dateTime = GetTime(date);
-    time_t nextDateTime = dateTime - 86400LL;
-    tm* nextTm = localtime(&nextDateTime);
-    return (nextTm->tm_year + 1900) * 10000 + (nextTm->tm_mon + 1) * 100 + nextTm->tm_mday;
+    return FormatDateValue(ToBrokenDownTime(GetTime(date) - 86400LL, false));
 }
 void TimeUtility::GetNextTradingDay(const char* tradingDay, char* nextTradingDay)
 {
-    auto dateTime = GetTime(tradingDay);
-
-    time_t nextTradingDayTime = dateTime + 86400LL;
-    tm* nextTradingDayTm = localtime(&nextTradingDayTime);
-    while (nextTradingDayTm->tm_wday == 0 || nextTradingDayTm->tm_wday == 6)
+    time_t nextTradingDayTime = GetTime(tradingDay) + 86400LL;
+    tm nextTradingDayTm = ToBrokenDownTime(nextTradingDayTime, false);
+    while (nextTradingDayTm.tm_wday == 0 || nextTradingDayTm.tm_wday == 6)
     {
         nextTradingDayTime = nextTradingDayTime + 86400LL;
-        nextTradingDayTm = localtime(&nextTradingDayTime);
+        nextTradingDayTm = ToBrokenDownTime(nextTradingDayTime, false);
     }
-    strftime(nextTradingDay, 9, "%Y%m%d", nextTradingDayTm);
+    nextTradingDay[FormatDate(nextTradingDayTm, nextTradingDay)] = '\0';
 }
 int TimeUtility::GetNextTradingDay(int tradingDay)
 {
-    auto dateTime = GetTime(tradingDay);
-    time_t lastTradingDay = dateTime + 86400LL;
-    tm* lastTradingDayTm = localtime(&lastTradingDay);
-    while (lastTradingDayTm->tm_wday == 0 || lastTradingDayTm->tm_wday == 6)
+    time_t nextTradingDayTime = GetTime(tradingDay) + 86400LL;
+    tm nextTradingDayTm = ToBrokenDownTime(nextTradingDayTime, false);
+    while (nextTradingDayTm.tm_wday == 0 || nextTradingDayTm.tm_wday == 6)
     {
-        lastTradingDay = lastTradingDay + 86400LL;
-        lastTradingDayTm = localtime(&lastTradingDay);
+        nextTradingDayTime = nextTradingDayTime + 86400LL;
+        nextTradingDayTm = ToBrokenDownTime(nextTradingDayTime, false);
     }
-    return (lastTradingDayTm->tm_year + 1900) * 10000 + (lastTradingDayTm->tm_mon + 1) * 100 + lastTradingDayTm->tm_mday;
+    return FormatDateValue(nextTradingDayTm);
 }
 int TimeUtility::GetNextDate(int date)
 {
-    auto dateTime = GetTime(date);
-    time_t nextDateTime = dateTime + 86400LL;
-    tm* nextTm = localtime(&nextDateTime);
-    return (nextTm->tm_year + 1900) * 10000 + (nextTm->tm_mon + 1) * 100 + nextTm->tm_mday;
+    return FormatDateValue(ToBrokenDownTime(GetTime(date) + 86400LL, false));
 }
 int TimeUtility::GetDateWithDayCount(int dayCount)
 {
-    auto dateTime = GetTime();
-    time_t targetTime = dateTime + 86400LL * dayCount;
-    tm* targetTm = localtime(&targetTime);
-    return (targetTm->tm_year + 1900) * 10000 + (targetTm->tm_mon + 1) * 100 + targetTm->tm_mday;
+    return FormatDateValue(ToBrokenDownTime(GetTime() + 86400LL * dayCount, false));
 }
 int TimeUtility::GetDateWithDayCount(int date, int dayCount)
 {
-    auto dateTime = GetTime(date);
-    time_t targetTime = dateTime + 86400LL * dayCount;
-    tm* targetTm = localtime(&targetTime);
-    return (targetTm->tm_year + 1900) * 10000 + (targetTm->tm_mon + 1) * 100 + targetTm->tm_mday;
+    return FormatDateValue(ToBrokenDownTime(GetTime(date) + 86400LL * dayCount, false));
 }
 
 int TimeUtility::DateAdd(int date, int count)
 {
-    auto t = GetTime(date);
-    t += 86400LL * count;
-    return atoi(ToLocalDate(&t).c_str());
+    return FormatDateValue(ToBrokenDownTime(GetTime(date) + 86400LL * count, false));
 }
 int TimeUtility::HourAdd(int hourTime, int count)
 {
@@ -184,7 +255,7 @@ long long TimeUtility::MinuteAdd(long long minuteTime, int count)
     }
     else
     {
-        // C++ 对负数除法向零截断，需做 floor 除法
+        // C++ 对负数除法向零截断（-1/60=0），需做 floor 除法
         hourCount = static_cast<int>((minute - 59) / 60);
         minute -= hourCount * 60; // 归入 [0, 59]
     }
@@ -195,91 +266,79 @@ long long TimeUtility::MinuteAdd(long long minuteTime, int count)
 
 void TimeUtility::GetPreYearDay(const char* tradingDay, char* preYearDay)
 {
-    auto dateTime = GetTime(tradingDay);
-
-    time_t preYearDayTime = dateTime - 86400LL * 365LL;
-    tm* preYearDayTm = localtime(&preYearDayTime);
-    strftime(preYearDay, 9, "%Y%m%d", preYearDayTm);
+    time_t preYearDayTime = GetTime(tradingDay) - 86400LL * 365LL;
+    preYearDay[FormatDate(ToBrokenDownTime(preYearDayTime, false), preYearDay)] = '\0';
 }
 
 std::string TimeUtility::GetUtcDate()
 {
-    auto t = GetTime();
-    auto localTm = gmtime(&t);
-    strftime(DateTimeBuff, 32, "%Y%m%d", localTm);
-    return std::string(DateTimeBuff);
+    char buffer[DateTimeBufferSize];
+    return std::string(buffer, FormatDate(ToBrokenDownTime(GetTime(), true), buffer));
 }
 std::string TimeUtility::GetUtcTime()
 {
-    auto t = GetTime();
-    auto localTm = gmtime(&t);
-    strftime(DateTimeBuff, 32, "%H:%M:%S", localTm);
-    return std::string(DateTimeBuff);
+    char buffer[DateTimeBufferSize];
+    return std::string(buffer, FormatTime(ToBrokenDownTime(GetTime(), true), buffer));
 }
 std::string TimeUtility::GetUtcDateTime()
 {
-    auto t = GetTime();
-    auto localTm = gmtime(&t);
-    strftime(DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", localTm);
-    return std::string(DateTimeBuff);
+    char buffer[DateTimeBufferSize];
+    return std::string(buffer, FormatDateTime(ToBrokenDownTime(GetTime(), true), buffer));
 }
 std::string TimeUtility::GetUtcDateTimeWithMilliSecond()
 {
-    auto now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-    time_t t = std::chrono::system_clock::to_time_t(now);
-    int milliSecond = now.time_since_epoch().count() % 1000;
-    auto localTm = gmtime(&t);
-    auto len = strftime(DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", localTm);
-    std::format_to_n(DateTimeBuff + len, 32 - len, ".{:03}", milliSecond);
-    return std::string(DateTimeBuff);
+    const auto now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+    const long long millisecondsSinceEpoch = now.time_since_epoch().count();
+    char buffer[DateTimeBufferSize];
+    size_t length = FormatSecondPrefix(true, millisecondsSinceEpoch / 1000, buffer);
+    length += WriteMilliSecond(buffer + length, static_cast<int>(millisecondsSinceEpoch % 1000));
+    return std::string(buffer, length);
 }
 
 std::string TimeUtility::GetLocalDate()
 {
-    auto t = GetTime();
-    auto localTm = localtime(&t);
-    strftime(DateTimeBuff, 32, "%Y%m%d", localTm);
-    return std::string(DateTimeBuff);
+    char buffer[DateTimeBufferSize];
+    return std::string(buffer, FormatDate(ToBrokenDownTime(GetTime(), false), buffer));
 }
 std::string TimeUtility::GetLocalTime()
 {
-    auto t = GetTime();
-    auto localTm = localtime(&t);
-    strftime(DateTimeBuff, 32, "%H:%M:%S", localTm);
-    return std::string(DateTimeBuff);
+    char buffer[DateTimeBufferSize];
+    return std::string(buffer, FormatTime(ToBrokenDownTime(GetTime(), false), buffer));
 }
 std::string TimeUtility::GetLocalDateTime()
 {
-    auto t = GetTime();
-    auto localTm = localtime(&t);
-    strftime(DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", localTm);
-    return std::string(DateTimeBuff);
+    char buffer[DateTimeBufferSize];
+    return std::string(buffer, FormatDateTime(ToBrokenDownTime(GetTime(), false), buffer));
 }
 void TimeUtility::GetLocalDateTime(char* date, char* time)
 {
-    auto t = GetTime();
-    auto localTm = localtime(&t);
-    strftime(date, 9, "%Y%m%d", localTm);
-    strftime(time, 9, "%H:%M:%S", localTm);
+    const tm localTm = ToBrokenDownTime(GetTime(), false);
+    date[FormatDate(localTm, date)] = '\0';
+    time[FormatTime(localTm, time)] = '\0';
 }
 std::string TimeUtility::GetLocalDateTimeWithMilliSecond()
 {
-    auto now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-    time_t t = std::chrono::system_clock::to_time_t(now);
-    int milliSecond = now.time_since_epoch().count() % 1000;
-    auto localTm = localtime(&t);
-    auto len = strftime(DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", localTm);
-    std::format_to_n(DateTimeBuff + len, 32 - len, ".{:03}", milliSecond);
-    return std::string(DateTimeBuff);
+    char buffer[MaxDateTimeWithMilliSecondLength];
+    return std::string(buffer, GetLocalDateTimeWithMilliSecond(buffer, sizeof(buffer)));
+}
+size_t TimeUtility::GetLocalDateTimeWithMilliSecond(char* buffer, size_t capacity)
+{
+    if (buffer == nullptr || capacity < MaxDateTimeWithMilliSecondLength)
+    {
+        return 0;
+    }
+    const auto now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+    const long long millisecondsSinceEpoch = now.time_since_epoch().count();
+    size_t length = FormatSecondPrefix(false, millisecondsSinceEpoch / 1000, buffer);
+    return length + WriteMilliSecond(buffer + length, static_cast<int>(millisecondsSinceEpoch % 1000));
 }
 long long TimeUtility::GetMilliSecondTimeStamp()
 {
-    time_point<system_clock, milliseconds> startTime = time_point_cast<milliseconds>(system_clock::now());
-    time_t time = startTime.time_since_epoch().count() / 1000;
-    int ms = startTime.time_since_epoch().count() % 1000;
-    auto len = strftime(DateTimeBuff, 32, "%Y%m%d%H%M%S", localtime(&time));
-    std::format_to_n(DateTimeBuff + len, 32 - len, "{:03}", ms);
-    return atoll(DateTimeBuff);
+    const auto now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+    const long long millisecondsSinceEpoch = now.time_since_epoch().count();
+    const tm localTm = ToBrokenDownTime(static_cast<time_t>(millisecondsSinceEpoch / 1000), false);
+    return static_cast<long long>(FormatDateValue(localTm)) * 1000000000LL + static_cast<long long>(FormatTimeValue(localTm)) * 1000LL +
+           millisecondsSinceEpoch % 1000;
 }
 void TimeUtility::GetDateTimeFromTimeStamp(const Int64Type& timeStamp, DateType& date, TimeType& time)
 {
@@ -289,50 +348,60 @@ void TimeUtility::GetDateTimeFromTimeStamp(const Int64Type& timeStamp, DateType&
 
 int TimeUtility::GetTimeFromTimeString(const char* time)
 {
-    std::istringstream iss(time);
-    int hour, minute, second;
-    char sep;
-    iss >> hour >> sep >> minute >> sep >> second;
+    int hour = 0;
+    int minute = 0;
+    int second = 0;
+    if (std::sscanf(time, "%d:%d:%d", &hour, &minute, &second) != 3)
+    {
+        return 0;
+    }
     return hour * 10000 + minute * 100 + second;
 }
-time_t TimeUtility::GetTimeFromString(std::string dateTime, std::string format)
+time_t TimeUtility::GetTimeFromString(std::string_view dateTime, std::string_view format)
 {
-    tm t;
-    int len = sscanf(dateTime.c_str(), format.c_str(), &t.tm_year, &t.tm_mon, &t.tm_mday, &t.tm_hour, &t.tm_min, &t.tm_sec);
-    t.tm_year -= 1900;
-    t.tm_mon -= 1;
-
-    return mktime(&t);
+    // sscanf 与 mktime 都要 NUL 结尾：视图先各自落成字符串，二者只在本函数内用
+    const std::string dateTimeText(dateTime);
+    const std::string formatText(format);
+    tm brokenDownTime{};
+    if (std::sscanf(dateTimeText.c_str(), formatText.c_str(), &brokenDownTime.tm_year, &brokenDownTime.tm_mon, &brokenDownTime.tm_mday,
+                    &brokenDownTime.tm_hour, &brokenDownTime.tm_min, &brokenDownTime.tm_sec) != 6)
+    {
+        return -1;
+    }
+    brokenDownTime.tm_year -= 1900;
+    brokenDownTime.tm_mon -= 1;
+    brokenDownTime.tm_isdst = -1;
+    return mktime(&brokenDownTime);
 }
 std::string TimeUtility::ToUtcDate(time_t* time)
 {
-    strftime(DateTimeBuff, 32, "%Y%m%d", gmtime(time));
-    return std::string(DateTimeBuff);
+    char buffer[DateTimeBufferSize];
+    return std::string(buffer, FormatDate(ToBrokenDownTime(*time, true), buffer));
 }
 std::string TimeUtility::ToUtcTime(time_t* time)
 {
-    strftime(DateTimeBuff, 32, "%H:%M:%S", gmtime(time));
-    return std::string(DateTimeBuff);
+    char buffer[DateTimeBufferSize];
+    return std::string(buffer, FormatTime(ToBrokenDownTime(*time, true), buffer));
 }
 std::string TimeUtility::ToUtcDateTime(time_t* time)
 {
-    strftime(DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", gmtime(time));
-    return std::string(DateTimeBuff);
+    char buffer[DateTimeBufferSize];
+    return std::string(buffer, FormatDateTime(ToBrokenDownTime(*time, true), buffer));
 }
 std::string TimeUtility::ToLocalDate(time_t* time)
 {
-    strftime(DateTimeBuff, 32, "%Y%m%d", localtime(time));
-    return std::string(DateTimeBuff);
+    char buffer[DateTimeBufferSize];
+    return std::string(buffer, FormatDate(ToBrokenDownTime(*time, false), buffer));
 }
 std::string TimeUtility::ToLocalTime(time_t* time)
 {
-    strftime(DateTimeBuff, 32, "%H:%M:%S", localtime(time));
-    return std::string(DateTimeBuff);
+    char buffer[DateTimeBufferSize];
+    return std::string(buffer, FormatTime(ToBrokenDownTime(*time, false), buffer));
 }
 std::string TimeUtility::ToLocalDateTime(time_t* time)
 {
-    strftime(DateTimeBuff, 32, "%Y%m%d-%H:%M:%S", localtime(time));
-    return std::string(DateTimeBuff);
+    char buffer[DateTimeBufferSize];
+    return std::string(buffer, FormatDateTime(ToBrokenDownTime(*time, false), buffer));
 }
 
 void TimeUtility::GetDateTimeFromUpdateTs(long long updateTs, int& date, int& hour, int& minute, int& second, int& milliSecond)
@@ -354,14 +423,14 @@ int TimeUtility::CalculateNextBarFromDayBar(int tradingDay, int barPeriod)
     }
     else if (barPeriod == 7)
     {
-        auto t = GetTm(tradingDay);
-        if (t->tm_wday != 0)
+        tm brokenDownTime = GetTm(tradingDay);
+        if (brokenDownTime.tm_wday != 0)
         {
-            auto time = mktime(t);
-            time += (7LL - t->tm_wday) * 86400LL;
-            t = localtime(&time);
+            auto time = mktime(&brokenDownTime);
+            time += (7LL - brokenDownTime.tm_wday) * 86400LL;
+            brokenDownTime = ToBrokenDownTime(time, false);
         }
-        return (t->tm_year + 1900) * 10000 + (t->tm_mon + 1) * 100 + t->tm_mday;
+        return FormatDateValue(brokenDownTime);
     }
     else if (barPeriod == 30)
     {
@@ -369,13 +438,13 @@ int TimeUtility::CalculateNextBarFromDayBar(int tradingDay, int barPeriod)
     }
     else if (barPeriod == 90)
     {
-        auto t = GetTm(tradingDay);
-        auto mon = t->tm_mon + 1;
+        const tm brokenDownTime = GetTm(tradingDay);
+        auto mon = brokenDownTime.tm_mon + 1;
         if (mon % 3 != 0)
         {
             mon = ((mon / 3) + 1) * 3;
         }
-        return (t->tm_year + 1900) * 10000 + mon * 100 + 31;
+        return (brokenDownTime.tm_year + 1900) * 10000 + mon * 100 + 31;
     }
     else if (barPeriod >= 365)
     {
@@ -383,15 +452,15 @@ int TimeUtility::CalculateNextBarFromDayBar(int tradingDay, int barPeriod)
     }
     else
     {
-        auto t = GetTm(tradingDay);
-        auto dayCount = t->tm_yday + 1;
+        tm brokenDownTime = GetTm(tradingDay);
+        auto dayCount = brokenDownTime.tm_yday + 1;
         if (dayCount % barPeriod == 0)
             return tradingDay;
         auto nextBarDayCount = ((dayCount / barPeriod) + 1) * barPeriod;
-        auto time = mktime(t);
+        auto time = mktime(&brokenDownTime);
         time += (nextBarDayCount - dayCount) * 86400LL;
-        t = localtime(&time);
-        return (t->tm_year + 1900) * 10000 + (t->tm_mon + 1) * 100 + t->tm_mday;
+        brokenDownTime = ToBrokenDownTime(time, false);
+        return FormatDateValue(brokenDownTime);
     }
     return tradingDay;
 }

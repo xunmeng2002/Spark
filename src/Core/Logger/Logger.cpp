@@ -96,7 +96,7 @@ bool Logger::Init(const char* fullProcessName)
         std::exit(EXIT_FAILURE);
     }
     // 启动期就把日志文件打开（而非留到线程里的 ThreadInit）：能否写日志只有在这一刻判定才叫"启动失败"
-    createLogFileTime_ = *TimeUtility::GetLocalTm();
+    createLogFileTime_ = TimeUtility::GetLocalTm();
     CreateLogFile();
     if (logData_->LogFile == nullptr)
     {
@@ -164,7 +164,7 @@ void Logger::Run()
     if (++count >= 120)
     {
         count = 0;
-        auto currTime = *TimeUtility::GetLocalTm();
+        auto currTime = TimeUtility::GetLocalTm();
         if (createLogFileTime_.tm_mday != currTime.tm_mday)
         {
             createLogFileTime_ = currTime;
@@ -342,8 +342,9 @@ void Logger::WriteToLog(LogLevel level, const char* file, int line, const char* 
     for (auto p = file; *p != '\0'; p++)
         if (*p == '\\' || *p == '/')
             file = p + 1;
-    const auto prefixFormatResult = std::format_to_n(LogBuffer, MaxLogFormatLength, "{} {} {} ", TimeUtility::GetLocalDateTimeWithMilliSecond(),
-                                                     GetCurrentThreadId(), LogLevelName[level]);
+    const size_t timestampLength = TimeUtility::GetLocalDateTimeWithMilliSecond(LogBuffer, MaxLogFormatLength);
+    const auto prefixFormatResult =
+        std::format_to_n(LogBuffer + timestampLength, MaxLogFormatLength - timestampLength, " {} {} ", GetCurrentThreadId(), LogLevelName[level]);
     unsigned len1 = static_cast<unsigned>(prefixFormatResult.out - LogBuffer);
     // vsnprintf 返回的是"本该写入"的长度（负数表示编码错误），内容被截断时该值不会随之变小，
     // 不收敛到可写区间会让下一行计算剩余空间 LogLineLength - len1 - len2 - 1 发生无符号回绕
