@@ -4,9 +4,12 @@
 #include <Spark/Core/Utility/TimeUtility.h>
 #include "Logger/LogData.h"
 #include <algorithm>
+#include <atomic>
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <stdarg.h>
 #include <filesystem>
@@ -21,6 +24,27 @@ namespace Spark::Core
 constexpr unsigned int LogLineLength = 64 * 1024;
 constexpr unsigned int MaxLogFormatLength = 1024;
 constexpr unsigned int MaxLogLineContentLength = (LogLineLength - MaxLogFormatLength);
+static_assert(LogBufferSize >= LogLineLength, "一条日志必须整行落进一个块");
+
+// 小块交接的最小间隔：交接后写入线程要重新分配并清零一整块，交接过密会把成本摊到每一行上
+constexpr std::chrono::milliseconds ChunkHandOffInterval{20};
+
+namespace
+{
+// 停止后线程 TLS 析构不得再解引用已销毁的 LogData
+std::atomic<bool> LoggerActive{false};
+}
+
+// 线程退出时注销本线程写入器；Writer 可能属于已销毁的旧一代 LogData，故只在代次匹配时解引用
+struct LogThreadWriterHolder
+{
+public:
+    ~LogThreadWriterHolder();
+
+    std::uint64_t Generation = 0;
+    LogThreadWriter* Writer = nullptr;
+};
+static thread_local LogThreadWriterHolder ThreadLogWriterState;
 
 static std::map<LogLevel, std::string> LogLevelName = {
     {LogLevel::Ignore, "IGNORE"}, {LogLevel::Debug, "DEBUG"},       {LogLevel::Info, "INFO"},           {LogLevel::Warning, "WARNING"},
@@ -36,6 +60,14 @@ Logger& Logger::GetInstance()
 {
     static Logger instance;
     return instance;
+}
+LogThreadWriterHolder::~LogThreadWriterHolder()
+{
+    if (Writer != nullptr && LoggerActive.load(std::memory_order_acquire))
+    {
+        Logger::GetInstance().RetireThreadLogWriter();
+    }
+    Writer = nullptr;
 }
 WriteLogFunc& Logger::GetWriteLogFunc()
 {
@@ -72,6 +104,7 @@ bool Logger::Init(const char* fullProcessName)
         std::exit(EXIT_FAILURE);
     }
 
+    LoggerActive.store(true, std::memory_order_release);
     GetWriteLogFunc() = Logger::Write;
     return true;
 }
@@ -114,9 +147,13 @@ void Logger::ThreadExit()
     if (logData_)
     {
         FlushRemainingBuffers();
+        LoggerActive.store(false, std::memory_order_release);
         delete logData_;
     }
     logData_ = nullptr;
+    // 本线程的写入器随 LogData 一并释放，TLS 只清指针
+    ThreadLogWriterState.Generation = 0;
+    ThreadLogWriterState.Writer = nullptr;
 }
 void Logger::Run()
 {
@@ -154,15 +191,33 @@ bool Logger::CreateLogDir(const std::string& path)
 void Logger::SwapInnerLogBuffers()
 {
     std::unique_lock<std::mutex> lock(logData_->Mutex);
+    TakeThreadLogChunksLocked(false);
     if (logData_->LogBuffers.empty())
     {
-        logData_->ConditionVariable.wait_for(lock, std::chrono::seconds(1));
-        if (logData_->CurrBuffer->GetLength() > 0)
-        {
-            logData_->PushBuffer();
-        }
+        logData_->ConditionVariable.wait_until(lock, EarliestChunkHandOffTimeLocked());
+        TakeThreadLogChunksLocked(false);
     }
     logData_->InnerLogBuffers.swap(logData_->LogBuffers);
+}
+
+// 调用方必须持有 LogData::Mutex：无成熟小块可交接时按空闲时限等待，有待成熟的就精确等到它成熟
+std::chrono::steady_clock::time_point Logger::EarliestChunkHandOffTimeLocked()
+{
+    auto earliestTime = std::chrono::steady_clock::now() + std::chrono::seconds(1);
+    for (auto& writer : logData_->Writers)
+    {
+        std::lock_guard<std::mutex> guard(writer->ChunkMutex);
+        if (writer->Chunk == nullptr || writer->Chunk->GetLength() == 0)
+        {
+            continue;
+        }
+        const auto handOffTime = writer->ChunkStartTime + ChunkHandOffInterval;
+        if (handOffTime < earliestTime)
+        {
+            earliestTime = handOffTime;
+        }
+    }
+    return earliestTime;
 }
 void Logger::FlushBuffers()
 {
@@ -187,13 +242,92 @@ void Logger::FlushRemainingBuffers()
 {
     {
         std::lock_guard<std::mutex> guard(logData_->Mutex);
-        if (logData_->CurrBuffer->GetLength() > 0)
-        {
-            logData_->PushBuffer();
-        }
+        TakeThreadLogChunksLocked(true);
         logData_->InnerLogBuffers.swap(logData_->LogBuffers);
     }
     FlushBuffers();
+}
+
+LogThreadWriter* Logger::AcquireThreadLogWriter()
+{
+    if (ThreadLogWriterState.Writer != nullptr && ThreadLogWriterState.Generation == logData_->Generation)
+    {
+        return ThreadLogWriterState.Writer;
+    }
+    std::unique_ptr<LogThreadWriter> writer = std::make_unique<LogThreadWriter>();
+    LogThreadWriter* rawWriter = writer.get();
+    {
+        std::lock_guard<std::mutex> guard(logData_->Mutex);
+        logData_->Writers.push_back(std::move(writer));
+    }
+    ThreadLogWriterState.Generation = logData_->Generation;
+    ThreadLogWriterState.Writer = rawWriter;
+    return rawWriter;
+}
+
+// 调用方必须持有 LogData::Mutex：遍历与增删 Writers 都在该锁内完成
+// 小块的交接时刻未到就不取（写者要重新分配并清零一整块）；停止/退出路径置 flushAllChunks 无条件取走
+void Logger::TakeThreadLogChunksLocked(bool flushAllChunks)
+{
+    const auto currentTime = std::chrono::steady_clock::now();
+    for (auto& writer : logData_->Writers)
+    {
+        std::lock_guard<std::mutex> guard(writer->ChunkMutex);
+        for (auto* fullChunk : writer->FullChunks)
+        {
+            logData_->LogBuffers.push_back(fullChunk);
+        }
+        writer->FullChunks.clear();
+        if (writer->Chunk == nullptr || writer->Chunk->GetLength() == 0)
+        {
+            continue;
+        }
+        if (!flushAllChunks && currentTime - writer->ChunkStartTime < ChunkHandOffInterval)
+        {
+            continue;
+        }
+        logData_->LogBuffers.push_back(writer->Chunk);
+        writer->Chunk = nullptr;
+    }
+}
+
+void Logger::RetireThreadLogWriter()
+{
+    LogThreadWriter* writer = ThreadLogWriterState.Writer;
+    // 代次不匹配说明旧 LogData 已销毁，写入器对象随之释放：只清 TLS，不再解引用
+    if (writer == nullptr || ThreadLogWriterState.Generation != logData_->Generation)
+    {
+        ThreadLogWriterState.Generation = 0;
+        ThreadLogWriterState.Writer = nullptr;
+        return;
+    }
+
+    std::list<Spark::LinearBuffer<LogBufferSize>*> pendingChunks;
+    {
+        std::lock_guard<std::mutex> guard(writer->ChunkMutex);
+        pendingChunks.swap(writer->FullChunks);
+        if (writer->Chunk != nullptr)
+        {
+            pendingChunks.push_back(writer->Chunk);
+            writer->Chunk = nullptr;
+        }
+    }
+    {
+        std::lock_guard<std::mutex> guard(logData_->Mutex);
+        auto writerIt = std::find_if(logData_->Writers.begin(), logData_->Writers.end(),
+                                     [writer](const std::unique_ptr<LogThreadWriter>& registered) { return registered.get() == writer; });
+        if (writerIt != logData_->Writers.end())
+        {
+            logData_->Writers.erase(writerIt);
+        }
+        for (auto* pendingChunk : pendingChunks)
+        {
+            logData_->LogBuffers.push_back(pendingChunk);
+        }
+    }
+    logData_->ConditionVariable.notify_one();
+    ThreadLogWriterState.Generation = 0;
+    ThreadLogWriterState.Writer = nullptr;
 }
 
 void Logger::WriteToLog(LogLevel level, const char* file, int line, const char* func, const char* format, va_list va)
@@ -215,15 +349,26 @@ void Logger::WriteToLog(LogLevel level, const char* file, int line, const char* 
     // 不收敛到可写区间会让下一行计算剩余空间 LogLineLength - len1 - len2 - 1 发生无符号回绕
     int formattedContentLength = vsnprintf(LogBuffer + len1, MaxLogLineContentLength, format, va);
     unsigned len2 = static_cast<unsigned>(std::clamp(formattedContentLength, 0, static_cast<int>(MaxLogLineContentLength) - 1));
-    const auto suffixFormatResult = std::format_to_n(LogBuffer + len1 + len2, LogLineLength - len1 - len2 - 1, "\t\t---{}:{}[{}]\n", file, line, func);
+    const auto suffixFormatResult =
+        std::format_to_n(LogBuffer + len1 + len2, LogLineLength - len1 - len2 - 1, "\t\t---{}:{}[{}]\n", file, line, func);
     unsigned len3 = static_cast<unsigned>(suffixFormatResult.out - (LogBuffer + len1 + len2));
     unsigned len = len1 + len2 + len3;
-    std::lock_guard<std::mutex> guard(logData_->Mutex);
-    if (logData_->CurrBuffer->GetWriteBufferSize() < len)
+    LogThreadWriter* writer = AcquireThreadLogWriter();
     {
-        logData_->PushBuffer();
+        std::lock_guard<std::mutex> guard(writer->ChunkMutex);
+        if (writer->Chunk == nullptr)
+        {
+            writer->Chunk = Spark::LinearBuffer<LogBufferSize>::Allocate();
+            writer->ChunkStartTime = std::chrono::steady_clock::now();
+        }
+        if (writer->Chunk->GetWriteBufferSize() < len)
+        {
+            writer->FullChunks.push_back(writer->Chunk);
+            writer->Chunk = Spark::LinearBuffer<LogBufferSize>::Allocate();
+            writer->ChunkStartTime = std::chrono::steady_clock::now();
+        }
+        writer->Chunk->Append(LogBuffer, len);
     }
-    logData_->CurrBuffer->Append(LogBuffer, len);
     logData_->ConditionVariable.notify_one();
 }
 void Logger::WriteToConsole(LogLevel level, const char* formatStr, va_list va)

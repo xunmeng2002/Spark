@@ -1,6 +1,7 @@
 #pragma once
 #include <Spark/Core/CoreExport.h>
 #include <Spark/Core/Thread/ThreadBase.h>
+#include <chrono>
 #include <list>
 #include <vector>
 #include <map>
@@ -23,6 +24,8 @@ enum class LogLevel : int
 typedef void (*WriteLogFunc)(LogLevel level, const char* fileName, int lineNo, const char* funcName, const char* formatStr, ...);
 
 struct LogData;
+struct LogThreadWriter;
+struct LogThreadWriterHolder;
 class CORE_EXPORTS Logger : public ThreadBase
 {
 private:
@@ -56,6 +59,13 @@ protected:
     long long GetCurrentThreadId();
 
 private:
+    friend struct LogThreadWriterHolder;
+
+    LogThreadWriter* AcquireThreadLogWriter();
+    void TakeThreadLogChunksLocked(bool flushAllChunks);
+    std::chrono::steady_clock::time_point EarliestChunkHandOffTimeLocked();
+    void RetireThreadLogWriter();
+
     char processName_[128];
     tm createLogFileTime_;
     LogData* logData_;

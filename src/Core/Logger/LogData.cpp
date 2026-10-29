@@ -1,12 +1,18 @@
 #include "Logger/LogData.h"
 
+#include <atomic>
+
 using namespace Spark;
 namespace Spark::Core
 {
-LogData::LogData()
+namespace
+{
+std::atomic<std::uint64_t> NextLogGeneration{1};
+}
+
+LogData::LogData() : Generation(NextLogGeneration.fetch_add(1, std::memory_order_relaxed))
 {
     LogFile = nullptr;
-    CurrBuffer = LinearBuffer<LogBufferSize>::Allocate();
 }
 LogData::~LogData()
 {
@@ -15,7 +21,6 @@ LogData::~LogData()
         fclose(LogFile);
         LogFile = nullptr;
     }
-    CurrBuffer->Deallocate();
     for (auto& logBuffer : LogBuffers)
     {
         logBuffer->Deallocate();
@@ -27,10 +32,8 @@ LogData::~LogData()
         logBuffer->Deallocate();
     }
     InnerLogBuffers.clear();
-}
-void LogData::PushBuffer()
-{
-    LogBuffers.push_back(CurrBuffer);
-    CurrBuffer = LinearBuffer<LogBufferSize>::Allocate();
+
+    // 写入器析构时释放各自尚未交接的块
+    Writers.clear();
 }
 }
