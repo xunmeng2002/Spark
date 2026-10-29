@@ -71,7 +71,7 @@ Spark/
 │   ├── Network/                # Network module implementations
 │   └── Serialization/          # Serialization module implementations
 ├── test/                       # Test programs
-│   ├── unittest/               # doctest unit tests (primary test entry)
+│   ├── UnitTests/              # doctest unit tests (primary test entry)
 │   │   ├── Core/               # Core module tests (9 files)
 │   │   ├── Network/            # Network module tests (9 files)
 │   │   ├── Serialization/      # Serialization module tests (4 files)

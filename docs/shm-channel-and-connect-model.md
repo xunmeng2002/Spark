@@ -287,7 +287,7 @@
 
 ## 五、相关测试与输入输出
 
-`test/unittest/TemplateLib/ShmBufferTest.cpp`（四档构建均跑）。
+`test/UnitTests/TemplateLib/ShmBufferTest.cpp`（四档构建均跑）。
 
 - `OutOfRangeConnectionIndexTripsAssert`（仅 Debug 且启用 death test）
   - 输入：连接号 0，以及恰在容量上的连接号 2（容量 2）。
@@ -356,7 +356,7 @@
 - 头结构长度与对齐：`sizeof(SingleShmHeader) == 8 + 6 * sizeof(size_t)` 与 `alignof(SingleShmHeader) == alignof(size_t)`
   （第一节的 56 字节 ABI 钉；28 字节头的年代这里是 `7 * sizeof(unsigned)`）。
 
-`test/unittest/Network/ShmInitTest.cpp`（四档构建均跑）：映射自描述的三条用例见
+`test/UnitTests/Network/ShmInitTest.cpp`（四档构建均跑）：映射自描述的三条用例见
 `docs/shm-shared-object-lifecycle.md` 第八节（`Init_RejectsReusedShmObjectWithForeignMappingMagic`、
 `Init_AcceptsStampedShmObjectForAClient`、`Init_RejectsUnstampedShmObjectForAClient`）。
 

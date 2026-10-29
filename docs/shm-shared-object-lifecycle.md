@@ -158,7 +158,7 @@ Linux 的 `shm_open(O_CREAT | O_EXCL | ...)` 成功（`LinuxInit()` 里写作 `c
 
 ## 八、相关测试与其输入输出
 
-`test/unittest/Network/ShmInitTest.cpp`（四档构建均跑）。
+`test/UnitTests/Network/ShmInitTest.cpp`（四档构建均跑）。
 
 - `Init_RejectsNonNumericConnectSize`
   - 输入：`shm://…:abc`。

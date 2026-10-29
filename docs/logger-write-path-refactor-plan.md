@@ -105,7 +105,7 @@ struct LogData
 | `src/Core/Logger/LogData.h/.cpp` | 去掉 `CurrBuffer`/`PushBuffer`，新增 `Writers`；析构释放全部块 |
 | `src/Core/Logger/Logger.cpp` | 写入改为本地块追加；新增块交接、写入器注册/注销；`SwapInnerLogBuffers`/`FlushRemainingBuffers` 先取块 |
 | `include/Spark/Core/Logger/Logger.h` | 仅加一个内部友元与前向声明，公开 API 不变 |
-| `test/unittest/Core/LoggerTestThreaded.cpp` | 增加多线程完整性、超长行、线程退出落盘、运行期可见、停止后写入用例 |
+| `test/UnitTests/Core/LoggerTestThreaded.cpp` | 增加多线程完整性、超长行、线程退出落盘、运行期可见、停止后写入用例 |
 | `docs/`、`PROGRESS.md` | 本文件与台账更新 |
 
 ## 分阶段落地

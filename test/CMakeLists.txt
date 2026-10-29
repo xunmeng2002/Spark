@@ -17,6 +17,6 @@ target_link_libraries(TestServer PRIVATE TestCommonStatic PackagesStatic)
 
 option(BUILD_UNIT_TESTS "Build unit tests" ON)
 if(BUILD_UNIT_TESTS)
-    add_subdirectory(unittest)
+    add_subdirectory(UnitTests)
 endif()
 

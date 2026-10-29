@@ -136,7 +136,7 @@ IOCP 一列的后果最重：IO 循环跑在 `IoThread` 上，而 `ThreadBase` �
 
 ## 相关测试
 
-`test/unittest/Network/IoSubscriberNotificationTest.cpp` 八条，均以只含计数器的订阅者探针与
+`test/UnitTests/Network/IoSubscriberNotificationTest.cpp` 八条，均以只含计数器的订阅者探针与
 自造的 `IoBase` 子类钉住判据（不挂共享内存、不依赖时序）：
 
 | 用例 | 输入 | 输出 |
@@ -160,13 +160,13 @@ IOCP 一列的后果最重：IO 循环跑在 `IoThread` 上，而 `ThreadBase` �
 不保证每次复现，故不能当作「无原子也安全」的判据。两条都**不得**断言「第一个号等于 1」：计数器是全进程
 静态的，其初值取决于同进程内其它用例是否先取过号（故 `ProbeIo::NextSessionId` 只与前一个号比较）。
 
-`test/unittest/Network/ShmInitTest.cpp` 的 `AThrowingOnRecvNeitherEscapesTheIoLoopNorStopsLaterPayloads`
+`test/UnitTests/Network/ShmInitTest.cpp` 的 `AThrowingOnRecvNeitherEscapesTheIoLoopNorStopsLaterPayloads`
 在真后端上钉住同一件事：服务端订阅者只在第一次收包抛异常，客户端连发 100 个 5 字节包，
 每发一个驱动一次服务端 —— 期望服务端收到恰好 100 次、最后一次长度 5、全程无 `OnDisConnect`。
 它同时覆盖了「异常不穿出 IO 循环」与「抛过异常的连接照常收后续包」；撤掉 `ShmBase.cpp` 的单行改动重跑，
 该用例以同样的 `C++ exception … thrown in the test body` 失败。
 
-`test/unittest/Network/ProtocolTest.cpp` 三条，钉在 `Protocol` 一层。用例装一个自造的 `IoBase` 当 `ioBase_`、
+`test/UnitTests/Network/ProtocolTest.cpp` 三条，钉在 `Protocol` 一层。用例装一个自造的 `IoBase` 当 `ioBase_`、
 把 `PackageReader` 插进受保护的 `sessionPackageReaders_`，故取包循环可在不挂共享内存、不依赖时序的情况下
 逐帧驱动；包由 `PackageAccountingFactory` 的 `CreatePackage` 发放记名的 `LedgeredPackage`，
 交出去几个、`Deallocate` 收回来几个两数一比即知：
@@ -191,7 +191,7 @@ IOCP 一列的后果最重：IO 循环跑在 `IoThread` 上，而 `ThreadBase` �
 （正是第 2 帧的长度），随后一次 `OnRecv(sessionId, frames, 0)` 才把它取出去（`MessageCount` 变 2、
 序号为第 2 帧）。探针已删，不留在仓库里。
 
-同一契约的取包侧另有三条在 `test/unittest/Network/ProtocolTest.cpp`（`ProtocolRecvTest` 夹具）：
+同一契约的取包侧另有三条在 `test/UnitTests/Network/ProtocolTest.cpp`（`ProtocolRecvTest` 夹具）：
 
 | 用例 | 输入 | 输出 |
 | --- | --- | --- |

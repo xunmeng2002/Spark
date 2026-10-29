@@ -124,7 +124,7 @@
 
 ## 七、测试与实测
 
-助手级（`test/unittest/Network/StepUtilityTest.cpp`）：
+助手级（`test/UnitTests/Network/StepUtilityTest.cpp`）：
 
 | 用例 | 拒收输入 | 收下输入 |
 | --- | --- | --- |
@@ -132,7 +132,7 @@
 | `ParseBoolAcceptsOnlyZeroAndOne:1046` | `""`、`-1`、`2`、`" 0"`、`"0 "`、`true`、`false`、`0x1`、`1abc`、`+1`、`2147483647` | `0`、`1`、`00`、`01` |
 | `ParseDoubleRejectsMalformedAndNonFinite:1061` | `""`、`+1.5`、`" 1.5"`、`"1.5 "`、`1.5abc`、`.`、`-`、`1e`、`abc`、`nan`、`NaN`、`-nan`、`inf`、`-inf`、`1e999`、`-1e999`、`0x10` | `0`、`123.456789`、`-1.5`、`1e3`、`1E-3`、`0.000001`、`1.7976931348623157e+308` |
 
-包级（`test/unittest/Network/PackageSerializationTest.cpp`，行号一律记**用例的 `TEST` 宏那一行**）：
+包级（`test/UnitTests/Network/PackageSerializationTest.cpp`，行号一律记**用例的 `TEST` 宏那一行**）：
 
 | 用例 | 输入 | 输出 |
 | --- | --- | --- |
