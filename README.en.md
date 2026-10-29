@@ -77,6 +77,7 @@ Spark/
 │   │   ├── Serialization/      # Serialization module tests (4 files)
 │   │   ├── TemplateLib/        # TemplateLib module tests (6 files)
 │   │   └── CMakeLists.txt      # Unit test build configuration
+│   ├── Benchmarks/             # Benchmarks (produces BenchTimeUtility, BenchLogger)
 │   ├── TestCommon/             # Shared test library (Package factory, subscribers, etc.)
 │   ├── Packages/               # Test package model definitions & generation
 │   ├── TestClient/             # Network client tests (legacy)
@@ -160,6 +161,16 @@ cd build
 ctest --output-on-failure
 # or run the built executable directly
 ./bin/Release/UnitTests
+```
+
+### 5.5 Run Benchmarks
+
+Benchmarks build alongside the tests, but only Release numbers are meaningful (Debug runs print a warning):
+
+```bash
+cmake --build out/build/x64-Release --target BenchTimeUtility BenchLogger
+./bin/Release/BenchTimeUtility                  # prints CSV: name,ns_per_call,ns_slowest,calls_per_round
+./bin/Release/BenchLogger 4 100000              # threads, lines per thread; logs go to out/bench-work
 ```
 
 ## 6. Basic Usage Examples

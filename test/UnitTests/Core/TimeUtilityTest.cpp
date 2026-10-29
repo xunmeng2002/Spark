@@ -3,6 +3,8 @@
 
 #include <cstring>
 #include <ctime>
+#include <random>
+#include <string>
 #include <string_view>
 using namespace Spark;
 using namespace Spark::Core;
@@ -657,4 +659,32 @@ TEST_CASE("TimeUtilityTest.GetTimeFromString_UnparsableReturnsMinusOne")
 TEST_CASE("TimeUtilityTest.GetTimeFromTimeString_UnparsableReturnsZero")
 {
     CHECK_EQ(TimeUtility::GetTimeFromTimeString("abc"), 0);
+}
+
+// ---------- 与标准库的等价性核对 ----------
+
+TEST_CASE("TimeUtilityTest.Formatting_MatchesStrftime")
+{
+    // 手写数字替换 strftime 后必须逐字节等价：2 万个随机时刻比对，固定种子便于复现。
+    // 下界取 1970-01-02，更早的时刻 mktime 返回 -1、localtime 返回空指针（属既有行为，不在此核对）
+    std::mt19937_64 generator(20261029);
+    std::uniform_int_distribution<long long> distribution(100000LL, 4102444800LL);
+    bool isMatched = true;
+    long long mismatchedTime = 0;
+    for (int round = 0; round < 20000 && isMatched; ++round)
+    {
+        time_t timeValue = static_cast<time_t>(distribution(generator));
+        const tm brokenDownTime = *localtime(&timeValue);
+        char expectedDateTime[32] = {};
+        char expectedDate[16] = {};
+        char expectedTime[16] = {};
+        strftime(expectedDateTime, sizeof(expectedDateTime), "%Y%m%d-%H:%M:%S", &brokenDownTime);
+        strftime(expectedDate, sizeof(expectedDate), "%Y%m%d", &brokenDownTime);
+        strftime(expectedTime, sizeof(expectedTime), "%H:%M:%S", &brokenDownTime);
+        const int expectedDateValue = (brokenDownTime.tm_year + 1900) * 10000 + (brokenDownTime.tm_mon + 1) * 100 + brokenDownTime.tm_mday;
+        isMatched = TimeUtility::ToLocalDateTime(&timeValue) == expectedDateTime && TimeUtility::ToLocalDate(&timeValue) == expectedDate &&
+                    TimeUtility::ToLocalTime(&timeValue) == expectedTime && TimeUtility::DateAdd(expectedDateValue, 0) == expectedDateValue;
+        mismatchedTime = isMatched ? 0 : static_cast<long long>(timeValue);
+    }
+    CHECK_MESSAGE(isMatched, "mismatch at time_t=", mismatchedTime);
 }

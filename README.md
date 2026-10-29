@@ -77,6 +77,7 @@ Spark/
 │   │   ├── Serialization/      # Serialization 模块单元测试（4 文件）
 │   │   ├── TemplateLib/        # TemplateLib 模块单元测试（6 文件）
 │   │   └── CMakeLists.txt      # 单元测试构建配置
+│   ├── Benchmarks/             # 基准测试（产出 BenchTimeUtility、BenchLogger）
 │   ├── TestCommon/             # 测试公共库（Package 工厂、订阅器等）
 │   ├── Packages/               # 测试用包模型定义与生成
 │   ├── TestClient/             # 网络客户端测试（旧版）
@@ -160,6 +161,16 @@ cd build
 ctest --output-on-failure
 # 或直接运行编译产物
 ./bin/Release/UnitTests
+```
+
+### 5. 运行基准测试
+
+基准随测试一并构建，但只有 Release 配置的数值有意义（Debug 运行会打印警告）：
+
+```bash
+cmake --build out/build/x64-Release --target BenchTimeUtility BenchLogger
+./bin/Release/BenchTimeUtility                  # 输出 CSV：name,ns_per_call,ns_slowest,calls_per_round
+./bin/Release/BenchLogger 4 100000              # 线程数、每线程行数；日志落在 out/bench-work
 ```
 
 ## 六、基础使用示例

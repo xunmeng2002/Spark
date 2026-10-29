@@ -20,3 +20,9 @@ if(BUILD_UNIT_TESTS)
     add_subdirectory(UnitTests)
 endif()
 
+# 基准随测试一并构建；其数值只在 Release 下有效，Debug 运行会自报警告
+option(BUILD_BENCHMARKS "Build benchmarks (Release only makes sense)" ON)
+if(BUILD_BENCHMARKS)
+    add_subdirectory(Benchmarks)
+endif()
+
