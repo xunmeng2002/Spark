@@ -9,7 +9,7 @@ Created by [Fireseeker](https://fireseeker.cn/)
 
 ## 1. Project Overview
 
-This is a personal open-source foundational component library focused on encapsulating low-level common capabilities for financial scenarios. The library is developed in standard C++20, uses CMake for cross-platform building, includes Python scripts for automatic code generation, and comes with a comprehensive Google Test-based unit test suite. It is suitable for learning, secondary development, and integration into small-to-medium financial business systems.
+This is a personal open-source foundational component library focused on encapsulating low-level common capabilities for financial scenarios. The library is developed in standard C++20, uses CMake for cross-platform building, includes Python scripts for automatic code generation, and comes with a comprehensive doctest-based unit test suite. It is suitable for learning, secondary development, and integration into small-to-medium financial business systems.
 
 ## 2. Core Features
 
@@ -72,10 +72,11 @@ Spark/
 │   └── Serialization/          # Serialization module implementations
 ├── test/                       # Test programs
 │   ├── UnitTests/              # doctest unit tests (primary test entry)
-│   │   ├── Core/               # Core module tests (9 files)
+│   │   ├── Core/               # Core module tests (10 files)
 │   │   ├── Network/            # Network module tests (9 files)
 │   │   ├── Serialization/      # Serialization module tests (4 files)
 │   │   ├── TemplateLib/        # TemplateLib module tests (6 files)
+│   │   ├── TestCommon/         # Self-tests of the shared fixtures (1 file)
 │   │   └── CMakeLists.txt      # Unit test build configuration
 │   ├── Benchmarks/             # Benchmarks (produces BenchTimeUtility, BenchLogger)
 │   ├── TestCommon/             # Shared test library (Package factory, subscribers, etc.)
@@ -85,6 +86,8 @@ Spark/
 │   ├── TestCore/               # Core component tests (legacy)
 │   └── TestMD5/                # MD5 verification program
 ├── Model/                      # Data model definitions (Head.xml / parselist.xml, etc.)
+├── docs/                       # Design and environment documents (setup, logger write path, Shm, etc.)
+├── tools/                      # Repo self-check and end-to-end scripts (initcheck / s4scan / step_e2e)
 ├── submodules/                 # Submodule dependencies (CMakeCommon)
 ├── bin/                        # Build outputs: dynamic libraries / executables (per config)
 ├── lib/                        # Build outputs: static libraries / import libraries (per config)
@@ -349,7 +352,7 @@ int main(int argc, const char* argv[])
 
 ## 7. Unit Tests
 
-The project includes a comprehensive **Google Test**-based unit test suite with **27 test files** across four modules:
+The project includes a comprehensive **doctest 2.5.3**-based unit test suite with **30 test files** (29 across the four modules plus 1 for the shared fixtures):
 
 | Module | Test Files | Coverage |
 | --- | --- | --- |
@@ -357,6 +360,7 @@ The project includes a comprehensive **Google Test**-based unit test suite with 
 | | `DirTest` | Directory creation, deletion, traversal |
 | | `DoubleUtilityTest` | Floating-point precision comparison |
 | | `LoggerTest` | Log levels, file rolling, thread safety |
+| | `LoggerTestThreaded` | Multi-threaded writing: line integrity and ordering, oversized lines not corrupting neighbours, flush on thread exit, visibility without stop, discard after stop |
 | | `MD5Test` | MD5 hash correctness |
 | | `ThreadBaseTest` | Thread start/stop, synchronization |
 | | `TimerTest` | Timer firing and cancellation |
@@ -381,6 +385,7 @@ The project includes a comprehensive **Google Test**-based unit test suite with 
 | | `ShmBufferTest` | Shared memory buffer |
 | | `SpscRingBufferTest` | Ring buffer read/write and boundaries |
 | | `ThreadSafeListTest` | Thread-safe insert/delete/traverse |
+| **TestCommon** | `TestUtilityTest` | Self-tests of the shared fixtures: `TryParseTestProtocol` name parsing (accepted, rejected, case sensitivity) |
 
 ### Running All Tests
 

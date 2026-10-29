@@ -9,7 +9,7 @@ Created by [Fireseeker](https://fireseeker.cn/)
 
 ## 一、项目概述
 
-本项目为个人开源基础组件库，聚焦金融场景下的底层通用能力封装，规避重复造轮子。库基于标准 C++20 开发，采用 CMake 跨平台构建，配套 Python 脚本实现代码自动生成，内置基于 Google Test 的完整单元测试套件，适合学习、二次开发及中小型金融业务系统集成。
+本项目为个人开源基础组件库，聚焦金融场景下的底层通用能力封装，规避重复造轮子。库基于标准 C++20 开发，采用 CMake 跨平台构建，配套 Python 脚本实现代码自动生成，内置基于 doctest 的完整单元测试套件，适合学习、二次开发及中小型金融业务系统集成。
 
 ## 二、核心功能模块
 
@@ -72,10 +72,11 @@ Spark/
 │   └── Serialization/          # Serialization 模块实现
 ├── test/                       # 测试程序
 │   ├── UnitTests/              # doctest 单元测试（主要测试入口）
-│   │   ├── Core/               # Core 模块单元测试（9 文件）
+│   │   ├── Core/               # Core 模块单元测试（10 文件）
 │   │   ├── Network/            # Network 模块单元测试（9 文件）
 │   │   ├── Serialization/      # Serialization 模块单元测试（4 文件）
 │   │   ├── TemplateLib/        # TemplateLib 模块单元测试（6 文件）
+│   │   ├── TestCommon/         # 公共测试夹具自测（1 文件）
 │   │   └── CMakeLists.txt      # 单元测试构建配置
 │   ├── Benchmarks/             # 基准测试（产出 BenchTimeUtility、BenchLogger）
 │   ├── TestCommon/             # 测试公共库（Package 工厂、订阅器等）
@@ -85,6 +86,8 @@ Spark/
 │   ├── TestCore/               # 核心组件测试（旧版）
 │   └── TestMD5/                # MD5 验证程序
 ├── Model/                      # 数据模型定义文件（Head.xml / parselist.xml 等）
+├── docs/                       # 设计与环境文档（环境准备、日志写路径、共享内存等）
+├── tools/                      # 仓库自检与端到端脚本（initcheck / s4scan / step_e2e）
 ├── submodules/                 # 子模块依赖（CMakeCommon）
 ├── bin/                        # 构建产物：动态库 / 可执行文件（按配置分目录）
 ├── lib/                        # 构建产物：静态库 / 导入库（按配置分目录）
@@ -348,7 +351,7 @@ int main(int argc, const char* argv[])
 
 ## 七、单元测试
 
-项目内置基于 **Google Test** 的完整单元测试套件，共 **27 个测试文件**，覆盖四个模块：
+项目内置基于 **doctest 2.5.3** 的完整单元测试套件，共 **30 个测试文件**（四个模块 29 个 ＋ 公共夹具自测 1 个）：
 
 | 模块 | 测试文件 | 覆盖内容 |
 | --- | --- | --- |
@@ -356,6 +359,7 @@ int main(int argc, const char* argv[])
 | | `DirTest` | 目录创建、删除、遍历 |
 | | `DoubleUtilityTest` | 浮点数精度比较 |
 | | `LoggerTest` | 日志分级、文件滚动、线程安全 |
+| | `LoggerTestThreaded` | 多线程写入：行完整性与顺序、超长行不污染邻行、写后退出落盘、未停止时可见、停止后丢弃 |
 | | `MD5Test` | MD5 加密正确性 |
 | | `ThreadBaseTest` | 线程启停、同步 |
 | | `TimerTest` | 定时器触发、取消 |
@@ -380,6 +384,7 @@ int main(int argc, const char* argv[])
 | | `ShmBufferTest` | 共享内存缓冲 |
 | | `SpscRingBufferTest` | 环形缓冲区读写、绕回与边界 |
 | | `ThreadSafeListTest` | 线程安全增删遍历 |
+| **TestCommon** | `TestUtilityTest` | 公共夹具自测：`TryParseTestProtocol` 名字解析的接受、拒绝与大小写敏感 |
 
 ### 运行全部测试
 
