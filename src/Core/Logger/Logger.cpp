@@ -355,22 +355,29 @@ void Logger::WriteToLog(LogLevel level, const char* file, int line, const char* 
     unsigned len3 = static_cast<unsigned>(suffixFormatResult.out - (LogBuffer + len1 + len2));
     unsigned len = len1 + len2 + len3;
     LogThreadWriter* writer = AcquireThreadLogWriter();
+    bool hasChunkToCollect = false;
     {
         std::lock_guard<std::mutex> guard(writer->ChunkMutex);
         if (writer->Chunk == nullptr)
         {
             writer->Chunk = Spark::LinearBuffer<LogBufferSize>::Allocate();
             writer->ChunkStartTime = std::chrono::steady_clock::now();
+            hasChunkToCollect = true;
         }
         if (writer->Chunk->GetWriteBufferSize() < len)
         {
             writer->FullChunks.push_back(writer->Chunk);
             writer->Chunk = Spark::LinearBuffer<LogBufferSize>::Allocate();
             writer->ChunkStartTime = std::chrono::steady_clock::now();
+            hasChunkToCollect = true;
         }
         writer->Chunk->Append(LogBuffer, len);
     }
-    logData_->ConditionVariable.notify_one();
+    // 只在块开头与换新时通知：消费者本就按 ChunkHandOffInterval 定时来取，按行通知只会把它按行率唤醒空转
+    if (hasChunkToCollect)
+    {
+        logData_->ConditionVariable.notify_one();
+    }
 }
 void Logger::WriteToConsole(LogLevel level, const char* formatStr, va_list va)
 {
