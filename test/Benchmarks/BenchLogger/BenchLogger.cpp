@@ -1,6 +1,5 @@
-#include "BenchmarkRunner.h"
-
 #include <Spark/Core/Logger/Logger.h>
+#include <Spark/TemplateLib/Benchmark/BenchmarkRunner.h>
 
 #include <chrono>
 #include <cstdio>
@@ -24,7 +23,7 @@ double ToMilliseconds(const std::chrono::steady_clock::time_point& beginTime)
 // 日志文件落在工作目录（默认 out/bench-work，已被 .gitignore 覆盖），不污染仓库根目录
 int main(int argc, char* argv[])
 {
-    Benchmark::WarnIfUnoptimized();
+    Spark::Benchmark::WarnIfUnoptimized();
     const int threadCount = argc > 1 ? std::atoi(argv[1]) : 4;
     const int linesPerThread = argc > 2 ? std::atoi(argv[2]) : 100000;
     const char* workRoot = argc > 3 ? argv[3] : "out/bench-work";

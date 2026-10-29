@@ -173,6 +173,8 @@ cmake --build out/build/x64-Release --target BenchTimeUtility BenchLogger
 ./bin/Release/BenchLogger 4 100000              # 线程数、每线程行数；日志落在 out/bench-work
 ```
 
+计时器在公开头 `<Spark/TemplateLib/Benchmark/BenchmarkRunner.h>`，兄弟仓可直接包含复用（自动预热、按单次成本自适应轮内次数、多轮取样取中位数）。
+
 ## 六、基础使用示例
 
 ### 示例 1：高性能日志组件

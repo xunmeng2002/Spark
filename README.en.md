@@ -173,6 +173,8 @@ cmake --build out/build/x64-Release --target BenchTimeUtility BenchLogger
 ./bin/Release/BenchLogger 4 100000              # threads, lines per thread; logs go to out/bench-work
 ```
 
+The timer lives in the public header `<Spark/TemplateLib/Benchmark/BenchmarkRunner.h>`, so sibling repositories can include and reuse it directly (warmup, per-call adaptive iteration count, median over multiple samples).
+
 ## 6. Basic Usage Examples
 
 ### 6.1 High-Performance Logging

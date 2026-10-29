@@ -1,12 +1,12 @@
-#include "BenchmarkRunner.h"
-
 #include <Spark/Core/Utility/TimeUtility.h>
+#include <Spark/TemplateLib/Benchmark/BenchmarkRunner.h>
 
 #include <chrono>
 #include <cstddef>
 #include <ctime>
 
 using Spark::Core::TimeUtility;
+namespace Benchmark = Spark::Benchmark;
 
 // reference.* 行保留改造前的实现口径（time + localtime + strftime 整条），
 // 用来随时检验"手写格式化比标准库快多少"，不受 TimeUtility 自身改动影响

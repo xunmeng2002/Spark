@@ -8,7 +8,7 @@
 #include <cstdio>
 #include <cstddef>
 
-namespace Benchmark
+namespace Spark::Benchmark
 {
 // 每轮目标时长：太短会被计时分辨率与调度噪声淹没，太长则一行要跑掉几十秒
 constexpr double TargetRoundNanoseconds = 50'000'000.0;
