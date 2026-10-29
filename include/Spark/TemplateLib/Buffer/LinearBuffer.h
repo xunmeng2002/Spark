@@ -14,7 +14,9 @@ class LinearBuffer
 public:
     static_assert(Size > 0, "Size must be greater than 0");
 
-    LinearBuffer() : buffer_{0} { ClearIndices(); }
+    // 构造只重置读写位置，不清零：使用方一律按 GetLength() 取数据，未写入的字节从不被读取，
+    // 而清零一块 1 MB 缓冲的成本会随对象池的分配/回收次数反复付出
+    LinearBuffer() { ClearIndices(); }
     LinearBuffer(const LinearBuffer&) = delete;
     LinearBuffer& operator=(const LinearBuffer&) = delete;
     LinearBuffer(LinearBuffer&&) = delete;
